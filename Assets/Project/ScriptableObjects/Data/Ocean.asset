@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 277fbaeb210a59546a40d4ab6536ec55, type: 3}
+  m_Name: Ocean
+  m_EditorClassIdentifier: 
+  lesson_name: "Kh\xE1m ph\xE1 \u0111\u1ED9ng v\u1EADt \u0111\u1EA1i d\u01B0\u01A1ng"
+  level_name: "H\u1ECDc l\xFD thuy\u1EBFt"
+  lesson_index: 8
+  level_index: 0
+  lesson_id: Ocean
+  level_id: 1
+  type: 1

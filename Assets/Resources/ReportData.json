@@ -1,0 +1,53 @@
+{
+    "topics": [
+      {
+        "id": 0,
+        "name": "Kỹ năng xã hội cơ bản",
+        "lessons": [
+          {
+            "id": 1,
+            "topicId": 0,
+            "sceneName": "LearnToAsk",
+            "title": "Xin phép khi lấy đồ vật",
+            "description": "Bài học hướng dẫn trẻ xin phép khi lấy đồ vật gì đó.",
+            "cover": "Classroom-cover",
+            "sessionTimes": [10, 9, 8.2, 6.7, 9, 4, 5.7, 2.4]
+          },
+          {
+            "id": 2,
+            "topicId": 0,
+            "sceneName": "Supermarket",
+            "title": "Mua đồ tại cửa hàng tiện lợi",
+            "description": "Bài học hướng dẫn trẻ cách mua đồ từ cửa hàng tiện lợi, từ bước chọn đồ đến thanh toán.",
+            "cover": "supermaket_thumbnail",
+            "sessionTimes": [2, 5, 8, 9.5, 8, 9, 7, 10]
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "name": "Kỹ năng tự phục vụ",
+        "lessons": [
+          {
+            "id": 1,
+            "topicId": 1,
+            "sceneName": "Bathroom",
+            "title": "Kỹ năng tự rửa tay",
+            "description": "Bài học hướng dẫn trẻ các bước rửa tay. Trẻ sẽ làm theo hướng dẫn của hệ thống.",
+            "cover": "bathroom",
+            "sessionTimes": [1, 2, 3, 5, 2, 8, 10, 2]
+          },
+          {
+            "id": 2,
+            "topicId": 1,
+            "sceneName": "Ocean",
+            "title": "Khám phá đại dương",
+            "description": "Bài học giúp trẻ hiểu biết thêm về các động vật dưới đáy đại dương.",
+            "cover": "Ocean-cover",
+            "sessionTimes": [1, 2, 3, 5, 2, 8]
+          }
+        ]
+      }
+    ]
+  }
+  

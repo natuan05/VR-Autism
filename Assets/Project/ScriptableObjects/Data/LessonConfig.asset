@@ -1,0 +1,197 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0833c42cff86554699b37c5ae20811c, type: 3}
+  m_Name: LessonConfig
+  m_EditorClassIdentifier: 
+  topics:
+  - id: 0
+    name: "K\u1EF9 n\u0103ng t\u1EF1 ph\u1EE5c v\u1EE5"
+    lessons:
+    - lesson_index: 0
+      lesson_id: WashingHand
+      topicId: 0
+      sceneName: Bathroom
+      lesson_name: "B\xE0i h\u1ECDc r\u1EEDa tay (C\xF3 m\u1EABu)"
+      type: 0
+      description: "B\xE0i h\u1ECDc h\u01B0\u1EDBng d\u1EABn tr\u1EBB th\u1EF1c hi\u1EC7n
+        c\xE1c b\u01B0\u1EDBc r\u1EEDa tay. C\u1EA5p \u0111\u1ED9 1 c\xF3 nh\xE2n
+        v\u1EADt th\u1EF1c hi\u1EC7n m\u1EABu t\u1EEBng b\u01B0\u1EDBc r\u1EEDa tay."
+      cover: {fileID: 21300000, guid: 4c9f9f2cbcfc4974baf006facf1f0a03, type: 3}
+      sessionTimes: []
+      level_index: 0
+      level_id: 1
+      level_name: "Ch\u1EC9 d\u1EABn v\xE0 c\xF3 m\u1EABu"
+    - lesson_index: 0
+      lesson_id: WashingHand
+      topicId: 0
+      sceneName: Bathroom_2
+      lesson_name: "B\xE0i h\u1ECDc r\u1EEDa tay (Kh\xF4ng m\u1EABu)"
+      type: 0
+      description: "B\xE0i h\u1ECDc h\u01B0\u1EDBng d\u1EABn tr\u1EBB th\u1EF1c hi\u1EC7n
+        c\xE1c b\u01B0\u1EDBc r\u1EEDa tay. C\u1EA5p \u0111\u1ED9 2 s\u1EBD kh\xF4ng
+        c\xF3 m\u1EABu, tr\u1EBB s\u1EBD nh\u1EDB l\u1EA1i c\xE1c b\u01B0\u1EDBc
+        v\xE0 t\u1EF1 th\u1EF1c h\xE0nh l\u1EA1i."
+      cover: {fileID: 21300000, guid: 19c242ff48a42804d82c79f073584d83, type: 3}
+      sessionTimes: []
+      level_index: 1
+      level_id: 2
+      level_name: "Ch\u1EC9 d\u1EABn v\xE0 kh\xF4ng m\u1EABu"
+  - id: 1
+    name: "Kh\xE1m ph\xE1 m\xF4i tr\u01B0\u1EDDng \u0111\u1ED9ng v\u1EADt"
+    lessons:
+    - lesson_index: 0
+      lesson_id: Ocean
+      topicId: 1
+      sceneName: Ocean
+      lesson_name: "Kh\xE1m ph\xE1 \u0111\u1EA1i d\u01B0\u01A1ng"
+      type: 1
+      description: "B\xE0i h\u1ECDc m\xF4 ph\u1ECFng m\u1ED9t m\xF4i tr\u01B0\u1EDDng
+        \u0111\u1EA1i d\u01B0\u01A1ng c\xF3 nh\u1EEFng con v\u1EADt nh\u01B0 c\xE1
+        heo, r\xF9a bi\u1EC3n, c\xE1 m\u1EADp... Tr\u1EBB s\u1EBD \u0111\u01B0\u1EE3c
+        cung c\u1EA5p nh\u1EEFng ki\u1EBFn th\u1EE9c v\u1EC1 nh\u1EEFng con v\u1EADt
+        \u1EDF \u0111\u1EA1i d\u01B0\u01A1ng."
+      cover: {fileID: 21300000, guid: 4125b23148178e949bc887786a5030f9, type: 3}
+      sessionTimes: []
+      level_index: 0
+      level_id: 1
+      level_name: "Kh\xE1m ph\xE1 \u0111\u1EA1i d\u01B0\u01A1ng"
+    - lesson_index: 1
+      lesson_id: Farm
+      topicId: 1
+      sceneName: Farm
+      lesson_name: "Kh\xE1m ph\xE1 n\xF4ng tr\u1EA1i"
+      type: 1
+      description: "B\xE0i h\u1ECDc m\xF4 ph\u1ECFng m\u1ED9t m\xF4i tr\u01B0\u1EDDng
+        n\xF4ng tr\u1EA1i. \u1EDE n\xF4ng tr\u1EA1i s\u1EBD c\xF3 nh\u1EEFng con
+        v\u1EADt nh\u01B0 ch\xF3, b\xF2, heo, c\u1EEBu, g\xE0... Tr\u1EBB s\u1EBD
+        \u0111\u01B0\u1EE3c cung c\u1EA5p nh\u1EEFng ki\u1EBFn th\u1EE9c v\u1EC1
+        nh\u1EEFng con v\u1EADt n\xE0y."
+      cover: {fileID: 21300000, guid: 06f9e2398a3047945bedc58f29b9d615, type: 3}
+      sessionTimes: []
+      level_index: 0
+      level_id: 1
+      level_name: "Kh\xE1m ph\xE1 n\xF4ng tr\u1EA1i"
+    - lesson_index: 2
+      lesson_id: Grassland
+      topicId: 1
+      sceneName: Grassland
+      lesson_name: "Kh\xE1m ph\xE1 hoang m\u1EA1c"
+      type: 1
+      description: "B\xE0i h\u1ECDc m\xF4 ph\u1ECFng m\u1ED9t m\xF4i tr\u01B0\u1EDDng
+        n\u01A1i hoang d\xE3 c\xF3 nh\u1EEFng con v\u1EADt nh\u01B0 s\u01B0 t\u1EED,
+        ng\u1EF1a v\u1EB1n, voi, th\u1ECF..."
+      cover: {fileID: 21300000, guid: 8ab1f7cb311a23648924e4278da13d39, type: 3}
+      sessionTimes: []
+      level_index: 0
+      level_id: 1
+      level_name: "Kh\xE1m ph\xE1 hoang m\u1EA1c"
+  - id: 2
+    name: "C\xE2u \u0111\u1ED1 "
+    lessons:
+    - lesson_index: 0
+      lesson_id: Ocean_Quiz
+      topicId: 2
+      sceneName: Ocean-Quiz
+      lesson_name: "Quiz m\xF4i tr\u01B0\u1EDDng \u0111\u1EA1i d\u01B0\u01A1ng"
+      type: 0
+      description: "Sau khi h\u1ECDc xong ki\u1EBFn th\u1EE9c c\xE1c \u0111\u1ED9ng
+        v\u1EADt \u1EDF m\xF4i tr\u01B0\u1EDDng \u0111\u1EA1i d\u01B0\u01A1ng, tr\u1EBB
+        s\u1EBD \u0111\u01B0\u1EE3c th\u1EF1c h\xE0nh l\u1EA1i v\u1EDBi b\xE0i quiz
+        n\xE0y \u0111\u1EC3 ki\u1EC3m tra l\u1EA1i ki\u1EBFn th\u1EE9c m\xE0 tr\u1EBB
+        \u0111\xE3 h\u1ECDc \u0111\u01B0\u1EE3c."
+      cover: {fileID: 21300000, guid: 73e7ce8631d4d384f80cbf309c26260c, type: 3}
+      sessionTimes: []
+      level_index: 0
+      level_id: 1
+      level_name: "Quiz m\xF4i tr\u01B0\u1EDDng \u0111\u1EA1i d\u01B0\u01A1ng"
+    - lesson_index: 1
+      lesson_id: Farm_Quiz
+      topicId: 2
+      sceneName: Farm-Quiz
+      lesson_name: "Quiz m\xF4i tr\u01B0\u1EDDng n\xF4ng tr\u1EA1i"
+      type: 0
+      description: "Sau khi h\u1ECDc xong ki\u1EBFn th\u1EE9c c\xE1c \u0111\u1ED9ng
+        v\u1EADt \u1EDF m\xF4i tr\u01B0\u1EDDng n\xF4ng tr\u1EA1i, tr\u1EBB s\u1EBD
+        \u0111\u01B0\u1EE3c th\u1EF1c h\xE0nh l\u1EA1i v\u1EDBi b\xE0i quiz n\xE0y
+        \u0111\u1EC3 ki\u1EC3m tra l\u1EA1i ki\u1EBFn th\u1EE9c m\xE0 tr\u1EBB \u0111\xE3
+        h\u1ECDc \u0111\u01B0\u1EE3c."
+      cover: {fileID: 21300000, guid: 6fb44691019b6554da03a20f7ae4d555, type: 3}
+      sessionTimes: []
+      level_index: 0
+      level_id: 1
+      level_name: "Quiz m\xF4i tr\u01B0\u1EDDng n\xF4ng tr\u1EA1i."
+    - lesson_index: 2
+      lesson_id: Grassland_Quiz
+      topicId: 0
+      sceneName: Grassland-Quizz
+      lesson_name: "Quiz m\xF4i tr\u01B0\u1EDDng hoang m\u1EA1c"
+      type: 0
+      description: "Sau khi h\u1ECDc xong ki\u1EBFn th\u1EE9c c\xE1c \u0111\u1ED9ng
+        v\u1EADt \u1EDF m\xF4i tr\u01B0\u1EDDng hoang m\u1EA1c, tr\u1EBB s\u1EBD
+        \u0111\u01B0\u1EE3c th\u1EF1c h\xE0nh l\u1EA1i v\u1EDBi b\xE0i quiz n\xE0y
+        \u0111\u1EC3 ki\u1EC3m tra l\u1EA1i ki\u1EBFn th\u1EE9c m\xE0 tr\u1EBB \u0111\xE3
+        h\u1ECDc \u0111\u01B0\u1EE3c."
+      cover: {fileID: 21300000, guid: 307fc65796fce3a43a2116eb19f933d2, type: 3}
+      sessionTimes: []
+      level_index: 0
+      level_id: 1
+      level_name: "Quiz m\xF4i tr\u01B0\u1EDDng hoang m\u1EA1c"
+  - id: 3
+    name: "K\u1EF9 n\u0103ng giao ti\u1EBFp"
+    lessons:
+    - lesson_index: 0
+      lesson_id: Greet
+      topicId: 3
+      sceneName: HelloFriend
+      lesson_name: "L\xE0m quen b\u1EA1n m\u1EDBi"
+      type: 0
+      description: "\u1EDE b\xE0i h\u1ECDc n\xE0y, tr\u1EBB s\u1EBD \u0111\u01B0\u1EE3c
+        th\u1EF1c h\xE0nh l\xE0m quen v\u1EDBi m\u1ED9t ng\u01B0\u1EDDi b\u1EA1n
+        m\u1EDBi trong l\u1EDBp h\u1ECDc. "
+      cover: {fileID: 21300000, guid: 71cb290f0af68684d8edc3d8472159e7, type: 3}
+      sessionTimes: []
+      level_index: 0
+      level_id: 1
+      level_name: "L\xE0m quen b\u1EA1n m\u1EDBi"
+    - lesson_index: 1
+      lesson_id: Intro
+      topicId: 3
+      sceneName: LearnToAsk
+      lesson_name: "Gi\u1EDBi thi\u1EC7u b\u1EA3n th\xE2n tr\u01B0\u1EDBc t\u1EADp
+        th\u1EC3 (C\xF3 m\u1EABu)"
+      type: 0
+      description: "Trong b\xE0i h\u1ECDc n\xE0y, tr\u1EBB s\u1EBD \u0111\u01B0\u1EE3c
+        th\u1EF1c h\xE0nh t\u1EF1 gi\u1EDBi thi\u1EC7u b\u1EA3n th\xE2n tr\u01B0\u1EDBc
+        l\u1EDBp h\u1ECDc. Tr\u1EBB s\u1EBD \u0111\u01B0\u1EE3c xem b\u1EA1n kh\xE1c
+        gi\u1EDBi thi\u1EC7u tr\u01B0\u1EDBc sau \u0111\xF3 s\u1EBD \u0111\u1EBFn
+        l\u01B0\u1EE3t tr\u1EBB."
+      cover: {fileID: 21300000, guid: 1f4636bc1353f4c4f993fdb3f543a2c8, type: 3}
+      sessionTimes: []
+      level_index: 0
+      level_id: 1
+      level_name: "Ch\u1EC9 d\u1EABn v\xE0 c\xF3 m\u1EABu"
+    - lesson_index: 2
+      lesson_id: Intro
+      topicId: 3
+      sceneName: LearnToAsk2
+      lesson_name: "Gi\u1EDBi thi\u1EC7u b\u1EA3n th\xE2n tr\u01B0\u1EDBc t\u1EADp
+        th\u1EC3 (Kh\xF4ng m\u1EABu)"
+      type: 0
+      description: "Trong b\xE0i h\u1ECDc n\xE0y, tr\u1EBB s\u1EBD \u0111\u01B0\u1EE3c
+        th\u1EF1c h\xE0nh t\u1EF1 gi\u1EDBi thi\u1EC7u b\u1EA3n th\xE2n tr\u01B0\u1EDBc
+        l\u1EDBp h\u1ECDc. Tr\u1EBB s\u1EBD t\u1EF1 ch\u1EE7 \u0111\u1ED9ng gi\u1EDBi
+        thi\u1EC7u b\u1EA3n th\xE2n \u0111\u1EA7u ti\xEAn."
+      cover: {fileID: 21300000, guid: 1d7095c164f624f459f7035496e0214d, type: 3}
+      sessionTimes: []
+      level_index: 1
+      level_id: 2
+      level_name: "Ch\u1EC9 d\u1EABn v\xE0 kh\xF4ng m\u1EABu"

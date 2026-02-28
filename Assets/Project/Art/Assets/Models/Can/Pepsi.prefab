@@ -1,0 +1,128 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7442764063559850045
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5640125497407872601}
+  m_Layer: 0
+  m_Name: Pepsi
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5640125497407872601
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7442764063559850045}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 10.25, y: 1.13, z: -6.74}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 949575843556931108}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &767629882547884495
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5640125497407872601}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.0011
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.00115
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.0011
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.0003938675
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.00029563904
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.5431167
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.8396573
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 245.79199
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+        type: 3}
+      propertyPath: m_Name
+      value: pepsi-can
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: af2857fb3863a8e45ab58979cc3ab1fa, type: 3}
+--- !u!4 &949575843556931108 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: af2857fb3863a8e45ab58979cc3ab1fa,
+    type: 3}
+  m_PrefabInstance: {fileID: 767629882547884495}
+  m_PrefabAsset: {fileID: 0}

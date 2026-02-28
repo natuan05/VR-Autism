@@ -1,0 +1,135 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40c9340add58a524da09eb745c1fc541, type: 3}
+  m_Name: GrasslandQuizConfig
+  m_EditorClassIdentifier: 
+  questions:
+  - question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
+    answers:
+    - "Th\u1ECF"
+    - Voi
+    - "S\u01B0 t\u1EED"
+    - "H\u01B0\u01A1u cao c\u1ED5"
+    correctAnswer: 1
+    associatedObject: {fileID: 9076124945877968073, guid: 2487911eee863fd47a93b46bb18a8ce9,
+      type: 3}
+    questionSound: 3
+    animalSound: 33
+    asked: 0
+  - question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
+    answers:
+    - "Th\u1ECF"
+    - Voi
+    - "S\u01B0 t\u1EED"
+    - "H\u01B0\u01A1u cao c\u1ED5"
+    correctAnswer: 2
+    associatedObject: {fileID: 3738976252314424919, guid: c511151b1e75567489302fef2c695501,
+      type: 3}
+    questionSound: 3
+    animalSound: 37
+    asked: 0
+  - question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
+    answers:
+    - "Th\u1ECF"
+    - Voi
+    - "S\u01B0 t\u1EED"
+    - "H\u01B0\u01A1u cao c\u1ED5"
+    correctAnswer: 0
+    associatedObject: {fileID: 2506048158765108544, guid: 8d72d53770c1d484ba3940a7df97ed7d,
+      type: 3}
+    questionSound: 3
+    animalSound: 31
+    asked: 0
+  - question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
+    answers:
+    - "Ng\u1EF1a v\u1EB1n"
+    - "H\u01B0\u01A1u cao c\u1ED5"
+    - "Th\u1ECF"
+    - Voi
+    correctAnswer: 1
+    associatedObject: {fileID: 2087390146465553193, guid: cd4028cde88545a4abc88c7c2bf90003,
+      type: 3}
+    questionSound: 4
+    animalSound: 29
+    asked: 0
+  - question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
+    answers:
+    - "Ng\u1EF1a v\u1EB1n"
+    - "H\u01B0\u01A1u cao c\u1ED5"
+    - "Th\u1ECF"
+    - Voi
+    correctAnswer: 0
+    associatedObject: {fileID: 2893247661414741198, guid: 54f01597eeff23b439bbb91dfd8f5cb1,
+      type: 3}
+    questionSound: 4
+    animalSound: 35
+    asked: 0
+  - question: "Th\u1ECF c\xF3 \u0111\u1EB7c \u0111i\u1EC3m g\xEC \u0111\u1EB7c bi\u1EC7t?"
+    answers:
+    - "\u0110\xF4i tai r\u1EA5t d\xE0i"
+    - "\u0110\xF4i c\xE1nh l\u1EDBn"
+    - "R\u1EA5t cao l\u1EDBn"
+    - "C\xF3 4 ch\xE2n"
+    correctAnswer: 0
+    associatedObject: {fileID: 2506048158765108544, guid: 8d72d53770c1d484ba3940a7df97ed7d,
+      type: 3}
+    questionSound: 5
+    animalSound: 31
+    asked: 0
+  - question: "Ti\u1EBFng g\u1EA7m c\u1EE7a s\u01B0 t\u1EED nh\u01B0 th\u1EBF n\xE0o?"
+    answers:
+    - "Nh\u1ECF v\xE0 y\u1EBFu"
+    - "R\u1EA5t to v\xE0 m\u1EA1nh m\u1EBD"
+    - "Gi\u1ED1ng ti\u1EBFng m\xE8o k\xEAu"
+    - "Gi\u1ED1ng ti\u1EBFng gi\xF3 th\u1ED5i"
+    correctAnswer: 1
+    associatedObject: {fileID: 3738976252314424919, guid: c511151b1e75567489302fef2c695501,
+      type: 3}
+    questionSound: 6
+    animalSound: 37
+    asked: 0
+  - question: "Ng\u1EF1a v\u1EB1n c\xF3 \u0111i\u1EC3m \u0111\u1EB7c tr\u01B0ng g\xEC?"
+    answers:
+    - "L\xF4ng s\u1ECDc tr\u1EAFng v\xE0 \u0111en"
+    - "L\xF4ng m\xE0u v\xE0ng v\xE0 \u0111en"
+    - "L\xF4ng to\xE0n m\xE0u tr\u1EAFng"
+    - "Kh\xF4ng c\xF3 l\xF4ng"
+    correctAnswer: 0
+    associatedObject: {fileID: 2893247661414741198, guid: 54f01597eeff23b439bbb91dfd8f5cb1,
+      type: 3}
+    questionSound: 7
+    animalSound: 35
+    asked: 0
+  - question: "H\u01B0\u01A1u cao c\u1ED5 th\u01B0\u1EDDng \u0103n g\xEC?"
+    answers:
+    - "C\xE1"
+    - "L\xE1 c\xE2y"
+    - "Th\u1ECBt"
+    - "C\u01A1m"
+    correctAnswer: 1
+    associatedObject: {fileID: 2087390146465553193, guid: cd4028cde88545a4abc88c7c2bf90003,
+      type: 3}
+    questionSound: 8
+    animalSound: 29
+    asked: 0
+  - question: "S\u01B0 t\u1EED th\u01B0\u1EDDng s\u0103n m\u1ED3i khi n\xE0o?"
+    answers:
+    - "Ban \u0111\xEAm ho\u1EB7c khi ho\xE0ng h\xF4n"
+    - "Ban ng\xE0y"
+    - "S\u01B0 t\u1EED kh\xF4ng s\u0103n m\u1ED3i"
+    - "C\u1EA3 ng\xE0y"
+    correctAnswer: 0
+    associatedObject: {fileID: 3738976252314424919, guid: c511151b1e75567489302fef2c695501,
+      type: 3}
+    questionSound: 9
+    animalSound: 37
+    asked: 0

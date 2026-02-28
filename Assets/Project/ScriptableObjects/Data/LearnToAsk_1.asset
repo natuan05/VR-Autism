@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 277fbaeb210a59546a40d4ab6536ec55, type: 3}
+  m_Name: LearnToAsk_1
+  m_EditorClassIdentifier: 
+  lesson_name: "T\u1EADp gi\u1EDBi thi\u1EC7u b\u1EA3n th\xE2n"
+  level_name: "Ch\u1EC9 d\u1EABn v\xE0 c\xF3 m\u1EABu"
+  lesson_index: 3
+  level_index: 0
+  lesson_id: Intro
+  level_id: 1
+  type: 0
