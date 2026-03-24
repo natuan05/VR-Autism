@@ -5,33 +5,30 @@ using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+
+
+namespace VRAutism.Core
 {
-    public static GameManager Inst;
-
-    
-    private void Awake()
+    public class GameManager : MonoBehaviour
     {
-        Inst = this;
-        DontDestroyOnLoad(this);
-        
-        
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        public static GameManager Instance;
+        private void Awake()
         {
-            Application.Quit();
+            // Singleton Guard: Tránh việc 2 GameManager cùng tồn tại
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject); 
+                return; 
+            }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Application.Quit();
+            }
         }
     }
-    
-}
-
-[Serializable]
-class MissionConfiguration
-{
-    public string MissionName;
-    public int Level;
-    public string Type;
 }

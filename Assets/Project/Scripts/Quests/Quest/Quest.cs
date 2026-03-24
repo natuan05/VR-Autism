@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using KBCore.Refs;
 using Plugins.QuickOutline.Scripts;
 using UnityEngine;

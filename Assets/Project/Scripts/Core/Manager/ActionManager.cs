@@ -1,10 +1,10 @@
 ﻿using System; // Nhập thư viện chuẩn của C# (System)
 using System.Collections; // Nhập thư viện để dùng IEnumerator (cho Coroutine)
 using System.Collections.Generic; // Nhập thư viện để dùng List<T> (Danh sách)
-using VRAutism.Core; // Nhập các script từ thư mục Events
 using VRAutism.Core; // Nhập các script tiện ích (Utils)
 using UnityEngine; // Thư viện chính của Unity (để dùng MonoBehaviour, GameObject...)
 using UnityEngine.Events; // Để dùng UnityEvent (kéo thả sự kiện trong Inspector)
+using VRAutism.Cloud;
 
 // namespace: Gom nhóm code lại để tránh trùng tên với các thư viện khác
 namespace VRAutism.Core

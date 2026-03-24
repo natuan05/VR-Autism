@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,6 +6,8 @@ using VRAutism.Core;
 using UnityEngine;
 using VRAutism.Quests;
 using Debug = UnityEngine.Debug;
+using VRAutism.Cloud;
+using VRAutism.Cloud.Models;
 
 namespace VRAutism.Core
 {
@@ -14,8 +16,6 @@ namespace VRAutism.Core
         public static TimeManager Instance;
         [SerializeField] private DoubleVariable lessonTime;
         [SerializeField] private FirebaseManager firebaseManager;
-        //[SerializeField] private VideoRecorder videoRecorder;
-        //[SerializeField] private GoogleDriveUploader uploader;
         [SerializeField] private QuestController questController;
         [SerializeField] private LessonInfo lessonInfo;
 
@@ -30,9 +30,15 @@ namespace VRAutism.Core
 
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
             Instance = this;
             
             data = new LessonTimeData();
+
             if (lessonInfo != null)
             {
                 data.lesson_name = lessonInfo.lesson_name;
@@ -101,7 +107,6 @@ namespace VRAutism.Core
 
         public void StartLessonTime()
         {
-            //videoRecorder.StartRecording();
             timer = new Stopwatch();
             timer.Start();
             UnityEngine.Debug.Log("Lesson started at: " + start_time.ToString("yyyy-MM-dd HH:mm:ss"));
@@ -136,26 +141,6 @@ namespace VRAutism.Core
             Debug.LogError("Quest: " + data.quest_list.Count);
             timer.Stop();
             SaveDurationTime();
-            //videoRecorder.StopRecording();
-            //string videoPath = videoRecorder.GetVideoPath();
-
-           /* StartCoroutine(uploader.UploadVideo(videoPath, (fileId) =>
-            {
-                UnityEngine.Debug.Log("Start upload video");
-                /*firebaseManager.Savevideo_urlToFirebase("student_001", "WashingHand", fileId);
-                data.video_url = "https://drive.google.com/file/d/" + fileId + "/preview";
-                DataUtils<LessonTimeData>.SaveData(Application.persistentDataPath + "/Data/Saved/test.txt", data);
-
-                firebaseManager.UpdateSessionData("video_url", data.video_url);
-                //firebaseManager.UploadLessonTimeData();
-            }));*/
-
-            //data.duration = TimeUtils.CurrentSecond - lessonTime.Value;
-            
-            // string filePath = Application.persistentDataPath + "/Data/Saved/test.txt";
-            // File.WriteAllText(filePath, JsonUtility.ToJson(data, true));
-
-            //firebaseManager.UploadLessonTimeData();
 
         }
 
@@ -204,55 +189,6 @@ namespace VRAutism.Core
         }
     }
 
-    [Serializable]
-    public class LessonTimeData
-    {
-        public String lesson_name;
-        public String level_name;
-        public int lesson_index;
-        public String lesson_id;
-        public int level_index;
-        public double duration;
-        public bool hasQuest;
-        public String start_time;
-        public String finish_time;
-        public String video_url;
-        public List<QuestTimeData> quest_list;
-        public List<SkillsData> skills = new List<SkillsData>
-        {
-            new SkillsData
-            {
-                initiation = 0,
-                negotiation = 0,
-                self_identity = 0,
-                cognitive_flexibility = 0
-            }
-        };
-
-        public String device_id;
-        public String type;
-        public int score;
-
-
-    }
-
-    [Serializable]
-    public class QuestTimeData
-    {
-        public int index;
-        public string quest_name;
-        public double response_time;
-        public int hint_count;
-    }
-
-    [Serializable]
-    public class SkillsData
-    {
-        public int initiation;
-        public int negotiation;
-        public int self_identity;
-        public int cognitive_flexibility;
-    }
 
 }
 

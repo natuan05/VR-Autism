@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Linq;
 using VRAutism.Core;
 using UnityEngine;
+using VRAutism.Cloud;
+using VRAutism.Cloud.Models;
 
 namespace VRAutism.Quests
 {

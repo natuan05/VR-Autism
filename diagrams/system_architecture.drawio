@@ -1,0 +1,57 @@
+﻿<mxfile host="65bd71144e">
+    <diagram id="sys_arch" name="2.2 System Architecture">
+        <mxGraphModel dx="1562" dy="1144" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" background="#ffffff" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="grp_client" value="Ứng dụng Người Dùng" style="swimlane;startSize=30;fillColor=#d5e8d4;strokeColor=#2D7600;fontStyle=1;fontSize=13;fontColor=#000000;labelBackgroundColor=none;rounded=0;swimlaneFillColor=#E6FFCC;gradientColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="200" width="280" height="400" as="geometry"/>
+                </mxCell>
+                <mxCell id="web" value="🌐 Web Dashboard&#10;(React / Next.js)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#666666;fontColor=#000000;fontSize=13;fontStyle=1;labelBackgroundColor=none;" parent="grp_client" vertex="1">
+                    <mxGeometry x="40" y="80" width="200" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="vr" value="🥽 VR Application&#10;(Unity C# / Oculus)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#666666;fontColor=#000000;fontSize=13;fontStyle=1;labelBackgroundColor=none;" parent="grp_client" vertex="1">
+                    <mxGeometry x="40" y="240" width="200" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="grp_firebase" value="Hạ tầng Backend (Firebase Cloud)" style="swimlane;startSize=30;fillColor=#dae8fc;strokeColor=#006EAF;fontStyle=1;fontSize=13;fontColor=#000000;labelBackgroundColor=none;swimlaneFillColor=#99CCFF;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="100" width="540" height="580" as="geometry"/>
+                </mxCell>
+                <mxCell id="auth" value="🔑 Firebase Auth&#10;(Xác thực Login)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#666666;fontColor=#000000;fontSize=13;labelBackgroundColor=none;" parent="grp_firebase" vertex="1">
+                    <mxGeometry x="190" y="60" width="200" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="firestore" value="🗄️ Cloud Firestore&#10;(Lưu Sessions, Hồ sơ)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#666666;fontColor=#000000;fontSize=13;fontStyle=1;labelBackgroundColor=none;" parent="grp_firebase" vertex="1">
+                    <mxGeometry x="180" y="240" width="200" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="rtdb" value="⚡ Realtime DB&#10;(Remote Control, PIN)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#666666;fontColor=#000000;fontSize=13;fontStyle=1;labelBackgroundColor=none;" parent="grp_firebase" vertex="1">
+                    <mxGeometry x="180" y="440" width="200" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="web_auth" value="1. Đăng nhập" style="strokeColor=#08427b;fontSize=11;endArrow=block;endFill=1;labelBackgroundColor=#99CCFF;fontColor=#000000;" parent="1" source="web" target="auth" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="web_firestore" value="2. R/W Json Data" style="strokeColor=#08427b;fontSize=11;endArrow=block;endFill=1;labelBackgroundColor=#99CCFF;fontColor=#000000;" parent="1" source="web" target="firestore" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="web_rtdb" value="3. Gửi lệnh Remote / Nhập PIN" style="strokeColor=#08427b;fontSize=11;endArrow=block;endFill=1;startArrow=block;startFill=1;labelBackgroundColor=#99CCFF;fontColor=#000000;" parent="1" source="web" target="rtdb" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="590" y="480"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="vr_firestore" value="4. Ghi Toàn bộ Logs&#10;(1 lần cuối giờ)" style="strokeColor=#08427b;fontSize=11;endArrow=block;endFill=1;labelBackgroundColor=#99CCFF;fontColor=#000000;" parent="1" source="vr" target="firestore" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="vr_rtdb" value="5. Nhận lệnh Remote&#10;/ Gửi Telemetry (Tốc độ cao)" style="strokeColor=#08427b;fontSize=11;endArrow=block;endFill=1;startArrow=block;startFill=1;labelBackgroundColor=#99CCFF;fontColor=#000000;" parent="1" source="vr" target="rtdb" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="600" y="590"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="web_vr_pairing" value="Ghép nối Live (WebRTC TV-Pairing)" style="dashed=1;strokeColor=#666;fontSize=11;italic=1;endArrow=open;endFill=0;startArrow=open;startFill=0;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="web" target="vr" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

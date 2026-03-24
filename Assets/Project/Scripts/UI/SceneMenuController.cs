@@ -3,52 +3,54 @@ using VRAutism.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SceneMenuController : MonoBehaviour
-{
-    public static SceneMenuController Instance;
-    public GameObject lessonDetailPanel;
-    public LessonDetailUI lessonDetailUI;
-    [SerializeField] private TopicUI[] topics;
-    public LessonConfig config;
-    
-    public Lesson Lesson { get; set; }
-    private Action<object> ShowLessonDetails;
-    
-    private void Awake()
+namespace VRAutism.UI{
+    public class SceneMenuController : MonoBehaviour
     {
-        Debug.LogWarning("scene controller");
-        Instance = this;
-        lessonDetailPanel.SetActive(false);
-
-        ShowLessonDetails = param => ShowLessonDetail((Lesson)param);
-        this.SubscribeListener(EventID.ShowLessonDetail, ShowLessonDetails);
+        public static SceneMenuController Instance;
+        public GameObject lessonDetailPanel;
+        public LessonDetailUI lessonDetailUI;
+        [SerializeField] private TopicUI[] topics;
+        public LessonConfig config;
         
-        Init();
-    }
-
-    private void OnDestroy()
-    {
-        this.UnsubscribeListener(EventID.ShowLessonDetail, ShowLessonDetails);
-    }
-
-    private void Init()
-    {
-        for (var i = 0; i < topics.Length; i++)
+        public Lesson Lesson { get; set; }
+        private Action<object> ShowLessonDetails;
+        
+        private void Awake()
         {
-            topics[i].Init(config.topics.Find(x => x.id == i));
+            Debug.LogWarning("scene controller");
+            Instance = this;
+            lessonDetailPanel.SetActive(false);
+
+            ShowLessonDetails = param => ShowLessonDetail((Lesson)param);
+            this.SubscribeListener(EventID.ShowLessonDetail, ShowLessonDetails);
+            
+            Init();
         }
-    }
 
-    public void ShowLessonDetail(Lesson lesson)
-    {
-        if (lesson != null)
+        private void OnDestroy()
         {
-            Lesson = lesson;
-            lessonDetailUI.Show(lesson.lesson_name, lesson.description, lesson.cover);
+            this.UnsubscribeListener(EventID.ShowLessonDetail, ShowLessonDetails);
         }
-        else
+
+        private void Init()
         {
-            Debug.LogWarning("Lesson not found");
+            for (var i = 0; i < topics.Length; i++)
+            {
+                topics[i].Init(config.topics.Find(x => x.id == i));
+            }
+        }
+
+        public void ShowLessonDetail(Lesson lesson)
+        {
+            if (lesson != null)
+            {
+                Lesson = lesson;
+                lessonDetailUI.Show(lesson.lesson_name, lesson.description, lesson.cover);
+            }
+            else
+            {
+                Debug.LogWarning("Lesson not found");
+            }
         }
     }
 }
