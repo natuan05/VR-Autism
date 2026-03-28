@@ -60,17 +60,8 @@ namespace VRAutism.Quests
         {
             state = newState;
 
-            if (controller.bubbleQuestion != null) 
-            {
-                controller.bubbleQuestion.SetActive(state == State.Enable);
-                controller.bubbleQuestion.transform.position = posBubbleQuestion.position;
-            }
-
-            if (controller.questProgressUI != null)
-            {
-                controller.questProgressUI.gameObject.SetActive(state == State.Start);
-                controller.questProgressUI.transform.position = posProgressBar.position;
-            }
+            controller.ShowBubble(state == State.Enable, posBubbleQuestion.position);
+            controller.ShowProgressBar(state == State.Start, posProgressBar.position);
 
             if (outline) outline.enabled = newState == State.Start;
 
@@ -142,7 +133,7 @@ namespace VRAutism.Quests
             if (state != State.Start) return;
             
             progress += Time.deltaTime / duration;
-            if (controller.questProgressUI) controller.questProgressUI.SetProgress(progress);
+            controller.SetProgress(progress);
             if (progress >= 1)
             {
                 progress = 1;

@@ -1,142 +1,162 @@
-﻿using System.IO;
-using VRAutism.Core;
+using System;
+using System.IO;
+using System.Collections.Generic;
 using Firebase;
-using Firebase.Database;
+using Firebase.Firestore;
 using Firebase.Extensions;
 using UnityEngine;
 using VRAutism.Cloud.Models;
 
-
 namespace VRAutism.Cloud
 {
+    /// <summary>
+    /// Manages all Firebase read/write for the VR app.
+    /// 
+    /// Architecture:
+    ///   - Cloud Firestore: Persistent storage (sessions, quest_logs). Written ONCE in bulk at session end.
+    ///   - Realtime DB:     Reserved for Phase 2 live features (pairing codes, remote commands).
+    ///
+    /// Data flow:
+    ///   Gameplay → AccumulateQuestLog() [RAM] → SaveSession() → Firestore (one batch write)
+    /// </summary>
     public class FirebaseManager : MonoBehaviour
     {
-        public static FirebaseManager Instance;
-        private DatabaseReference dbReference;
-        private string sessionId;
+        public static FirebaseManager Instance { get; private set; }
+
+        private FirebaseFirestore _db;
+        private bool _isReady;
+
+        // In-memory accumulator — populated during the lesson, written at end
+        private SessionData _currentSession;
 
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
             Instance = this;
+
             FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
             {
                 if (task.Result == DependencyStatus.Available)
                 {
-                    dbReference = FirebaseDatabase.DefaultInstance.RootReference;
-                    UploadLessonTimeData();
-                    Debug.Log("Firebase đã được khởi tạo thành công!");
+                    _db = FirebaseFirestore.DefaultInstance;
+                    _isReady = true;
+                    Debug.Log("[FirebaseManager] Firestore ready.");
                 }
                 else
                 {
-                    Debug.LogError("Firebase không thể khởi tạo: " + task.Result);
+                    Debug.LogError("[FirebaseManager] Firebase init failed: " + task.Result);
                 }
             });
-            
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        // SESSION LIFECYCLE
+        // ─────────────────────────────────────────────────────────────────────
+
+        /// <summary>Call this at lesson start to initialise the in-memory session container.</summary>
+        public void BeginSession(string lessonId, string lessonName, string levelName, int levelIndex, string lessonType)
+        {
+            _currentSession = new SessionData
+            {
+                session_id       = Guid.NewGuid().ToString(),
+                device_id        = SystemInfo.deviceUniqueIdentifier,
+                lesson_id        = lessonId,
+                lesson_name      = lessonName,
+                level_name       = levelName,
+                level_index      = levelIndex,
+                type             = lessonType,
+                start_time       = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss"),
+                completion_status = "aborted",   // default; overwritten on success
+                quest_logs       = new List<QuestLogData>()
+            };
+
+            Debug.Log($"[FirebaseManager] Session started: {_currentSession.session_id}");
+        }
+
+        /// <summary>
+        /// Accumulates a completed quest's data into RAM.
+        /// Called by QuestController after each quest finishes.
+        /// </summary>
+        public void AccumulateQuestLog(QuestLogData log)
+        {
+            if (_currentSession == null)
+            {
+                Debug.LogError("[FirebaseManager] AccumulateQuestLog called before BeginSession.");
+                return;
+            }
+            _currentSession.quest_logs.Add(log);
+        }
+
+        /// <summary>
+        /// Finalises and bulk-writes the entire session to Firestore.
+        /// Call this once at the very end of the lesson.
+        /// </summary>
+        public void SaveSession(string completionStatus, int score, double durationSeconds)
+        {
+            if (!_isReady || _currentSession == null)
+            {
+                Debug.LogError("[FirebaseManager] SaveSession called before Firebase was ready or BeginSession was called.");
+                return;
+            }
+
+            _currentSession.finish_time       = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+            _currentSession.duration          = durationSeconds;
+            _currentSession.completion_status = completionStatus;
+            _currentSession.score             = score;
+
+            // Convert to Dictionary for Firestore (Firestore SDK serialises Dictionary directly)
+            var docRef = _db
+                .Collection(FirebasePaths.Sessions)
+                .Document(_currentSession.session_id);
+
+            docRef.SetAsync(_currentSession).ContinueWithOnMainThread(task =>
+            {
+                if (task.IsCompletedSuccessfully)
+                {
+                    Debug.Log($"[FirebaseManager] Session saved: {_currentSession.session_id}");
+                    _currentSession = null;
+                }
+                else
+                {
+                    Debug.LogError("[FirebaseManager] Failed to save session: " + task.Exception);
+                }
+            });
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // LEGACY SUPPORT (kept for backward compatibility, remove after full migration)
+        // ─────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Reads an existing local JSON file and uploads it as a session document.
+        /// Used as a fallback while TimeManager is still writing the local file.
+        /// </summary>
         public void UploadLessonTimeData()
         {
-            string filePath = Application.persistentDataPath + "/Data/Saved/test.txt";
-
-            if (File.Exists(filePath))
+            string filePath = LocalPaths.SessionData;
+            if (!File.Exists(filePath))
             {
-                string json = File.ReadAllText(filePath);
-                AddSessionToFirebase(json);
-            }
-            else
-            {
-                Debug.LogError("File không tồn tại: " + filePath);
-            }
-        }
-
-
-        private void AddSessionToFirebase(string jsonData)
-        {
-            DatabaseReference sessionsRef = dbReference.Child("sessions");
-
-            DatabaseReference newSessionRef = sessionsRef.Push();
-            // Lưu lại id
-            sessionId = newSessionRef.Key;
-
-            newSessionRef.SetRawJsonValueAsync(jsonData).ContinueWithOnMainThread(uploadTask =>
-            {
-                if (uploadTask.IsCompleted)
-                {
-                    Debug.Log("Session mới đã được thêm vào Firebase với ID (sessionId): " + sessionId);
-                }
-                else
-                {
-                    Debug.LogError("Lỗi khi thêm session mới: " + uploadTask.Exception);
-                }
-            });
-        }
-
-
-        public void UpdateQuestData(string field, object value, int index)
-        {
-            if (string.IsNullOrEmpty(sessionId))
-            {
-                Debug.LogError("Không có sessionId để cập nhật dữ liệu!");
+                Debug.LogError("[FirebaseManager] Local session file not found: " + filePath);
                 return;
             }
 
-            DatabaseReference sessionRef = dbReference.Child("sessions").Child(sessionId).Child("quest_list").Child(index.ToString());
+            string json = File.ReadAllText(filePath);
+            string tempId = Guid.NewGuid().ToString();
 
-            sessionRef.Child(field).SetValueAsync(value).ContinueWithOnMainThread(task =>
-            {
-                if (task.IsCompleted)
-                {
-                    Debug.Log($"Dữ liệu {field} đã được cập nhật thành công với giá trị: {value}");
-                }
-                else
-                {
-                    Debug.LogError($"Lỗi khi cập nhật {field}: {task.Exception}");
-                }
-            });
-        }
-
-        public void UpdateSessionData(string field, object value)
-        {
-            if (string.IsNullOrEmpty(sessionId))
-            {
-                Debug.LogError("Không có sessionId để cập nhật dữ liệu!");
-                return;
-            }
-
-            DatabaseReference sessionRef = dbReference.Child("sessions").Child(sessionId);
-
-            sessionRef.Child(field).SetValueAsync(value).ContinueWithOnMainThread(task =>
-            {
-                if (task.IsCompleted)
-                {
-                    Debug.Log($"Dữ liệu {field} đã được cập nhật thành công với giá trị: {value}");
-                }
-                else
-                {
-                    Debug.LogError($"Lỗi khi cập nhật {field}: {task.Exception}");
-                }
-            });
-        }
-
-
-        public void PushNewSkillData(SkillsData skill, int index)
-        {
-            string path = $"sessions/{sessionId}/skills/{index}";
-
-            string jsonData = JsonUtility.ToJson(skill);
-
-            FirebaseDatabase.DefaultInstance.RootReference.Child(path).SetRawJsonValueAsync(jsonData)
-                .ContinueWith(task =>
-                {
-                    if (task.IsCompleted)
-                    {
-                        UnityEngine.Debug.Log($"Skill {index} đã được lưu lên Firebase!");
-                    }
-                    else
-                    {
-                        UnityEngine.Debug.LogError("Lỗi khi push dữ liệu Skills lên Firebase: " + task.Exception);
-                    }
-                });
+            _db.Collection(FirebasePaths.Sessions)
+               .Document(tempId)
+               .SetAsync(new { raw_json = json, uploaded_at = DateTime.Now.ToString("O") })
+               .ContinueWithOnMainThread(task =>
+               {
+                   if (task.IsCompletedSuccessfully)
+                       Debug.Log("[FirebaseManager] Legacy upload complete: " + tempId);
+                   else
+                       Debug.LogError("[FirebaseManager] Legacy upload failed: " + task.Exception);
+               });
         }
     }
 }

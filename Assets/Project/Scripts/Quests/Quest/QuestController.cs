@@ -2,19 +2,16 @@ using System;
 using System.Linq;
 using VRAutism.Core;
 using UnityEngine;
-using VRAutism.Cloud;
-using VRAutism.Cloud.Models;
 
 namespace VRAutism.Quests
 {
     public class QuestController: MonoBehaviour
     {
         [SerializeField] private TimeManager timeManager;
-        [SerializeField] private FirebaseManager firebaseManager;
         [SerializeField] private Quest[] quests;
-        [SerializeField] public QuestProgressUI questProgressUI;
-        [SerializeField] public GameObject bubbleQuestion;
-        [SerializeField] public GameObject congratulationUI;
+        [SerializeField] private QuestProgressUI questProgressUI;
+        [SerializeField] private GameObject bubbleQuestion;
+        [SerializeField] private GameObject congratulationUI;
         [SerializeField] private BooleanVariable isConditionMet;
         [SerializeField] private DoubleVariable timeVariable;
 
@@ -38,6 +35,29 @@ namespace VRAutism.Quests
             curQuestId = 0;
         }
         
+        public void ShowBubble(bool show, Vector3 position)
+        {
+            if (bubbleQuestion != null)
+            {
+                bubbleQuestion.SetActive(show);
+                if (show) bubbleQuestion.transform.position = position;
+            }
+        }
+
+        public void ShowProgressBar(bool show, Vector3 position)
+        {
+            if (questProgressUI != null)
+            {
+                questProgressUI.gameObject.SetActive(show);
+                if (show) questProgressUI.transform.position = position;
+            }
+        }
+
+        public void SetProgress(float value)
+        {
+            if (questProgressUI != null) questProgressUI.SetProgress(value);
+        }
+
         public string[] GetAllQuestNames()
         {
             return questNames;
@@ -58,17 +78,11 @@ namespace VRAutism.Quests
         {
             if (timeManager)
             {
-                var finishedTime = TimeUtils.CurrentSecond - timeVariable.Value;
-
-                firebaseManager.UpdateQuestData("response_time", finishedTime, curQuestId);
-                
-                timeManager.AddQuestTime(
-                    new QuestTimeData
-                    {
-                        index = curQuestId,
-                        quest_name = GetCurQuest().Name,
-                        response_time = finishedTime,
-                    });
+                timeManager.LogQuestComplete(
+                    questIndex:       curQuestId,
+                    questName:        GetCurQuest()?.Name ?? "",
+                    completionStatus: "success"
+                );
             }
             
             if (curQuestId >= quests.Length - 1)
@@ -87,6 +101,8 @@ namespace VRAutism.Quests
         private void StartNewQuest()
         {
             timeVariable.Value = TimeUtils.CurrentSecond;
+            timeManager?.StartQuestTime();   // stamp _questStartSecond before quest begins
+
             var quest = GetCurQuest();
             
             if (quest is null)

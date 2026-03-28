@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="erd_chen" name="5.1 ERD - Chen Notation">
-        <mxGraphModel dx="1083" dy="2744" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2339" pageHeight="1654" background="#ffffff" math="0" shadow="0">
+        <mxGraphModel dx="1833" dy="3561" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2339" pageHeight="1654" background="#ffffff" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -278,7 +278,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="rel_ses_ql" value="ghi nhận" style="rhombus;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#000000;strokeWidth=2;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="640" y="1020" width="140" height="80" as="geometry"/>
+                    <mxGeometry x="700" y="1020" width="140" height="80" as="geometry"/>
                 </mxCell>
                 <mxCell id="e_ses_rel_ql" value="1" style="edgeStyle=none;strokeColor=#000000;fontSize=12;fontStyle=1;fontColor=#000000;labelBackgroundColor=none;" parent="1" source="ent_sessions" target="rel_ses_ql" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -425,7 +425,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_il_trig" value="triggered_by" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="1310" y="800" width="120" height="50" as="geometry"/>
+                    <mxGeometry x="1300" y="710" width="120" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="e_il_trig" style="edgeStyle=none;fontColor=#000000;strokeColor=#000000;labelBackgroundColor=none;" parent="1" source="ent_interventions" target="attr_il_trig" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -574,7 +574,7 @@
                 <mxCell id="attr_aa_childid" value="child_id" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
                     <mxGeometry x="1060" y="1280" width="100" height="50" as="geometry"/>
                 </mxCell>
-                <mxCell id="e_aa_childid" style="edgeStyle=none;fontColor=#000000;strokeColor=#000000;labelBackgroundColor=none;" edge="1" parent="1" source="ent_autoalerts" target="attr_aa_childid">
+                <mxCell id="e_aa_childid" style="edgeStyle=none;fontColor=#000000;strokeColor=#000000;labelBackgroundColor=none;" parent="1" source="ent_autoalerts" target="attr_aa_childid" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_aa_autodetect" value="auto_detected" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">

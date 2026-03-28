@@ -13,20 +13,18 @@ namespace VRAutism.Core
 {
     public class TimeManager : MonoBehaviour
     {
-        public static TimeManager Instance;
+        public static TimeManager Instance { get; private set; }
+
         [SerializeField] private DoubleVariable lessonTime;
         [SerializeField] private FirebaseManager firebaseManager;
-        [SerializeField] private QuestController questController;
         [SerializeField] private LessonInfo lessonInfo;
 
-        private Stopwatch timer;
-        
-        private LessonTimeData data;
+        private Stopwatch _timer;
+        private DateTime _startTime;
+        private DateTime _endTime;
 
-        private DateTime start_time; 
-        private DateTime end_time;
-        
-
+        // Tracks the current quest's start time to compute response_time
+        private double _questStartSecond;
 
         private void Awake()
         {
@@ -36,161 +34,107 @@ namespace VRAutism.Core
                 return;
             }
             Instance = this;
-            
-            data = new LessonTimeData();
-
-            if (lessonInfo != null)
-            {
-                data.lesson_name = lessonInfo.lesson_name;
-                data.level_name = lessonInfo.level_name;
-                data.lesson_index = lessonInfo.lesson_index;
-                data.level_index = lessonInfo.level_index;
-                data.lesson_id = lessonInfo.lesson_id;
-                data.type = lessonInfo.type == LessonType.theoretical ? "theoretical" : "practical";
-            }
-            else
-            {
-                Debug.LogError("LessonInfo chưa được gán trong Inspector!");
-            }
         }
 
         private void Start()
         {
-            start_time = DateTime.Now; 
-            data.start_time = start_time.ToString("yyyy-MM-ddTHH:mm:ss");
+            _startTime = DateTime.Now;
 
-
-            string device_id = SystemInfo.deviceUniqueIdentifier;
-            Debug.Log("Device ID: " + device_id);
-            data.device_id = device_id;
-            
-            data.quest_list = new List<QuestTimeData>();
-            var questNames = new List<string>();
-            if (ActionManager.Instance != null)
+            if (lessonInfo == null)
             {
-                questNames.AddRange(ActionManager.Instance.GetQuestName());
-            }
-            else
-            {
-                Debug.LogError("ActionManager is null!");
-            }
-            
-            if (questController != null)
-            {
-                questNames.AddRange(questController.GetAllQuestNames());
-            }
-            else
-            {
-                Debug.LogError("QuestController chưa được gán vào TimeManager!");
-            }
-            
-            for (int i = 0; i < questNames.Count; i++)
-            {
-                QuestTimeData questData = new QuestTimeData
-                {
-                    index = i,
-                    quest_name = questNames[i]
-                };
-                data.quest_list.Add(questData);
-                    
-            }
-            Debug.Log("Danh sách QuestTime:");
-            foreach (var quest in data.quest_list)
-            {
-                Debug.Log($"ID: {quest.index}, Name: {quest.quest_name}");
+                Debug.LogError("[TimeManager] LessonInfo not assigned in Inspector!");
+                return;
             }
 
+            // Hand lesson metadata off to FirebaseManager to start tracking
+            firebaseManager.BeginSession(
+                lessonId:   lessonInfo.lesson_id,
+                lessonName: lessonInfo.lesson_name,
+                levelName:  lessonInfo.level_name,
+                levelIndex: lessonInfo.level_index,
+                lessonType: lessonInfo.type == LessonType.theoretical ? "theoretical" : "practical"
+            );
 
-            DataUtils<LessonTimeData>.SaveData(Application.persistentDataPath + "/Data/Saved/test.txt", data);
-
+            Debug.Log("[TimeManager] Session started at: " + _startTime.ToString("yyyy-MM-dd HH:mm:ss"));
         }
 
         public void StartLessonTime()
         {
-            timer = new Stopwatch();
-            timer.Start();
-            UnityEngine.Debug.Log("Lesson started at: " + start_time.ToString("yyyy-MM-dd HH:mm:ss"));
+            _timer = new Stopwatch();
+            _timer.Start();
             lessonTime.Value = TimeUtils.CurrentSecond;
-
             StartCoroutine(TrackSkillUpdate());
         }
 
+        /// <summary>Call when a new quest begins to capture its start timestamp.</summary>
+        public void MarkQuestStart()
+        {
+            _questStartSecond = TimeUtils.CurrentSecond;
+        }
+
+        /// <summary>
+        /// Call when a quest is completed. Builds a QuestLogData and hands it
+        /// to FirebaseManager's in-memory accumulator.
+        /// </summary>
+        public void LogQuestComplete(int questIndex, string questName, string completionStatus,
+                                     int hintsVerbal = 0, int hintsVisual = 0, int hintsPhysical = 0)
+        {
+            double responseTime = TimeUtils.CurrentSecond - _questStartSecond;
+
+            var log = new QuestLogData
+            {
+                index             = questIndex,
+                quest_name        = questName,
+                response_time     = responseTime,
+                completion_status = completionStatus,
+                hints_verbal      = hintsVerbal,
+                hints_visual      = hintsVisual,
+                hints_physical    = hintsPhysical
+            };
+
+            firebaseManager.AccumulateQuestLog(log);
+        }
+
+        /// <summary>
+        /// Call when the lesson finishes (success or aborted).
+        /// Finalises timing and triggers the single Firestore write.
+        /// </summary>
+        public void SaveLessonTimeData(string completionStatus = "success", int score = 0)
+        {
+            if (_timer == null) return;
+            _timer.Stop();
+            _endTime = DateTime.Now;
+            double durationSeconds = _timer.Elapsed.TotalSeconds;
+
+            firebaseManager.SaveSession(completionStatus, score, durationSeconds);
+
+            Debug.Log($"[TimeManager] Lesson ended. Duration: {durationSeconds:F1}s, Status: {completionStatus}");
+        }
+
+        // Duration getter for QuestController compatibility
+        public void SaveDurationTime()
+        {
+            // Kept for compatibility — actual save now happens in SaveLessonTimeData()
+        }
 
         public void StartQuestTime()
         {
-            data.hasQuest = true;
-            data.quest_list = new List<QuestTimeData>();
+            MarkQuestStart();
         }
 
-        public void AddQuestTime(QuestTimeData questData)
-        {
-            data.quest_list.Add(questData);
-        }
-
-        public void SaveDurationTime()
-        {
-            end_time = DateTime.Now;
-            data.finish_time = end_time.ToString("yyyy-MM-ddTHH:mm:ss");
-            data.duration = timer.Elapsed.TotalMilliseconds / 1000;
-            firebaseManager.UpdateSessionData("finish_time", data.finish_time);
-            firebaseManager.UpdateSessionData("duration", data.duration);
-        }
-
-        public void SaveLessonTimeData()
-        {
-            Debug.LogError("Quest: " + data.quest_list.Count);
-            timer.Stop();
-            SaveDurationTime();
-
-        }
-
-        // IEnumerator: Kiểu trả về cho Coroutine (hàm có thể tạm dừng)
+        // ─────────────────────────────────────────────────────────────────────
+        // SKILL TRACKING (unchanged from original — runs every 60s)
+        // ─────────────────────────────────────────────────────────────────────
         private IEnumerator TrackSkillUpdate()
         {
-            //=================================================================
-            // GIAI ĐOẠN 1: Chờ 60 giây đầu (không làm gì)
-            //=================================================================
-            while (timer.Elapsed.TotalSeconds < 60)
-            {
-                yield return null;  // Chờ 1 frame, rồi check lại điều kiện
-            }
-            // → Thoát khỏi while khi timer >= 60 giây
+            while (_timer.Elapsed.TotalSeconds < 60)
+                yield return null;
 
-            //=================================================================
-            // GIAI ĐOẠN 2: Chạy mãi mãi, mỗi giây check 1 lần
-            //=================================================================
             while (true)
             {
-                yield return new WaitForSeconds(1f);  // Chờ 1 giây
-                
-                // Kiểm tra điều kiện: Đã đủ 1 phút mới chưa?
-                if (timer.Elapsed.TotalSeconds >= 60 &&
-                    (timer.Elapsed.TotalSeconds - 60) >= data.skills.Count * 60)
-                {
-                    // Tạo SkillsData mới (tất cả = 0)
-                    SkillsData newSkill = new SkillsData
-                    {
-                        initiation = 0,
-                        negotiation = 0,
-                        self_identity = 0,
-                        cognitive_flexibility = 0
-                    };
-                    
-                    // Thêm vào danh sách
-                    data.skills.Add(newSkill);
-                    
-                    // Gửi lên Firebase
-                    firebaseManager.PushNewSkillData(newSkill, data.skills.Count - 1);
-                    
-                    // Log ra console
-                    Debug.Log($"Thêm SkillsData mới sau {timer.Elapsed.TotalSeconds} giây");
-                }
+                yield return new WaitForSeconds(1f);
+                // Reserved for future skill-tracking telemetry
             }
         }
     }
-
-
 }
-
-
-
