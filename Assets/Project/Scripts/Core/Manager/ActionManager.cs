@@ -1,10 +1,10 @@
-﻿using System; // Nhập thư viện chuẩn của C# (System)
-using System.Collections; // Nhập thư viện để dùng IEnumerator (cho Coroutine)
-using System.Collections.Generic; // Nhập thư viện để dùng List<T> (Danh sách)
-using VRAutism.Core; // Nhập các script tiện ích (Utils)
-using UnityEngine; // Thư viện chính của Unity (để dùng MonoBehaviour, GameObject...)
-using UnityEngine.Events; // Để dùng UnityEvent (kéo thả sự kiện trong Inspector)
-using VRAutism.Cloud;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using VRAutism.Core;
+using VRAutism.Cloud.Models;
+using UnityEngine;
+using UnityEngine.Events;
 
 // namespace: Gom nhóm code lại để tránh trùng tên với các thư viện khác
 namespace VRAutism.Core
@@ -18,12 +18,13 @@ namespace VRAutism.Core
         public static ActionManager Instance;
 
         // [SerializeField]: Cho phép biến 'private' hiển thị được trên Inspector của Unity để chỉnh sửa
-        [SerializeField] private IntVariable hintCount; // Biến lưu số lần gợi ý (dạng ScriptableObject)
-        [SerializeField] private List<ActionEvent> actionEvents; // Danh sách các hành động (Quest) cần làm theo thứ tự
+        [SerializeField] private IntVariable hintCount;
+        [SerializeField] private List<ActionEvent> actionEvents;
+        [SerializeField] private TimeManager timeManager;
 
-        private double startTime; // Biến lưu thời gian bắt đầu
-        private double endTime; // Biến lưu thời gian kết thúc
-        private int index; // Biến đếm số thứ tự event gửi data lên server
+        private double _startTime;
+        private double _endTime;
+        private int _index;
 
         // Awake: Hàm chạy đầu tiên khi GameObject được khởi tạo (trước Start)
         void Awake()
@@ -36,7 +37,7 @@ namespace VRAutism.Core
         {
             // StartCoroutine: Bắt đầu một luồng chạy song song (để xử lý việc chờ đợi theo thời gian)
             StartCoroutine(ActionLoop());
-            index = 0; // Đặt lại chỉ số nhiệm vụ về 0
+            _index = 0;
         }
 
         // Hàm trả về danh sách tên các nhiệm vụ (Quest)
@@ -64,51 +65,38 @@ namespace VRAutism.Core
                 Debug.Log("[Debug] <color=#00ff48>Event </color> <color=#ffea00>" + actionEvent.name + "</color> is starting...");
                 
                 // ?.: Toán tử Null-check. Nếu onStart không null thì mới Invoke (chạy)
-                actionEvent.onStart?.Invoke(); 
+                actionEvent.onStart?.Invoke();
 
-                startTime = TimeUtils.CurrentSecond; // Ghi lại giờ bắt đầu
-                hintCount.Value = 0; // Reset số gợi ý về 0
-                
-                // yield return WaitForSeconds: Tạm dừng code tại đây trong 'duration' giây rồi mới chạy tiếp
+                _startTime = TimeUtils.CurrentSecond;
+                hintCount.Value = 0;
+
                 yield return new WaitForSeconds(actionEvent.duration);
 
-                // Nếu có điều kiện hoàn thành (isConditionMet)
                 if (actionEvent.isConditionMet is not null)
-                {
-                    // yield return WaitUntil: Tạm dừng code MÃI MÃI cho đến khi điều kiện thành True
-                    // () => ... : Biểu thức Lambda
                     yield return new WaitUntil(() => actionEvent.isConditionMet.Value);
-                }
 
-                actionEvent.onFinished?.Invoke(); // Chạy các sự kiện khi kết thúc (ví dụ: hiện chúc mừng)
-                endTime = TimeUtils.CurrentSecond; // Ghi lại giờ kết thúc
+                actionEvent.onFinished?.Invoke();
+                _endTime = TimeUtils.CurrentSecond;
 
-                // Nếu action này yêu cầu gửi báo cáo lên mạng
                 if (actionEvent.onSendData)
                 {
-                    if (FirebaseManager.Instance is null) // Kiểm tra xem Firebase đã sẵn sàng chưa
+                    var log = new QuestLogData
                     {
-                        Debug.LogError("Firebase is null!"); // Báo lỗi đỏ nếu chưa có
-                    }
+                        index             = _index,
+                        quest_name        = actionEvent.name,
+                        response_time     = _endTime - _startTime,
+                        completion_status = "success",
+                        hints_verbal      = hintCount.Value,
+                        hints_visual      = 0,
+                        hints_physical    = 0
+                    };
+
+                    if (FirebaseManager.Instance != null)
+                        FirebaseManager.Instance.AccumulateQuestLog(log);
                     else
-                    {
-                        // Gửi thời gian hoàn thành (endTime - startTime) lên server
-                        FirebaseManager.Instance.UpdateQuestData("response_time", endTime - startTime, index);
-                        // Gửi số lần dùng gợi ý lên server
-                        FirebaseManager.Instance.UpdateQuestData("hint_count", hintCount.Value, index);
-                    }
+                        Debug.LogError("[ActionManager] FirebaseManager not ready.");
 
-                    index++; // Tăng số thứ tự để chuẩn bị cho nhiệm vụ sau
-                }
-
-                // Lưu tổng thời gian học (Backup)
-                if (TimeManager.Instance is null)
-                {
-                    Debug.LogError("TimeManager is null!");
-                }
-                else
-                {
-                    TimeManager.Instance.SaveDurationTime();
+                    _index++;
                 }
             }
             
