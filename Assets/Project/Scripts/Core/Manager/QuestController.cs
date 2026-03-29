@@ -22,7 +22,11 @@ namespace VRAutism.Quests
         {
             foreach (var quest in quests)
             {
-                quest.Init(this);
+                quest.Init();
+                quest.RequestShowBubble += ShowBubble;
+                quest.RequestShowProgressBar += ShowProgressBar;
+                quest.RequestSetProgress += SetProgress;
+                quest.OnQuestCompleted += OnCompleteQuest;
             }
 
             questNames = quests.Where(q => q.IsSendData).Select(q => q.Name).ToArray();
@@ -113,6 +117,17 @@ namespace VRAutism.Quests
                 quest.SetState(Quest.State.Enable);
             }
         }
-        
+
+        private void OnDestroy()
+        {
+            foreach (var quest in quests)
+            {
+                if (quest == null) continue;
+                quest.RequestShowBubble -= ShowBubble;
+                quest.RequestShowProgressBar -= ShowProgressBar;
+                quest.RequestSetProgress -= SetProgress;
+                quest.OnQuestCompleted -= OnCompleteQuest;
+            }
+        }
     }
 }

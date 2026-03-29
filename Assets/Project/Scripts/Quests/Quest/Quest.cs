@@ -35,7 +35,13 @@ namespace VRAutism.Quests
         public int Id => id;
         public string Name => questName;
         public bool IsSendData => isSendData;
-        private QuestController controller;
+        
+        // Observer Pattern Actions
+        public Action<bool, Vector3> RequestShowBubble;
+        public Action<bool, Vector3> RequestShowProgressBar;
+        public Action<float> RequestSetProgress;
+        public Action OnQuestCompleted;
+        
         private State state;
         private float progress;
 
@@ -49,9 +55,8 @@ namespace VRAutism.Quests
             Completed
         }
         
-        public void Init(QuestController questController)
+        public void Init()
         {
-            controller = questController;
             state = State.Disable;
             if (outline) outline.enabled = false;
         }
@@ -60,8 +65,8 @@ namespace VRAutism.Quests
         {
             state = newState;
 
-            controller.ShowBubble(state == State.Enable, posBubbleQuestion.position);
-            controller.ShowProgressBar(state == State.Start, posProgressBar.position);
+            RequestShowBubble?.Invoke(state == State.Enable, posBubbleQuestion.position);
+            RequestShowProgressBar?.Invoke(state == State.Start, posProgressBar.position);
 
             if (outline) outline.enabled = newState == State.Start;
 
@@ -73,7 +78,7 @@ namespace VRAutism.Quests
             if (state == State.Completed)
             {
                 onQuestFinished?.Invoke();
-                controller.OnCompleteQuest();
+                OnQuestCompleted?.Invoke();
             }
 
             if (state == State.Enable)
@@ -133,14 +138,12 @@ namespace VRAutism.Quests
             if (state != State.Start) return;
             
             progress += Time.deltaTime / duration;
-            controller.SetProgress(progress);
+            RequestSetProgress?.Invoke(progress);
             if (progress >= 1)
             {
                 progress = 1;
                 SetState(State.Completed);
             }
-            
-            
             
         }
     }
