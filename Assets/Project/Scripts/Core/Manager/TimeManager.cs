@@ -62,7 +62,6 @@ namespace VRAutism.Core
             _timer = new Stopwatch();
             _timer.Start();
             lessonTime.Value = TimeUtils.CurrentSecond;
-            StartCoroutine(TrackSkillUpdate());
         }
 
         /// <summary>Call when a new quest begins to capture its start timestamp.</summary>
@@ -110,30 +109,9 @@ namespace VRAutism.Core
             Debug.Log($"[TimeManager] Lesson ended. Duration: {durationSeconds:F1}s, Status: {completionStatus}");
         }
 
-        // Duration getter for QuestController compatibility
-        public void SaveDurationTime()
-        {
-            // Kept for compatibility — actual save now happens in SaveLessonTimeData()
-        }
-
         public void StartQuestTime()
         {
             MarkQuestStart();
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
-        // SKILL TRACKING (unchanged from original — runs every 60s)
-        // ─────────────────────────────────────────────────────────────────────
-        private IEnumerator TrackSkillUpdate()
-        {
-            while (_timer.Elapsed.TotalSeconds < 60)
-                yield return null;
-
-            while (true)
-            {
-                yield return new WaitForSeconds(1f);
-                // Reserved for future skill-tracking telemetry
-            }
         }
     }
 }

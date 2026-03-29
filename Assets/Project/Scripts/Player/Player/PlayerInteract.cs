@@ -9,7 +9,6 @@ public class PlayerInteract : MonoBehaviour
     private void Update()
     {
         var colliderArray = Physics.OverlapSphere(transform.position, interactRange);
-        var showChatInteract = false;
-        
+        // var showChatInteract = false; // TODO: Implement interaction logic
     }
 }

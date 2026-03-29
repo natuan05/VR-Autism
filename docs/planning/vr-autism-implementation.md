@@ -4,25 +4,11 @@
 
 Do Web Dashboard sẽ là một project tách biệt, tập tài liệu này sẽ **chỉ tập trung vào những việc cần làm trên Unity (VR)**, cách làm cụ thể, và vạch rõ những gì làm được ngay (song song) so với những gì cần đợi Web.
 
+> ✅ **Task 1.1 & 1.2 đã hoàn thành.** Xem chi tiết kiến trúc hiện tại trong `WALKTHROUGH.md`.
+
 ---
 
-## 🟢 GIAI ĐOẠN 1: ĐỘC LẬP TÁC CHIẾN (Có thể làm ngay, 0% phụ thuộc Web)
-
-Giai đoạn này tập trung vào dọn dẹp nợ kỹ thuật và thiết lập luồng cơ sở dữ liệu mới. Unity tự xử lý 100%.
-
-### Task 1.1: Refactor Kiến trúc Cốt lõi (Code Refactoring)
-*Làm theo đúng tài liệu `CODE_REFACTOR_PLAN.md`.*
-* **Cần làm gì:** 
-  - Quy hoạch lại Singleton (`GameManager`, `TimeManager`) và diệt Dead code.
-  - Phân chia đúng `namespace` (`VRAutism.Core`, `VRAutism.Cloud`, v.v.).
-  - Tách Data Models ra các class riêng.
-* **Làm như thế nào:** Sửa trực tiếp các file `.cs` tương ứng, sử dụng Visual Studio/Rider. **Tuyệt đối không** dùng Windows Explorer đổi tên file tránh mất file `.meta` của Unity. Đảm bảo Console Unity không có lỗi (0 errors).
-
-### Task 1.2: Refactor Firebase & Firestore Architecture
-* **Cần làm gì:** Chuyển đổi cách VR App lưu dữ liệu từ việc hardcode chuỗi (string) sang dùng biến hằng, và chuyển từ Realtime Database sang Model Hybrid (Firestore cho dữ liệu lâu dài).
-* **Làm như thế nào:** 
-  - Tạo class tĩnh `FirebasePaths.cs` lưu trữ schema.
-  - Sửa đổi `FirebaseManager.cs`. Thay vì push thẳng từng object lên RTDB như trước, giờ sẽ dùng SDK Cloud Firestore để lưu `sessions` và `quest_logs` khi hoàn thành bài học.
+## 🟢 GIAI ĐOẠN 1: CÒN LẠI
 
 ### Task 1.3: Nâng cấp Hệ thống Thu thập Dữ liệu (Telemetry)
 * **Cần làm gì:** Ghi nhận thêm Gaze (hướng mắt), Head Rotation (xoay đầu) thay vì chỉ lưu Response Time và Hint Count.

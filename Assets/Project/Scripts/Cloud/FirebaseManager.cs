@@ -126,37 +126,5 @@ namespace VRAutism.Cloud
                 }
             });
         }
-
-        // ─────────────────────────────────────────────────────────────────────
-        // LEGACY SUPPORT (kept for backward compatibility, remove after full migration)
-        // ─────────────────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Reads an existing local JSON file and uploads it as a session document.
-        /// Used as a fallback while TimeManager is still writing the local file.
-        /// </summary>
-        public void UploadLessonTimeData()
-        {
-            string filePath = LocalPaths.SessionData;
-            if (!File.Exists(filePath))
-            {
-                Debug.LogError("[FirebaseManager] Local session file not found: " + filePath);
-                return;
-            }
-
-            string json = File.ReadAllText(filePath);
-            string tempId = Guid.NewGuid().ToString();
-
-            _db.Collection(FirebasePaths.Sessions)
-               .Document(tempId)
-               .SetAsync(new { raw_json = json, uploaded_at = DateTime.Now.ToString("O") })
-               .ContinueWithOnMainThread(task =>
-               {
-                   if (task.IsCompletedSuccessfully)
-                       Debug.Log("[FirebaseManager] Legacy upload complete: " + tempId);
-                   else
-                       Debug.LogError("[FirebaseManager] Legacy upload failed: " + task.Exception);
-               });
-        }
     }
 }

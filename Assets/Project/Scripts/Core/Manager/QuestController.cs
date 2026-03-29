@@ -12,7 +12,6 @@ namespace VRAutism.Quests
         [SerializeField] private GameObject bubbleQuestion;
         [SerializeField] private GameObject congratulationUI;
         [SerializeField] private BooleanVariable isConditionMet;
-        [SerializeField] private DoubleVariable timeVariable;
 
 
         private int curQuestId;
@@ -68,7 +67,9 @@ namespace VRAutism.Quests
 
         private Quest GetCurQuest()
         {
-            return quests.FirstOrDefault(x => x.Id == curQuestId);
+            if (curQuestId >= 0 && curQuestId < quests.Length)
+                return quests[curQuestId];
+            return null;
         }
 
         public void StartRunningQuest()
@@ -103,7 +104,6 @@ namespace VRAutism.Quests
 
         private void StartNewQuest()
         {
-            timeVariable.Value = TimeUtils.CurrentSecond;
             TimeManager.Instance?.StartQuestTime();   // stamp _questStartSecond before quest begins
 
             var quest = GetCurQuest();

@@ -1,4 +1,4 @@
-﻿using VRAutism.Core;
+using VRAutism.Core;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,9 +32,9 @@ public class QuizController : MonoBehaviour
 
     private void Awake()
     {
-        questionCollection = FindObjectOfType<QuestionCollection>();
-        uiController = FindObjectOfType<QuizUIController>();
-        soundManager = FindObjectOfType<SoundManager>();
+        questionCollection = FindFirstObjectByType<QuestionCollection>();
+        uiController = FindFirstObjectByType<QuizUIController>();
+        soundManager = FindFirstObjectByType<SoundManager>();
     }
 
     private void Start()

@@ -65,8 +65,11 @@ namespace VRAutism.Quests
         {
             state = newState;
 
-            RequestShowBubble?.Invoke(state == State.Enable, posBubbleQuestion.position);
-            RequestShowProgressBar?.Invoke(state == State.Start, posProgressBar.position);
+            Vector3 bubblePos = posBubbleQuestion != null ? posBubbleQuestion.position : Vector3.zero;
+            Vector3 progressPos = posProgressBar != null ? posProgressBar.position : Vector3.zero;
+
+            RequestShowBubble?.Invoke(state == State.Enable, bubblePos);
+            RequestShowProgressBar?.Invoke(state == State.Start, progressPos);
 
             if (outline) outline.enabled = newState == State.Start;
 
@@ -95,19 +98,15 @@ namespace VRAutism.Quests
 
             if (state == State.Enable)
             {
-                if (questType == QuestType.Condition)
+                switch (questType)
                 {
-                    
-                }
-                
-                if (questType == QuestType.Touch)
-                {
-                    SetState(State.Completed);
-                }
-
-                if (questType == QuestType.HoldTouch)
-                {
-                    SetState(State.Start);
+                    case QuestType.Touch:
+                        SetState(State.Completed);
+                        break;
+                    case QuestType.HoldTouch:
+                        SetState(State.Start);
+                        break;
+                    // QuestType.Condition ignored (handled via WaitUntil elsewhere)
                 }
             }
         }

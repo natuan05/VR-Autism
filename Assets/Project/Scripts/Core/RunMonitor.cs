@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using VRAutism.Core;
@@ -49,7 +49,7 @@ public class RunMonitor : BaseMono
 
     public void ExitScene()
     {
-        var exitScene = FindObjectOfType<ExitScene>(true);
+        var exitScene = FindFirstObjectByType<ExitScene>(FindObjectsInactive.Include);
         if (exitScene == null) return;
         exitScene.ShowUp();
     }
