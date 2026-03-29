@@ -16,7 +16,6 @@ namespace VRAutism.Core
         public static TimeManager Instance { get; private set; }
 
         [SerializeField] private DoubleVariable lessonTime;
-        [SerializeField] private FirebaseManager firebaseManager;
         [SerializeField] private LessonInfo lessonInfo;
 
         private Stopwatch _timer;
@@ -47,7 +46,7 @@ namespace VRAutism.Core
             }
 
             // Hand lesson metadata off to FirebaseManager to start tracking
-            firebaseManager.BeginSession(
+            FirebaseManager.Instance.BeginSession(
                 lessonId:   lessonInfo.lesson_id,
                 lessonName: lessonInfo.lesson_name,
                 levelName:  lessonInfo.level_name,
@@ -92,7 +91,7 @@ namespace VRAutism.Core
                 hints_physical    = hintsPhysical
             };
 
-            firebaseManager.AccumulateQuestLog(log);
+            FirebaseManager.Instance.AccumulateQuestLog(log);
         }
 
         /// <summary>
@@ -106,7 +105,7 @@ namespace VRAutism.Core
             _endTime = DateTime.Now;
             double durationSeconds = _timer.Elapsed.TotalSeconds;
 
-            firebaseManager.SaveSession(completionStatus, score, durationSeconds);
+            FirebaseManager.Instance.SaveSession(completionStatus, score, durationSeconds);
 
             Debug.Log($"[TimeManager] Lesson ended. Duration: {durationSeconds:F1}s, Status: {completionStatus}");
         }

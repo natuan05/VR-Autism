@@ -7,7 +7,6 @@ namespace VRAutism.Quests
 {
     public class QuestController: MonoBehaviour
     {
-        [SerializeField] private TimeManager timeManager;
         [SerializeField] private Quest[] quests;
         [SerializeField] private QuestProgressUI questProgressUI;
         [SerializeField] private GameObject bubbleQuestion;
@@ -76,9 +75,9 @@ namespace VRAutism.Quests
 
         public void OnCompleteQuest()
         {
-            if (timeManager)
+            if (TimeManager.Instance)
             {
-                timeManager.LogQuestComplete(
+                TimeManager.Instance.LogQuestComplete(
                     questIndex:       curQuestId,
                     questName:        GetCurQuest()?.Name ?? "",
                     completionStatus: "success"
@@ -101,7 +100,7 @@ namespace VRAutism.Quests
         private void StartNewQuest()
         {
             timeVariable.Value = TimeUtils.CurrentSecond;
-            timeManager?.StartQuestTime();   // stamp _questStartSecond before quest begins
+            TimeManager.Instance?.StartQuestTime();   // stamp _questStartSecond before quest begins
 
             var quest = GetCurQuest();
             

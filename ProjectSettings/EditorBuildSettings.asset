@@ -6,34 +6,34 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Project/Scenes/Scenes/GameMenu.unity
+    path: Assets/Project/Scenes/GameMenu.unity
     guid: 70ddb8e34f6675b4b8d08c12bd92d100
   - enabled: 1
-    path: Assets/Project/Scenes/Scenes/Farm.unity
+    path: Assets/Project/Scenes/Farm.unity
     guid: 44f7fc0301d1dd6499e111713fa9972d
   - enabled: 1
-    path: Assets/Project/Scenes/Scenes/Grassland.unity
+    path: Assets/Project/Scenes/Grassland.unity
     guid: 5a6854e1919cd5c4cbcdba0a6807bb40
   - enabled: 1
-    path: Assets/Project/Scenes/Scenes/Ocean.unity
+    path: Assets/Project/Scenes/Ocean.unity
     guid: 91aa1334e9bd27c4c8504c902f2c80fb
   - enabled: 1
-    path: Assets/Project/Scenes/Scenes/Ocean-Quiz.unity
+    path: Assets/Project/Scenes/Ocean-Quiz.unity
     guid: 7e412fda0cdab49428d0b3f4b6a40a8c
   - enabled: 1
     path: Assets/ImportedAssets/Grassland-Quizz.unity
     guid: 5b5e18c55537e014b9bc826d3283260e
   - enabled: 1
-    path: Assets/Project/Scenes/Scenes/Farm-Quiz.unity
+    path: Assets/Project/Scenes/Farm-Quiz.unity
     guid: 6a646b9e21878a14ea4602041700d249
   - enabled: 1
-    path: Assets/Project/Scenes/Scenes/Bathroom.unity
+    path: Assets/Project/Scenes/Bathroom.unity
     guid: 2871630bb34253d40aa905b4478fcfc8
   - enabled: 1
-    path: Assets/Project/Scenes/Scenes/LearnToAsk.unity
+    path: Assets/Project/Scenes/LearnToAsk.unity
     guid: 859aa9885effd3b4787a7c85e2a3d832
   - enabled: 1
-    path: Assets/Project/Scenes/Scenes/HelloFriend.unity
+    path: Assets/Project/Scenes/HelloFriend.unity
     guid: 26532d68946099949bb448966ba08d18
   - enabled: 1
     path: Assets/Scenes/LearnToAsk_2.unity

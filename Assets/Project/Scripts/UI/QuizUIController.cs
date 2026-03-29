@@ -1,4 +1,4 @@
-﻿using VRAutism.Core;
+using VRAutism.Core;
 using System;
 using System.Collections;
 using TMPro;
@@ -95,7 +95,7 @@ public class QuizUIController : MonoBehaviour
         {
             selectedButton.image.color = correctColor;
             quiz_score.Value++;
-            firebase.UpdateSessionData("score", quiz_score.Value);
+            // firebase.UpdateSessionData("score", quiz_score.Value);
             score.text = "Số câu trả lời đúng: " + quiz_score.Value;
         }
         else
