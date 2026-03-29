@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="erd_chen" name="5.1 ERD - Chen Notation">
-        <mxGraphModel dx="3275" dy="3084" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2339" pageHeight="1654" background="#ffffff" math="0" shadow="0">
+        <mxGraphModel dx="2963" dy="2607" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2339" pageHeight="1654" background="#ffffff" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -32,13 +32,13 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="rel_cen_usr" value="bao gồm" style="rhombus;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#000000;strokeWidth=2;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="260" width="140" height="80" as="geometry"/>
+                    <mxGeometry x="280" width="140" height="80" as="geometry"/>
                 </mxCell>
                 <mxCell id="e_cen_rel" value="1" style="edgeStyle=none;strokeColor=#000000;fontSize=12;fontStyle=1;fontColor=#000000;labelBackgroundColor=none;" parent="1" source="ent_centers" target="rel_cen_usr" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="ent_users" value="EXPERTS" style="rounded=0;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;fillColor=#dae8fc;strokeColor=#000000;strokeWidth=2;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="240" y="330" width="180" height="60" as="geometry"/>
+                    <mxGeometry x="260" y="310" width="180" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_usr_uid" value="uid" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=4;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
                     <mxGeometry x="200" y="200" width="100" height="50" as="geometry"/>
@@ -74,7 +74,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="ent_profiles" value="CHILD_PROFILES" style="rounded=0;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;fillColor=#dae8fc;strokeColor=#000000;strokeWidth=2;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="730" y="437.5" width="220" height="60" as="geometry"/>
+                    <mxGeometry x="730" y="447.5" width="220" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_prf_id" value="profile_id" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=4;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
                     <mxGeometry x="765" y="290" width="120" height="50" as="geometry"/>
@@ -154,7 +154,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="rel_par_exp" value="liên kết với" style="rhombus;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#000000;strokeWidth=2;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="190" y="490" width="130" height="75" as="geometry"/>
+                    <mxGeometry x="220" y="492.5" width="130" height="75" as="geometry"/>
                 </mxCell>
                 <mxCell id="e_par_rel" value="N" style="edgeStyle=none;strokeColor=#000000;fontSize=12;fontStyle=1;fontColor=#000000;labelBackgroundColor=none;" parent="1" source="ent_parents" target="rel_par_exp" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -165,7 +165,7 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="rel_par_prof" value="theo dõi&#10;tiến trình" style="rhombus;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#000000;strokeWidth=2;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="440" y="510" width="130" height="75" as="geometry"/>
+                    <mxGeometry x="485" y="550" width="130" height="75" as="geometry"/>
                 </mxCell>
                 <mxCell id="e_par_rel_prof" value="1" style="edgeStyle=none;strokeColor=#000000;fontSize=12;fontStyle=1;fontColor=#000000;labelBackgroundColor=none;" parent="1" source="ent_parents" target="rel_par_prof" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -440,16 +440,16 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="ent_sysadmin" value="SYSTEM_ADMINS" style="rounded=0;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;fillColor=#7B68EE;strokeColor=#000000;strokeWidth=2;fontColor=#ffffff;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="1065" y="-252.5" width="220" height="60" as="geometry"/>
+                    <mxGeometry x="1050" y="-252.5" width="139" height="71.5" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_sa_uid" value="uid" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=4;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="1105" y="-347.5" width="100" height="50" as="geometry"/>
+                    <mxGeometry x="1115" y="-141" width="100" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_sa_name" value="name" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="1280" y="-337.5" width="100" height="50" as="geometry"/>
+                    <mxGeometry x="1220" y="-241.75" width="100" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_sa_email" value="email" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="950" y="-317.5" width="100" height="50" as="geometry"/>
+                    <mxGeometry x="1105" y="-346" width="100" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="e_sa_uid" style="edgeStyle=none;fontColor=#000000;strokeColor=#000000;labelBackgroundColor=none;" parent="1" source="ent_sysadmin" target="attr_sa_uid" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -461,7 +461,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="rel_sa_cen" value="tạo &amp; cấp phép" style="rhombus;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#7B68EE;strokeWidth=2;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="820" y="-245" width="160" height="80" as="geometry"/>
+                    <mxGeometry x="790" y="-230" width="160" height="80" as="geometry"/>
                 </mxCell>
                 <mxCell id="e_sa_rel" value="1" style="edgeStyle=none;strokeColor=#7B68EE;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#000000;labelBackgroundColor=none;" parent="1" source="ent_sysadmin" target="rel_sa_cen" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -497,7 +497,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="rel_cen_mgr" value="có đại diện" style="rhombus;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#0d6efd;strokeWidth=2;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="650" y="-120" width="160" height="80" as="geometry"/>
+                    <mxGeometry x="640" y="-100" width="160" height="80" as="geometry"/>
                 </mxCell>
                 <mxCell id="e_cen_rel_mgr" value="1" style="edgeStyle=none;strokeColor=#0d6efd;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#000000;labelBackgroundColor=none;" parent="1" source="ent_centers" target="rel_cen_mgr" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -617,6 +617,19 @@
                 </mxCell>
                 <mxCell id="21" value="&lt;span style=&quot;font-family: Helvetica; font-size: 11px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;planned_lessons&lt;/span&gt;" style="ellipse;shape=doubleEllipse;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" vertex="1" parent="1">
                     <mxGeometry x="1065" y="275" width="130" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="rel_mgr_par" value="tạo TK" style="rhombus;whiteSpace=wrap;html=1;fontSize=11;fillColor=#fff2cc;strokeColor=#0d6efd;strokeWidth=2;fontColor=#000000;labelBackgroundColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-20" y="110" width="130" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_mgr_par_1" value="1" style="edgeStyle=none;strokeColor=#0d6efd;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#000000;labelBackgroundColor=none;" edge="1" parent="1" source="ent_manager" target="rel_mgr_par">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_mgr_par_N" value="N" style="edgeStyle=none;strokeColor=#0d6efd;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#000000;labelBackgroundColor=none;" edge="1" parent="1" source="rel_mgr_par" target="ent_parents">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="40" y="670"/>
+                        </Array>
+                    </mxGeometry>
                 </mxCell>
             </root>
         </mxGraphModel>

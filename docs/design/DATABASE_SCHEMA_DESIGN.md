@@ -31,7 +31,8 @@ erDiagram
 
     %% ── TẦNG 2: QUẢN LÝ TRUNG TÂM ────────────────────────────
     CENTER_MANAGERS ||--o{ EXPERTS : "tạo tài khoản"
-    CENTER_MANAGERS ||--o{ PARENTS : "tạo & liên kết"
+    CENTER_MANAGERS ||--o{ PARENTS : "tạo tài khoản"
+    CENTER_MANAGERS ||--o{ CHILD_PROFILES : "quản lý hồ sơ"
     CENTER_MANAGERS {
         string uid PK
         string name
@@ -40,7 +41,7 @@ erDiagram
     }
 
     %% ── TẦNG 3: CHUYÊN GIA ────────────────────────────────────
-    EXPERTS ||--o{ CHILD_PROFILES : "quản lý hồ sơ"
+    EXPERTS ||--o{ CHILD_PROFILES : "được phân công"
     EXPERTS {
         string uid PK
         string name
@@ -60,7 +61,7 @@ erDiagram
     %% ── DỮ LIỆU LÂM SÀNG ────────────────────────────────────
     CHILD_PROFILES {
         string profile_id PK
-        string expert_uid FK "Trỏ về experts (chuyên gia quản lý)"
+        string expert_uid FK "Trỏ về experts (được phân công)"
         string parent_uid FK "Trỏ về parents (optional)"
         string center_id FK "Dùng cho Firestore isolation rules"
         string display_name "Bé Nam"
@@ -72,6 +73,7 @@ erDiagram
         string diagnosis_notes
         map default_lesson_params "Thông số mặc định cho bài học"
         map alert_profile "Cấu hình Alert Control cho từng trẻ"
+        array planned_lessons "Danh sách bài học dự kiến"
     }
 
     LESSONS {
@@ -181,3 +183,28 @@ erDiagram
 ```
 
 ---
+
+### 5.3 Luồng Phân quyền & Khởi tạo Tài khoản (Provisioning Flow)
+
+Hệ thống được thiết kế theo mô hình B2B (Doanh nghiệp), do đó **tuyệt đối không cho phép đăng ký tự do (No Public Sign-up)**. Mọi tài khoản đều được cấp phát từ trên xuống dưới sử dụng Firebase Admin SDK (thông qua Cloud Functions) kết hợp **Custom Claims** để bảo mật:
+
+#### 1. Khởi tạo Trung tâm (Do System Admin thực hiện)
+- System Admin đăng nhập vào Super Admin Panel.
+- Tạo một `CENTERS` record trên Firestore.
+- Tạo tài khoản Firebase Auth cho **CENTER_MANAGER** đại diện cho trung tâm đó.
+- *Hệ thống gán ngầm:* Custom Claims `{"role": "center_manager", "center_id": "CID_123"}` vào tài khoản này.
+
+#### 2. Cấp phát nhân sự (Do Center Manager thực hiện)
+Center Manager đăng nhập vào Web Dashboard của trung tâm mình (CID_123). Manager chỉ được thao tác với dữ liệu trong vùng nội bộ của CID_123, bao gồm 2 nhóm chính:
+- **Tạo tài khoản cho EXPERTS (Giáo viên):** 
+  - Giao diện Admin gọi Cloud Function tạo User Auth $\rightarrow$ Gán Claims `{"role": "expert", "center_id": "CID_123"}` $\rightarrow$ Sinh mật khẩu tạm gửi qua email.
+- **Tạo tài khoản cho PARENTS (Phụ huynh):** 
+  - Manager cấp phát tài khoản để phụ huynh truy cập Web theo dõi tiến trình của con.
+  - Sau khi cấp, tài khoản này sẽ được gắn với một `CHILD_PROFILES` cụ thể. Gán Claims `{"role": "parent"}`.
+
+#### 3. Quản lý Hồ sơ trẻ và Phân công (Assignment)
+- **Khai báo:** Center Manager tạo mới các `CHILD_PROFILES` cho trẻ mới nhập học.
+- **Phân công (Ternary Relationship trong thiết kế):** 
+  - Center Manager chọn một trẻ $\rightarrow$ Chỉ định (Assign) cho một `EXPERTS` phụ trách. 
+  - Hành động này cập nhật trường `expert_uid` trong `CHILD_PROFILES`.
+- **Sử dụng:** `EXPERTS` đăng nhập Web hoặc Kính VR. Firebase Security Rules sẽ đọc UID của Expert và chỉ cho phép họ Read/Write lên các `CHILD_PROFILES` có `expert_uid` trùng khớp với UID của họ.
