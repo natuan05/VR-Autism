@@ -1,96 +1,103 @@
-﻿<mxfile host="65bd71144e">
+<mxfile host="65bd71144e">
     <diagram id="26IT7-ZrS0TqWXj86X6v" name="Page-1">
-        <mxGraphModel dx="1664" dy="1346" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" background="#ffffff" math="0" shadow="0">
+        <mxGraphModel dx="1899" dy="1634" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" background="#ffffff" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="sys_boundary" value="&lt;font&gt;HỆ THỐNG VR AUTISM&lt;/font&gt;" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];shape=mxgraph.lean_mapping.electronic_info_flow_edge;whiteSpace=wrap;html=1;strokeColor=#666666;fillColor=none;strokeWidth=6;fontSize=14;fontStyle=1;verticalAlign=top;labelPosition=center;align=center;labelBackgroundColor=none;fontColor=#000000;labelBorderColor=#000000;" parent="1" vertex="1">
-                    <mxGeometry x="540" y="280" width="580" height="360" as="geometry"/>
+                <mxCell id="sys_boundary" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;HỆ THỐNG VR AUTISM&lt;/font&gt;" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];shape=mxgraph.lean_mapping.electronic_info_flow_edge;whiteSpace=wrap;html=1;strokeColor=#666666;fillColor=none;strokeWidth=6;fontSize=15;fontStyle=1;verticalAlign=top;labelPosition=center;align=center;labelBackgroundColor=none;fontColor=#000000;labelBorderColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="529" y="513" width="580" height="360" as="geometry"/>
                 </mxCell>
-                <mxCell id="web_app" value="💻 Web Dashboard" style="ellipse;whiteSpace=wrap;html=1;fillColor=#0050ef;strokeColor=#001DBC;fontColor=#ffffff;fontSize=14;fontStyle=1;strokeWidth=2;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="540" y="370" width="200" height="120" as="geometry"/>
+                <mxCell id="web_app" value="💻 Web Dashboard" style="ellipse;whiteSpace=wrap;html=1;fillColor=#0050ef;strokeColor=#001DBC;fontColor=#ffffff;fontSize=15;fontStyle=1;strokeWidth=2;labelBackgroundColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="532" y="520" width="200" height="120" as="geometry"/>
                 </mxCell>
-                <mxCell id="vr_app" value="🥽 Ứng dụng VR" style="ellipse;whiteSpace=wrap;html=1;fillColor=#0050ef;strokeColor=#001DBC;fontColor=#ffffff;fontSize=14;fontStyle=1;strokeWidth=2;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="880" y="370" width="200" height="120" as="geometry"/>
+                <mxCell id="vr_app" value="🥽 Ứng dụng VR" style="ellipse;whiteSpace=wrap;html=1;fillColor=#0050ef;strokeColor=#001DBC;fontColor=#ffffff;fontSize=15;fontStyle=1;strokeWidth=2;labelBackgroundColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="948" y="520" width="200" height="120" as="geometry"/>
                 </mxCell>
-                <mxCell id="web_vr_sync" value="Đồng bộ Params &amp; Lệnh" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#666;fontSize=11;italic=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="web_app" target="vr_app" edge="1">
+                <mxCell id="web_vr_sync" value="Đồng bộ Params &amp; Lệnh" style="edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#666;fontSize=15;italic=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="web_app" target="vr_app" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="admin" value="🏫 Admin Trung tâm&#10;[Kế hoạch mở rộng]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;strokeWidth=2;dashed=1;fontSize=13;fontColor=#ffffff;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="260" y="160" width="220" height="80" as="geometry"/>
+                <mxCell id="admin" value="🏫 Quản lý Trung tâm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;strokeWidth=2;fontSize=15;fontColor=#ffffff;labelBackgroundColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="226" y="279" width="220" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="teacher" value="👨‍🏫 Chuyên gia / Giáo viên" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;strokeWidth=2;fontSize=13;fontColor=#ffffff;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="90" y="380" width="220" height="80" as="geometry"/>
+                <mxCell id="teacher" value="👨‍🏫 Chuyên gia / Giáo viên" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;strokeWidth=2;fontSize=15;fontColor=#ffffff;labelBackgroundColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="15" y="592" width="220" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="parent" value="👨‍👩‍👦 Phụ huynh" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;strokeWidth=2;fontSize=13;fontColor=#ffffff;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="80" y="560" width="220" height="80" as="geometry"/>
+                <mxCell id="parent" value="👨‍👩‍👦 Phụ huynh" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;strokeWidth=2;fontSize=15;fontColor=#ffffff;labelBackgroundColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="69" y="793" width="220" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="student" value="👦 Trẻ tự kỷ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;strokeWidth=2;fontSize=13;fontColor=#ffffff;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="1200" y="280" width="220" height="80" as="geometry"/>
+                <mxCell id="student" value="👦 Trẻ tự kỷ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;strokeWidth=2;fontSize=15;fontColor=#ffffff;labelBackgroundColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="1413" y="396" width="220" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="admin_to_web" value="Quản lý Chuyên gia &amp; Trẻ" style="dashed=1;strokeColor=#000000;fontSize=11;italic=1;endArrow=open;endFill=0;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="admin" target="web_app" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="490" y="180"/>
-                            <mxPoint x="630" y="230"/>
-                            <mxPoint x="650" y="300"/>
-                        </Array>
+                <mxCell id="sys_admin" value="👑 System Admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6a00ff;strokeColor=#3700b3;strokeWidth=2;fontSize=15;fontColor=#ffffff;labelBackgroundColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="691" y="207" width="220" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="sys_admin_to_web" value="Quản lý Hệ thống &amp; Cấp phép Trung tâm" style="dashed=1;strokeColor=#000000;fontSize=15;italic=1;endArrow=open;endFill=0;labelBackgroundColor=none;fontColor=#000000;" edge="1" parent="1" source="sys_admin" target="web_app">
+                    <mxGeometry x="-0.554" y="76" relative="1" as="geometry">
+                        <Array as="points"/>
+                        <mxPoint y="-1" as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="web_to_admin" value="Thống kê Trung tâm" style="dashed=1;strokeColor=#000000;fontSize=11;italic=1;endArrow=open;endFill=0;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="web_app" target="admin" edge="1">
-                    <mxGeometry relative="1" as="geometry">
+                <mxCell id="admin_to_web" value="Quản lý Chuyên gia &amp; Trẻ" style="dashed=1;strokeColor=#000000;fontSize=15;italic=1;endArrow=open;endFill=0;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="admin" target="web_app" edge="1">
+                    <mxGeometry x="-0.2038" y="47" relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="480" y="290"/>
-                        </Array>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="teacher_to_web" value="Thiết lập bài học&#10;Theo dõi Realtime &amp; Điều khiển" style="strokeColor=#333;fontSize=11;endArrow=block;endFill=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="teacher" target="web_app" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="460" y="350"/>
-                            <mxPoint x="550" y="380"/>
-                        </Array>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="web_to_teacher" value="Video POV&#10;Báo cáo &amp; Cảnh báo AI" style="strokeColor=#333;fontSize=11;endArrow=block;endFill=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="web_app" target="teacher" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="520" y="480"/>
-                            <mxPoint x="430" y="500"/>
-                        </Array>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="parent_to_web" value="Liên kết TK Chuyên gia&#10;Theo dõi tiến độ tóm tắt" style="strokeColor=#333;fontSize=11;endArrow=block;endFill=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="parent" target="web_app" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="390" y="610"/>
-                            <mxPoint x="560" y="530"/>
-                        </Array>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="web_to_parent" value="Báo cáo quá trình học" style="strokeColor=#333;fontSize=11;endArrow=block;endFill=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="web_app" target="parent" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="600" y="610"/>
-                            <mxPoint x="510" y="700"/>
-                        </Array>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="vr_to_student" value="Hình ảnh &amp; Âm thanh 3D" style="strokeColor=#333;fontSize=11;endArrow=block;endFill=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="vr_app" target="student" edge="1">
-                    <mxGeometry x="0.0024" relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="1030" y="380"/>
-                            <mxPoint x="1070" y="350"/>
-                            <mxPoint x="1110" y="320"/>
+                            <mxPoint x="519" y="382"/>
+                            <mxPoint x="619" y="463"/>
+                            <mxPoint x="639" y="533"/>
                         </Array>
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="student_to_vr" value="Hành vi &amp; Tương tác vật lý" style="strokeColor=#333;fontSize=11;endArrow=block;endFill=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="student" target="vr_app" edge="1">
+                <mxCell id="web_to_admin" value="Thống kê Trung tâm" style="dashed=1;strokeColor=#000000;fontSize=15;italic=1;endArrow=open;endFill=0;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="web_app" target="admin" edge="1">
+                    <mxGeometry x="0.282" y="60" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="469" y="523"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="teacher_to_web" value="Thiết lập bài học&#10;Theo dõi Realtime &amp; Điều khiển" style="strokeColor=#333;fontSize=15;endArrow=block;endFill=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="teacher" target="web_app" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="1300" y="470"/>
-                            <mxPoint x="1160" y="510"/>
+                            <mxPoint x="449" y="583"/>
+                            <mxPoint x="539" y="613"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="web_to_teacher" value="Video POV&#10;Báo cáo &amp; Cảnh báo AI" style="strokeColor=#333;fontSize=15;endArrow=block;endFill=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="web_app" target="teacher" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="509" y="713"/>
+                            <mxPoint x="419" y="733"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="parent_to_web" value="Liên kết TK Chuyên gia&#10;Theo dõi tiến độ tóm tắt" style="strokeColor=#333;fontSize=15;endArrow=block;endFill=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="parent" target="web_app" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="379" y="843"/>
+                            <mxPoint x="549" y="763"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="web_to_parent" value="Báo cáo quá trình học" style="strokeColor=#333;fontSize=15;endArrow=block;endFill=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="web_app" target="parent" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="589" y="843"/>
+                            <mxPoint x="499" y="933"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="vr_to_student" value="Hình ảnh &amp; Âm thanh 3D" style="strokeColor=#333;fontSize=15;endArrow=block;endFill=1;labelBackgroundColor=none;fontColor=#000000;exitX=0.974;exitY=0.345;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="vr_app" target="student" edge="1">
+                    <mxGeometry x="0.0024" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="student_to_vr" value="Hành vi &amp; Tương tác vật lý" style="strokeColor=#333;fontSize=15;endArrow=block;endFill=1;labelBackgroundColor=none;fontColor=#000000;" parent="1" source="student" target="vr_app" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1424" y="589"/>
+                            <mxPoint x="1289" y="703"/>
+                            <mxPoint x="1149" y="743"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>

@@ -127,7 +127,6 @@ Lưu vào: `sessions/{session_id}/auto_alerts/{alert_id}`
 | `group` | stress_overwhelm / distraction / execution_difficulty |
 | `severity` | high / medium / low |
 | `time_offset` | Giây thứ mấy trong buổi học (Float) |
-| `created_at` | Unix timestamp (ms) gốc |
 | `duration_sec` | Kéo dài bao lâu |
 | `auto_detected` | Luôn = true |
 | `suppressed` | true nếu nhóm đang OFF khi event xảy ra |

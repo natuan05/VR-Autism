@@ -54,9 +54,7 @@ erDiagram
         string uid PK
         string name
         string email
-        string linked_expert_uid FK "Chuyên gia đang phối hợp"
     }
-    PARENTS }o--|| EXPERTS : "liên kết với"
 
     %% ── DỮ LIỆU LÂM SÀNG ────────────────────────────────────
     CHILD_PROFILES {
