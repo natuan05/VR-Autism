@@ -7,24 +7,11 @@ namespace VRAutism.UI{
     public class SceneMenuController : MonoBehaviour
     {
         public static SceneMenuController Instance;
-        public GameObject lessonDetailPanel;
-        public LessonDetailUI lessonDetailUI;
-        [SerializeField] private TopicUI[] topics;
-        public LessonConfig config;
-        
-        public Lesson Lesson { get; set; }
-        private Action<object> ShowLessonDetails;
         
         private void Awake()
         {
-            Debug.LogWarning("scene controller");
+            Debug.LogWarning("[SceneMenuController] Đã thiết lập Trạm Nhận Lệnh trên màn hình Chờ VR (Dumb Terminal Mode)!");
             Instance = this;
-            lessonDetailPanel.SetActive(false);
-
-            ShowLessonDetails = param => ShowLessonDetail((Lesson)param);
-            this.SubscribeListener(EventID.ShowLessonDetail, ShowLessonDetails);
-            
-            Init();
         }
 
         private void Start()
@@ -44,33 +31,10 @@ namespace VRAutism.UI{
 
         private void OnDestroy()
         {
-            this.UnsubscribeListener(EventID.ShowLessonDetail, ShowLessonDetails);
-            
-            // Xóa theo dõi khi Object bị gỡ bỏ để tránh Memory Leak
+            // Xóa theo dõi khi Object bị gỡ bỏ để tránh Tồn đọng luồng bộ nhớ (Memory Leak)
             if (VRAutism.Cloud.RealtimeDBManager.Instance != null)
             {
                 VRAutism.Cloud.RealtimeDBManager.Instance.OnLessonSelected -= LoadRemoteLesson;
-            }
-        }
-
-        private void Init()
-        {
-            for (var i = 0; i < topics.Length; i++)
-            {
-                topics[i].Init(config.topics.Find(x => x.id == i));
-            }
-        }
-
-        public void ShowLessonDetail(Lesson lesson)
-        {
-            if (lesson != null)
-            {
-                Lesson = lesson;
-                lessonDetailUI.Show(lesson.lesson_name, lesson.description, lesson.cover);
-            }
-            else
-            {
-                Debug.LogWarning("Lesson not found");
             }
         }
     }
