@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections.Generic;
 
@@ -8,12 +8,13 @@ namespace VRAutism.Core
     {
         #region Singleton
         private static EventChannel _instance;
+        private static bool _isQuitting = false;
 
         public static EventChannel Instance 
         {
             get
             {
-                if (_instance == null) 
+                if (_instance == null && !_isQuitting) 
                 {
                     GameObject singletonObject = new GameObject();
                     _instance = singletonObject.AddComponent<EventChannel>();
@@ -50,6 +51,11 @@ namespace VRAutism.Core
                 ClearAllListener();
                 _instance = null;
             }
+        }
+
+        private void OnApplicationQuit() 
+        {
+            _isQuitting = true;
         }
 
         #endregion
@@ -153,24 +159,29 @@ namespace VRAutism.Core
         /// Use for registering with EventsManager
         public static void SubscribeListener(this MonoBehaviour listener, EventID eventID, Action<object> callback)
         {
-            EventChannel.Instance.SubscribeListener(eventID, callback);
+            if (EventChannel.Instance != null)
+                EventChannel.Instance.SubscribeListener(eventID, callback);
         }
 
         /// Post event with param
         public static void SendEvent(this MonoBehaviour listener, EventID eventID, object param)
         {
-            EventChannel.Instance.SendEvent(eventID, param);
+            if (EventChannel.Instance != null)
+                EventChannel.Instance.SendEvent(eventID, param);
         }
 
         /// Post event with no param (param = null)
         public static void SendEvent(this MonoBehaviour sender, EventID eventID)
         {
-            EventChannel.Instance.SendEvent(eventID, null);
+            if (EventChannel.Instance != null)
+                EventChannel.Instance.SendEvent(eventID, null);
         }
+        
         /// Remove event when destroy game object
         public static void UnsubscribeListener(this MonoBehaviour listener, EventID eventID, Action<object> callback)
         {
-            EventChannel.Instance.UnsubscribeListener(eventID, callback);
+            if (EventChannel.Instance != null)
+                EventChannel.Instance.UnsubscribeListener(eventID, callback);
         }
     }
 
@@ -182,8 +193,6 @@ namespace VRAutism.Core
         DialogueEnding,
         ToggleTheDoor,
         // Menu Scene
-        ShowLessonDetail,
-        ShowLessonReported,
         OnTriggerProcessEnter,
         OnTriggerProcessExit,
         PlaySound,
