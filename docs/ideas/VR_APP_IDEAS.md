@@ -16,49 +16,41 @@ Nâng cấp VR App hiện tại để:
 
 ## 📊 1. Nâng cấp hệ thống Data Collection
 
-### Tình trạng hiện tại
+Dựa trên thiết kế Schema mới nhất (`DATABASE_SCHEMA_DESIGN.md`), hệ thống thu thập dữ liệu tự động của VR được chia làm 2 cấp độ:
 
-| Data | Có chưa? | Ghi chú |
-|------|----------|---------|
-| response_time | ✅ | Thời gian phản hồi cơ bản |
-| hint_count | ✅ | Đếm số gợi ý |
-| duration | ✅ | Thời gian bài học |
-| SkillsData | ⚠️ | Placeholder (luôn = 0) |
+### 1.1 Khối lượng nhẹ: Quest Logs (Ghi nhận sau mỗi Quest)
+*Dữ liệu tĩnh (Static Data), ghi nhận khi trẻ hoàn thành một bước nhỏ (Quest).*
 
-### Data cần thêm mới
+| Metric | Mô tả (Thu thập trong Unity) |
+|--------|------------------------------|
+| `response_time` | Thời gian từ lúc nhận Quest đến lúc kích hoạt đúng vật thể |
+| `completion_status` | Trạng thái: `success` (tự làm), `assisted` (có gợi ý), `skipped` |
+| `hints_verbal` | Số lần hệ thống (hoặc chuyên gia) nhấn nút phát âm thanh gợi ý |
+| `hints_visual` | Số lần hệ thống làm sáng vật thể đích (Highlight) |
+| `hints_physical` | (Ghi nhận bằng tay từ Web) Số lần chuyên gia cầm tay trẻ chỉ việc |
 
-#### 1.1 Dữ liệu cảm biến VR
+### 1.2 Khối lượng nặng: Behavior Snapshots (Chụp mỗi 2 giây)
+*Luồng Telemetry siêu tốc, bắn qua Realtime Database để Web AI phân tích.*
 
-| Loại | Metrics | Yêu cầu |
-|------|---------|---------|
-| **Eye-Tracking** | Fixation Duration, Gaze Targets, Joint Attention | Quest Pro hoặc SDK |
-| **Head Tracking** | Rotation Speed, Scanning Pattern, Nod/Shake | Có sẵn, cần log |
-| **Proxemics** | Virtual Distance, Personal Space Invasion | Tính trong Unity |
+| Cảm biến | Dữ liệu gốc (Raw Data) | Mục đích phân tích (Web Engine) |
+|----------|------------------------|---------------------------------|
+| **Head Kinematics** | `head_pitch_yaw`, Vận tốc xoay cổ | Phát hiện né tránh ánh nhìn (Distraction) |
+| **Hand Kinematics** | `left_hand_velocity`, `right_hand_velocity` | Dò tìm dao động lặp lại (Stimming) |
+| **Physical Status** | gia tốc (tay/đầu) = ~0 trong 10s | Cảnh báo quá tải/căng thẳng (Freeze) |
+| **Gaze Target** | `focus_object` (Vật đang trực tiếp nhìn) | Phân tích Joint Attention |
+| **Hand Proximity** | `near_object = true` lặp lại | Đánh giá chần chừ (Hesitation) |
 
-#### 1.2 Dữ liệu Hiệu suất
+### 1.3 Behavior Tracking (Giám sát Hành vi tóm tắt)
 
-| Metric | Nâng cấp |
-|--------|----------|
-| Response Time | + Benchmark thời gian tối ưu |
-| Accuracy | + Phân loại lỗi (hiểu vs xung động) |
-| Completion | + Ghi chính xác bước bị gãy |
+Sự phân tách giữa hành vi máy đo & người đo:
 
-#### 1.3 Prompt Hierarchy (Hệ thống hỗ trợ mới)
-
-| Mức | Loại | Điểm |
-|-----|------|------|
-| 0 | Độc lập (tự làm) | 10 |
-| 1 | Nhắc bằng lời (Verbal) | 7 |
-| 2 | Chỉ tay/Cử chỉ (Gestural) | 5 |
-| 3 | Cầm tay chỉ việc (Physical) | 2 |
-
-#### 1.4 Behavior Logs
-
-| Behavior | Cách ghi nhận |
-|----------|---------------|
-| Stimming | Nút bấm cho giáo viên |
-| Meltdown | Nút bấm cho giáo viên |
-| Sao nhãng | Nút bấm hoặc auto-detect |
+| Phân loại | Hành vi | Nguồn thu thập | Cơ sở Y khoa / Lâm sàng |
+|-----------|----------|---------------|--------------|
+| **Auto_Alert** | Freeze (Đứng hình) | Gia tốc tay/đầu = 0 | Sensory Overload / Stress response |
+| **Auto_Alert** | Distraction (Xao nhãng) | Angle > 30 độ | Né tránh ánh nhìn (Gaze aversion) |
+| **Auto_Alert** | Stimming (Tự kích thích) | Dao động gia tốc tay | Điều hòa thần kinh (Rhythmic movements) |
+| **Manual Log** | Meltdown / Cáu gắt | Chuyên gia bấm nút (Web) | Cảm quan trực tiếp không thể đo bằng máy |
+| **Manual Log** | Phản ứng tích cực | Chuyên gia bấm nút (Web) | Khuyến khích hành vi tốt |
 
 ---
 

@@ -24,7 +24,8 @@ public class RunMonitor : BaseMono
         }
         
         _instance = this;
-        DontDestroyOnLoad(this);
+        transform.SetParent(null);        // Đảm bảo là root GameObject
+        DontDestroyOnLoad(gameObject);
         
         OnChangeScene = param => LoadScene((SceneEnum)param);
         OnExitScene = param => ExitScene();

@@ -1,27 +1,36 @@
 {
   "project_info": {
-    "project_number": "579801649382",
-    "firebase_url": "https://vra-data-default-rtdb.asia-southeast1.firebasedatabase.app",
-    "project_id": "vra-data",
-    "storage_bucket": "vra-data.firebasestorage.app"
+    "project_number": "693361619551",
+    "project_id": "vra-project-96d9c",
+    "storage_bucket": "vra-project-96d9c.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:579801649382:android:df44c6e5fdc484ee582b27",
+        "mobilesdk_app_id": "1:693361619551:android:776387ba97c7ae761c21ea",
         "android_client_info": {
-          "package_name": "com.UnityTechnologies.VRA"
+          "package_name": "com.test.vrautism"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "693361619551-qjjgvjiqaldv6m983v69ggp2abha0npb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyAFpTZvTLjWdgFC7VBZEMOfesogOlmpLWo"
+          "current_key": "AIzaSyA_rd_RbEaM7jsiCNbA_JbNbfMSXrlLd_E"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "693361619551-qjjgvjiqaldv6m983v69ggp2abha0npb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
