@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="erd_chen" name="5.1 ERD - Chen Notation">
-        <mxGraphModel dx="4197" dy="3222" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2339" pageHeight="1654" background="#ffffff" math="0" shadow="0">
+        <mxGraphModel dx="3950" dy="2744" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2339" pageHeight="1654" background="#ffffff" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -215,7 +215,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="ent_sessions" value="SESSIONS" style="rounded=0;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;fillColor=#dae8fc;strokeColor=#000000;strokeWidth=2;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="790" y="840" width="200" height="60" as="geometry"/>
+                    <mxGeometry x="777" y="830" width="200" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_ses_id" value="session_id" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=4;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
                     <mxGeometry x="935" y="700" width="120" height="50" as="geometry"/>
@@ -230,13 +230,13 @@
                     <mxGeometry x="1055" y="777" width="140" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_ses_status" value="completion_status" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="1140" y="880" width="150" height="50" as="geometry"/>
+                    <mxGeometry x="1105" y="870" width="150" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_ses_dur" value="duration" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
                     <mxGeometry x="840" y="997" width="100" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_ses_score" value="score" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="1045" y="975" width="80" height="50" as="geometry"/>
+                    <mxGeometry x="1015" y="974" width="80" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="e_ses_id" style="edgeStyle=none;fontColor=#000000;strokeColor=#000000;labelBackgroundColor=none;" parent="1" source="ent_sessions" target="attr_ses_id" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
