@@ -5,6 +5,9 @@ namespace VRAutism.Cloud
         public const string Sessions = "sessions";
         public const string QuestList = "quest_list";
         public const string Skills = "skills";
+        
+        // Thêm cục Database URL vào chỗ tập trung (Thay vì tản mác trên Script khác)
+        public const string DatabaseUrl = "https://vra-project-96d9c-default-rtdb.asia-southeast1.firebasedatabase.app/";
     }
 
     public static class LocalPaths

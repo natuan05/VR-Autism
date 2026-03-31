@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using VRAutism.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -27,9 +27,30 @@ namespace VRAutism.UI{
             Init();
         }
 
+        private void Start()
+        {
+            // Kết nối vào Service Đám mây để lắng nghe yêu cầu nạp Bài học từ xa
+            if (VRAutism.Cloud.RealtimeDBManager.Instance != null)
+            {
+                VRAutism.Cloud.RealtimeDBManager.Instance.OnLessonSelected += LoadRemoteLesson;
+            }
+        }
+
+        private void LoadRemoteLesson(string lessonId)
+        {
+            Debug.Log($"[SceneMenuController] Nhận lệnh từ Cloud. Tiến hành tự động tải Scene: {lessonId}");
+            SceneManager.LoadScene(lessonId);
+        }
+
         private void OnDestroy()
         {
             this.UnsubscribeListener(EventID.ShowLessonDetail, ShowLessonDetails);
+            
+            // Xóa theo dõi khi Object bị gỡ bỏ để tránh Memory Leak
+            if (VRAutism.Cloud.RealtimeDBManager.Instance != null)
+            {
+                VRAutism.Cloud.RealtimeDBManager.Instance.OnLessonSelected -= LoadRemoteLesson;
+            }
         }
 
         private void Init()
