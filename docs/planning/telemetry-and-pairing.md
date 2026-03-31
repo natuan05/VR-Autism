@@ -23,7 +23,7 @@ Assets/Project/Scripts/Cloud/
 ### PHẦN A: Báo danh & Nạp cấu hình (Task 2.1 & 2.2 - Nên làm trước)
 *Lý do làm trước: Phải "Paired" thành công thì mới sinh ra `session_id`, có `session_id` thì mới stream Telemetry được.*
 
-#### Task A1: Thiết lập cấu trúc Models cho Pairing
+#### Task A1: Thiết lập cấu trúc Models cho Pairing - ✅ **ĐÃ HOÀN THÀNH**
 - **Agent:** `backend-specialist`
 - **Cần code gì:** 
   - Tạo class `PairingData` (pin, device_id, status, child_profile_id).
@@ -31,7 +31,7 @@ Assets/Project/Scripts/Cloud/
 - **OUTPUT:** Các Class C# có thể serialize thành JSON chuẩn Firebase.
 - **VERIFY:** Code không báo lỗi syntax.
 
-#### Task A2: Khởi tạo module `RealtimeDBManager`
+#### Task A2: Khởi tạo module `RealtimeDBManager` - ✅ **ĐÃ HOÀN THÀNH**
 - **Agent:** `backend-specialist`
 - **Cần code gì:** 
   - Khai báo Reference tới `FirebaseDatabase.DefaultInstance.RootReference`.
@@ -40,7 +40,7 @@ Assets/Project/Scripts/Cloud/
 - **OUTPUT:** Nhánh dữ liệu xuất hiện trên Firebase Console.
 - **VERIFY:** Check Firebase RTDB Console có thấy `{PIN}: { status: "waiting", device_id: "..." }`.
 
-#### Task A3: Lắng nghe trạng thái Paired
+#### Task A3: Lắng nghe trạng thái Paired (Và Nạp Scene) - ✅ **ĐÃ HOÀN THÀNH**
 - **Agent:** `backend-specialist`
 - **Cần code gì:** 
   - Dùng `ValueChanged` event listener của Firebase SDK trên node `/pairing_codes/{PIN}/status`.
@@ -93,8 +93,8 @@ Assets/Project/Scripts/Cloud/
 ---
 
 ## 3. Checklist Hoàn thành (Phase X)
-- [ ] Tính năng Random mã PIN (A1, A2).
-- [ ] Tính năng Lắng nghe trạng thái (A3).
+- [x] Tính năng Random mã PIN (A1, A2) - *Hoàn thành chuẩn MVC Event-Driven*.
+- [x] Tính năng Lắng nghe trạng thái (A3) - *Hoàn thành mô hình Chained Listener chờ Lesson ID*.
 - [ ] Nạp thông số User setting (A4).
 - [ ] Gói thư viện Sensor (B1, B2).
 - [ ] Bắn Telemetry mỗi 2s mà không làm giật lag game (B3).
