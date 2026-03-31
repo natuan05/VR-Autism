@@ -37,6 +37,7 @@ namespace VRAutism.Cloud
                 return;
             }
             Instance = this;
+            DontDestroyOnLoad(gameObject);
 
             FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
             {

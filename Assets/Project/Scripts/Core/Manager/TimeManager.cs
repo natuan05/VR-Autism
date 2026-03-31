@@ -93,19 +93,30 @@ namespace VRAutism.Core
             FirebaseManager.Instance.AccumulateQuestLog(log);
         }
 
-        /// <summary>
-        /// Call when the lesson finishes (success or aborted).
-        /// Finalises timing and triggers the single Firestore write.
-        /// </summary>
+        /// <summary>Gọi từ UnityEvent Inspector (không tham số). Defaults: success, score=0.</summary>
+        public void SaveLessonTimeData() => SaveLessonTimeData("success", 0);
+
+        /// <summary>Call when the lesson finishes. Finalises timing and triggers Firestore write.</summary>
         public void SaveLessonTimeData(string completionStatus = "success", int score = 0)
         {
-            if (_timer == null) return;
-            _timer.Stop();
+            double durationSeconds;
+
+            if (_timer != null)
+            {
+                _timer.Stop();
+                durationSeconds = _timer.Elapsed.TotalSeconds;
+            }
+            else
+            {
+                // Fallback: timer chưa được start (scene không gọi StartLessonTime)
+                // Dùng _startTime được set trong Start() làm mốc thay thế
+                durationSeconds = (DateTime.Now - _startTime).TotalSeconds;
+                Debug.LogWarning("[TimeManager] SaveLessonTimeData: _timer was null, using _startTime fallback.");
+            }
+
             _endTime = DateTime.Now;
-            double durationSeconds = _timer.Elapsed.TotalSeconds;
 
             FirebaseManager.Instance.SaveSession(completionStatus, score, durationSeconds);
-
             Debug.Log($"[TimeManager] Lesson ended. Duration: {durationSeconds:F1}s, Status: {completionStatus}");
         }
 

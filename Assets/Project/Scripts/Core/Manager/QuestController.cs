@@ -75,6 +75,7 @@ namespace VRAutism.Quests
         public void StartRunningQuest()
         {
             isConditionMet.Value = false;
+            TimeManager.Instance?.StartLessonTime(); // Bấm giờ từ lúc trẻ bắt đầu làm bài
             StartNewQuest();
         }
 

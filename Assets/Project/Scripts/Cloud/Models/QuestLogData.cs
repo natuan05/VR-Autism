@@ -1,4 +1,5 @@
 using System;
+using Firebase.Firestore;
 
 namespace VRAutism.Cloud.Models
 {
@@ -7,14 +8,15 @@ namespace VRAutism.Cloud.Models
     /// Accumulated in RAM during the lesson, batch-written to Firestore at session end.
     /// </summary>
     [Serializable]
+    [FirestoreData]
     public class QuestLogData
     {
-        public int index;
-        public string quest_name;
-        public double response_time;       // seconds
-        public string completion_status;   // "success" | "skipped" | "assisted"
-        public int hints_verbal;           // verbal audio cues given
-        public int hints_visual;           // visual cue arrows/highlights
-        public int hints_physical;         // physical assistance (logged manually)
+        [FirestoreProperty] public int index { get; set; }
+        [FirestoreProperty] public string quest_name { get; set; }
+        [FirestoreProperty] public double response_time { get; set; }      // seconds
+        [FirestoreProperty] public string completion_status { get; set; }  // "success" | "skipped" | "assisted"
+        [FirestoreProperty] public int hints_verbal { get; set; }          // verbal audio cues given
+        [FirestoreProperty] public int hints_visual { get; set; }          // visual cue arrows/highlights
+        [FirestoreProperty] public int hints_physical { get; set; }        // physical assistance (logged manually)
     }
 }
