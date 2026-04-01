@@ -6,27 +6,23 @@ using UnityEngine.UI;
 public class QuizController : MonoBehaviour
 {
     [Header("Dependencies")]
+    [SerializeField] private QuestionCollection questionCollection;
+    [SerializeField] private QuizUIController uiController;
+    [SerializeField] private SoundManager soundManager;
     [SerializeField] private Button nextQuestionButton;
     [SerializeField] private GameObject gameover;
     
     [Header("Quiz Settings")]
     [SerializeField] private string quizConfigName = "QuizConfig";
     [SerializeField] private AudioClip introAudioClip;
+    [SerializeField] private IntVariable quiz_score;
 
-    private QuestionCollection questionCollection;
     private QuizConfig.QuestionData currentQuestion;
-    private QuizUIController uiController;
-    private SoundManager soundManager;
+    private GameObject currentAssociatedObject;
+    private int currentQuestionIndex = 0;
     
     private readonly TypeSound winSound = TypeSound.Win;
     private readonly TypeSound loseSound = TypeSound.Lose;
-
-    private void Awake()
-    {
-        questionCollection = FindFirstObjectByType<QuestionCollection>();
-        uiController = FindFirstObjectByType<QuizUIController>();
-        soundManager = FindFirstObjectByType<SoundManager>();
-    }
 
     private void Start()
     {
@@ -34,6 +30,8 @@ public class QuizController : MonoBehaviour
         nextQuestionButton.gameObject.SetActive(false);
         nextQuestionButton.onClick.AddListener(OnNextQuestionClicked);
         
+        quiz_score.Value = 0;
+        uiController.UpdateScoreText(quiz_score.Value);
         questionCollection.LoadQuizConfig(quizConfigName);
         TimeManager.Instance.StartLessonTime();
 
@@ -53,12 +51,26 @@ public class QuizController : MonoBehaviour
     private void PresentQuestion()
     {
         uiController.StopAllEffects();
+
+        if (currentAssociatedObject != null)
+        {
+            Destroy(currentAssociatedObject);
+        }
+
         currentQuestion = questionCollection.GetNextQuestion();
 
         if (currentQuestion != null)
         {
+            if (currentQuestion.associatedObject != null)
+            {
+                currentAssociatedObject = Instantiate(currentQuestion.associatedObject);
+                currentAssociatedObject.SetActive(true);
+            }
+            
             uiController.SetupUIForQuestion(currentQuestion);
             nextQuestionButton.gameObject.SetActive(false);
+            
+            TimeManager.Instance.MarkQuestStart(); // Bấm giờ báo danh Quest
             StartCoroutine(HandleQuestionSounds());
         }
         else
@@ -71,7 +83,12 @@ public class QuizController : MonoBehaviour
     public void SubmitAnswer(int answerNumber)
     {
         bool isCorrect = (answerNumber == currentQuestion.correctAnswer);
-        uiController.HandleSubmittedAnswer(answerNumber, currentQuestion.correctAnswer);
+        if (isCorrect) quiz_score.Value++;
+        
+        TimeManager.Instance.LogQuestComplete(currentQuestionIndex, currentQuestion.question, isCorrect ? "success" : "failed");
+        currentQuestionIndex++;
+        
+        uiController.HandleSubmittedAnswer(answerNumber, currentQuestion.correctAnswer, isCorrect, quiz_score.Value);
         
         soundManager.PlaySound(isCorrect ? winSound : loseSound);
         
@@ -87,9 +104,15 @@ public class QuizController : MonoBehaviour
     private void EndQuiz()
     {
         Debug.Log("[QuizController] Quiz ended.");
-        uiController.ShowFinalTime();
+        
+        if (currentAssociatedObject != null)
+        {
+            Destroy(currentAssociatedObject);
+        }
+        
+        uiController.ShowFinalTime(TimeManager.Instance.GetTotalElapsedSeconds());
         soundManager.StopLoopingSound();
-        TimeManager.Instance.SaveLessonTimeData();
+        TimeManager.Instance.SaveLessonTimeData("success", quiz_score.Value);
         
         gameover.SetActive(true);
         nextQuestionButton.gameObject.SetActive(false);

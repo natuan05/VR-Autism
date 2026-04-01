@@ -124,5 +124,11 @@ namespace VRAutism.Core
         {
             MarkQuestStart();
         }
+
+        public double GetTotalElapsedSeconds()
+        {
+            if (_timer != null) return _timer.Elapsed.TotalSeconds;
+            return (DateTime.Now - _startTime).TotalSeconds;
+        }
     }
 }
