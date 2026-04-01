@@ -109,10 +109,9 @@ Sự phân tách giữa hành vi máy đo & người đo:
 |-------|--------|------------|
 | Bathroom | Rửa tay | ✅ Hoàn thành |
 | Farm | Trang trại | ✅ Hoàn thành |
-| Zoo | Sở thú | ✅ Hoàn thành |
-| Supermarket | Siêu thị | ⚠️ Cần nâng cấp (xem bên dưới) |
-| Ocean | Biển | ✅ Hoàn thành |
-| Classroom | Lớp học | ✅ Hoàn thành |
+| Grassland | Đồng cỏ | ✅ Hoàn thành |
+| Ocean | Động vật biển | ✅ Hoàn thành |
+| Hellofriend + LearnToAsk | Giao tiếp | Có lỗi |
 
 ### Nâng cấp Scene hiện có
 
@@ -130,9 +129,7 @@ Sự phân tách giữa hành vi máy đo & người đo:
 | Chủ đề | Kỹ năng dạy |
 |--------|-------------|
 | **Băng qua đường** | An toàn giao thông, nhìn trái-phải, chờ đèn xanh, đi vạch |
-| Tương tác với bạn | Kỹ năng xã hội |
-| Tự mặc quần áo | Tự phục vụ |
-| Chờ/Đi xe buýt | Di chuyển công cộng |
+| **Đi siêu thị** | Mua sắm |
 
 ### Kỹ năng cần bổ sung
 
