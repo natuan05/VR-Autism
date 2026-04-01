@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using VRAutism.Core;
 using UnityEngine;
 
@@ -15,19 +15,26 @@ public class AnimalLessonManager : MonoBehaviour
         public GameObject introUI;
     }
 
+    [Header("Lesson Config")]
     [SerializeField] private bool turnOff;
-    [SerializeField] private TimeManager timeManager;
-    public float timeSoundToDescription=4f;
-
+    [SerializeField] private Transform rootPosition;
+    
+    [Header("VR Settings")]
+    [SerializeField] private bool isInVR;
+    [SerializeField] private Vector3 offsetVR;
+    
+    [Header("Camera & Timings")]
+    public Transform mainCamera;
+    public float cameraMoveSpeed = 2f;
+    public float timeSoundToDescription = 4f;
+    public float timeIntroSound;
+    
+    [Header("Audio")]
     public TypeSound backgroundMusic;
     public TypeSound introSound;
     public TypeSound endSound;
-    public float timeIntroSound;
-    public Transform mainCamera;
-    public float cameraMoveSpeed = 2f;
-    [SerializeField] private Transform rootPosition;
-    [SerializeField] private bool isInVR;
-    [SerializeField] private Vector3 offsetVR;
+    
+    [Header("Animals List")]
     public Animal[] animals;
     
     private void Start()
@@ -40,16 +47,19 @@ public class AnimalLessonManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"Intro UI for {animal.name} is not found!");
+                Debug.LogWarning($"[AnimalLessonManager] Intro UI for {animal.name} is not found!");
             }
         }
-        if (turnOff) return;
-        StartLesson();
+
+        if (!turnOff)
+        {
+            StartLesson();
+        }
     }
 
     private void StartLesson()
     {
-        timeManager.StartLessonTime();
+        TimeManager.Instance.StartLessonTime();
         StartCoroutine(IELesson());
     }
 
@@ -57,41 +67,37 @@ public class AnimalLessonManager : MonoBehaviour
     {
         this.SendEvent(EventID.PlaySound, backgroundMusic); 
         yield return new WaitForSeconds(1f);
+        
         this.SendEvent(EventID.PlaySound, introSound);
         yield return new WaitForSeconds(timeIntroSound);
 
-        for (var i = 0; i < animals.Length; i++)
+        foreach (var animal in animals)
         {
-            var animal = animals[i];
-            
             yield return MoveCameraToAnimal(animal.cameraPos);
+            
             this.SendEvent(EventID.PlaySound, animal.descriptionSound);
 
             if (animal.introUI != null)
-            {
                 animal.introUI.SetActive(true); 
-            }
 
             yield return new WaitForSeconds(animal.timeDescriptions);
+            
             this.SendEvent(EventID.PlaySound, animal.sound);
             yield return new WaitForSeconds(timeSoundToDescription);
 
             if (animal.introUI != null)
-            {
                 animal.introUI.SetActive(false); 
-            }
         }
         
         yield return new WaitForSeconds(1f);
         this.SendEvent(EventID.PlaySound, endSound);
-        timeManager.SaveLessonTimeData();
+        TimeManager.Instance.SaveLessonTimeData();
         
         yield return new WaitForSeconds(5f);
-        
         StartCoroutine(MoveCameraToAnimal(rootPosition, true));
     }
 
-    private IEnumerator MoveCameraToAnimal(Transform animalModel, bool end=false)
+    private IEnumerator MoveCameraToAnimal(Transform animalModel, bool end = false)
     {
         var targetPosition = animalModel.position + (isInVR ? offsetVR : Vector3.zero); 
         var targetRotation = animalModel.rotation;
@@ -103,27 +109,19 @@ public class AnimalLessonManager : MonoBehaviour
             yield return null;
         }
         
-        if (end) this.SendEvent(EventID.ExitScene);
+        if (end) 
+        {
+            this.SendEvent(EventID.ExitScene);
+        }
     }
 }
 
 public enum AnimalType
 {
     // Grass Land
-    Rabbit,
-    Zebra,
-    Lion,
-    Elephant,
-    Giraffe,
+    Rabbit, Zebra, Lion, Elephant, Giraffe,
     // Farm
-    Chicken,
-    Sheep,
-    Dog,
-    Pig,
-    Cow,
+    Chicken, Sheep, Dog, Pig, Cow,
     // Ocean
-    Shark,
-    Jellyfish,
-    Dolphin,
-    Turtle
+    Shark, Jellyfish, Dolphin, Turtle
 }

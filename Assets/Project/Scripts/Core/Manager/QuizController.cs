@@ -5,30 +5,21 @@ using UnityEngine.UI;
 
 public class QuizController : MonoBehaviour
 {
+    [Header("Dependencies")]
+    [SerializeField] private Button nextQuestionButton;
+    [SerializeField] private GameObject gameover;
+    
+    [Header("Quiz Settings")]
+    [SerializeField] private string quizConfigName = "QuizConfig";
+    [SerializeField] private AudioClip introAudioClip;
+
     private QuestionCollection questionCollection;
     private QuizConfig.QuestionData currentQuestion;
     private QuizUIController uiController;
     private SoundManager soundManager;
-    public GameObject gameover;
-    private TypeSound win = TypeSound.Win;
-    private TypeSound lose = TypeSound.Lose;
-
-    [SerializeField]
-    private TimeManager timeManager;
-    [SerializeField]
-    private AudioClip introAudioClip;
-
-
-
-
-    [SerializeField]
-    private string quizConfigName = "QuizConfig";
-
-    /*[SerializeField]
-    private float delayBetweenQuestions = 3f;*/
-
-    [SerializeField]
-    private Button nextQuestionButton;
+    
+    private readonly TypeSound winSound = TypeSound.Win;
+    private readonly TypeSound loseSound = TypeSound.Lose;
 
     private void Awake()
     {
@@ -40,21 +31,18 @@ public class QuizController : MonoBehaviour
     private void Start()
     {
         gameover.SetActive(false);
-        questionCollection.LoadQuizConfig(quizConfigName);
         nextQuestionButton.gameObject.SetActive(false);
         nextQuestionButton.onClick.AddListener(OnNextQuestionClicked);
         
-        timeManager.StartLessonTime();
-
+        questionCollection.LoadQuizConfig(quizConfigName);
+        TimeManager.Instance.StartLessonTime();
 
         StartCoroutine(PlayIntroAndStartQuiz());
     }
 
-
     private IEnumerator PlayIntroAndStartQuiz()
     {
         yield return new WaitForSeconds(2f); 
-
 
         soundManager.PlayAudioClip(introAudioClip);
         yield return new WaitForSeconds(introAudioClip.length); 
@@ -62,13 +50,9 @@ public class QuizController : MonoBehaviour
         PresentQuestion(); 
     }
 
-
-
     private void PresentQuestion()
     {
-
         uiController.StopAllEffects();
-
         currentQuestion = questionCollection.GetNextQuestion();
 
         if (currentQuestion != null)
@@ -79,24 +63,18 @@ public class QuizController : MonoBehaviour
         }
         else
         {
-            Debug.Log("No more questions available.");
+            Debug.Log("[QuizController] No more questions available.");
             EndQuiz(); 
         }
     }
 
     public void SubmitAnswer(int answerNumber)
     {
-        bool isCorrect = answerNumber == currentQuestion.correctAnswer;
+        bool isCorrect = (answerNumber == currentQuestion.correctAnswer);
         uiController.HandleSubmittedAnswer(answerNumber, currentQuestion.correctAnswer);
-        if (isCorrect)
-        {
-            soundManager.PlaySound(win);
-        }
-        else
-        {
-            soundManager.PlaySound(lose);
-        }
-        //StartCoroutine(ShowNextQuestionAfterDelay());
+        
+        soundManager.PlaySound(isCorrect ? winSound : loseSound);
+        
         nextQuestionButton.gameObject.SetActive(true);
     }
 
@@ -106,42 +84,29 @@ public class QuizController : MonoBehaviour
         PresentQuestion(); 
     }
 
-    /*private IEnumerator ShowNextQuestionAfterDelay()
-    {
-        yield return new WaitForSeconds(delayBetweenQuestions);
-        PresentQuestion();
-    }*/
-
     private void EndQuiz()
     {
-        Debug.Log("Quiz ended.");
+        Debug.Log("[QuizController] Quiz ended.");
         uiController.ShowFinalTime();
+        soundManager.StopLoopingSound();
+        TimeManager.Instance.SaveLessonTimeData();
+        
         gameover.SetActive(true);
         nextQuestionButton.gameObject.SetActive(false);
-        soundManager.StopLoopingSound();
-        timeManager.SaveLessonTimeData();
     }
 
     private IEnumerator HandleQuestionSounds()
     {
         if (currentQuestion.questionSound != TypeSound.None)
         {
-            Debug.Log("Playing question sound: " + currentQuestion.questionSound);
+            Debug.Log("[QuizController] Playing question sound: " + currentQuestion.questionSound);
             soundManager.PlaySound(currentQuestion.questionSound);
-            //float soundDuration = soundManager.GetSoundDuration(currentQuestion.questionSound);
-            
-            //Debug.Log("Waiting for: " + soundDuration + "s");
             yield return new WaitUntil(() => !soundManager.IsPlaying());
         }
 
         yield return new WaitForSeconds(0.5f);
 
-        //if (currentQuestion.animalSound != TypeSound.None)
-        //{
-        //soundManager.PlaySoundLoop(currentQuestion.animalSound);
-        Debug.Log("Playing animal sound: " + currentQuestion.animalSound);
+        Debug.Log("[QuizController] Playing animal sound: " + currentQuestion.animalSound);
         soundManager.PlaySound(currentQuestion.animalSound);
-       
-        // }
     }
 }
