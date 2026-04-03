@@ -1,42 +1,72 @@
 using UnityEngine;
+using System.Collections.Generic;
 
+/// <summary>
+/// Manages quiz question sequencing.
+/// Accepts QuizConfig (local SO) or a raw list of QuizQuestionData (from Firestore).
+/// </summary>
 public class QuestionCollection : MonoBehaviour
 {
-    private QuizConfig quizConfig;
-    private int currentIndex = 0; 
+    private List<QuizQuestionData> _questions = new();
+    private Dictionary<string, GameObject> _prefabLookup = new();
+    private int _currentIndex = 0;
 
-    private void Awake()
+    /// <summary>Load from local ScriptableObject via Resources folder.</summary>
+    public void LoadFromConfig(QuizConfig config)
     {
+        if (config == null || config.Questions.Count == 0)
+        {
+            Debug.LogError("[QuestionCollection] QuizConfig is null or empty.");
+            return;
+        }
+
+        _questions.Clear();
+        _prefabLookup.Clear();
+
+        foreach (var entry in config.Questions)
+        {
+            if (entry.associatedObject != null)
+            {
+                entry.data.associatedObjectKey = entry.associatedObject.name;
+                _prefabLookup[entry.associatedObject.name] = entry.associatedObject;
+            }
+            _questions.Add(entry.data);
+        }
+
+        _currentIndex = 0;
+        Debug.Log($"[QuestionCollection] Loaded {_questions.Count} questions from local config.");
     }
 
-    public void LoadQuizConfig(string configName)
+    /// <summary>
+    /// Load from a pre-built data list (e.g. deserialized from Firestore JSON).
+    /// Prefab lookup must be supplied separately via Addressables in this path.
+    /// </summary>
+    public void LoadFromData(List<QuizQuestionData> data)
     {
-        quizConfig = Resources.Load<QuizConfig>(configName);
-        if (quizConfig == null || quizConfig.Questions.Count == 0)
-        {
-            Debug.LogError($"No QuizConfig asset found with name {configName} in Resources");
-        }
-        else
-        {
-            Debug.Log($"Loaded QuizConfig: {configName}");
-        }
+        _questions = data;
+        _prefabLookup.Clear();
+        _currentIndex = 0;
+        Debug.Log($"[QuestionCollection] Loaded {_questions.Count} questions from remote data.");
     }
 
-    public QuizConfig.QuestionData GetNextQuestion()
+    public QuizQuestionData GetNextQuestion()
     {
-        if (currentIndex >= quizConfig.Questions.Count)
+        if (_currentIndex >= _questions.Count)
         {
-            Debug.LogWarning("No more questions available.");
+            Debug.LogWarning("[QuestionCollection] No more questions available.");
             return null;
         }
-
-        var question = quizConfig.Questions[currentIndex];
-        currentIndex++; 
-        return question;
+        return _questions[_currentIndex++];
     }
 
-    public void ResetQuestions()
+    /// <summary>Resolve a prefab by the question's associatedObjectKey.</summary>
+    public GameObject GetPrefab(string key)
     {
-        currentIndex = 0; 
+        _prefabLookup.TryGetValue(key, out var prefab);
+        return prefab;
     }
+
+    public void ResetQuestions() => _currentIndex = 0;
+
+    public int TotalQuestions => _questions.Count;
 }

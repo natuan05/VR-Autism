@@ -13,123 +13,133 @@ MonoBehaviour:
   m_Name: FarmQuizConfig
   m_EditorClassIdentifier: 
   questions:
-  - question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
-    answers:
-    - "L\u1EE3n"
-    - "B\xF2"
-    - "Ch\xF3"
-    - "D\xEA"
-    correctAnswer: 0
+  - data:
+      question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
+      answers:
+      - "L\u1EE3n"
+      - "B\xF2"
+      - "Ch\xF3"
+      - "D\xEA"
+      correctAnswer: 0
+      associatedObjectKey: Pig
+      questionSound: 10
+      animalSound: 50
     associatedObject: {fileID: 4691783072222441010, guid: 76fb49054287ae74493c799c0e54dab7,
       type: 3}
-    questionSound: 10
-    animalSound: 50
-    asked: 0
-  - question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
-    answers:
-    - "L\u1EE3n"
-    - "B\xF2"
-    - "Ch\xF3"
-    - "D\xEA"
-    correctAnswer: 1
+  - data:
+      question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
+      answers:
+      - "L\u1EE3n"
+      - "B\xF2"
+      - "Ch\xF3"
+      - "D\xEA"
+      correctAnswer: 1
+      associatedObjectKey: Cow
+      questionSound: 10
+      animalSound: 48
     associatedObject: {fileID: 6711903055099355141, guid: d966cb738520bbd4f8ae7e6397308299,
       type: 3}
-    questionSound: 10
-    animalSound: 48
-    asked: 0
-  - question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
-    answers:
-    - "Ch\xF3"
-    - "B\xF2"
-    - "G\xE0"
-    - "D\xEA"
-    correctAnswer: 2
+  - data:
+      question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
+      answers:
+      - "Ch\xF3"
+      - "B\xF2"
+      - "G\xE0"
+      - "D\xEA"
+      correctAnswer: 2
+      associatedObjectKey: Chicken
+      questionSound: 11
+      animalSound: 42
     associatedObject: {fileID: 6389182892530622752, guid: a62a6156169c2af4ba495bef4368f55a,
       type: 3}
-    questionSound: 11
-    animalSound: 42
-    asked: 0
-  - question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
-    answers:
-    - "C\u1EEBu"
-    - "G\xE0"
-    - "B\xF2"
-    - "D\xEA"
-    correctAnswer: 0
+  - data:
+      question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
+      answers:
+      - "C\u1EEBu"
+      - "G\xE0"
+      - "B\xF2"
+      - "D\xEA"
+      correctAnswer: 0
+      associatedObjectKey: Sheep
+      questionSound: 12
+      animalSound: 46
     associatedObject: {fileID: 1675796975983077872, guid: 62a6d18824435274d9d5525243dc3a9f,
       type: 3}
-    questionSound: 12
-    animalSound: 46
-    asked: 0
-  - question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
-    answers:
-    - "C\u1EEBu"
-    - "G\xE0"
-    - "B\xF2"
-    - "Ch\xF3"
-    correctAnswer: 3
+  - data:
+      question: "\u0110\xE2y l\xE0 con v\u1EADt g\xEC?"
+      answers:
+      - "C\u1EEBu"
+      - "G\xE0"
+      - "B\xF2"
+      - "Ch\xF3"
+      correctAnswer: 3
+      associatedObjectKey: Dog
+      questionSound: 13
+      animalSound: 44
     associatedObject: {fileID: 3621818130278360205, guid: 8a692fc96b21e3749ad03a9313f822b5,
       type: 3}
-    questionSound: 13
-    animalSound: 44
-    asked: 0
-  - question: "Con b\xF2 c\xF3 m\u1EA5y ch\xE2n?"
-    answers:
-    - "2 ch\xE2n"
-    - "4 ch\xE2n"
-    - "6 ch\xE2n"
-    - "8 ch\xE2n"
-    correctAnswer: 1
+  - data:
+      question: "Con b\xF2 c\xF3 m\u1EA5y ch\xE2n?"
+      answers:
+      - "2 ch\xE2n"
+      - "4 ch\xE2n"
+      - "6 ch\xE2n"
+      - "8 ch\xE2n"
+      correctAnswer: 1
+      associatedObjectKey: Cow
+      questionSound: 14
+      animalSound: 48
     associatedObject: {fileID: 6711903055099355141, guid: d966cb738520bbd4f8ae7e6397308299,
       type: 3}
-    questionSound: 14
-    animalSound: 48
-    asked: 0
-  - question: "L\xF4ng c\u1EE7a con b\xF2 c\xF3 m\xE0u g\xEC?"
-    answers:
-    - "Xanh v\xE0 \u0111\u1ECF"
-    - "H\u1ED3ng v\xE0 t\xEDm"
-    - "N\xE2u ho\u1EB7c v\xE0ng s\u1EABm"
-    - "\u0110en v\xE0 tr\u1EAFng"
-    correctAnswer: 2
+  - data:
+      question: "L\xF4ng c\u1EE7a con b\xF2 c\xF3 m\xE0u g\xEC?"
+      answers:
+      - "Xanh v\xE0 \u0111\u1ECF"
+      - "H\u1ED3ng v\xE0 t\xEDm"
+      - "N\xE2u ho\u1EB7c v\xE0ng s\u1EABm"
+      - "\u0110en v\xE0 tr\u1EAFng"
+      correctAnswer: 2
+      associatedObjectKey: Cow
+      questionSound: 15
+      animalSound: 48
     associatedObject: {fileID: 6711903055099355141, guid: d966cb738520bbd4f8ae7e6397308299,
       type: 3}
-    questionSound: 15
-    animalSound: 48
-    asked: 0
-  - question: "Con c\u1EEBu th\u01B0\u1EDDng \u0103n g\xEC?"
-    answers:
-    - "C\xE1"
-    - "C\u1ECF"
-    - "X\u01B0\u01A1ng"
-    - "Th\u1ECBt"
-    correctAnswer: 1
+  - data:
+      question: "Con c\u1EEBu th\u01B0\u1EDDng \u0103n g\xEC?"
+      answers:
+      - "C\xE1"
+      - "C\u1ECF"
+      - "X\u01B0\u01A1ng"
+      - "Th\u1ECBt"
+      correctAnswer: 1
+      associatedObjectKey: Sheep
+      questionSound: 16
+      animalSound: 46
     associatedObject: {fileID: 1675796975983077872, guid: 62a6d18824435274d9d5525243dc3a9f,
       type: 3}
-    questionSound: 16
-    animalSound: 46
-    asked: 0
-  - question: "Ph\xEDa tr\u01B0\u1EDBc c\xF3 bao nhi\xEAu con g\xE0 con?"
-    answers:
-    - 4 con
-    - 6 con
-    - 5 con
-    - 3 con
-    correctAnswer: 2
+  - data:
+      question: "Ph\xEDa tr\u01B0\u1EDBc c\xF3 bao nhi\xEAu con g\xE0 con?"
+      answers:
+      - 4 con
+      - 6 con
+      - 5 con
+      - 3 con
+      correctAnswer: 2
+      associatedObjectKey: Chicken
+      questionSound: 17
+      animalSound: 42
     associatedObject: {fileID: 6389182892530622752, guid: a62a6156169c2af4ba495bef4368f55a,
       type: 3}
-    questionSound: 17
-    animalSound: 42
-    asked: 0
-  - question: "Ph\xEDa tr\u01B0\u1EDBc c\xF3 bao nhi\xEAu con c\u1EEBu?"
-    answers:
-    - 1 con
-    - 2 con
-    - 3 con
-    - 4 con
-    correctAnswer: 2
+  - data:
+      question: "Ph\xEDa tr\u01B0\u1EDBc c\xF3 bao nhi\xEAu con c\u1EEBu?"
+      answers:
+      - 1 con
+      - 2 con
+      - 3 con
+      - 4 con
+      correctAnswer: 2
+      associatedObjectKey: Sheep
+      questionSound: 18
+      animalSound: 46
     associatedObject: {fileID: 1675796975983077872, guid: 62a6d18824435274d9d5525243dc3a9f,
       type: 3}
-    questionSound: 18
-    animalSound: 46
-    asked: 0

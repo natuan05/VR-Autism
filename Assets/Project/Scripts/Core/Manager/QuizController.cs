@@ -1,135 +1,166 @@
 using VRAutism.Core;
+using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
+/// <summary>
+/// Orchestrates quiz lesson flow.
+/// Subscribes to UIController events — has zero direct references to UI elements.
+/// </summary>
 public class QuizController : MonoBehaviour
 {
     [Header("Dependencies")]
     [SerializeField] private QuestionCollection questionCollection;
     [SerializeField] private QuizUIController uiController;
     [SerializeField] private SoundManager soundManager;
-    [SerializeField] private Button nextQuestionButton;
-    [SerializeField] private GameObject gameover;
-    
+
     [Header("Quiz Settings")]
-    [SerializeField] private string quizConfigName = "QuizConfig";
+    [SerializeField] private QuizConfig quizConfig;    // direct asset ref — no magic string
     [SerializeField] private AudioClip introAudioClip;
     [SerializeField] private IntVariable quiz_score;
 
-    private QuizConfig.QuestionData currentQuestion;
-    private GameObject currentAssociatedObject;
-    private int currentQuestionIndex = 0;
-    
-    private readonly TypeSound winSound = TypeSound.Win;
-    private readonly TypeSound loseSound = TypeSound.Lose;
+    private QuizQuestionData _currentQuestion;
+    private GameObject _currentAssociatedObject;
+    private int _currentQuestionIndex;
+
+    private void Awake()
+    {
+        // Subscribe to UI events — controller reacts, UI just raises signals
+        uiController.OnAnswerSelected += SubmitAnswer;
+        uiController.OnNextClicked    += OnNextQuestionClicked;
+    }
+
+    private void OnDestroy()
+    {
+        uiController.OnAnswerSelected -= SubmitAnswer;
+        uiController.OnNextClicked    -= OnNextQuestionClicked;
+    }
 
     private void Start()
     {
-        gameover.SetActive(false);
-        nextQuestionButton.gameObject.SetActive(false);
-        nextQuestionButton.onClick.AddListener(OnNextQuestionClicked);
-        
-        quiz_score.Value = 0;
+        quiz_score.Value    = 0;
+        _currentQuestionIndex = 0;
+
+        uiController.Initialize();
         uiController.UpdateScoreText(quiz_score.Value);
-        questionCollection.LoadQuizConfig(quizConfigName);
+
+        questionCollection.LoadFromConfig(quizConfig);
         TimeManager.Instance.StartLessonTime();
 
         StartCoroutine(PlayIntroAndStartQuiz());
     }
 
+    // ─── Lesson flow ───────────────────────────────────────────────────────
+
     private IEnumerator PlayIntroAndStartQuiz()
     {
-        yield return new WaitForSeconds(2f); 
+        yield return new WaitForSeconds(2f);
 
         soundManager.PlayAudioClip(introAudioClip);
-        yield return new WaitForSeconds(introAudioClip.length); 
+        yield return new WaitForSeconds(introAudioClip.length);
 
-        PresentQuestion(); 
+        PresentQuestion();
     }
 
     private void PresentQuestion()
     {
         uiController.StopAllEffects();
+        uiController.HideNextButton();
 
-        if (currentAssociatedObject != null)
+        DestroyCurrentObject();
+
+        _currentQuestion = questionCollection.GetNextQuestion();
+
+        if (_currentQuestion == null)
         {
-            Destroy(currentAssociatedObject);
+            Debug.Log("[QuizController] All questions answered — ending quiz.");
+            EndQuiz();
+            return;
         }
 
-        currentQuestion = questionCollection.GetNextQuestion();
-
-        if (currentQuestion != null)
+        // associatedObjectKey must match the prefab's name in the scene
+        if (!string.IsNullOrEmpty(_currentQuestion.associatedObjectKey))
         {
-            if (currentQuestion.associatedObject != null)
-            {
-                currentAssociatedObject = Instantiate(currentQuestion.associatedObject);
-                currentAssociatedObject.SetActive(true);
-            }
-            
-            uiController.SetupUIForQuestion(currentQuestion);
-            nextQuestionButton.gameObject.SetActive(false);
-            
-            TimeManager.Instance.MarkQuestStart(); // Bấm giờ báo danh Quest
-            StartCoroutine(HandleQuestionSounds());
+            var prefab = questionCollection.GetPrefab(_currentQuestion.associatedObjectKey);
+            if (prefab != null)
+                _currentAssociatedObject = Instantiate(prefab);
+            else
+                Debug.LogWarning($"[QuizController] No prefab found for key: '{_currentQuestion.associatedObjectKey}'");
         }
-        else
-        {
-            Debug.Log("[QuizController] No more questions available.");
-            EndQuiz(); 
-        }
-    }
 
-    public void SubmitAnswer(int answerNumber)
-    {
-        bool isCorrect = (answerNumber == currentQuestion.correctAnswer);
-        if (isCorrect) quiz_score.Value++;
-        
-        TimeManager.Instance.LogQuestComplete(currentQuestionIndex, currentQuestion.question, isCorrect ? "success" : "failed");
-        currentQuestionIndex++;
-        
-        uiController.HandleSubmittedAnswer(answerNumber, currentQuestion.correctAnswer, isCorrect, quiz_score.Value);
-        
-        soundManager.PlaySound(isCorrect ? winSound : loseSound);
-        
-        nextQuestionButton.gameObject.SetActive(true);
-    }
-
-    private void OnNextQuestionClicked()
-    {
-        soundManager.StopLoopingSound();
-        PresentQuestion(); 
+        uiController.SetupUIForQuestion(_currentQuestion);
+        TimeManager.Instance.MarkQuestStart();
+        StartCoroutine(HandleQuestionSounds());
     }
 
     private void EndQuiz()
     {
         Debug.Log("[QuizController] Quiz ended.");
-        
-        if (currentAssociatedObject != null)
-        {
-            Destroy(currentAssociatedObject);
-        }
-        
-        uiController.ShowFinalTime(TimeManager.Instance.GetTotalElapsedSeconds());
+        DestroyCurrentObject();
         soundManager.StopLoopingSound();
         TimeManager.Instance.SaveLessonTimeData("success", quiz_score.Value);
-        
-        gameover.SetActive(true);
-        nextQuestionButton.gameObject.SetActive(false);
+        uiController.ShowGameOver(TimeManager.Instance.GetTotalElapsedSeconds());
     }
+
+    // ─── Event handlers (subscribed from Awake) ────────────────────────────
+
+    private void SubmitAnswer(int answerIndex)
+    {
+        bool isCorrect = (answerIndex == _currentQuestion.correctAnswer);
+        if (isCorrect) quiz_score.Value++;
+
+        TimeManager.Instance.LogQuestComplete(
+            _currentQuestionIndex,
+            _currentQuestion.question,
+            isCorrect ? "success" : "failed"
+        );
+        _currentQuestionIndex++;
+
+        uiController.HandleSubmittedAnswer(
+            answerIndex,
+            _currentQuestion.correctAnswer,
+            isCorrect,
+            quiz_score.Value
+        );
+
+        soundManager.PlaySound(isCorrect ? TypeSound.Win : TypeSound.Lose);
+        uiController.ShowNextButton();
+    }
+
+    private void OnNextQuestionClicked()
+    {
+        soundManager.StopLoopingSound();
+        PresentQuestion();
+    }
+
+    // ─── Sound sequence ────────────────────────────────────────────────────
 
     private IEnumerator HandleQuestionSounds()
     {
-        if (currentQuestion.questionSound != TypeSound.None)
+        if (_currentQuestion.questionSound != TypeSound.None)
         {
-            Debug.Log("[QuizController] Playing question sound: " + currentQuestion.questionSound);
-            soundManager.PlaySound(currentQuestion.questionSound);
+            Debug.Log("[QuizController] Playing question sound: " + _currentQuestion.questionSound);
+            soundManager.PlaySound(_currentQuestion.questionSound);
             yield return new WaitUntil(() => !soundManager.IsPlaying());
         }
 
         yield return new WaitForSeconds(0.5f);
 
-        Debug.Log("[QuizController] Playing animal sound: " + currentQuestion.animalSound);
-        soundManager.PlaySound(currentQuestion.animalSound);
+        if (_currentQuestion.animalSound != TypeSound.None)
+        {
+            Debug.Log("[QuizController] Playing animal sound: " + _currentQuestion.animalSound);
+            soundManager.PlaySound(_currentQuestion.animalSound);
+        }
+    }
+
+    // ─── Helpers ───────────────────────────────────────────────────────────
+
+    private void DestroyCurrentObject()
+    {
+        if (_currentAssociatedObject != null)
+        {
+            Destroy(_currentAssociatedObject);
+            _currentAssociatedObject = null;
+        }
     }
 }

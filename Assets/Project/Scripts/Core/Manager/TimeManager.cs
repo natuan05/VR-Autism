@@ -20,7 +20,6 @@ namespace VRAutism.Core
 
         private Stopwatch _timer;
         private DateTime _startTime;
-        private DateTime _endTime;
 
         // Tracks the current quest's start time to compute response_time
         private double _questStartSecond;
@@ -113,8 +112,6 @@ namespace VRAutism.Core
                 durationSeconds = (DateTime.Now - _startTime).TotalSeconds;
                 Debug.LogWarning("[TimeManager] SaveLessonTimeData: _timer was null, using _startTime fallback.");
             }
-
-            _endTime = DateTime.Now;
 
             FirebaseManager.Instance.SaveSession(completionStatus, score, durationSeconds);
             Debug.Log($"[TimeManager] Lesson ended. Duration: {durationSeconds:F1}s, Status: {completionStatus}");

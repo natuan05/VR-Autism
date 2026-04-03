@@ -3682,6 +3682,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1323163644376483739, guid: 0ff4f01035c778047b87226a1568ddbf,
         type: 3}
+      propertyPath: quizConfig
+      value: 
+      objectReference: {fileID: 11400000, guid: 30a383b24749ef64c90d45adfe42dfa4,
+        type: 2}
+    - target: {fileID: 1323163644376483739, guid: 0ff4f01035c778047b87226a1568ddbf,
+        type: 3}
       propertyPath: quiz_score
       value: 
       objectReference: {fileID: 11400000, guid: 44c304603c5367c49b2bb239fa33e365,
@@ -6233,6 +6239,12 @@ Transform:
   - {fileID: 1558008772}
   m_Father: {fileID: 3272403444164799242}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!1 &872442188 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6131206875481359396, guid: 0ff4f01035c778047b87226a1568ddbf,
+    type: 3}
+  m_PrefabInstance: {fileID: 510457640}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &883812561
 GameObject:
   m_ObjectHideFlags: 0
@@ -9395,6 +9407,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1183125965}
   m_Mesh: {fileID: 8812325392763357487, guid: 3c585864cbe260448827ee7a41514435, type: 3}
+--- !u!114 &1215185122 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4543209651173175465, guid: 0ff4f01035c778047b87226a1568ddbf,
+    type: 3}
+  m_PrefabInstance: {fileID: 510457640}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1222729284
 GameObject:
   m_ObjectHideFlags: 0
@@ -9695,8 +9719,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuizUIController
   questionText: {fileID: 1499152792}
-  score: {fileID: 1419308324}
-  time_completed: {fileID: 1419308323}
+  scoreText: {fileID: 1419308324}
+  timeCompletedText: {fileID: 1419308323}
+  nextQuestionButton: {fileID: 1215185122}
+  gameoverPanel: {fileID: 872442188}
   answerButtons:
   - {fileID: 956181234}
   - {fileID: 642395497}
