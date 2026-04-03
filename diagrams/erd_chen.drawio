@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="erd_chen" name="5.1 ERD - Chen Notation">
-        <mxGraphModel dx="3950" dy="2744" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2339" pageHeight="1654" background="#ffffff" math="0" shadow="0">
+        <mxGraphModel dx="3989" dy="2798" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2339" pageHeight="1654" background="#ffffff" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -92,7 +92,7 @@
                     <mxGeometry x="690" y="555" width="120" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_prf_age" value="age" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="590" y="447.5" width="80" height="50" as="geometry"/>
+                    <mxGeometry x="608" y="455" width="80" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="attr_prf_sound" value="sound_sensitivity" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;" parent="1" vertex="1">
                     <mxGeometry x="630" y="365" width="120" height="50" as="geometry"/>

@@ -122,7 +122,7 @@ erDiagram
         string child_id "Tham chiếu trẻ (tối ưu Group Query)"
         float time_offset "Giây kể từ đầu buổi"
         int quest_index "Đang ở Quest số mấy"
-        string command_type "verbal_hint | visual_cue | audio_cue | pause | skip_quest | adjust_level | play_encouragement | emergency_stop"
+        string command_type "verbal_hint | visual_cue | audio_cue | pause | skip_quest |adjust_level | play_encouragement | emergency_stop"
         string command_detail "vd: play_audio:step2_hint, set_level:easy"
         string note "Ghi chú ngắn của chuyên gia (optional)"
         string triggered_by "uid_expert1"
