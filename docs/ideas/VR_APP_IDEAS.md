@@ -1,11 +1,9 @@
 # 📱 Ý tưởng phát triển VR App
 
-> Đào sâu và cải thiện ứng dụng VR hiện có
-
 ---
 
 ## 🎯 Mục tiêu
-
+01/01/2026
 Nâng cấp VR App hiện tại để:
 - Thu thập dữ liệu phong phú hơn
 - Hỗ trợ cá nhân hóa cho từng trẻ
@@ -40,64 +38,11 @@ Dựa trên thiết kế Schema mới nhất (`DATABASE_SCHEMA_DESIGN.md`), hệ
 | **Gaze Target** | `focus_object` (Vật đang trực tiếp nhìn) | Phân tích Joint Attention |
 | **Hand Proximity** | `near_object = true` lặp lại | Đánh giá chần chừ (Hesitation) |
 
-### 1.3 Behavior Tracking (Giám sát Hành vi tóm tắt)
-
-Sự phân tách giữa hành vi máy đo & người đo:
-
-| Phân loại | Hành vi | Nguồn thu thập | Cơ sở Y khoa / Lâm sàng |
-|-----------|----------|---------------|--------------|
-| **Auto_Alert** | Freeze (Đứng hình) | Gia tốc tay/đầu = 0 | Sensory Overload / Stress response |
-| **Auto_Alert** | Distraction (Xao nhãng) | Angle > 30 độ | Né tránh ánh nhìn (Gaze aversion) |
-| **Auto_Alert** | Stimming (Tự kích thích) | Dao động gia tốc tay | Điều hòa thần kinh (Rhythmic movements) |
-| **Manual Log** | Meltdown / Cáu gắt | Chuyên gia bấm nút (Web) | Cảm quan trực tiếp không thể đo bằng máy |
-| **Manual Log** | Phản ứng tích cực | Chuyên gia bấm nút (Web) | Khuyến khích hành vi tốt |
-
 ---
 
 ## ⚙️ 2. Hệ thống Settings & Cá nhân hóa
 
-### 2.1 Hồ sơ Cá nhân Trẻ (Child Profile)
-
-> Lưu tại `users/{user_id}/profile` trên Firebase. Được thiết lập bởi chuyên gia/phụ huynh trên Web Dashboard trước buổi học.
-
-| Trường | Mô tả | Ví dụ |
-|--------|-------|-------|
-| `display_name` | Tên hiển thị | "Bé Nam" |
-| `age` | Tuổi | 7 |
-| `height_cm` | Chiều cao (cm) – dùng để căn camera VR | 110 |
-| `sound_sensitivity` | Khả năng chịu đựng âm thanh (1-5) | 3 |
-| `attention_span_min` | Thời gian tập trung ước tính (phút) | 10 |
-| `anxiety_triggers` | Các yếu tố gây lo lắng (mảng text) | ["đám đông", "tiếng ồn lớn"] |
-| `preferred_lessons` | Bài học yêu thích | ["Farm", "Zoo"] |
-| `diagnosis_notes` | Ghi chú chẩn đoán (chuyên gia nhập) | "ASD Level 1" |
-
-### 2.2 Phân loại Bài học
-
-> Mỗi bài học có metadata để hệ thống gợi ý và lọc phù hợp.
-
-| Thuộc tính | Mô tả | Ví dụ |
-|------------|-------|-------|
-| `age_range` | Độ tuổi phù hợp | [5, 10] |
-| `duration_min` | Thời gian ước tính (phút) | 15 |
-| `skills` | Kỹ năng rèn luyện | ["tự phục vụ", "giao tiếp"] |
-| `level` | Độ khó 1–3 | 2 |
-
-### 2.3 Tuỳ Chỉnh Thông Số Từng Bài Học (Per-lesson Parameters)
-
-> Khác với việc set cứng "Độ khó" (Easy/Normal/Hard) cho cả trò chơi, mỗi bài học sẽ có các thông số **tuỳ chỉnh chi tiết riêng biệt**, giúp chuyên gia/phụ huynh điều chỉnh chính xác theo nhu cầu của trẻ ở bài học đó.
-
-| Thông số (Parameter) | Ý nghĩa | Default |
-|----------------------|-------|---------|
-| `reminder_interval` | Thời gian chờ (giây) trước khi phát ra gợi ý nhắc nhở trẻ | `10s` |
-| `max_hints` | Quá số lần gợi ý này, hệ thống coi như trẻ chưa tự làm được | `3` |
-| `npc_voice_speed` | Tốc độ nói của nhân vật (NPC) trong bài | `1.0` (Bình thường) |
-| `visual_cues` | Bật/tắt các mũi tên, viền sáng hướng dẫn trực quan | `true` |
-| `quest_complexity` | Số lượng bước/quest con phải làm (Ví dụ: ít bước vs đầy đủ bước) | `Normal` |
-| `object_move_speed` | Tốc độ di chuyển của xe cộ, người qua đường, vật thể | `1.0` |
-| `env_volume` | Âm lượng tiếng ồn môi trường | `0.5` |
-| `time_limit` | Giới hạn thời gian tối đa để hoàn thành bài tập | `0` (Không có) |
-
-
+> ➡️ **Toàn bộ cấu trúc về Hệ thống Hồ sơ, Thông số độ khó cá nhân hóa (Parameters) và Phân loại Bài học (Metadata) đã được di chuyển sang file `WEB_DASHBOARD_IDEAS.md` (Phần 1 và 2) do Web Dashboard nắm quyền quản lý độc quyền.**
 
 ---
 
@@ -152,23 +97,4 @@ Sự phân tách giữa hành vi máy đo & người đo:
 
 ## 📱 4. Tính năng hỗ trợ Remote Control
 
-> Cho phép giáo viên điều khiển từ Web Dashboard
-
-
-
-### Commands cần hỗ trợ
-
-| Command | Mô tả |
-|---------|-------|
-| `trigger_hint` | Hiện gợi ý trực quan cho trẻ trong kính |
-| `play_npc_audio` | NPC phát audio theo clip đã chọn |
-| `play_npc_script` | NPC đọc câu thoại do giáo viên gõ real-time |
-| `set_volume` | Điều chỉnh âm lượng tiếng ồn môi trường |
-| `set_npc_voice_speed` | Điều chỉnh tốc độ giọng nói NPC |
-| `set_object_speed` | Điều chỉnh tốc độ di chuyển vật thể trong scene |
-| `pause_lesson` | Tạm dừng/tiếp tục bài học |
-| `skip_quest` | Bỏ qua quest hiện tại |
-| `set_camera_height` | Điều chỉnh chiều cao camera (override profile) |
-
----
-
+> ➡️ **Toàn bộ danh sách Command Line (Điều khiển môi trường, Âm thanh, Bỏ qua Quest) đã được quy hoạch sang `WEB_DASHBOARD_IDEAS.md` (Phần 4. Remote Control). Về phía VR, chúng ta chỉ cần viết Handler để đọc các lệnh này từ Firebase nhánh RemoteCommand.**
