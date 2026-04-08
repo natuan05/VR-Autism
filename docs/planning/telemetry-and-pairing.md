@@ -49,12 +49,23 @@ Assets/Project/Scripts/Cloud/
 - **OUTPUT:** Log Unity Editor in ra `"Paired success! Child ID = XYZ"`.
 - **VERIFY:** Debug event chạy chính xác mà không bị duplicate.
 
-#### Task A4: Tải Cấu hình Bài học cá nhân (Task 2.2)
+#### Task A4: Migrate `LessonInfo` to Firestore (Mới chèn vào)
+- **Agent:** `backend-specialist` / `frontend-developer`
+- **Cần làm gì:** 
+  - Tạo collection `lessons` trên Firestore thay thế cho ScriptableObject cứng trong app VR.
+  - Trên Web: Đọc danh sách `lessons` từ Firestore để hiển thị giao diện "Chọn bài học" thay vì hardcode.
+  - Khi Web gửi lệnh, sẽ dùng ID thực từ Firestore gắn vào `current_lesson_id`.
+  - Trên VR: (Tuỳ chọn) Tải meta-data của lesson từ Firestore nếu cần thiết cho UI/logic.
+- **INPUT:** Firestore database.
+- **OUTPUT:** Giao diện web hiển thị bài học thật, có ID lưu trên Cloud.
+- **VERIFY:** Nút "Start Lesson" truyền chính xác ID của Object trên Firestore vào RTDB.
+
+#### Task A5: Tải Cấu hình Bài học cá nhân (Task cũ 2.2)
 - **Agent:** `backend-specialist`
-- **Cần code gì:** 
+- **Cần làm gì:** 
   - Đọc Firestore: `child_profiles/{child_profile_id}` để lấy `default_lesson_params` (Volume, Hints delay).
-  - Đẩy setting này đè lên `GameManager` hoặc `LessonManager` trước khi Load Scene bài học.
-- **INPUT:** `child_profile_id` từ Task A3.
+  - Đẩy setting này đè lên `GameManager` hoặc cấu hình mặc định của bài học trước khi Load Scene.
+- **INPUT:** `child_profile_id` và `lesson_id` thực từ Task A4.
 - **OUTPUT:** Unity nạp Setting rác thành Setting đích xác.
 - **VERIFY:** Âm thanh, tốc độ hiện quest bị thay đổi đúng với child profile trên Firebase.
 
@@ -95,7 +106,8 @@ Assets/Project/Scripts/Cloud/
 ## 3. Checklist Hoàn thành (Phase X)
 - [x] Tính năng Random mã PIN (A1, A2) - *Hoàn thành chuẩn MVC Event-Driven*.
 - [x] Tính năng Lắng nghe trạng thái (A3) - *Hoàn thành mô hình Chained Listener chờ Lesson ID*.
-- [ ] Nạp thông số User setting (A4).
+- [ ] Chuyển đổi LessonInfo thành Collection Firestore (A4) - **(Next Step)**
+- [ ] Nạp thông số User setting cá nhân hoá (A5).
 - [ ] Gói thư viện Sensor (B1, B2).
 - [ ] Bắn Telemetry mỗi 2s mà không làm giật lag game (B3).
 - [ ] Security DB Rules đã phủ cho cả RTDB nhánh `pairing_codes` và `behavior_snapshots`.
