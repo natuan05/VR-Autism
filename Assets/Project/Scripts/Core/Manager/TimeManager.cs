@@ -44,13 +44,27 @@ namespace VRAutism.Core
                 return;
             }
 
+            // Lấy thông tin Session từ SessionContext Thần thánh (Cục bất tử truyền từ Menu sang)
+            // Lỡ có khởi chạy trực tiếp Scene thì xài GUID ảo chống Crash
+            string sessionId = !string.IsNullOrEmpty(SessionContext.Instance?.SessionId) ? SessionContext.Instance.SessionId : Guid.NewGuid().ToString();
+            string childId = SessionContext.Instance != null ? SessionContext.Instance.ChildId : "";
+            
+            // Đọc xong xoá liền để ván sau test offline hông dính rác
+            if (SessionContext.Instance != null)
+            {
+                SessionContext.Instance.SessionId = "";
+                SessionContext.Instance.ChildId = "";
+            }
+
             // Hand lesson metadata off to FirebaseManager to start tracking
             FirebaseManager.Instance.BeginSession(
                 lessonId:   lessonInfo.lesson_id,
                 lessonName: lessonInfo.lesson_name,
                 levelName:  lessonInfo.level_name,
                 levelIndex: lessonInfo.level_index,
-                lessonType: lessonInfo.type == LessonType.theoretical ? "theoretical" : "practical"
+                lessonType: lessonInfo.type == LessonType.theoretical ? "theoretical" : "practical",
+                sessionId:  sessionId,
+                childId:    childId
             );
 
             Debug.Log("[TimeManager] Session started at: " + _startTime.ToString("yyyy-MM-dd HH:mm:ss"));

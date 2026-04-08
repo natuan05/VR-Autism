@@ -14,6 +14,7 @@ namespace VRAutism.Cloud
         private DatabaseReference _rootRef;
         private string _currentPin;
         private string _deviceId;
+        private string _lastProcessedSessionId = "";
 
         private void Awake()
         {
@@ -50,7 +51,7 @@ namespace VRAutism.Cloud
 
         public event Action<string> OnPinGenerated;
         public event Action OnPairedSuccess;
-        public event Action<string> OnLessonSelected;
+        public event Action<string, string, string> OnNewSessionCommand; // (childId, lessonId, sessionId)
 
         /// <summary>Sinh mã PIN 6 số và đưa lên Realtime DB làm phòng chờ.</summary>
         public async Task<string> GenerateAndPushPIN()
@@ -97,28 +98,27 @@ namespace VRAutism.Cloud
                     
                     OnPairedSuccess?.Invoke();
                     
-                    // Bước 2: Bắt đầu lắng nghe lesson_id
-                    GetRootRef().Child("pairing_codes").Child(_currentPin).Child("lesson_id").ValueChanged += HandleLessonIdChanged;
+                    // Bước 2: Bắt đầu lắng nghe current_session_id (Lắng nghe VĨNH VIỄN)
+                    GetRootRef().Child("pairing_codes").Child(_currentPin).Child("current_session_id").ValueChanged += HandleSessionIdChanged;
                 }
             }
         }
 
-        private void HandleLessonIdChanged(object sender, ValueChangedEventArgs args)
+        private void HandleSessionIdChanged(object sender, ValueChangedEventArgs args)
         {
             if (args.DatabaseError != null) return;
+            if (args.Snapshot?.Value == null) return;
 
-            if (args.Snapshot != null && args.Snapshot.Value != null)
+            string sessionId = args.Snapshot.Value.ToString();
+
+            // Chỉ xử lý khi session_id KHÁC với session đã xử lý lần trước
+            // Tránh load lại bài cũ khi Firebase reconnect/flicker
+            if (!string.IsNullOrEmpty(sessionId) && sessionId != _lastProcessedSessionId)
             {
-                string lessonId = args.Snapshot.Value.ToString();
-                
-                // Chỉ kích hoạt khi lesson_id có giá trị thực (khác rỗng)
-                if (!string.IsNullOrEmpty(lessonId))
-                {
-                    GetRootRef().Child("pairing_codes").Child(_currentPin).Child("lesson_id").ValueChanged -= HandleLessonIdChanged;
-                    Debug.Log($"[RTDB] Giáo viên đã chọn bài học: {lessonId}");
-                    
-                    FetchPairedChildInformationAsync(_currentPin);
-                }
+                _lastProcessedSessionId = sessionId;
+                Debug.Log($"[RTDB] Nhận lệnh Session mới từ Web: {sessionId}");
+
+                FetchPairedChildInformationAsync(_currentPin);
             }
         }
 
@@ -127,11 +127,13 @@ namespace VRAutism.Cloud
             DataSnapshot snapshot = await GetRootRef().Child("pairing_codes").Child(pin).GetValueAsync();
             if (snapshot.Exists)
             {
-                string childId = snapshot.Child("child_profile_id").Value?.ToString();
-                string lessonId = snapshot.Child("lesson_id").Value?.ToString();
+                string childId = snapshot.Child("current_child_id").Value?.ToString();
+                string lessonId = snapshot.Child("current_lesson_id").Value?.ToString();
+                string sessionId = snapshot.Child("current_session_id").Value?.ToString();
 
-                Debug.Log($"[RTDB] Hoàn tất quy trình. Bé ID: {childId}, Load bài: {lessonId}");
-                OnLessonSelected?.Invoke(lessonId);
+                Debug.Log($"[RTDB] Thông số ván học -> Bé: {childId}, Bài: {lessonId}, Session: {sessionId}");
+
+                OnNewSessionCommand?.Invoke(childId, lessonId, sessionId);
             }
         }
 
@@ -141,6 +143,7 @@ namespace VRAutism.Cloud
             {
                 // Unsubscribe listener
                 _rootRef.Child("pairing_codes").Child(_currentPin).Child("status").ValueChanged -= HandleStatusChanged;
+                _rootRef.Child("pairing_codes").Child(_currentPin).Child("current_session_id").ValueChanged -= HandleSessionIdChanged;
             }
         }
     }

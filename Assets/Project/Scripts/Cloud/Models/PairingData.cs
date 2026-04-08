@@ -8,8 +8,12 @@ namespace VRAutism.Cloud.Models
         public string pin_6_digit;
         public string device_id;
         public string status; // "waiting" | "paired"
-        public string child_profile_id;
-        public string lesson_id; // Bài học giáo viên chọn trên Web
+        
+        // --- Dữ liệu thay đổi liên tục (Device Connection) ---
+        public string current_child_id;
+        public string current_lesson_id; 
+        public string current_session_id; // Web sinh ra khi bấm Start
+        
         public long created_at_utc; // Unix timestamp
         
         public PairingData(string pin, string deviceId)
@@ -17,8 +21,9 @@ namespace VRAutism.Cloud.Models
             pin_6_digit = pin;
             device_id = deviceId;
             status = "waiting";
-            child_profile_id = "";
-            lesson_id = "";
+            current_child_id = "";
+            current_lesson_id = "";
+            current_session_id = "";
             created_at_utc = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         }
     }

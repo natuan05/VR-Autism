@@ -19,13 +19,25 @@ namespace VRAutism.UI{
             // Kết nối vào Service Đám mây để lắng nghe yêu cầu nạp Bài học từ xa
             if (VRAutism.Cloud.RealtimeDBManager.Instance != null)
             {
-                VRAutism.Cloud.RealtimeDBManager.Instance.OnLessonSelected += LoadRemoteLesson;
+                VRAutism.Cloud.RealtimeDBManager.Instance.OnNewSessionCommand += LoadRemoteLesson;
             }
         }
 
-        private void LoadRemoteLesson(string lessonId)
+        private void LoadRemoteLesson(string childId, string lessonId, string sessionId)
         {
-            Debug.Log($"[SceneMenuController] Nhận lệnh từ Cloud. Tiến hành tự động tải Scene: {lessonId}");
+            Debug.Log($"[SceneMenuController] Nhận lệnh Session. Bé: {childId}, Buổi: {sessionId}. Tải Scene: {lessonId}");
+            
+            if (VRAutism.Core.SessionContext.Instance != null)
+            {
+                VRAutism.Core.SessionContext.Instance.SessionId = sessionId;
+                VRAutism.Core.SessionContext.Instance.ChildId = childId;
+            }
+            else 
+            {
+                Debug.LogWarning("[SceneMenuController] Không tìm thấy SessionContext! Dữ liệu sẽ không được bảo toàn qua Scene mới.");
+            }
+            
+            
             SceneManager.LoadScene(lessonId);
         }
 
@@ -34,7 +46,7 @@ namespace VRAutism.UI{
             // Xóa theo dõi khi Object bị gỡ bỏ để tránh Tồn đọng luồng bộ nhớ (Memory Leak)
             if (VRAutism.Cloud.RealtimeDBManager.Instance != null)
             {
-                VRAutism.Cloud.RealtimeDBManager.Instance.OnLessonSelected -= LoadRemoteLesson;
+                VRAutism.Cloud.RealtimeDBManager.Instance.OnNewSessionCommand -= LoadRemoteLesson;
             }
         }
     }

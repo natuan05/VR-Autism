@@ -16,7 +16,7 @@ namespace VRAutism.UI
                 
                 // Đăng ký các sự kiện 2 bước
                 Cloud.RealtimeDBManager.Instance.OnPairedSuccess += HandlePaired;
-                Cloud.RealtimeDBManager.Instance.OnLessonSelected += HandleLessonReady;
+                Cloud.RealtimeDBManager.Instance.OnNewSessionCommand += HandleLessonReady;
 
                 string newPin = await Cloud.RealtimeDBManager.Instance.GenerateAndPushPIN();
                 pinDisplay.text = "MÃ KẾT NỐI VR LÀ:\n" + newPin;
@@ -32,7 +32,7 @@ namespace VRAutism.UI
             pinDisplay.text = "Đã Kết Nối! Đang chờ chọn bài...";
         }
 
-        private void HandleLessonReady(string lessonId)
+        private void HandleLessonReady(string childId, string lessonId, string sessionId)
         {
             pinDisplay.text = "Giáo viên đã bắt đầu bài:\n" + lessonId;
             // Chỉ đảm nhiệm chức năng UI. Chuyển scene phải do cấu trúc Core (GameManager/SceneController) vận hành.
@@ -43,7 +43,7 @@ namespace VRAutism.UI
             if (Cloud.RealtimeDBManager.Instance != null)
             {
                 Cloud.RealtimeDBManager.Instance.OnPairedSuccess -= HandlePaired;
-                Cloud.RealtimeDBManager.Instance.OnLessonSelected -= HandleLessonReady;
+                Cloud.RealtimeDBManager.Instance.OnNewSessionCommand -= HandleLessonReady;
             }
         }
     }

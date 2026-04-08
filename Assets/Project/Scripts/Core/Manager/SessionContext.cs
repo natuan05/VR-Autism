@@ -9,12 +9,16 @@ using UnityEngine;
 
 namespace VRAutism.Core
 {
-    public class GameManager : MonoBehaviour
+    public class SessionContext : MonoBehaviour
     {
-        public static GameManager Instance;
+        public static SessionContext Instance;
+        
+        public string SessionId { get; set; } = "";
+        public string ChildId { get; set; } = "";
+        
         private void Awake()
         {
-            // Singleton Guard: Tránh việc 2 GameManager cùng tồn tại
+            // Singleton Guard: Tránh việc 2 SessionContext cùng tồn tại
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject); 
