@@ -64,14 +64,23 @@ Mặc dù tính năng tự động tạo Quiz (CMS) tạm thời bị hoãn lạ
 
 ---
 
-| Phân loại | Hành vi | Nguồn thu thập | Cơ sở Y khoa / Lâm sàng |
-|-----------|----------|---------------|--------------|
-| **Auto_Alert** | Freeze (Đứng hình) | Gia tốc tay/đầu = 0 | Sensory Overload / Stress response |
-| **Auto_Alert** | Distraction (Xao nhãng) | Angle > 30 độ | Né tránh ánh nhìn (Gaze aversion) |
-| **Auto_Alert** | Stimming (Tự kích thích) | Dao động gia tốc tay | Điều hòa thần kinh (Rhythmic movements) |
-| **Manual Log** | Meltdown / Cáu gắt | Chuyên gia bấm nút (Web) | Cảm quan trực tiếp không thể đo bằng máy |
-| **Manual Log** | Phản ứng tích cực | Chuyên gia bấm nút (Web) | Khuyến khích hành vi tốt |
-| **Manual Log** | Ghi chú văn bản tự do | Chuyên gia gõ Note thả vào stream | Đóng băng 1 khoảnh khắc kèm Text y khoa để lưu vào bệnh án |
+### Auto Alerts (`auto_alerts` collection)
+*Được tính toán tự động từ Behavior Snapshots do VR gửi lên.*
+
+| Hành vi | Nguồn thu thập | Cơ sở Y khoa / Lâm sàng |
+|----------|---------------|--------------|
+| Freeze (Đứng hình) | Gia tốc tay/đầu = 0 | Sensory Overload / Stress response |
+| Distraction (Xao nhãng) | Angle > 30 độ | Né tránh ánh nhìn (Gaze aversion) |
+| Stimming (Tự kích thích) | Dao động gia tốc tay | Điều hòa thần kinh (Rhythmic movements) |
+
+### Manual Behavior Logs (`behavior_logs` collection)
+*Chuyên gia chủ động ghi nhận trên Web Dashboard trong lúc quan sát POV.*
+
+| Hành vi | Cách nhập | Mục đích |
+|----------|----------|----------|
+| Meltdown / Cáu gắt | Bấm nút nhanh trên Web | Cảm quan trực tiếp không thể đo bằng máy |
+| Phản ứng tích cực | Bấm nút nhanh trên Web | Khuyến khích hành vi tốt |
+| Ghi chú văn bản tự do | Gõ Note thả vào stream | Đóng băng 1 khoảnh khắc kèm Text y khoa để lưu vào bệnh án |
 
 ---
 

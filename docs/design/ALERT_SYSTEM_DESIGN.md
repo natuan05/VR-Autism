@@ -71,7 +71,7 @@ Unity (Quest 2)
 
 ## 5. BehaviorSnapshot Schema
 
-Ghi vào: `sessions/{session_id}/behavior_snapshots/{timestamp}`
+Ghi vào: `behavior_snapshots/{session_id}/{timestamp}`
 
 | Field | Mô tả | Nguồn trong Unity |
 |-------|-------|-------------------|
