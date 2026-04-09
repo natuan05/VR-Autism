@@ -51,7 +51,7 @@ namespace VRAutism.Cloud
 
         public event Action<string> OnPinGenerated;
         public event Action OnPairedSuccess;
-        public event Action<string, string, string> OnNewSessionCommand; // (childId, lessonId, sessionId)
+        public event Action<string, string, string, string> OnNewSessionCommand; // (childId, sceneName, lessonId, sessionId)
 
         /// <summary>Sinh mã PIN 6 số và đưa lên Realtime DB làm phòng chờ.</summary>
         public async Task<string> GenerateAndPushPIN()
@@ -128,12 +128,13 @@ namespace VRAutism.Cloud
             if (snapshot.Exists)
             {
                 string childId = snapshot.Child("current_child_id").Value?.ToString();
+                string sceneName = snapshot.Child("target_scene_name").Value?.ToString();
                 string lessonId = snapshot.Child("current_lesson_id").Value?.ToString();
                 string sessionId = snapshot.Child("current_session_id").Value?.ToString();
 
-                Debug.Log($"[RTDB] Thông số ván học -> Bé: {childId}, Bài: {lessonId}, Session: {sessionId}");
+                Debug.Log($"[RTDB] Thông số ván học -> Bé: {childId}, Scene: {sceneName}, Bài: {lessonId}, Session: {sessionId}");
 
-                OnNewSessionCommand?.Invoke(childId, lessonId, sessionId);
+                OnNewSessionCommand?.Invoke(childId, sceneName, lessonId, sessionId);
             }
         }
 

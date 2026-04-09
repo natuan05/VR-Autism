@@ -1,6 +1,7 @@
 using System.Collections;
 using VRAutism.Core;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class AnimalLessonManager : MonoBehaviour
 {
@@ -111,7 +112,7 @@ public class AnimalLessonManager : MonoBehaviour
         
         if (end) 
         {
-            this.SendEvent(EventID.ExitScene);
+            SceneManager.LoadScene("GameMenu");
         }
     }
 }

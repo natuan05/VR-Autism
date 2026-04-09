@@ -198,9 +198,6 @@ namespace VRAutism.Core
         PlaySound,
         PauseSound,
         PlaySoundLoop,
-        // Change Scene
-        ChangeScene,
-        ExitScene,
         // Washing Hand Scene
         ToggleFaucet
     }

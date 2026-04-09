@@ -93,7 +93,7 @@ namespace VRAutism.Quests
             if (curQuestId >= quests.Length - 1)
             {
                 if (congratulationUI != null) congratulationUI.SetActive(true);
-                this.SendEvent(EventID.ExitScene);
+                // Quest cuối hoàn thành → ActionManager sẽ tự xử lý tiếp
                 isConditionMet.Value = true;
                 return;
             }

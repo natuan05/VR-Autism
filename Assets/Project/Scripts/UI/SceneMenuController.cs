@@ -1,9 +1,13 @@
-using System;
-using VRAutism.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace VRAutism.UI{
+    /// <summary>
+    /// Trạm nhận lệnh trên màn hình Chờ VR (Lobby).
+    /// Khi Web gửi lệnh "Bắt đầu bài học", component này:
+    /// 1. Lưu context (childId, sessionId) vào SessionContext
+    /// 2. Gọi SceneManager.LoadScene trực tiếp
+    /// </summary>
     public class SceneMenuController : MonoBehaviour
     {
         public static SceneMenuController Instance;
@@ -16,17 +20,17 @@ namespace VRAutism.UI{
 
         private void Start()
         {
-            // Kết nối vào Service Đám mây để lắng nghe yêu cầu nạp Bài học từ xa
             if (VRAutism.Cloud.RealtimeDBManager.Instance != null)
             {
                 VRAutism.Cloud.RealtimeDBManager.Instance.OnNewSessionCommand += LoadRemoteLesson;
             }
         }
 
-        private void LoadRemoteLesson(string childId, string lessonId, string sessionId)
+        private void LoadRemoteLesson(string childId, string sceneName, string lessonId, string sessionId)
         {
-            Debug.Log($"[SceneMenuController] Nhận lệnh Session. Bé: {childId}, Buổi: {sessionId}. Tải Scene: {lessonId}");
+            Debug.Log($"[SceneMenuController] Nhận lệnh Session. Bé: {childId}, Bài: {lessonId}, Scene: {sceneName}, Buổi: {sessionId}");
             
+            // Lưu context cho Telemetry
             if (VRAutism.Core.SessionContext.Instance != null)
             {
                 VRAutism.Core.SessionContext.Instance.SessionId = sessionId;
@@ -34,16 +38,15 @@ namespace VRAutism.UI{
             }
             else 
             {
-                Debug.LogWarning("[SceneMenuController] Không tìm thấy SessionContext! Dữ liệu sẽ không được bảo toàn qua Scene mới.");
+                Debug.LogWarning("[SceneMenuController] Không tìm thấy SessionContext!");
             }
             
-            
-            SceneManager.LoadScene(lessonId);
+            // Load Scene trực tiếp - không qua trung gian
+            SceneManager.LoadScene(sceneName);
         }
 
         private void OnDestroy()
         {
-            // Xóa theo dõi khi Object bị gỡ bỏ để tránh Tồn đọng luồng bộ nhớ (Memory Leak)
             if (VRAutism.Cloud.RealtimeDBManager.Instance != null)
             {
                 VRAutism.Cloud.RealtimeDBManager.Instance.OnNewSessionCommand -= LoadRemoteLesson;

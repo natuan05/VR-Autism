@@ -32,10 +32,9 @@ namespace VRAutism.UI
             pinDisplay.text = "Đã Kết Nối! Đang chờ chọn bài...";
         }
 
-        private void HandleLessonReady(string childId, string lessonId, string sessionId)
+        private void HandleLessonReady(string childId, string sceneName, string lessonId, string sessionId)
         {
             pinDisplay.text = "Giáo viên đã bắt đầu bài:\n" + lessonId;
-            // Chỉ đảm nhiệm chức năng UI. Chuyển scene phải do cấu trúc Core (GameManager/SceneController) vận hành.
         }
 
         private void OnDestroy()

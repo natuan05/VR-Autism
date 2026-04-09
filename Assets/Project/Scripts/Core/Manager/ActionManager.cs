@@ -43,8 +43,8 @@ namespace VRAutism.Core
                 actionEvent.onFinished?.Invoke();
             }
             
-            Debug.Log("[Debug] <color=#00ff48>All actions have been finished...</color>");
-
+            Debug.Log("[Debug] <color=#00ff48>All actions have been finished. Quay về sảnh chính...</color>");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("GameMenu");
         }
     }
 
