@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using VRAutism.Core;
@@ -6,14 +6,48 @@ using UnityEngine;
 
 public class SoundManager : MonoBehaviour
 {
+    public static SoundManager Inst { get; private set; }
+
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private List<SoundObject> soundObjects;
 
+    // Lưu delegate để có thể unsubscribe chính xác (lambda tạo instance mới mỗi lần, không thể unsubscribe)
+    private Action<object> _onPlaySound;
+    private Action<object> _onPauseSound;
+    private Action<object> _onPlaySoundLoop;
+
     private void Awake()
     {
-        this.SubscribeListener(EventID.PlaySound, param => PlaySound((TypeSound) param));
-        this.SubscribeListener(EventID.PauseSound, param => PauseSound());
-        this.SubscribeListener(EventID.PlaySoundLoop, param => PlaySoundLoop((TypeSound) param));
+        // Cho phép scene mới ghi đè SoundManager cũ (mỗi scene có danh sách âm thanh riêng)
+        Inst = this;
+
+        _onPlaySound = param => PlaySound((TypeSound) param);
+        _onPauseSound = param => PauseSound();
+        _onPlaySoundLoop = param => PlaySoundLoop((TypeSound) param);
+
+        this.SubscribeListener(EventID.PlaySound, _onPlaySound);
+        this.SubscribeListener(EventID.PauseSound, _onPauseSound);
+        this.SubscribeListener(EventID.PlaySoundLoop, _onPlaySoundLoop);
+    }
+
+    private void OnDestroy()
+    {
+        // Huỷ đăng ký chính xác bằng biến đã lưu, tránh "xác sống" trong EventChannel
+        this.UnsubscribeListener(EventID.PlaySound, _onPlaySound);
+        this.UnsubscribeListener(EventID.PauseSound, _onPauseSound);
+        this.UnsubscribeListener(EventID.PlaySoundLoop, _onPlaySoundLoop);
+
+        if (Inst == this) Inst = null;
+    }
+
+    private bool IsAudioSourceValid()
+    {
+        if (audioSource == null)
+        {
+            Debug.LogWarning("[SoundManager] audioSource is null! Trying to find one on this GameObject.");
+            audioSource = GetComponent<AudioSource>();
+        }
+        return audioSource != null;
     }
 
     private void PlayMusic()
@@ -23,6 +57,7 @@ public class SoundManager : MonoBehaviour
 
     public void PlaySound(TypeSound typeSound)
     {
+        if (!IsAudioSourceValid()) return;
         var sound = soundObjects.Find(x => x.typeSound == typeSound);
         if (sound is null) return;
         if (audioSource.isPlaying) audioSource.Stop();
@@ -33,6 +68,7 @@ public class SoundManager : MonoBehaviour
 
     public void PlayAudioClip(AudioClip clip)
     {
+        if (!IsAudioSourceValid()) return;
         if (audioSource.isPlaying) audioSource.Stop();
         if (clip != null)
         {
@@ -45,11 +81,13 @@ public class SoundManager : MonoBehaviour
 
     private void PauseSound()
     {
-        audioSource.Pause();
+        if (IsAudioSourceValid())
+            audioSource.Pause();
     }
 
     public void PlaySoundLoop(TypeSound typeSound)
     {
+        if (!IsAudioSourceValid()) return;
         var sound = soundObjects.Find(x => x.typeSound == typeSound);
         if (sound is null) return;
         if (audioSource.isPlaying) audioSource.Stop();
@@ -61,6 +99,7 @@ public class SoundManager : MonoBehaviour
 
     public void StopLoopingSound()
     {
+        if (!IsAudioSourceValid()) return;
         if (audioSource.isPlaying && audioSource.loop)
         {
             audioSource.Stop();
@@ -76,6 +115,7 @@ public class SoundManager : MonoBehaviour
 
     public bool IsPlaying()
     {
+        if (!IsAudioSourceValid()) return false;
         return audioSource.isPlaying;
     }
 

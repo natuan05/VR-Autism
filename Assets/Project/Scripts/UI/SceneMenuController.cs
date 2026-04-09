@@ -30,6 +30,12 @@ namespace VRAutism.UI{
 
         private async void LoadRemoteLesson(string childId, string sceneName, string lessonId, string sessionId)
         {
+            if (string.IsNullOrEmpty(lessonId) || string.IsNullOrEmpty(sceneName))
+            {
+                Debug.LogWarning("[SceneMenuController] lessonId hoặc sceneName trống. Bỏ qua lệnh (có thể do sửa RTDB thủ công từng field).");
+                return;
+            }
+
             Debug.Log($"[SceneMenuController] Nhận lệnh Session. Bé: {childId}, Bài: {lessonId}, Scene: {sceneName}, Buổi: {sessionId}");
             
             // Lưu context cơ bản trước
