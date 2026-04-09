@@ -16,7 +16,6 @@ namespace VRAutism.Core
         public static TimeManager Instance { get; private set; }
 
         [SerializeField] private DoubleVariable lessonTime;
-        [SerializeField] private LessonInfo lessonInfo;
 
         private Stopwatch _timer;
         private DateTime _startTime;
@@ -38,31 +37,29 @@ namespace VRAutism.Core
         {
             _startTime = DateTime.Now;
 
-            if (lessonInfo == null)
-            {
-                Debug.LogError("[TimeManager] LessonInfo not assigned in Inspector!");
-                return;
-            }
-
-            // Lấy thông tin Session từ SessionContext Thần thánh (Cục bất tử truyền từ Menu sang)
-            // Lỡ có khởi chạy trực tiếp Scene thì xài GUID ảo chống Crash
-            string sessionId = !string.IsNullOrEmpty(SessionContext.Instance?.SessionId) ? SessionContext.Instance.SessionId : Guid.NewGuid().ToString();
-            string childId = SessionContext.Instance != null ? SessionContext.Instance.ChildId : "";
+            var ctx = SessionContext.Instance;
             
-            // Đọc xong xoá liền để ván sau test offline hông dính rác
-            if (SessionContext.Instance != null)
+            // Lấy metadata bài học từ SessionContext (đã được SceneMenuController fetch từ Firestore)
+            string lessonId   = ctx != null ? ctx.LessonId : "";
+            string lessonName = ctx != null ? ctx.LessonName : "";
+            string levelName  = ctx != null ? ctx.LevelName : "";
+            int levelIndex    = ctx != null ? ctx.LevelIndex : 0;
+            string lessonType = ctx != null ? ctx.LessonType : "";
+            string sessionId  = !string.IsNullOrEmpty(ctx?.SessionId) ? ctx.SessionId : Guid.NewGuid().ToString();
+            string childId    = ctx != null ? ctx.ChildId : "";
+
+            if (string.IsNullOrEmpty(lessonId))
             {
-                SessionContext.Instance.SessionId = "";
-                SessionContext.Instance.ChildId = "";
+                Debug.LogWarning("[TimeManager] SessionContext không có LessonId — có thể đang chạy trực tiếp Scene để test.");
             }
 
             // Hand lesson metadata off to FirebaseManager to start tracking
             FirebaseManager.Instance.BeginSession(
-                lessonId:   lessonInfo.lesson_id,
-                lessonName: lessonInfo.lesson_name,
-                levelName:  lessonInfo.level_name,
-                levelIndex: lessonInfo.level_index,
-                lessonType: lessonInfo.type == LessonType.theoretical ? "theoretical" : "practical",
+                lessonId:   lessonId,
+                lessonName: lessonName,
+                levelName:  levelName,
+                levelIndex: levelIndex,
+                lessonType: lessonType,
                 sessionId:  sessionId,
                 childId:    childId
             );

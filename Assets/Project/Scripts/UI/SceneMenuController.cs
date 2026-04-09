@@ -1,12 +1,15 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Firebase.Firestore;
+using Firebase.Extensions;
 
 namespace VRAutism.UI{
     /// <summary>
     /// Trạm nhận lệnh trên màn hình Chờ VR (Lobby).
-    /// Khi Web gửi lệnh "Bắt đầu bài học", component này:
-    /// 1. Lưu context (childId, sessionId) vào SessionContext
-    /// 2. Gọi SceneManager.LoadScene trực tiếp
+    /// Khi Web gửi lệnh "Bắt đầu bài học":
+    /// 1. Fetch lesson metadata từ Firestore (lessons/{lessonId})
+    /// 2. Lưu vào SessionContext
+    /// 3. Gọi SceneManager.LoadScene
     /// </summary>
     public class SceneMenuController : MonoBehaviour
     {
@@ -14,42 +17,64 @@ namespace VRAutism.UI{
         
         private void Awake()
         {
-            Debug.LogWarning("[SceneMenuController] Đã thiết lập Trạm Nhận Lệnh trên màn hình Chờ VR (Dumb Terminal Mode)!");
             Instance = this;
         }
 
         private void Start()
         {
-            if (VRAutism.Cloud.RealtimeDBManager.Instance != null)
+            if (Cloud.RealtimeDBManager.Instance != null)
             {
-                VRAutism.Cloud.RealtimeDBManager.Instance.OnNewSessionCommand += LoadRemoteLesson;
+                Cloud.RealtimeDBManager.Instance.OnNewSessionCommand += LoadRemoteLesson;
             }
         }
 
-        private void LoadRemoteLesson(string childId, string sceneName, string lessonId, string sessionId)
+        private async void LoadRemoteLesson(string childId, string sceneName, string lessonId, string sessionId)
         {
             Debug.Log($"[SceneMenuController] Nhận lệnh Session. Bé: {childId}, Bài: {lessonId}, Scene: {sceneName}, Buổi: {sessionId}");
             
-            // Lưu context cho Telemetry
-            if (VRAutism.Core.SessionContext.Instance != null)
+            // Lưu context cơ bản trước
+            var ctx = VRAutism.Core.SessionContext.Instance;
+            if (ctx != null)
             {
-                VRAutism.Core.SessionContext.Instance.SessionId = sessionId;
-                VRAutism.Core.SessionContext.Instance.ChildId = childId;
+                ctx.SessionId = sessionId;
+                ctx.ChildId = childId;
+                ctx.LessonId = lessonId;
             }
-            else 
+
+            // Fetch lesson metadata từ Firestore collection "lessons"
+            try 
             {
-                Debug.LogWarning("[SceneMenuController] Không tìm thấy SessionContext!");
+                var db = FirebaseFirestore.DefaultInstance;
+                DocumentSnapshot doc = await db.Collection(Cloud.FirebasePaths.Lessons).Document(lessonId).GetSnapshotAsync();
+                
+                if (doc.Exists && ctx != null)
+                {
+                    ctx.LessonName = doc.ContainsField("lesson_name") ? doc.GetValue<string>("lesson_name") : "";
+                    ctx.LevelName = doc.ContainsField("level_name") ? doc.GetValue<string>("level_name") : "";
+                    ctx.LevelIndex = doc.ContainsField("level_index") ? doc.GetValue<int>("level_index") : 0;
+                    ctx.LessonType = doc.ContainsField("type") ? doc.GetValue<string>("type") : "";
+                    
+                    Debug.Log($"[SceneMenuController] Đã fetch Firestore: {ctx.LessonName} / {ctx.LevelName} / {ctx.LessonType}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[SceneMenuController] Không tìm thấy document lessons/{lessonId} trên Firestore!");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[SceneMenuController] Lỗi fetch Firestore: {ex.Message}");
             }
             
-            // Load Scene trực tiếp - không qua trung gian
+            // Chuyển Scene
             SceneManager.LoadScene(sceneName);
         }
 
         private void OnDestroy()
         {
-            if (VRAutism.Cloud.RealtimeDBManager.Instance != null)
+            if (Cloud.RealtimeDBManager.Instance != null)
             {
-                VRAutism.Cloud.RealtimeDBManager.Instance.OnNewSessionCommand -= LoadRemoteLesson;
+                Cloud.RealtimeDBManager.Instance.OnNewSessionCommand -= LoadRemoteLesson;
             }
         }
     }
