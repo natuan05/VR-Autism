@@ -76,7 +76,7 @@ namespace VRAutism.UI
         }
 
         // ─── Callback: Giáo viên đã chọn bài, sắp chuyển scene ───
-        private void HandleLessonReady(string childId, string sceneName, string lessonId, string sessionId)
+        private void HandleLessonReady(string childId, string sceneName, string lessonId, string sessionId, string hostId)
         {
             // Ưu tiên lấy tên đẹp từ SessionContext (sau khi Firestore fetch xong)
             string displayName = VRAutism.Core.SessionContext.Instance?.LessonName;

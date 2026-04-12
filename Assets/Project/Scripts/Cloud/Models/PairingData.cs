@@ -14,6 +14,7 @@ namespace VRAutism.Cloud.Models
         public string current_lesson_id; 
         public string current_session_id; // Web sinh ra khi bấm Start
         public string target_scene_name;  // Web gửi tên Scene Unity cần load (VD: "Bathroom")
+        public string host_id;            // UID của Expert đang điều khiển buổi học
         
         
         public long created_at_utc; // Unix timestamp

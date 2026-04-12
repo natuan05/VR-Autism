@@ -22,6 +22,9 @@ namespace VRAutism.Core
         public int LevelIndex { get; set; } = 0;
         public string LessonType { get; set; } = ""; // "theoretical" hoặc "practical"
         
+        // --- Thông tin expert điều khiển ---
+        public string HostId { get; set; } = "";
+        
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -46,6 +49,7 @@ namespace VRAutism.Core
             LevelName = "";
             LevelIndex = 0;
             LessonType = "";
+            HostId = "";
         }
 
         private void Update()

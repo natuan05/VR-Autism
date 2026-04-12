@@ -32,7 +32,7 @@ namespace VRAutism.Cloud
         public event Action<string> OnPinGenerated;           // PIN đã tạo xong
         public event Action OnPairedSuccess;                   // Web vừa ghép nối thành công  
         public event Action OnDisconnectedByWeb;               // Web chủ động ngắt kết nối (status → "waiting")
-        public event Action<string, string, string, string> OnNewSessionCommand; // (childId, sceneName, lessonId, sessionId)
+        public event Action<string, string, string, string, string> OnNewSessionCommand; // (childId, sceneName, lessonId, sessionId, hostId)
 
         // ─── Properties cho UI đọc trạng thái hiện tại ───
         public bool IsPaired => _isPaired;
@@ -231,9 +231,10 @@ namespace VRAutism.Cloud
                 string sceneName = snapshot.Child("target_scene_name").Value?.ToString();
                 string lessonId = snapshot.Child("current_lesson_id").Value?.ToString();
                 string sessionId = snapshot.Child("current_session_id").Value?.ToString();
+                string hostId = snapshot.Child("host_id").Value?.ToString();
 
-                Debug.Log($"[RTDB] Thông số buổi học -> Bé: {childId}, Scene: {sceneName}, Bài: {lessonId}, Session: {sessionId}");
-                OnNewSessionCommand?.Invoke(childId, sceneName, lessonId, sessionId);
+                Debug.Log($"[RTDB] Thông số buổi học -> Bé: {childId}, Scene: {sceneName}, Bài: {lessonId}, Session: {sessionId}, Host: {hostId}");
+                OnNewSessionCommand?.Invoke(childId, sceneName, lessonId, sessionId, hostId);
             }
         }
 

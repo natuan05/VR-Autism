@@ -28,7 +28,7 @@ namespace VRAutism.UI{
             }
         }
 
-        private async void LoadRemoteLesson(string childId, string sceneName, string lessonId, string sessionId)
+        private async void LoadRemoteLesson(string childId, string sceneName, string lessonId, string sessionId, string hostId)
         {
             if (string.IsNullOrEmpty(lessonId) || string.IsNullOrEmpty(sceneName))
             {
@@ -45,6 +45,7 @@ namespace VRAutism.UI{
                 ctx.SessionId = sessionId;
                 ctx.ChildId = childId;
                 ctx.LessonId = lessonId;
+                ctx.HostId = hostId ?? "";
             }
 
             // Fetch lesson metadata từ Firestore collection "lessons"
