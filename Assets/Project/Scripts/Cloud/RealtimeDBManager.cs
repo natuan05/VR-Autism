@@ -3,6 +3,7 @@ using Firebase.Database;
 using VRAutism.Cloud.Models;
 using System.Threading.Tasks;
 using System;
+using UnityEngine.SceneManagement;
 
 namespace VRAutism.Cloud
 {
@@ -218,6 +219,21 @@ namespace VRAutism.Cloud
                 _lastProcessedSessionId = sessionId;
                 Debug.Log($"[RTDB] Nhận lệnh Session mới từ Web: {sessionId}");
                 FetchPairedChildInformationAsync(_currentPin);
+            }
+            else if (string.IsNullOrEmpty(sessionId) && !string.IsNullOrEmpty(_lastProcessedSessionId))
+            {
+                // Session bị xoá bởi Web -> Buộc kết thúc bài học, quay về Lobby
+                _lastProcessedSessionId = "";
+                Debug.Log("[RTDB] ⚠️ Web đã kết thúc session. Trở về màn hình GameMenu...");
+                
+                // Clear state bài học cũ
+                if (VRAutism.Core.SessionContext.Instance != null)
+                {
+                    VRAutism.Core.SessionContext.Instance.Clear();
+                }
+
+                // Dùng Unity load lại trang chủ
+                SceneManager.LoadScene("GameMenu");
             }
         }
 

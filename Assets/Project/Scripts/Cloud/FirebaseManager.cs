@@ -59,12 +59,13 @@ namespace VRAutism.Cloud
         // ─────────────────────────────────────────────────────────────────────
 
         /// <summary>Call this at lesson start to initialise the in-memory session container.</summary>
-        public void BeginSession(string lessonId, string lessonName, string levelName, int levelIndex, string lessonType, string sessionId = null, string childId = null)
+        public void BeginSession(string lessonId, string lessonName, string levelName, int levelIndex, string lessonType, string sessionId = null, string childId = null, string hostId = null)
         {
             _currentSession = new SessionData
             {
                 session_id       = string.IsNullOrEmpty(sessionId) ? Guid.NewGuid().ToString() : sessionId,
                 child_profile_id = childId ?? "",
+                hosted_by        = hostId ?? "",
                 device_id        = SystemInfo.deviceUniqueIdentifier,
                 lesson_id        = lessonId,
                 lesson_name      = lessonName,

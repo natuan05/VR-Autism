@@ -61,7 +61,8 @@ namespace VRAutism.Core
                 levelIndex: levelIndex,
                 lessonType: lessonType,
                 sessionId:  sessionId,
-                childId:    childId
+                childId:    childId,
+                hostId:     ctx != null ? ctx.HostId : ""
             );
 
             Debug.Log("[TimeManager] Session started at: " + _startTime.ToString("yyyy-MM-dd HH:mm:ss"));
