@@ -49,7 +49,7 @@ Assets/Project/Scripts/Cloud/
 - **OUTPUT:** Log Unity Editor in ra `"Paired success! Child ID = XYZ"`.
 - **VERIFY:** Debug event chạy chính xác mà không bị duplicate.
 
-#### Task A4: Migrate `LessonInfo` to Firestore (Mới chèn vào)
+#### Task A4: Migrate `LessonInfo` to Firestore - ✅ **ĐÃ HOÀN THÀNH**
 - **Agent:** `backend-specialist` / `frontend-developer`
 - **Cần làm gì:** 
   - Tạo collection `lessons` trên Firestore thay thế cho ScriptableObject cứng trong app VR.
@@ -103,10 +103,33 @@ Assets/Project/Scripts/Cloud/
 
 ---
 
+### PHẦN C: Giao tiếp & Ổn định Live Session (Handshake & Heartbeat)
+*Lý do làm tiếp theo: Cần đảm bảo Web biết VR đã thực sự vào bài (Handshake) và đang sống sót (Heartbeat) để tránh lỗi "Bóng ma phiên học" (Orphaned Sessions) trước khi bắn dữ liệu phức tạp.*
+
+#### Task C1: VR Handshake (Xác nhận nạp Scene thành công)
+- **Agent:** `backend-specialist` / `VR-specialist`
+- **Cần làm gì:** 
+  - Tại VR, khi load xong Scene bài học và bắt đầu `QuestController`, cập nhật node `LIVE_SESSIONS/{session_id}/vr_state` với giá trị `current_scene`.
+  - Trên Web, lắng nghe node `vr_state` này để chuyển UI từ trạng thái "Đang chờ tải..." sang giao diện Điều khiển chính thức.
+- **INPUT:** VR Scene hoàn tất quá trình Load.
+- **OUTPUT:** RTDB nhận flag báo hiệu, Web mở giao diện Live Dashboard.
+
+#### Task C2: Web Watchdog (Theo dõi nhịp sống VR)
+- **Agent:** `frontend-developer`
+- **Cần làm gì:** 
+  - Đọc `BEHAVIOR_SNAPSHOTS` hoặc một biến `last_ping` nhỏ định kỳ từ VR.
+  - Trên Web Dashboard, nếu quá 10 giây không có cục Telemetry/Ping mới xuất hiện $\rightarrow$ Hiển thị cảnh báo "Mất kết nối với kính" lên màn hình chuyên gia.
+- **INPUT:** Dữ liệu streaming Telemetry.
+- **OUTPUT:** UI Cảnh báo mạng bị rớt giữa bé và hệ thống.
+
+---
+
 ## 3. Checklist Hoàn thành (Phase X)
 - [x] Tính năng Random mã PIN (A1, A2) - *Hoàn thành chuẩn MVC Event-Driven*.
 - [x] Tính năng Lắng nghe trạng thái (A3) - *Hoàn thành mô hình Chained Listener chờ Lesson ID*.
-- [ ] Chuyển đổi LessonInfo thành Collection Firestore (A4) - **(Next Step)**
+- [x] Chuyển đổi LessonInfo thành Collection Firestore (A4) - *Hoàn thành tích hợp DB và khử toàn bộ UI tĩnh.*
+- [ ] Triển khai VR Handshake xác nhận 2 chiều (C1) - **(Next Step)**
+- [ ] Thiết lập Watchdog cảnh báo mất kết nối bề mặt Web (C2) - **(Next Step)**
 - [ ] Nạp thông số User setting cá nhân hoá (A5).
 - [ ] Gói thư viện Sensor (B1, B2).
 - [ ] Bắn Telemetry mỗi 2s mà không làm giật lag game (B3).
