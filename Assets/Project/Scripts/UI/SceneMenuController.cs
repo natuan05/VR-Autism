@@ -48,6 +48,7 @@ namespace VRAutism.UI{
             }
 
             // Fetch lesson metadata từ Firestore collection "lessons"
+            bool fetchSuccess = false;
             try 
             {
                 var db = FirebaseFirestore.DefaultInstance;
@@ -57,23 +58,32 @@ namespace VRAutism.UI{
                 {
                     ctx.LessonName = doc.ContainsField("lesson_name") ? doc.GetValue<string>("lesson_name") : "";
                     ctx.LevelName = doc.ContainsField("level_name") ? doc.GetValue<string>("level_name") : "";
-                    ctx.LevelIndex = doc.ContainsField("level_index") ? doc.GetValue<int>("level_index") : 0;
+                    
+                    // Sửa lỗi int64: Firestore lưu số dưới dạng long (int64)
+                    ctx.LevelIndex = doc.ContainsField("level_index") ? (int)doc.GetValue<long>("level_index") : 0;
+                    
                     ctx.LessonType = doc.ContainsField("type") ? doc.GetValue<string>("type") : "";
                     
-                    Debug.Log($"[SceneMenuController] Đã fetch Firestore: {ctx.LessonName} / {ctx.LevelName} / {ctx.LessonType}");
+                    Debug.Log($"[SceneMenuController] Đã fetch Firestore thành công. Bài: {ctx.LessonName} ({ctx.LessonType}) - Mức: {ctx.LevelName}");
+                    fetchSuccess = true;
                 }
                 else
                 {
-                    Debug.LogWarning($"[SceneMenuController] Không tìm thấy document lessons/{lessonId} trên Firestore!");
+                    Debug.LogWarning($"[SceneMenuController] THẤT BẠI: Không tìm thấy document bài học có ID là '{lessonId}' trong Firestore! Hãy kiểm tra Web Panel gửi đúng ID chưa.");
                 }
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"[SceneMenuController] Lỗi fetch Firestore: {ex.Message}");
+                Debug.LogError($"[SceneMenuController] Lỗi fetch Firestore (có thể mất mạng/alt-tab): {ex.Message}. Không chuyển Scene.");
             }
             
-            // Chuyển Scene
-            SceneManager.LoadScene(sceneName);
+            // ⚠️ Chỉ chuyển Scene nếu fetch Firestore thành công
+            // Tránh trường hợp alt-tab làm Firestore timeout rồi vẫn LoadScene với dữ liệu rỗng
+            if (fetchSuccess)
+            {
+                Debug.Log($"[SceneMenuController] Chuyển tới Scene: {sceneName}");
+                SceneManager.LoadScene(sceneName);
+            }
         }
 
         private void OnDestroy()
