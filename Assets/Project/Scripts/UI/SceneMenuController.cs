@@ -49,7 +49,6 @@ namespace VRAutism.UI{
             }
 
             // Fetch lesson metadata từ Firestore collection "lessons"
-            bool fetchSuccess = false;
             try 
             {
                 var db = FirebaseFirestore.DefaultInstance;
@@ -57,34 +56,38 @@ namespace VRAutism.UI{
                 
                 if (doc.Exists && ctx != null)
                 {
-                    ctx.LessonName = doc.ContainsField("lesson_name") ? doc.GetValue<string>("lesson_name") : "";
-                    ctx.LevelName = doc.ContainsField("level_name") ? doc.GetValue<string>("level_name") : "";
+                    ctx.LessonName = doc.ContainsField("lesson_name") ? doc.GetValue<string>("lesson_name") : sceneName;
+                    ctx.LevelName = doc.ContainsField("level_name") ? doc.GetValue<string>("level_name") : "Vô danh";
                     
-                    // Sửa lỗi int64: Firestore lưu số dưới dạng long (int64)
-                    ctx.LevelIndex = doc.ContainsField("level_index") ? (int)doc.GetValue<long>("level_index") : 0;
-                    
+                    // Sử dụng Convert để xử lý an toàn mọi loại định dạng Int, Long, Float 
+                    if (doc.ContainsField("level_index"))
+                    {
+                        try {
+                            ctx.LevelIndex = System.Convert.ToInt32(doc.GetValue<object>("level_index"));
+                        } catch { ctx.LevelIndex = 0; }
+                    }
+
                     ctx.LessonType = doc.ContainsField("type") ? doc.GetValue<string>("type") : "";
                     
                     Debug.Log($"[SceneMenuController] Đã fetch Firestore thành công. Bài: {ctx.LessonName} ({ctx.LessonType}) - Mức: {ctx.LevelName}");
-                    fetchSuccess = true;
                 }
                 else
                 {
-                    Debug.LogWarning($"[SceneMenuController] THẤT BẠI: Không tìm thấy document bài học có ID là '{lessonId}' trong Firestore! Hãy kiểm tra Web Panel gửi đúng ID chưa.");
+                    // Fallback tên cơ bản nếu doc không tồn tại thay vì rỗng
+                    if (ctx != null) ctx.LessonName = sceneName;
+                    Debug.LogWarning($"[SceneMenuController] Cảnh báo: Không tìm thấy document bài học ID '{lessonId}' trong Firestore. Sẽ tiếp tục Load Scene.");
                 }
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"[SceneMenuController] Lỗi fetch Firestore (có thể mất mạng/alt-tab): {ex.Message}. Không chuyển Scene.");
+                if (ctx != null) ctx.LessonName = sceneName; // Fallback
+                Debug.LogError($"[SceneMenuController] Lỗi fetch Firestore (có thể mất mạng/alt-tab): {ex.Message}. Vẫn sẽ tiếp tục chuyển Scene.");
             }
             
-            // ⚠️ Chỉ chuyển Scene nếu fetch Firestore thành công
-            // Tránh trường hợp alt-tab làm Firestore timeout rồi vẫn LoadScene với dữ liệu rỗng
-            if (fetchSuccess)
-            {
-                Debug.Log($"[SceneMenuController] Chuyển tới Scene: {sceneName}");
-                SceneManager.LoadScene(sceneName);
-            }
+            // ⚠️ Luôn chuyển Scene khi đã nhận lệnh của Web để đồng bộ trạng thái,
+            // kể cả khi rớt mạng không lấy được thông tin metadata bài học từ Firestore.
+            Debug.Log($"[SceneMenuController] Chuyển tới Scene: {sceneName}");
+            SceneManager.LoadScene(sceneName);
         }
 
         private void OnDestroy()

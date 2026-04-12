@@ -65,6 +65,15 @@ namespace VRAutism.Core
                 hostId:     ctx != null ? ctx.HostId : ""
             );
 
+            // Handshake: Báo cho Web Dashboard biết trẻ đã vào scene thành công.
+            // Dùng SceneManager.GetActiveScene().name để luôn lấy đúng tên bài đang chạy,
+            // bất kể loại bài là ActionManager hay QuizController.
+            if (!string.IsNullOrEmpty(sessionId) && RealtimeDBManager.Instance != null)
+            {
+                string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+                RealtimeDBManager.Instance.SendLiveSessionHandshake(sessionId, currentScene);
+            }
+
             Debug.Log("[TimeManager] Session started at: " + _startTime.ToString("yyyy-MM-dd HH:mm:ss"));
         }
 
@@ -119,15 +128,24 @@ namespace VRAutism.Core
             }
             else
             {
-                // Fallback: timer chưa được start (scene không gọi StartLessonTime)
-                // Dùng _startTime được set trong Start() làm mốc thay thế
                 durationSeconds = (DateTime.Now - _startTime).TotalSeconds;
                 Debug.LogWarning("[TimeManager] SaveLessonTimeData: _timer was null, using _startTime fallback.");
             }
 
             FirebaseManager.Instance.SaveSession(completionStatus, score, durationSeconds);
             Debug.Log($"[TimeManager] Lesson ended. Duration: {durationSeconds:F1}s, Status: {completionStatus}");
+
+            // Gửi tín hiệu "ended" lên RTDB để Web Dashboard tự động thoát trang Session.
+            // Gọi tập trung ở đây thay vì trong từng Manager (ActionManager, QuizController)
+            // để đảm bảo mọi loại bài học đều trigger signal này.
+            var ctx = SessionContext.Instance;
+            string sessionId = ctx != null ? ctx.SessionId : "";
+            if (!string.IsNullOrEmpty(sessionId) && Cloud.RealtimeDBManager.Instance != null)
+            {
+                Cloud.RealtimeDBManager.Instance.SendLiveSessionEnded(sessionId);
+            }
         }
+
 
         public void StartQuestTime()
         {

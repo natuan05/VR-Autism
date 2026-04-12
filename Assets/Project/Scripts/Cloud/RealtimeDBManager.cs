@@ -144,17 +144,17 @@ namespace VRAutism.Cloud
         //  LẮNG NGHE RTDB — Unified Listener trên toàn bộ nhánh PIN
         // ══════════════════════════════════════════════════════════════
 
-        private void StartListeningToPinNode(string pin)
+private void StartListeningToPinNode(string pin)
         {
             var pinRef = GetRootRef().Child("pairing_codes").Child(pin);
 
-            // Listener 1: Nghe status LIÊN TỤC (không bao giờ huỷ cho đến khi tắt app)
-            pinRef.Child("status").ValueChanged += HandleStatusChanged;
+            // Một listener duy nhất trên toàn node PIN.
+            // Mỗi lần bất kỳ field nào thay đổi (status, session_id, scene_name...)
+            // callback đều nhận Snapshot đầy đủ → không cần GetValueAsync() riêng,
+            // loại bỏ hoàn toàn race condition.
+            pinRef.ValueChanged += HandlePinNodeChanged;
 
-            // Listener 2: Nghe session_id LIÊN TỤC
-            pinRef.Child("current_session_id").ValueChanged += HandleSessionIdChanged;
-
-            Debug.Log($"[RTDB] Đã bật listener liên tục trên pairing_codes/{pin}");
+            Debug.Log($"[RTDB] Đã bật listener trên toàn node pairing_codes/{pin}");
         }
 
         private void StopListeningAll()
@@ -162,101 +162,153 @@ namespace VRAutism.Cloud
             if (_rootRef != null && !string.IsNullOrEmpty(_currentPin))
             {
                 var pinRef = _rootRef.Child("pairing_codes").Child(_currentPin);
-                pinRef.Child("status").ValueChanged -= HandleStatusChanged;
-                pinRef.Child("current_session_id").ValueChanged -= HandleSessionIdChanged;
-                Debug.Log($"[RTDB] Đã tắt toàn bộ listener trên PIN: {_currentPin}");
+                pinRef.ValueChanged -= HandlePinNodeChanged;
+                Debug.Log($"[RTDB] Đã tắt listener trên PIN: {_currentPin}");
             }
         }
 
-        // ─── Handler: status thay đổi ───
-        private void HandleStatusChanged(object sender, ValueChangedEventArgs args)
+        // ─── Handler duy nhất: Toàn bộ node PIN thay đổi ───
+        private void HandlePinNodeChanged(object sender, ValueChangedEventArgs args)
         {
             if (args.DatabaseError != null)
             {
-                Debug.LogError($"[RTDB] Lỗi listener status: {args.DatabaseError.Message}");
+                Debug.LogError($"[RTDB] Lỗi listener PIN node: {args.DatabaseError.Message}");
                 return;
             }
 
-            if (args.Snapshot == null || args.Snapshot.Value == null) return;
+            if (args.Snapshot == null || !args.Snapshot.Exists) return;
 
-            string newStatus = args.Snapshot.Value.ToString();
-            Debug.Log($"[RTDB] Status thay đổi → \"{newStatus}\"");
+            // Đọc tất cả field trực tiếp từ Snapshot — không cần fetch thêm
+            string newStatus  = args.Snapshot.Child("status").Value?.ToString() ?? "";
+            string sessionId  = args.Snapshot.Child("current_session_id").Value?.ToString() ?? "";
+            string childId    = args.Snapshot.Child("current_child_id").Value?.ToString() ?? "";
+            string sceneName  = args.Snapshot.Child("target_scene_name").Value?.ToString() ?? "";
+            string lessonId   = args.Snapshot.Child("current_lesson_id").Value?.ToString() ?? "";
+            string hostId     = args.Snapshot.Child("host_id").Value?.ToString() ?? "";
 
-            switch (newStatus)
+            // ── Xử lý thay đổi Status ──
+            if (newStatus == "paired" && !_isPaired)
             {
-                case "paired":
-                    if (!_isPaired) // Chỉ fire event lần đầu chuyển sang paired
-                    {
-                        _isPaired = true;
-                        Debug.Log("[RTDB] ✅ Ghép nối thành công! Chờ giáo viên chọn bài...");
-                        OnPairedSuccess?.Invoke();
-                    }
-                    break;
-
-                case "waiting":
-                    if (_isPaired) // Chỉ fire event khi THỰC SỰ bị ngắt (từ paired → waiting)
-                    {
-                        _isPaired = false;
-                        _lastProcessedSessionId = "";
-                        Debug.Log("[RTDB] ⚠️ Web đã ngắt kết nối! Reset về trạng thái chờ.");
-                        OnDisconnectedByWeb?.Invoke();
-                    }
-                    break;
+                _isPaired = true;
+                Debug.Log("[RTDB] ✅ Ghép nối thành công! Chờ giáo viên chọn bài...");
+                OnPairedSuccess?.Invoke();
             }
-        }
+            else if (newStatus == "waiting" && _isPaired)
+            {
+                _isPaired = false;
+                _lastProcessedSessionId = "";
+                Debug.Log("[RTDB] ⚠️ Web đã ngắt kết nối! Reset về trạng thái chờ.");
+                OnDisconnectedByWeb?.Invoke();
+            }
 
-        // ─── Handler: current_session_id thay đổi ───
-        private void HandleSessionIdChanged(object sender, ValueChangedEventArgs args)
-        {
-            if (args.DatabaseError != null) return;
-            if (args.Snapshot?.Value == null) return;
-
-            string sessionId = args.Snapshot.Value.ToString();
-
-            // Chỉ xử lý khi session_id KHÁC với session đã xử lý lần trước
+            // ── Xử lý Session mới ──
             if (!string.IsNullOrEmpty(sessionId) && sessionId != _lastProcessedSessionId)
             {
-                _lastProcessedSessionId = sessionId;
-                Debug.Log($"[RTDB] Nhận lệnh Session mới từ Web: {sessionId}");
-                FetchPairedChildInformationAsync(_currentPin);
+                // Tất cả dữ liệu đã có trong Snapshot này — không gọi GetValueAsync()
+                if (!string.IsNullOrEmpty(sceneName) && !string.IsNullOrEmpty(lessonId))
+                {
+                    _lastProcessedSessionId = sessionId;
+                    Debug.Log($"[RTDB] Nhận lệnh Session mới → Bé: {childId}, Scene: {sceneName}, Bài: {lessonId}, Session: {sessionId}");
+                    OnNewSessionCommand?.Invoke(childId, sceneName, lessonId, sessionId, hostId);
+                }
+                else
+                {
+                    // sessionId đã thay đổi nhưng các field khác chưa có → bỏ qua,
+                    // listener sẽ fire lại khi update đầy đủ.
+                    Debug.LogWarning($"[RTDB] sessionId mới ({sessionId}) nhưng scene/lesson chưa có trong snapshot. Chờ update tiếp theo.");
+                }
             }
             else if (string.IsNullOrEmpty(sessionId) && !string.IsNullOrEmpty(_lastProcessedSessionId))
             {
-                // Session bị xoá bởi Web -> Buộc kết thúc bài học, quay về Lobby
+                // Web xoá session → Quay về GameMenu
                 _lastProcessedSessionId = "";
                 Debug.Log("[RTDB] ⚠️ Web đã kết thúc session. Trở về màn hình GameMenu...");
-                
-                // Clear state bài học cũ
-                if (VRAutism.Core.SessionContext.Instance != null)
-                {
-                    VRAutism.Core.SessionContext.Instance.Clear();
-                }
 
-                // Dùng Unity load lại trang chủ
+                if (VRAutism.Core.SessionContext.Instance != null)
+                    VRAutism.Core.SessionContext.Instance.Clear();
+
                 SceneManager.LoadScene("GameMenu");
             }
         }
 
-        // ─── Fetch đầy đủ thông tin từ nhánh PIN ───
-        private async void FetchPairedChildInformationAsync(string pin)
-        {
-            DataSnapshot snapshot = await GetRootRef().Child("pairing_codes").Child(pin).GetValueAsync();
-            if (snapshot.Exists)
-            {
-                string childId = snapshot.Child("current_child_id").Value?.ToString();
-                string sceneName = snapshot.Child("target_scene_name").Value?.ToString();
-                string lessonId = snapshot.Child("current_lesson_id").Value?.ToString();
-                string sessionId = snapshot.Child("current_session_id").Value?.ToString();
-                string hostId = snapshot.Child("host_id").Value?.ToString();
+        // ══════════════════════════════════════════════════════════════
+        //  HANDSHAKE — VR xác nhận đã vào scene bài học
+        //  Web lắng nghe node này để biết trẻ đã sẵn sàng
+        // ══════════════════════════════════════════════════════════════
 
-                Debug.Log($"[RTDB] Thông số buổi học -> Bé: {childId}, Scene: {sceneName}, Bài: {lessonId}, Session: {sessionId}, Host: {hostId}");
-                OnNewSessionCommand?.Invoke(childId, sceneName, lessonId, sessionId, hostId);
+        /// <summary>
+        /// Gọi ngay sau khi Scene bài học load xong (từ TimeManager.Start).
+        /// Tạo node `live_sessions/{sessionId}` và ghi `vr_state` với status="ready"
+        /// để Web Dashboard biết trẻ đã vào bên trong scene thành công.
+        /// </summary>
+        /// <param name="sessionId">Session ID nhận từ Web qua pairing_codes</param>
+        /// <param name="sceneName">Tên Scene đang chạy (ví dụ: "Bathroom", "Farm")</param>
+        public async void SendLiveSessionHandshake(string sessionId, string sceneName)
+        {
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                Debug.LogWarning("[RTDB] SendLiveSessionHandshake: sessionId trống, bỏ qua.");
+                return;
+            }
+
+            var root = GetRootRef();
+            if (root == null) return;
+
+            long confirmedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+            var vrStateData = new System.Collections.Generic.Dictionary<string, object>
+            {
+                { "status",       "ready" },
+                { "scene_name",   sceneName },
+                { "confirmed_at", confirmedAt }
+            };
+
+            try
+            {
+                await root.Child("live_sessions").Child(sessionId).Child("vr_state")
+                           .UpdateChildrenAsync(vrStateData);
+
+                Debug.Log($"[RTDB] ✅ Handshake gửi thành công → live_sessions/{sessionId}/vr_state (scene: {sceneName})");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[RTDB] Handshake thất bại: {ex.Message}");
             }
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  LIFECYCLE — Dọn dẹp khi tắt app
-        // ══════════════════════════════════════════════════════════════
+        /// <summary>
+        /// Gọi khi bài học kết thúc (trước khi LoadScene GameMenu).
+        /// Ghi vr_state.status = "ended" để Web Dashboard tự động đóng trang Session.
+        /// </summary>
+        public async void SendLiveSessionEnded(string sessionId)
+        {
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                Debug.LogWarning("[RTDB] SendLiveSessionEnded: sessionId trống, bỏ qua.");
+                return;
+            }
+
+            var root = GetRootRef();
+            if (root == null) return;
+
+            var endData = new System.Collections.Generic.Dictionary<string, object>
+            {
+                { "status",   "ended" },
+                { "ended_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }
+            };
+
+            try
+            {
+                await root.Child("live_sessions").Child(sessionId).Child("vr_state")
+                           .UpdateChildrenAsync(endData);
+                Debug.Log($"[RTDB] ✅ Session ended signal gửi thành công → live_sessions/{sessionId}/vr_state");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[RTDB] SendLiveSessionEnded thất bại: {ex.Message}");
+            }
+        }
+
 
         private void OnDestroy()
         {

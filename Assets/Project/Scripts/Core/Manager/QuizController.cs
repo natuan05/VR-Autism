@@ -2,6 +2,7 @@ using VRAutism.Core;
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Orchestrates quiz lesson flow.
@@ -100,6 +101,18 @@ public class QuizController : MonoBehaviour
         soundManager.StopLoopingSound();
         TimeManager.Instance.SaveLessonTimeData("success", quiz_score.Value);
         uiController.ShowGameOver(TimeManager.Instance.GetTotalElapsedSeconds());
+        StartCoroutine(ReturnToMenuAfterDelay(3f));
+    }
+
+    /// <summary>
+    /// Chờ vài giây để người dùng xem bảng kết quả, sau đó quay về GameMenu.
+    /// Tương tự ActionManager — tất cả loại bài sau khi xong đều phải về Lobby.
+    /// </summary>
+    private IEnumerator ReturnToMenuAfterDelay(float delaySeconds)
+    {
+        Debug.Log($"[QuizController] Chuyển về GameMenu sau {delaySeconds}s...");
+        yield return new WaitForSeconds(delaySeconds);
+        SceneManager.LoadScene("GameMenu");
     }
 
     // ─── Event handlers (subscribed from Awake) ────────────────────────────

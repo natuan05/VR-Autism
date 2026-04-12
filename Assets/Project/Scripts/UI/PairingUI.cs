@@ -78,9 +78,10 @@ namespace VRAutism.UI
         // ─── Callback: Giáo viên đã chọn bài, sắp chuyển scene ───
         private void HandleLessonReady(string childId, string sceneName, string lessonId, string sessionId, string hostId)
         {
-            // Ưu tiên lấy tên đẹp từ SessionContext (sau khi Firestore fetch xong)
-            string displayName = VRAutism.Core.SessionContext.Instance?.LessonName;
-            if (string.IsNullOrEmpty(displayName)) displayName = lessonId;
+            // Dùng tham số trực tiếp từ RTDB snapshot — không đọc SessionContext.LessonName
+            // vì SceneMenuController.LoadRemoteLesson() là async và chưa fetch Firestore xong
+            // tại thời điểm callback này chạy (race condition).
+            string displayName = !string.IsNullOrEmpty(sceneName) ? sceneName : lessonId;
 
             if (pinDisplay != null)
                 pinDisplay.text = "🎮 Đang khởi chạy bài:\n" + displayName;
