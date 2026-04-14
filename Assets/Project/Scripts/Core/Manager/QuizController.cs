@@ -10,6 +10,9 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class QuizController : MonoBehaviour
 {
+    // Báo hiệu chuyển cảnh (gửi thẳng string Activity Name)
+    public static event Action<string> OnQuizActivityChanged;
+
     [Header("Dependencies")]
     [SerializeField] private QuestionCollection questionCollection;
     [SerializeField] private QuizUIController uiController;
@@ -91,6 +94,10 @@ public class QuizController : MonoBehaviour
 
         uiController.SetupUIForQuestion(_currentQuestion);
         TimeManager.Instance.MarkQuestStart();
+        
+        // Báo cáo Cloud: Đang ở câu hỏi số mấy để Web vẽ nút
+        OnQuizActivityChanged?.Invoke("Quiz_Q" + (_currentQuestionIndex + 1));
+        
         StartCoroutine(HandleQuestionSounds());
     }
 

@@ -7964,7 +7964,7 @@ MonoBehaviour:
   - {fileID: 12280570}
   questProgressUI: {fileID: 743512962}
   bubbleQuestion: {fileID: 721296230}
-  congratulationUI: {fileID: 0}
+  congratulationUI: {fileID: 73881163}
   isConditionMet: {fileID: 11400000, guid: a8e38e13912aab046bec3e66c434c42d, type: 2}
 --- !u!4 &1336548302
 Transform:

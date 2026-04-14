@@ -7,6 +7,9 @@ namespace VRAutism.Quests
 {
     public class QuestController: MonoBehaviour
     {
+        // Báo hiệu mỗi khi chuyển sang quest mới
+        public static event Action<string> OnQuestActivityChanged;
+
         [SerializeField] private Quest[] quests;
         [SerializeField] private QuestProgressUI questProgressUI;
         [SerializeField] private GameObject bubbleQuestion;
@@ -116,6 +119,7 @@ namespace VRAutism.Quests
             else
             {
                 quest.SetState(Quest.State.Enable);
+                OnQuestActivityChanged?.Invoke("Action_" + quest.Name);
             }
         }
 

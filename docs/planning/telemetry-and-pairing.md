@@ -106,11 +106,11 @@ Assets/Project/Scripts/Cloud/
 ### PHẦN C: Giao tiếp & Ổn định Live Session (Handshake & Heartbeat)
 *Lý do làm tiếp theo: Cần đảm bảo Web biết VR đã thực sự vào bài (Handshake) và đang sống sót (Heartbeat) để tránh lỗi "Bóng ma phiên học" (Orphaned Sessions) trước khi bắn dữ liệu phức tạp.*
 
-#### Task C1: VR Handshake (Xác nhận nạp Scene thành công)
+#### Task C1: VR Handshake (Xác nhận nạp Scene thành công) - ✅ **ĐÃ HOÀN THÀNH**
 - **Agent:** `backend-specialist` / `VR-specialist`
 - **Cần làm gì:** 
-  - Tại VR, khi load xong Scene bài học và bắt đầu `QuestController`, cập nhật node `LIVE_SESSIONS/{session_id}/vr_state` với giá trị `current_scene`.
-  - Trên Web, lắng nghe node `vr_state` này để chuyển UI từ trạng thái "Đang chờ tải..." sang giao diện Điều khiển chính thức.
+  - Tại VR, khi load xong Scene bài học, cập nhật node `live_sessions/{session_id}/vr_state` với status="ready" và `scene_name`.
+  - Trên Web, dùng `subscribeToVrHandshake` lắng nghe để chuyển từ "Đang chờ" sang Monitor Dashboard.
 - **INPUT:** VR Scene hoàn tất quá trình Load.
 - **OUTPUT:** RTDB nhận flag báo hiệu, Web mở giao diện Live Dashboard.
 
@@ -122,14 +122,23 @@ Assets/Project/Scripts/Cloud/
 - **INPUT:** Dữ liệu streaming Telemetry.
 - **OUTPUT:** UI Cảnh báo mạng bị rớt giữa bé và hệ thống.
 
+#### Task C3: Session Termination (Đóng vòng đời phiên học) - ✅ **ĐÃ HOÀN THÀNH**
+- **Agent:** `backend-specialist`
+- **Cần làm gì:** 
+  - Khi VR quay về Lobby (GameMenu), set `vr_state.status = "ended"` lên RTDB.
+  - Web nhận tín hiệu `ended` để tự động dọn dẹp PIN và redirect về Dashboard chính, không để giáo viên bị kẹt ở màn theo dõi.
+- **INPUT:** VR kết thúc bài học (Action hoàn tất hoặc Quiz kết thúc).
+- **OUTPUT:** Web tự động chuyển trang đồng bộ với VR.
+
 ---
 
 ## 3. Checklist Hoàn thành (Phase X)
 - [x] Tính năng Random mã PIN (A1, A2) - *Hoàn thành chuẩn MVC Event-Driven*.
 - [x] Tính năng Lắng nghe trạng thái (A3) - *Hoàn thành mô hình Chained Listener chờ Lesson ID*.
 - [x] Chuyển đổi LessonInfo thành Collection Firestore (A4) - *Hoàn thành tích hợp DB và khử toàn bộ UI tĩnh.*
-- [ ] Triển khai VR Handshake xác nhận 2 chiều (C1) - **(Next Step)**
-- [ ] Thiết lập Watchdog cảnh báo mất kết nối bề mặt Web (C2) - **(Next Step)**
+- [x] Triển khai VR Handshake xác nhận 2 chiều (C1) - *Hoàn thành lắng nghe node vr_state.*
+- [x] Đồng bộ đóng phiên học (Session Termination - C3) - *Hoàn thành auto-redirect khi bài xong.*
+- [ ] Thiết lập Watchdog cảnh báo mất kết nối bề mặt Web (C2).
 - [ ] Nạp thông số User setting cá nhân hoá (A5).
 - [ ] Gói thư viện Sensor (B1, B2).
 - [ ] Bắn Telemetry mỗi 2s mà không làm giật lag game (B3).

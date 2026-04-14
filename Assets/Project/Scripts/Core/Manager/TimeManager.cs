@@ -8,6 +8,7 @@ using VRAutism.Quests;
 using Debug = UnityEngine.Debug;
 using VRAutism.Cloud;
 using VRAutism.Cloud.Models;
+using VRAutism.Core.Telemetry;
 
 namespace VRAutism.Core
 {
@@ -72,6 +73,12 @@ namespace VRAutism.Core
             {
                 string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
                 RealtimeDBManager.Instance.SendLiveSessionHandshake(sessionId, currentScene);
+            }
+
+            // [MỚI] Kích hoạt luồng Telemetry thu thập dữ liệu hành vi trẻ mỗi 2s
+            if (!string.IsNullOrEmpty(sessionId) && TelemetryStreamer.Instance != null)
+            {
+                TelemetryStreamer.Instance.StartStreaming(sessionId);
             }
 
             Debug.Log("[TimeManager] Session started at: " + _startTime.ToString("yyyy-MM-dd HH:mm:ss"));
@@ -143,6 +150,12 @@ namespace VRAutism.Core
             if (!string.IsNullOrEmpty(sessionId) && Cloud.RealtimeDBManager.Instance != null)
             {
                 Cloud.RealtimeDBManager.Instance.SendLiveSessionEnded(sessionId);
+            }
+
+            // [MỚI] Tắt thu thập chuỗi Telemetry
+            if (TelemetryStreamer.Instance != null)
+            {
+                TelemetryStreamer.Instance.StopStreaming();
             }
         }
 

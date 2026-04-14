@@ -277,9 +277,55 @@ private void StartListeningToPinNode(string pin)
         }
 
         /// <summary>
+        /// Bắn một mẫu dữ liệu hành vi lên RTDB (Telemetry).
+        /// Đường dẫn: behavior_snapshots/{sessionId}/{timestamp}
+        /// Truyền JSON thô cho tối ưu hiệu năng.
+        /// </summary>
+        public async void PushBehaviorSnapshot(string sessionId, Models.BehaviorSnapshot snapshot)
+        {
+            if (string.IsNullOrEmpty(sessionId)) return;
+            var root = GetRootRef();
+            if (root == null) return;
+
+            string timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+            string json = UnityEngine.JsonUtility.ToJson(snapshot);
+
+            try
+            {
+                await root.Child("behavior_snapshots").Child(sessionId).Child(timestamp).SetRawJsonValueAsync(json);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[RTDB] Lỗi bắn Telemetry snapshot: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Update trạng thái HĐ hiện tại để Web thay đổi các nút tương tác Hint Remote.
+        /// (Được gọi từ Tracker, không nên gọi trực tiếp từ C# Gameplay)
+        /// </summary>
+        public async void UpdateCurrentActivity(string sessionId, string activityName)
+        {
+            if (string.IsNullOrEmpty(sessionId)) return;
+            var root = GetRootRef();
+            if (root == null) return;
+
+            try
+            {
+                await root.Child("live_sessions").Child(sessionId).Child("vr_state").Child("current_activity").SetValueAsync(activityName);
+                Debug.Log($"[RTDB] Đã cập nhật current_activity -> {activityName}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[RTDB] Lỗi khi cập nhật current_activity: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Gọi khi bài học kết thúc (trước khi LoadScene GameMenu).
         /// Ghi vr_state.status = "ended" để Web Dashboard tự động đóng trang Session.
         /// </summary>
+
         public async void SendLiveSessionEnded(string sessionId)
         {
             if (string.IsNullOrEmpty(sessionId))
