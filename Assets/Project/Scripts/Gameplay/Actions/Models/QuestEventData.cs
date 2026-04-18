@@ -1,7 +1,7 @@
 ﻿using System;
 using VRAutism.Core;
 
-namespace VRAutism.Quests
+namespace VRAutism.Gameplay.Actions
 {
     public class QuestEventData: BaseSO
     {

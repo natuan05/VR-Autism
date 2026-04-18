@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace VRAutism.Quests
+namespace VRAutism.Gameplay.Actions
 {
     public class QuestProgressUI : MonoBehaviour
     {

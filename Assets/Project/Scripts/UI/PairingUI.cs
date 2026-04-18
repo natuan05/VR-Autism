@@ -5,7 +5,7 @@ namespace VRAutism.UI
 {
     /// <summary>
     /// Màn hình UI hiển thị trạng thái kết nối trên Lobby VR.
-    /// Đăng ký vào tất cả event của RealtimeDBManager để phản ứng liên tục.
+    /// Đăng ký vào tất cả event của PairingManager để phản ứng liên tục.
     /// 
     /// Khi Scene Lobby load lại (sau lesson):
     ///   - Nếu PIN cũ vẫn paired → Hiện "Đã kết nối. Chờ chọn bài mới..."
@@ -17,7 +17,7 @@ namespace VRAutism.UI
         [Header("Giao diện UI")]
         public TextMeshProUGUI pinDisplay;
 
-        private Cloud.RealtimeDBManager _rtdb;
+        private Cloud.RTDB.PairingManager _pairing;
 
         async void Start()
         {
@@ -27,29 +27,29 @@ namespace VRAutism.UI
                 return;
             }
 
-            _rtdb = Cloud.RealtimeDBManager.Instance;
-            if (_rtdb == null)
+            _pairing = Cloud.RTDB.PairingManager.Instance;
+            if (_pairing == null)
             {
-                Debug.LogError("[PairingUI] RealtimeDBManager.Instance chưa tồn tại!");
+                Debug.LogError("[PairingUI] PairingManager.Instance chưa tồn tại!");
                 return;
             }
 
             // Đăng ký TẤT CẢ event (sẽ huỷ trong OnDestroy)
-            _rtdb.OnPinGenerated += HandlePinGenerated;
-            _rtdb.OnPairedSuccess += HandlePaired;
-            _rtdb.OnDisconnectedByWeb += HandleDisconnectedByWeb;
-            _rtdb.OnNewSessionCommand += HandleLessonReady;
+            _pairing.OnPinGenerated += HandlePinGenerated;
+            _pairing.OnPairedSuccess += HandlePaired;
+            _pairing.OnDisconnectedByWeb += HandleDisconnectedByWeb;
+            _pairing.OnNewSessionCommand += HandleLessonReady;
 
             // Kiểm tra: Có PIN cũ còn sống không? (trường hợp quay về từ lesson)
-            if (!string.IsNullOrEmpty(_rtdb.CurrentPin))
+            if (!string.IsNullOrEmpty(_pairing.CurrentPin))
             {
                 pinDisplay.text = "Đang kiểm tra kết nối...";
-                _rtdb.ResumeListening(); // Sẽ fire OnPairedSuccess hoặc OnPinGenerated tuỳ trạng thái
+                _pairing.ResumeListening(); // Sẽ fire OnPairedSuccess hoặc OnPinGenerated tuỳ trạng thái
             }
             else
             {
                 pinDisplay.text = "Đang tạo mã kết nối...";
-                await _rtdb.GenerateAndPushPIN();
+                await _pairing.GenerateAndPushPIN();
             }
         }
 
@@ -71,7 +71,7 @@ namespace VRAutism.UI
         private void HandleDisconnectedByWeb()
         {
             if (pinDisplay != null)
-                pinDisplay.text = "⚠️ Đã bị ngắt kết nối!\nMÃ PIN: " + (_rtdb?.CurrentPin ?? "???") + 
+                pinDisplay.text = "⚠️ Đã bị ngắt kết nối!\nMÃ PIN: " + (_pairing?.CurrentPin ?? "???") + 
                     "\nVui lòng yêu cầu giáo viên kết nối lại.";
         }
 
@@ -89,12 +89,12 @@ namespace VRAutism.UI
 
         private void OnDestroy()
         {
-            if (_rtdb != null)
+            if (_pairing != null)
             {
-                _rtdb.OnPinGenerated -= HandlePinGenerated;
-                _rtdb.OnPairedSuccess -= HandlePaired;
-                _rtdb.OnDisconnectedByWeb -= HandleDisconnectedByWeb;
-                _rtdb.OnNewSessionCommand -= HandleLessonReady;
+                _pairing.OnPinGenerated -= HandlePinGenerated;
+                _pairing.OnPairedSuccess -= HandlePaired;
+                _pairing.OnDisconnectedByWeb -= HandleDisconnectedByWeb;
+                _pairing.OnNewSessionCommand -= HandleLessonReady;
             }
         }
     }

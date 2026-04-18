@@ -6,8 +6,7 @@ using VRAutism.Core;
 namespace VRAutism.Core.Telemetry
 {
     /// <summary>
-    /// File điều phối vòng lặp thu thập dữ liệu (Tránh phình to RealtimeDBManager).
-    /// Đứng giữa SensorHarvester và RealtimeDBManager.
+    /// File điều phối vòng lặp thu thập dữ liệu (Tuyến giữa SensorHarvester và TelemetryUploader).
     /// Gắn Script này vào cùng một GameObject chứa TimeManager trong Scene Bài Học.
     /// </summary>
     public class TelemetryStreamer : MonoBehaviour
@@ -78,10 +77,10 @@ namespace VRAutism.Core.Telemetry
                 // 2. Bảo XR Origin (SensorHarvester) chụp hình dữ liệu
                 var snapshot = _harvester.TakeSnapshot(elapsed);
                 
-                // 3. Bảo Firebase Manager lấy cục dữ liệu ném thẳng lên Cloud
-                if (RealtimeDBManager.Instance != null)
+                // 3. Bảo TelemetryUploader ném thẳng dữ liệu lên Cloud
+                if (Cloud.RTDB.TelemetryUploader.Instance != null)
                 {
-                    RealtimeDBManager.Instance.PushBehaviorSnapshot(_sessionId, snapshot);
+                    Cloud.RTDB.TelemetryUploader.Instance.PushBehaviorSnapshot(_sessionId, snapshot);
                 }
             }
         }

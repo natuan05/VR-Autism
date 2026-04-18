@@ -1,6 +1,7 @@
 using UnityEngine;
 using VRAutism.Core;
-using VRAutism.Quests;
+using VRAutism.Gameplay.Actions;
+using VRAutism.Gameplay.Quizzes;
 
 namespace VRAutism.Cloud
 {
@@ -22,9 +23,9 @@ namespace VRAutism.Cloud
         {
             string sessionId = SessionContext.Instance != null ? SessionContext.Instance.SessionId : "";
 
-            if (!string.IsNullOrEmpty(sessionId) && RealtimeDBManager.Instance != null)
+            if (!string.IsNullOrEmpty(sessionId) && Cloud.RTDB.LiveSessionReporter.Instance != null)
             {
-                RealtimeDBManager.Instance.UpdateCurrentActivity(sessionId, activityName);
+                Cloud.RTDB.LiveSessionReporter.Instance.UpdateCurrentActivity(sessionId, activityName);
             }
         }
     }

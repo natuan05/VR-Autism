@@ -46,7 +46,7 @@ namespace VRAutism.Core.Telemetry
 
         /// <summary>
         /// Tạo một bản ghi mới (Snapshot) chứa dữ liệu ngay tại khoảnh khắc được gọi.
-        /// Hàm này sẽ được RealtimeDBManager gọi định kỳ mỗi 2 giây.
+        /// Hàm này được TelemetryStreamer gọi định kỳ mỗi 2 giây, sau đó TelemetryUploader đẩy lên RTDB.
         /// </summary>
         public BehaviorSnapshot TakeSnapshot(float sessionTimeOffset)
         {

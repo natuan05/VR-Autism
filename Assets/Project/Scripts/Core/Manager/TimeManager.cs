@@ -69,10 +69,10 @@ namespace VRAutism.Core
             // Handshake: Báo cho Web Dashboard biết trẻ đã vào scene thành công.
             // Dùng SceneManager.GetActiveScene().name để luôn lấy đúng tên bài đang chạy,
             // bất kể loại bài là ActionManager hay QuizController.
-            if (!string.IsNullOrEmpty(sessionId) && RealtimeDBManager.Instance != null)
+            if (!string.IsNullOrEmpty(sessionId) && Cloud.RTDB.LiveSessionReporter.Instance != null)
             {
                 string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-                RealtimeDBManager.Instance.SendLiveSessionHandshake(sessionId, currentScene);
+                Cloud.RTDB.LiveSessionReporter.Instance.SendLiveSessionHandshake(sessionId, currentScene);
             }
 
             // [MỚI] Kích hoạt luồng Telemetry thu thập dữ liệu hành vi trẻ mỗi 2s
@@ -147,9 +147,9 @@ namespace VRAutism.Core
             // để đảm bảo mọi loại bài học đều trigger signal này.
             var ctx = SessionContext.Instance;
             string sessionId = ctx != null ? ctx.SessionId : "";
-            if (!string.IsNullOrEmpty(sessionId) && Cloud.RealtimeDBManager.Instance != null)
+            if (!string.IsNullOrEmpty(sessionId) && Cloud.RTDB.LiveSessionReporter.Instance != null)
             {
-                Cloud.RealtimeDBManager.Instance.SendLiveSessionEnded(sessionId);
+                Cloud.RTDB.LiveSessionReporter.Instance.SendLiveSessionEnded(sessionId);
             }
 
             // [MỚI] Tắt thu thập chuỗi Telemetry

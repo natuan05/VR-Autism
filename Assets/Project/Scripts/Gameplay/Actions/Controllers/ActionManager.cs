@@ -7,7 +7,7 @@ using VRAutism.Cloud;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace VRAutism.Core
+namespace VRAutism.Gameplay.Actions
 {
     public class ActionManager : MonoBehaviour
     {

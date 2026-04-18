@@ -3,7 +3,7 @@ using System.Linq;
 using VRAutism.Core;
 using UnityEngine;
 
-namespace VRAutism.Quests
+namespace VRAutism.Gameplay.Actions
 {
     public class QuestController: MonoBehaviour
     {

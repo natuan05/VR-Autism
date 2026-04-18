@@ -22,9 +22,9 @@ namespace VRAutism.UI{
 
         private void Start()
         {
-            if (Cloud.RealtimeDBManager.Instance != null)
+            if (Cloud.RTDB.PairingManager.Instance != null)
             {
-                Cloud.RealtimeDBManager.Instance.OnNewSessionCommand += LoadRemoteLesson;
+                Cloud.RTDB.PairingManager.Instance.OnNewSessionCommand += LoadRemoteLesson;
             }
         }
 
@@ -92,9 +92,9 @@ namespace VRAutism.UI{
 
         private void OnDestroy()
         {
-            if (Cloud.RealtimeDBManager.Instance != null)
+            if (Cloud.RTDB.PairingManager.Instance != null)
             {
-                Cloud.RealtimeDBManager.Instance.OnNewSessionCommand -= LoadRemoteLesson;
+                Cloud.RTDB.PairingManager.Instance.OnNewSessionCommand -= LoadRemoteLesson;
             }
         }
     }

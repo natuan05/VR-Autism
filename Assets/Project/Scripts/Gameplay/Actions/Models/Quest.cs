@@ -4,7 +4,7 @@ using Plugins.QuickOutline.Scripts;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace VRAutism.Quests
+namespace VRAutism.Gameplay.Actions
 {
     public class Quest : MonoBehaviour
     {
