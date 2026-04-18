@@ -1385,8 +1385,6 @@ GameObject:
   m_Component:
   - component: {fileID: 632125631}
   - component: {fileID: 632125630}
-  - component: {fileID: 632125633}
-  - component: {fileID: 632125632}
   m_Layer: 0
   m_Name: TimeManager
   m_TagString: Untagged
@@ -1422,31 +1420,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &632125632
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 632125629}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a58a814c739c444fa63d6c8a2e419dd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Cloud.SessionSyncTracker
---- !u!114 &632125633
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 632125629}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f1744920bc875894497d8b4cc2bb012c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Core.Telemetry.TelemetryStreamer
-  pushInterval: 2
 --- !u!1 &721296230
 GameObject:
   m_ObjectHideFlags: 0
@@ -8248,10 +8221,6 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6066071021585426233, guid: b913f75e9028f6846bdc2b960b61a6b8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1402748697}
     - targetCorrespondingSourceObject: {fileID: 2307336468662406603, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       insertIndex: -1
@@ -8313,42 +8282,6 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!1 &1402748694 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6066071021585426233, guid: b913f75e9028f6846bdc2b960b61a6b8,
-    type: 3}
-  m_PrefabInstance: {fileID: 1402748690}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1402748695 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4333750457470750881, guid: b913f75e9028f6846bdc2b960b61a6b8,
-    type: 3}
-  m_PrefabInstance: {fileID: 1402748690}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1402748696 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5864807635559296209, guid: b913f75e9028f6846bdc2b960b61a6b8,
-    type: 3}
-  m_PrefabInstance: {fileID: 1402748690}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1402748697
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1402748694}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d77ce6423c2d476468837ce6fab97399, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Core.Telemetry.SensorHarvester
-  leftHand: {fileID: 1402748696}
-  rightHand: {fileID: 1402748695}
-  maxFocusDistance: 20
-  focusLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!1 &1403141477 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -1325294677871430763, guid: aeb4453d2bd01f94aad6ff0d0328d43e,
