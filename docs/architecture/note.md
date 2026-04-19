@@ -6,5 +6,5 @@ Mỗi thể loại lesson sẽ có manager khác nhau:
 Dùng chung:
 - TimeManager: Quản lý thời gian
 - FirebaseManager: Quản lý kết nối Firebase, lưu Session data sau khi kết thúc
-- RealtimeDBManager: Quản lý kết nối Realtime Database, cầu nối với Web
+- RTDB: Quản lý kết nối Realtime Database, cầu nối với Web
 - SessionContext: Lưu thông tin lesson hiện tại đang học

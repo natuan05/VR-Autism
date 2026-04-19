@@ -755,7 +755,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 51704901}
-  - component: {fileID: 51704900}
+  - component: {fileID: 51704905}
+  - component: {fileID: 51704904}
+  - component: {fileID: 51704903}
+  - component: {fileID: 51704902}
   m_Layer: 0
   m_Name: RTDB Manager
   m_TagString: Untagged
@@ -763,18 +766,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &51704900
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 51704898}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30fd075e4ca91c74b904d2fe1554117b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Cloud.RealtimeDBManager
 --- !u!4 &51704901
 Transform:
   m_ObjectHideFlags: 0
@@ -790,6 +781,54 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &51704902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51704898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b93219bfa3f21134e906b4654a21b665, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Cloud.RTDB.TelemetryUploader
+--- !u!114 &51704903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51704898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9478cfa9674a73b4cac5090ace41e0b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Cloud.RTDB.PairingManager
+--- !u!114 &51704904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51704898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3afcd9de7e139bf43849f2307896e9e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Cloud.RTDB.LiveSessionReporter
+--- !u!114 &51704905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51704898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2769f77b3e941fa4a8935e1bc5e25b9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Cloud.RTDB.RTDBConnection
 --- !u!1001 &58717316
 PrefabInstance:
   m_ObjectHideFlags: 0

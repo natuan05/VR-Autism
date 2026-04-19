@@ -29,14 +29,7 @@ Dựa trên thiết kế Schema mới nhất (`DATABASE_SCHEMA_DESIGN.md`), hệ
 
 ### 1.2 Khối lượng nặng: Behavior Snapshots (Chụp mỗi 2 giây)
 *Luồng Telemetry siêu tốc, bắn qua Realtime Database để Web AI phân tích.*
-
-| Cảm biến | Dữ liệu gốc (Raw Data) | Mục đích phân tích (Web Engine) |
-|----------|------------------------|---------------------------------|
-| **Head Kinematics** | `head_pitch_yaw`, Vận tốc xoay cổ | Phát hiện né tránh ánh nhìn (Distraction) |
-| **Hand Kinematics** | `left_hand_velocity`, `right_hand_velocity` | Dò tìm dao động lặp lại (Stimming) |
-| **Physical Status** | gia tốc (tay/đầu) = ~0 trong 10s | Cảnh báo quá tải/căng thẳng (Freeze) |
-| **Gaze Target** | `focus_object` (Vật đang trực tiếp nhìn) | Phân tích Joint Attention |
-| **Hand Proximity** | `near_object = true` lặp lại | Đánh giá chần chừ (Hesitation) |
+Nằm ở folder Design
 
 ---
 

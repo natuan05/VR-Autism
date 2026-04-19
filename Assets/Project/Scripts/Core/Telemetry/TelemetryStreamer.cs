@@ -74,13 +74,13 @@ namespace VRAutism.Core.Telemetry
                     elapsed = (float)TimeManager.Instance.GetTotalElapsedSeconds();
                 }
 
-                // 2. Bảo XR Origin (SensorHarvester) chụp hình dữ liệu
-                var snapshot = _harvester.TakeSnapshot(elapsed);
+                // 2. Bảo XR Origin (SensorHarvester) tổng hợp dữ liệu buffer
+                var snapshot = _harvester.AggregateAndFlush(elapsed);
                 
                 // 3. Bảo TelemetryUploader ném thẳng dữ liệu lên Cloud
                 if (Cloud.RTDB.TelemetryUploader.Instance != null)
                 {
-                    Cloud.RTDB.TelemetryUploader.Instance.PushBehaviorSnapshot(_sessionId, snapshot);
+                    Cloud.RTDB.TelemetryUploader.Instance.PushAggregatedSnapshot(_sessionId, snapshot);
                 }
             }
         }

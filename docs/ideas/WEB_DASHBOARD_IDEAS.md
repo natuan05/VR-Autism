@@ -34,7 +34,7 @@ Hệ thống tài khoản sẽ đi theo hướng **Role-Based cho Người lớn
 Thiết lập các thông số sẽ được lưu xuống Firestore làm mặc định mỗi khi Profile này học bất kỳ bài nào:
 - Mức âm lượng tiếng ồn (Noise level) mặc định.
 - Tần suất tạo hint báo hiệu: `reminder_interval` (VD: Đợi 10s mới gợi ý), `max_hints` (Giới hạn 3 lần).
-- Alert profile: Ngưỡng cảnh báo xoay cổ, ngưỡng cảnh báo Stimming...
+- Alert profile: Ngưỡng lệch góc 3D (deviation_deg), ngưỡng Stimming (angular_velocity)...
 - Tốc độ di chuyển và tốc độ voice của NPC (`npc_voice_speed`, `object_move_speed`).
 | 📈 Báo cáo Học tập | Xem biểu đồ lịch sử quá trình của từng trẻ. Xuất PDF thẳng ra bệnh án báo cáo y tế định kỳ. |
 
@@ -67,11 +67,6 @@ Mặc dù tính năng tự động tạo Quiz (CMS) tạm thời bị hoãn lạ
 ### Auto Alerts (`auto_alerts` collection)
 *Được tính toán tự động từ Behavior Snapshots do VR gửi lên.*
 
-| Hành vi | Nguồn thu thập | Cơ sở Y khoa / Lâm sàng |
-|----------|---------------|--------------|
-| Freeze (Đứng hình) | Gia tốc tay/đầu = 0 | Sensory Overload / Stress response |
-| Distraction (Xao nhãng) | Angle > 30 độ | Né tránh ánh nhìn (Gaze aversion) |
-| Stimming (Tự kích thích) | Dao động gia tốc tay | Điều hòa thần kinh (Rhythmic movements) |
 
 ### Manual Behavior Logs (`behavior_logs` collection)
 *Chuyên gia chủ động ghi nhận trên Web Dashboard trong lúc quan sát POV.*

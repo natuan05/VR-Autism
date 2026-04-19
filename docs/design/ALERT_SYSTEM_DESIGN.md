@@ -75,16 +75,15 @@ Ghi vào: `behavior_snapshots/{session_id}/{timestamp}`
 
 | Field | Mô tả | Nguồn trong Unity |
 |-------|-------|-------------------|
-| `ts` | Unix timestamp (ms) | Time.time |
-| `quest_id` | Quest đang active | QuestController |
-| `quest_state` | in_progress / completed / idle | QuestController |
-| `head.yaw/pitch/roll` | Góc đầu hiện tại | OVRPlugin |
+| `time_offset` | giây thứ mấy từ khi bắt đầu bài học |  |
+| `head.rotation` | Quaternion / Euler (yaw) | Camera.main |
 | `head.angular_velocity` | Tốc độ xoay đầu (rad/s) | Delta rotation / deltaTime |
-| `task_zone.target_yaw` | Hướng của quest object hiện tại | Quest object position → yaw |
-| `task_zone.deviation_deg` | Chênh lệch góc đầu vs target | abs(head.yaw - target_yaw) |
-| `left_hand.velocity` | Tốc độ tay trái (m/s) | OVRInput |
-| `right_hand.velocity` | Tốc độ tay phải (m/s) | OVRInput |
-| `*.near_object` | Tay có đang gần quest object không | Trigger collider |
+| `focus_object` | Tên vật thể đang nhìn trực diện | Raycast Hit |
+| `is_focusing_expected_target`| True nếu vật nhìn trúng (hoặc nằm trong Gaze Cone) là mục tiêu | SensorHarvester tính toán |
+| `target_distance` | Khoảng cách từ mắt tới Target (m) | Vector3.Distance |
+| `left_hand.velocity` | Tốc độ tay trái (m/s) | Hand Tracking |
+| `right_hand.velocity`| Tốc độ tay phải (m/s) | Hand Tracking |
+| `hand_near_target`| Cờ báo tay cầm/với tới gần Target (< 30cm) | Vector3.Distance |
 
 **Ước tính tài nguyên:** ~150 snapshots/session × ~200 bytes = ~30KB/session
 
@@ -101,7 +100,7 @@ Ghi vào: `behavior_snapshots/{session_id}/{timestamp}`
 ### 😵 Mất tập trung `[🟡 Medium]`
 | Signal | Detect khi | Threshold mặc định |
 |--------|-----------|-------------------|
-| **Distraction** | `deviation_deg > 30°` liên tục | 8 giây |
+| **Distraction** | `deviation_deg > 30°` (Góc lệch 3D) liên tục | 8 giây |
 | **Stimming Proxy** | `angular_velocity` dao động lặp lại theo pattern | V2 — cần thêm nghiên cứu |
 
 ### 🤔 Khó thực hiện `[🟢 Low]`

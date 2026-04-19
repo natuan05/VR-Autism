@@ -128,6 +128,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1336548302}
     m_Modifications:
+    - target: {fileID: 17252228917308922, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 1310662784284166660, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -183,10 +188,20 @@ PrefabInstance:
       propertyPath: m_Name
       value: Quest_5
       objectReference: {fileID: 0}
+    - target: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4168093031038524077, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
       propertyPath: m_LocalPosition.z
       value: -0.131
+      objectReference: {fileID: 0}
+    - target: {fileID: 6040528223786364695, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7058735971885686294, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
@@ -1940,6 +1955,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1336548302}
     m_Modifications:
+    - target: {fileID: 17252228917308922, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 1310662784284166660, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1994,6 +2014,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Quest_1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6040528223786364695, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7058735971885686294, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
@@ -7507,6 +7537,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1336548302}
     m_Modifications:
+    - target: {fileID: 17252228917308922, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 1310662784284166660, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -7561,6 +7596,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Quest_2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6040528223786364695, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
@@ -8345,10 +8390,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Core.Telemetry.SensorHarvester
   leftHand: {fileID: 1402748696}
   rightHand: {fileID: 1402748695}
-  maxFocusDistance: 20
+  gazeConeHalfAngle: 20.3
+  maxRaycastDistance: 20
   focusLayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 256
+  handNearThreshold: 0.3
 --- !u!1 &1403141477 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -1325294677871430763, guid: aeb4453d2bd01f94aad6ff0d0328d43e,
@@ -9153,6 +9200,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1336548302}
     m_Modifications:
+    - target: {fileID: 17252228917308922, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 1310662784284166660, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -9208,6 +9260,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Quest_4
       objectReference: {fileID: 0}
+    - target: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4168093031038524077, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -9217,6 +9274,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalPosition.y
       value: 0.196
+      objectReference: {fileID: 0}
+    - target: {fileID: 6040528223786364695, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
@@ -9855,6 +9917,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1336548302}
     m_Modifications:
+    - target: {fileID: 17252228917308922, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 1310662784284166660, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
       propertyPath: m_LocalScale.x
@@ -9924,6 +9991,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Quest_3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6040528223786364695, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
@@ -16285,6 +16362,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1336548302}
     m_Modifications:
+    - target: {fileID: 17252228917308922, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 1310662784284166660, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -16340,6 +16422,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Quest_0
       objectReference: {fileID: 0}
+    - target: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4168093031038524077, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -16349,6 +16436,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalPosition.y
       value: 0.196
+      objectReference: {fileID: 0}
+    - target: {fileID: 6040528223786364695, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7058735971885686294, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3,
         type: 3}

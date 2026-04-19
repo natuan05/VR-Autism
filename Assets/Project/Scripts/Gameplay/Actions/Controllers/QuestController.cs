@@ -10,6 +10,9 @@ namespace VRAutism.Gameplay.Actions
         // Báo hiệu mỗi khi chuyển sang quest mới
         public static event Action<string> OnQuestActivityChanged;
 
+        // Báo hiệu Transform của vật thể mục tiêu mới cho Telemetry bắt đầu tracking
+        public static event Action<Transform> OnTargetTransformChanged;
+
         [SerializeField] private Quest[] quests;
         [SerializeField] private QuestProgressUI questProgressUI;
         [SerializeField] private GameObject bubbleQuestion;
@@ -120,6 +123,9 @@ namespace VRAutism.Gameplay.Actions
             {
                 quest.SetState(Quest.State.Enable);
                 OnQuestActivityChanged?.Invoke("Action_" + quest.Name);
+
+                // Báo cho SensorHarvester biết mục tiêu mới để bắt đầu tracking Gaze & Proximity
+                OnTargetTransformChanged?.Invoke(quest.transform);
             }
         }
 

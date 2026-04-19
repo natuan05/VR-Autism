@@ -1,6 +1,6 @@
 using UnityEngine;
 using System;
-using VRAutism.Cloud.Models;
+using VRAutism.Core.Models;
 
 namespace VRAutism.Cloud.RTDB
 {
@@ -36,7 +36,7 @@ namespace VRAutism.Cloud.RTDB
         /// Đường dẫn: behavior_snapshots/{sessionId}/{timestamp}
         /// Truyền JSON thô cho tối ưu hiệu năng.
         /// </summary>
-        public async void PushBehaviorSnapshot(string sessionId, BehaviorSnapshot snapshot)
+        public async void PushAggregatedSnapshot(string sessionId, AggregatedSnapshot snapshot)
         {
             if (string.IsNullOrEmpty(sessionId)) return;
 

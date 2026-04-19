@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 using Firebase.Firestore;
 using Firebase.Extensions;
 
-namespace VRAutism.UI{
+namespace VRAutism.Gameplay.WaitingArea{
     /// <summary>
     /// Trạm nhận lệnh trên màn hình Chờ VR (Lobby).
     /// Khi Web gửi lệnh "Bắt đầu bài học":
