@@ -301,8 +301,24 @@ namespace VRAutism.Core.Telemetry
 
             if (_currentQuestTarget != null)
             {
-                float leftDist  = leftHand  != null ? Vector3.Distance(leftHand.position,  _targetVisualCenter) : float.MaxValue;
-                float rightDist = rightHand != null ? Vector3.Distance(rightHand.position, _targetVisualCenter) : float.MaxValue;
+                var col = _currentQuestTarget.GetComponentInChildren<Collider>();
+
+                float leftDist = float.MaxValue;
+                if (leftHand != null)
+                {
+                    // Lấy điểm gần nhất trên bề mặt collider của vật
+                    Vector3 targetPos = col != null ? col.ClosestPoint(leftHand.position) : _targetVisualCenter;
+                    leftDist = Vector3.Distance(leftHand.position, targetPos);
+                }
+
+                float rightDist = float.MaxValue;
+                if (rightHand != null)
+                {
+                    // Lấy điểm gần nhất trên bề mặt collider của vật
+                    Vector3 targetPos = col != null ? col.ClosestPoint(rightHand.position) : _targetVisualCenter;
+                    rightDist = Vector3.Distance(rightHand.position, targetPos);
+                }
+
                 sample.handDistance = Mathf.Min(leftDist, rightDist);
             }
 
