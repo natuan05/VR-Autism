@@ -83,7 +83,7 @@ Unity (Quest 2/3)
 
 ## 5. Đặc tả Dữ liệu
 
-### 5.1. RawSample (Internal — Không bao giờ rời khỏi VR)
+### 5.1. RawSample (Internal)
 
 Struct nhẹ, lưu trong mảng cố định. Không cần Serializable.
 
@@ -100,7 +100,7 @@ Struct nhẹ, lưu trong mảng cố định. Không cần Serializable.
 
 **Kích thước ước tính:** ~50 bytes/mẫu × 100 mẫu = **~5 KB/buffer** (trong RAM, không gửi đi)
 
-### 5.2. AggregatedSnapshot (Gửi lên RTDB — Thay thế BehaviorSnapshot cũ)
+### 5.2. AggregatedSnapshot (Gửi lên RTDB)
 
 Đường dẫn RTDB: `behavior_snapshots/{session_id}/{timestamp}`
 

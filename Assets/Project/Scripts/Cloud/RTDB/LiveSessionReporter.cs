@@ -8,11 +8,10 @@ namespace VRAutism.Cloud.RTDB
     /// Báo cáo trạng thái vòng đời phiên học lên nhánh live_sessions/ của RTDB.
     ///
     /// Lifecycle:
-    ///   TimeManager.Start() → SendLiveSessionHandshake() → vr_state.status = "ready"
-    ///   SessionSyncTracker  → UpdateCurrentActivity()    → vr_state.current_activity
-    ///   TimeManager.SaveLessonTimeData() → SendLiveSessionEnded() → vr_state.status = "ended"
+    ///   TimeManager.Start()             → SendLiveSessionHandshake() → vr_state.status = "ready"
+    ///   SessionSyncTracker              → UpdateCurrentActivity()    → vr_state.current_activity
+    ///   TimeManager.SaveLessonTimeData() → SendLiveSessionEnded()    → vr_state.status = "ended"
     ///
-    /// (Tương lai) StartHeartbeat() / StopHeartbeat() → Task C2 Watchdog
     /// </summary>
     public class LiveSessionReporter : MonoBehaviour
     {
@@ -20,21 +19,15 @@ namespace VRAutism.Cloud.RTDB
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        //  PUBLIC API
-        // ══════════════════════════════════════════════════════════════
+        // ── Public API ──────────────────────────────────────────────────
 
         /// <summary>
         /// Gọi ngay sau khi Scene bài học load xong (từ TimeManager.Start).
-        /// Ghi vr_state với status="ready" để Web Dashboard biết trẻ đã vào scene thành công.
+        /// Ghi vr_state với status="ready" và khởi động WebRTC stream.
         /// </summary>
         public async void SendLiveSessionHandshake(string sessionId, string sceneName)
         {
@@ -47,13 +40,11 @@ namespace VRAutism.Cloud.RTDB
             var root = GetRoot();
             if (root == null) return;
 
-            long confirmedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
             var vrStateData = new Dictionary<string, object>
             {
                 { "status",       "ready" },
                 { "scene_name",   sceneName },
-                { "confirmed_at", confirmedAt }
+                { "confirmed_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }
             };
 
             try
@@ -62,6 +53,17 @@ namespace VRAutism.Cloud.RTDB
                           .UpdateChildrenAsync(vrStateData);
 
                 Debug.Log($"[LiveSessionReporter] ✅ Handshake gửi thành công → live_sessions/{sessionId}/vr_state (scene: {sceneName})");
+
+                // Đảm bảo WebRTCManager tồn tại, tự động thêm nếu người dùng quên gán trong Editor
+                var webrtcManager = WebRTCManager.Instance;
+                if (webrtcManager == null)
+                {
+                    webrtcManager = gameObject.AddComponent<WebRTCManager>();
+                    Debug.Log("[LiveSessionReporter] Auto-added WebRTCManager to GameObject.");
+                }
+
+                // Uỷ quyền khởi động stream
+                webrtcManager.StartStream(sessionId);
             }
             catch (Exception ex)
             {
@@ -95,7 +97,7 @@ namespace VRAutism.Cloud.RTDB
 
         /// <summary>
         /// Gọi khi bài học kết thúc (từ TimeManager.SaveLessonTimeData).
-        /// Ghi vr_state.status = "ended" để Web Dashboard tự động đóng trang Session.
+        /// Dừng WebRTC stream và ghi vr_state.status = "ended".
         /// </summary>
         public async void SendLiveSessionEnded(string sessionId)
         {
@@ -104,6 +106,9 @@ namespace VRAutism.Cloud.RTDB
                 Debug.LogWarning("[LiveSessionReporter] SendLiveSessionEnded: sessionId trống, bỏ qua.");
                 return;
             }
+
+            // Uỷ quyền dọn dẹp stream cho WebRTCManager
+            WebRTCManager.Instance?.StopStream();
 
             var root = GetRoot();
             if (root == null) return;
