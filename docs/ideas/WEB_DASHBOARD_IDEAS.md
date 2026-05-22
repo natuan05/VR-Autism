@@ -93,13 +93,7 @@ Công cụ để giáo viên đóng vai "Chúa tể môi trường" khi trẻ đ
 
 ---
 
-## 🔑 5. Luồng Ghép Đôi Nhanh (Smart TV Pairing)
-
-Thay vì bắt trẻ phải gõ bàn phím ảo trong kính VR (Rất cực), ta áp dụng luồng ghép mã PIN:
-
-1. **VR App:** Khi khởi động, thả 1 mã PIN (VD: `7A39B`) lơ lửng giữa không trung và chờ. 
-2. **Web Dashboard:** Giáo viên chọn Hồ sơ Bé Nam → Giao diện hỏi mã PIN để ghép (Cũng có thể ghép sau khi vào dashboard)
-3. **Thao tác:** Sau khi đã pair, giáo viên có thể vào giao diện chọn bài học và start, kính VR sẽ nhận lệnh và bắt đầu bài học.
+## 🔑 5. Luồng Ghép Đôi 
 
 ---
 

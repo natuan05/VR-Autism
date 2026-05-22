@@ -49,9 +49,7 @@
         "Obj/": true,
         "ProjectSettings/": true,
         "temp/": true,
-        "Temp/": true,
-        "**/*.csproj": true,
-        "**/*.sln": true
+        "Temp/": true
     },
-    "dotnet.defaultSolution": "VR Autism.sln"
+    "dotnet.defaultSolution": "VR-Autism.slnx"
 }

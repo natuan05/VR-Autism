@@ -1,0 +1,800 @@
+diff --git a/.gitignore b/.gitignore
+index 58cbc825..308de3a4 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -70,3 +70,16 @@ crashlytics-build.properties
+ # Temporary auto-generated Android Assets
+ /[Aa]ssets/[Ss]treamingAssets/aa.meta
+ /[Aa]ssets/[Ss]treamingAssets/aa/*
++
++# BMad / AI Agents
++.agent/
++.agents/
++_bmad/
++_bmad-output/
++memories/
++project-context.md
++.instructions.md
++.prompt.md
++.agent.md
++copilot-instructions.md
++AGENTS.md
+diff --git a/.vscode/settings.json b/.vscode/settings.json
+index 38f8ee2d..2dd53f6b 100644
+--- a/.vscode/settings.json
++++ b/.vscode/settings.json
+@@ -49,9 +49,7 @@
+         "Obj/": true,
+         "ProjectSettings/": true,
+         "temp/": true,
+-        "Temp/": true,
+-        "**/*.csproj": true,
+-        "**/*.sln": true
++        "Temp/": true
+     },
+-    "dotnet.defaultSolution": "VR Autism.sln"
++    "dotnet.defaultSolution": "VR-Autism.slnx"
+ }
+\ No newline at end of file
+diff --git a/Assets/Project/Scenes/Farm.unity b/Assets/Project/Scenes/Farm.unity
+index 84e8dc41..ad1eb6fb 100644
+--- a/Assets/Project/Scenes/Farm.unity
++++ b/Assets/Project/Scenes/Farm.unity
+@@ -22074,6 +22074,50 @@ MeshFilter:
+   m_PrefabAsset: {fileID: 0}
+   m_GameObject: {fileID: 2125081814}
+   m_Mesh: {fileID: 8812325392763357487, guid: 3c585864cbe260448827ee7a41514435, type: 3}
++--- !u!1 &2126991033
++GameObject:
++  m_ObjectHideFlags: 0
++  m_CorrespondingSourceObject: {fileID: 0}
++  m_PrefabInstance: {fileID: 0}
++  m_PrefabAsset: {fileID: 0}
++  serializedVersion: 6
++  m_Component:
++  - component: {fileID: 2126991035}
++  - component: {fileID: 2126991034}
++  m_Layer: 0
++  m_Name: WebRTCManager
++  m_TagString: Untagged
++  m_Icon: {fileID: 0}
++  m_NavMeshLayer: 0
++  m_StaticEditorFlags: 0
++  m_IsActive: 1
++--- !u!114 &2126991034
++MonoBehaviour:
++  m_ObjectHideFlags: 0
++  m_CorrespondingSourceObject: {fileID: 0}
++  m_PrefabInstance: {fileID: 0}
++  m_PrefabAsset: {fileID: 0}
++  m_GameObject: {fileID: 2126991033}
++  m_Enabled: 1
++  m_EditorHideFlags: 0
++  m_Script: {fileID: 11500000, guid: 04c7b98fa446ae440ac6e5416de5f815, type: 3}
++  m_Name: 
++  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Cloud.RTDB.WebRTCManager
++--- !u!4 &2126991035
++Transform:
++  m_ObjectHideFlags: 0
++  m_CorrespondingSourceObject: {fileID: 0}
++  m_PrefabInstance: {fileID: 0}
++  m_PrefabAsset: {fileID: 0}
++  m_GameObject: {fileID: 2126991033}
++  serializedVersion: 2
++  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
++  m_LocalPosition: {x: -0.1301, y: 0.34308, z: 0.24157}
++  m_LocalScale: {x: 1, y: 1, z: 1}
++  m_ConstrainProportionsScale: 0
++  m_Children: []
++  m_Father: {fileID: 0}
++  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+ --- !u!1 &2129802156
+ GameObject:
+   m_ObjectHideFlags: 0
+@@ -24361,3 +24405,4 @@ SceneRoots:
+   - {fileID: 217641779}
+   - {fileID: 763802328}
+   - {fileID: 776344283}
++  - {fileID: 2126991035}
+diff --git a/Assets/Project/Scripts/Cloud/RTDB/LiveSessionReporter.cs b/Assets/Project/Scripts/Cloud/RTDB/LiveSessionReporter.cs
+index aaa83782..251c3c78 100644
+--- a/Assets/Project/Scripts/Cloud/RTDB/LiveSessionReporter.cs
++++ b/Assets/Project/Scripts/Cloud/RTDB/LiveSessionReporter.cs
+@@ -49,8 +49,16 @@ namespace VRAutism.Cloud.RTDB
+ 
+             try
+             {
+-                await root.Child("live_sessions").Child(sessionId).Child("vr_state")
+-                          .UpdateChildrenAsync(vrStateData);
++                var vrStateRef = root.Child("live_sessions").Child(sessionId).Child("vr_state");
++
++                // ─É─éNG K├¥ Sß╗░ KIß╗åN ONDISCONNECT: Nß║┐u Unity Crash hoß║╖c bß║Ñm Stop Play
++                // Firebase Server sß║╜ Tß╗░ ─Éß╗ÿNG ─æiß╗ün status="disconnected" gi├╣m ta.
++                vrStateRef.OnDisconnect().UpdateChildren(new Dictionary<string, object> {
++                    { "status", "disconnected" },
++                    { "ended_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }
++                });
++
++                await vrStateRef.UpdateChildrenAsync(vrStateData);
+ 
+                 Debug.Log($"[LiveSessionReporter] Γ£à Handshake gß╗¡i th├ánh c├┤ng ΓåÆ live_sessions/{sessionId}/vr_state (scene: {sceneName})");
+ 
+diff --git a/Assets/Project/Scripts/Core/Manager/SessionContext.cs b/Assets/Project/Scripts/Core/Manager/SessionContext.cs
+index e72a5e9f..de9f91dd 100644
+--- a/Assets/Project/Scripts/Core/Manager/SessionContext.cs
++++ b/Assets/Project/Scripts/Core/Manager/SessionContext.cs
+@@ -1,4 +1,5 @@
+ using UnityEngine;
++using VRAutism.Core.Models;
+ 
+ namespace VRAutism.Core
+ {
+@@ -24,6 +25,13 @@ namespace VRAutism.Core
+         
+         // --- Th├┤ng tin expert ─æiß╗üu khiß╗ân ---
+         public string HostId { get; set; } = "";
++
++        // --- Cß║Ñu h├¼nh b├ái hß╗ìc ─æß╗Öng (─æ╞░ß╗úc ghi ─æ├¿ tß╗½ Firestore tß║íi Story 2.3) ---
++        /// <summary>
++        /// Tham sß╗æ cß║Ñu h├¼nh b├ái hß╗ìc hiß╗çn tß║íi.
++        /// Mß║╖c ─æß╗ïnh l├á LessonParameters.GetDefault() ΓÇö giß╗» nguy├¬n h├ánh vi legacy.
++        /// </summary>
++        public LessonParameters CurrentParams { get; set; } = LessonParameters.GetDefault();
+         
+         private void Awake()
+         {
+@@ -50,6 +58,7 @@ namespace VRAutism.Core
+             LevelIndex = 0;
+             LessonType = "";
+             HostId = "";
++            CurrentParams = LessonParameters.GetDefault();
+         }
+ 
+         private void Update()
+diff --git a/Assets/Project/Scripts/Core/Models/LessonParameters.cs b/Assets/Project/Scripts/Core/Models/LessonParameters.cs
+index 49a37b65..57691e82 100644
+--- a/Assets/Project/Scripts/Core/Models/LessonParameters.cs
++++ b/Assets/Project/Scripts/Core/Models/LessonParameters.cs
+@@ -6,12 +6,16 @@ namespace VRAutism.Core.Models
+     /// Tham sß╗æ cß║Ñu h├¼nh b├ái hß╗ìc, ├íp dß╗Ñng cho mß╗Öt phi├¬n trß╗ï liß╗çu cß╗Ñ thß╗â.
+     /// ─É╞░ß╗úc l╞░u trong SessionContext.CurrentParams v├á c├│ thß╗â ghi ─æ├¿ tß╗½ Firestore (Story 2.3).
+     /// L├á plain C# class (kh├┤ng phß║úi ScriptableObject) ─æß╗â c├│ thß╗â deserialise tß╗½ JSON.
++    ///
++    /// SENTINEL VALUES: C├íc tr╞░ß╗¥ng float d├╣ng -1f l├ám "kh├┤ng ghi ─æ├¿" (no-override).
++    /// Khi gi├í trß╗ï l├á -1f, consumer sß║╜ fallback vß╗ü gi├í trß╗ï Inspector cß╗ºa component ─æ├│.
++    /// Chß╗ë khi gi├í trß╗ï >= 0f mß╗¢i ─æ╞░ß╗úc coi l├á cß║Ñu h├¼nh ─æß╗Öng hß╗úp lß╗ç tß╗½ Firestore.
+     /// </summary>
+     [Serializable]
+     public class LessonParameters
+     {
+         // ΓöÇΓöÇ Actions lesson ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+-        
++
+         /// <summary>
+         /// Bß║¡t/tß║»t hiß╗çu ß╗⌐ng viß╗ün ph├ít s├íng (Outline) cß╗ºa vß║¡t thß╗â mß╗Ñc ti├¬u
+         /// khi Quest ß╗ƒ trß║íng th├íi Enable hoß║╖c Start.
+@@ -26,57 +30,70 @@ namespace VRAutism.Core.Models
+ 
+         /// <summary>
+         /// Khoß║úng lß║╖ng (gi├óy) tr╞░ß╗¢c khi SpeechResponser k├¡ch hoß║ít gß╗úi ├╜ gi├ío vi├¬n.
++        /// Sentinel -1f = kh├┤ng ghi ─æ├¿ (d├╣ng gi├í trß╗ï Inspector).
+         /// Legacy hardcode: 5f.
+         /// </summary>
+-        public float SpeechSilenceTimeout = 5f;
++        public float SpeechSilenceTimeout = -1f;
+ 
+         /// <summary>
+         /// Chu kß╗│ (gi├óy) giß╗»a c├íc lß║ºn nhß║»c nhß╗ƒ tß╗▒ ─æß╗Öng cß╗ºa Quest (reminderCycle).
+-        /// Legacy hardcode: d├╣ng gi├í trß╗ï Inspector per-Quest.
+-        /// Gi├í trß╗ï 0 = kh├┤ng ghi ─æ├¿ gi├í trß╗ï Inspector.
++        /// Sentinel -1f = kh├┤ng ghi ─æ├¿ (d├╣ng gi├í trß╗ï Inspector per-Quest).
++        /// Legacy: 0f = kh├┤ng bao giß╗¥ nhß║»c nhß╗ƒ (giß╗» nguy├¬n h├ánh vi Inspector).
+         /// </summary>
+-        public float ActionReminderCycle = 0f;
++        public float ActionReminderCycle = -1f;
+ 
+         // ΓöÇΓöÇ Quiz lesson ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ 
+         /// <summary>
+         /// Thß╗¥i gian trß╗à (gi├óy) tr╞░ß╗¢c khi ph├ít ├óm thanh intro cß╗ºa b├ái Quiz.
++        /// Sentinel -1f = kh├┤ng ghi ─æ├¿.
+         /// Legacy hardcode: 2f.
+         /// </summary>
+-        public float QuizIntroDelay = 2f;
++        public float QuizIntroDelay = -1f;
+ 
+         /// <summary>
+         /// Khoß║úng dß╗½ng (gi├óy) giß╗»a ├óm thanh c├óu hß╗Åi v├á ├óm thanh con vß║¡t.
++        /// Sentinel -1f = kh├┤ng ghi ─æ├¿.
+         /// Legacy hardcode: 0.5f.
+         /// </summary>
+-        public float QuizSoundGap = 0.5f;
++        public float QuizSoundGap = -1f;
+ 
+         /// <summary>
+         /// Thß╗¥i gian trß╗à (gi├óy) sau khi Quiz kß║┐t th├║c tr╞░ß╗¢c khi load lß║íi GameMenu.
++        /// Sentinel -1f = kh├┤ng ghi ─æ├¿.
+         /// Legacy hardcode: 3f.
+         /// </summary>
+-        public float QuizEndDelay = 3f;
++        public float QuizEndDelay = -1f;
+ 
+         // ΓöÇΓöÇ Exploration (AnimalTour) lesson ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ 
+         /// <summary>
+         /// Tß╗æc ─æß╗Ö lerp di chuyß╗ân camera giß╗»a c├íc chuß╗ông th├║.
++        /// Sentinel -1f = kh├┤ng ghi ─æ├¿ (d├╣ng gi├í trß╗ï Inspector).
+         /// Legacy hardcode: 2f.
+         /// </summary>
+-        public float CameraMoveSpeed = 2f;
++        public float CameraMoveSpeed = -1f;
+ 
+         /// <summary>
+         /// Khoß║úng dß╗½ng (gi├óy) giß╗»a ├óm thanh tiß║┐ng k├¬u con vß║¡t v├á th├┤ng tin m├┤ tß║ú tiß║┐p theo.
++        /// Sentinel -1f = kh├┤ng ghi ─æ├¿ (d├╣ng gi├í trß╗ï Inspector).
+         /// Legacy hardcode: 4f.
+         /// </summary>
+-        public float SoundToDescriptionGap = 4f;
++        public float SoundToDescriptionGap = -1f;
+ 
+         // ΓöÇΓöÇ Factory ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ 
+         /// <summary>
+-        /// Trß║ú vß╗ü instance vß╗¢i to├án bß╗Ö gi├í trß╗ï mß║╖c ─æß╗ïnh khß╗¢p vß╗¢i legacy hardcode.
+-        /// D├╣ng khi SessionContext ch╞░a nhß║¡n ─æ╞░ß╗úc cß║Ñu h├¼nh tß╗½ Firestore.
++        /// Instance mß║╖c ─æß╗ïnh t├íi sß╗¡ dß╗Ñng (kh├┤ng tß║ío object mß╗¢i mß╗ùi lß║ºn gß╗ìi).
++        /// D├╣ng l├ám fallback an to├án ─æß╗â tr├ính GC spike trong Update loops.
++        /// Tß║Ñt cß║ú gi├í trß╗ï ─æß╗üu l├á sentinel -1f ΓåÆ mß╗ìi consumer sß║╜ d├╣ng gi├í trß╗ï Inspector cß╗ºa ri├¬ng m├¼nh.
++        /// </summary>
++        public static readonly LessonParameters Default = new LessonParameters();
++
++        /// <summary>
++        /// T╞░╞íng th├¡ch ng╞░ß╗úc vß╗¢i code c┼⌐ ─æang gß╗ìi GetDefault().
++        /// Trß║ú vß╗ü singleton Default thay v├¼ tß║ío object mß╗¢i.
+         /// </summary>
+-        public static LessonParameters GetDefault() => new LessonParameters();
++        public static LessonParameters GetDefault() => Default;
+     }
+ }
+diff --git a/Assets/Project/Scripts/Gameplay/Actions/Models/Quest.cs b/Assets/Project/Scripts/Gameplay/Actions/Models/Quest.cs
+index 233b5de5..a49e2ac2 100644
+--- a/Assets/Project/Scripts/Gameplay/Actions/Models/Quest.cs
++++ b/Assets/Project/Scripts/Gameplay/Actions/Models/Quest.cs
+@@ -1,6 +1,8 @@
+ using System;
+ using KBCore.Refs;
+ using Plugins.QuickOutline.Scripts;
++using VRAutism.Core;
++using VRAutism.Core.Models;
+ using UnityEngine;
+ using UnityEngine.Events;
+ 
+@@ -65,13 +67,27 @@ namespace VRAutism.Gameplay.Actions
+         {
+             state = newState;
+ 
+-            Vector3 bubblePos = posBubbleQuestion != null ? posBubbleQuestion.position : Vector3.zero;
+-            Vector3 progressPos = posProgressBar != null ? posProgressBar.position : Vector3.zero;
++            // ─Éß╗ìc tham sß╗æ t├╣y chß╗ënh tß╗½ SessionContext nß║┐u c├│, fallback vß╗ü default.
++            LessonParameters p = SessionContext.Instance != null
++                ? SessionContext.Instance.CurrentParams
++                : LessonParameters.Default;  // D├╣ng singleton ─æß╗â tr├ính GC allocation
+ 
+-            RequestShowBubble?.Invoke(state == State.Enable, bubblePos);
++            Vector3 bubblePos  = posBubbleQuestion != null ? posBubbleQuestion.position : Vector3.zero;
++            Vector3 progressPos = posProgressBar   != null ? posProgressBar.position   : Vector3.zero;
++
++            // --- Bubble: chß╗ë hiß╗çn ß╗ƒ State.Enable khi EnableBubbleHints = true ---
++            bool showBubble = (state == State.Enable) && p.EnableBubbleHints;
++            RequestShowBubble?.Invoke(showBubble, bubblePos);
++
++            // --- Progress bar: chß╗ë hiß╗çn khi ─æang HoldTouch (State.Start) ---
+             RequestShowProgressBar?.Invoke(state == State.Start, progressPos);
+ 
+-            if (outline) outline.enabled = newState == State.Start;
++            // --- Outline: bß║¡t tß╗½ Enable, tß║»t khi Completed/Disable ---
++            if (outline)
++            {
++                bool showOutline = (state == State.Enable || state == State.Start) && p.EnableVisualGuidance;
++                outline.enabled = showOutline;
++            }
+ 
+             if (state == State.Start)
+             {
+@@ -84,9 +100,12 @@ namespace VRAutism.Gameplay.Actions
+                 OnQuestCompleted?.Invoke();
+             }
+ 
++            // --- Reminder: ghi ─æ├¿ reminderCycle tß╗½ params nß║┐u ActionReminderCycle >= 0 (non-sentinel) ---
+             if (state == State.Enable)
+             {
+-                timeReminder = reminderCycle;
++                float overrideCycle = p.ActionReminderCycle;
++                // Sentinel -1f = kh├┤ng ghi ─æ├¿; chß╗ë ghi ─æ├¿ khi gi├í trß╗ï params >= 0f hß╗úp lß╗ç
++                timeReminder = overrideCycle >= 0f ? overrideCycle : reminderCycle;
+             }
+         }
+         
+@@ -124,12 +143,21 @@ namespace VRAutism.Gameplay.Actions
+ 
+         private void Update()
+         {
+-            if (state == State.Enable && reminderCycle > 0)
++            // Reminder: sß╗¡ dß╗Ñng timeReminder ─æ├ú ─æ╞░ß╗úc set trong SetState (tß╗½ params hoß║╖c Inspector).
++            // D├╣ng effectiveCycle ─æß╗â gate ΓÇö kh├┤ng d├╣ng reminderCycle cß╗⌐ng v├¼ nß║┐u Inspector = 0
++            // nh╞░ng params override > 0 th├¼ v├▓ng lß║╖p n├áy sß║╜ bß╗ï chß║╖n sai (dead code).
++            LessonParameters pUpdate = SessionContext.Instance != null
++                ? SessionContext.Instance.CurrentParams
++                : LessonParameters.Default;  // D├╣ng singleton ─æß╗â tr├ính GC allocation
++            float overrideCycleUpdate = pUpdate.ActionReminderCycle;
++            float effectiveCycle = overrideCycleUpdate >= 0f ? overrideCycleUpdate : reminderCycle;
++
++            if (state == State.Enable && effectiveCycle > 0f)
+             {
+                 timeReminder -= Time.deltaTime;
+                 if (timeReminder < 0)
+                 {
+-                    timeReminder = reminderCycle;
++                    timeReminder = effectiveCycle;
+                     onQuestReminder?.Invoke();
+                 }
+             }
+diff --git a/Assets/Project/Scripts/Gameplay/Exploration/AnimalLessonManager.cs b/Assets/Project/Scripts/Gameplay/Exploration/AnimalLessonManager.cs
+index 4aacef67..7402b589 100644
+--- a/Assets/Project/Scripts/Gameplay/Exploration/AnimalLessonManager.cs
++++ b/Assets/Project/Scripts/Gameplay/Exploration/AnimalLessonManager.cs
+@@ -1,5 +1,6 @@
+ using System.Collections;
+ using VRAutism.Core;
++using VRAutism.Core.Models;
+ using UnityEngine;
+ using UnityEngine.SceneManagement;
+ 
+@@ -37,6 +38,18 @@ public class AnimalLessonManager : MonoBehaviour
+     
+     [Header("Animals List")]
+     public Animal[] animals;
++
++    // ΓöÇΓöÇ Runtime helpers ΓÇö lß║Ñy tß╗½ SessionContext, fallback vß╗ü gi├í trß╗ï Inspector ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
++    // Sentinel -1f = kh├┤ng ghi ─æ├¿; chß╗ë d├╣ng params khi gi├í trß╗ï >= 0f (hß╗úp lß╗ç tß╗½ Firestore).
++    private float EffectiveCameraMoveSpeed =>
++        SessionContext.Instance != null && SessionContext.Instance.CurrentParams.CameraMoveSpeed >= 0f
++            ? SessionContext.Instance.CurrentParams.CameraMoveSpeed
++            : cameraMoveSpeed;
++
++    private float EffectiveSoundToDescriptionGap =>
++        SessionContext.Instance != null && SessionContext.Instance.CurrentParams.SoundToDescriptionGap >= 0f
++            ? SessionContext.Instance.CurrentParams.SoundToDescriptionGap
++            : timeSoundToDescription;
+     
+     private void Start()
+     {
+@@ -84,7 +97,7 @@ public class AnimalLessonManager : MonoBehaviour
+             yield return new WaitForSeconds(animal.timeDescriptions);
+             
+             this.SendEvent(EventID.PlaySound, animal.sound);
+-            yield return new WaitForSeconds(timeSoundToDescription);
++            yield return new WaitForSeconds(EffectiveSoundToDescriptionGap);
+ 
+             if (animal.introUI != null)
+                 animal.introUI.SetActive(false); 
+@@ -103,10 +116,15 @@ public class AnimalLessonManager : MonoBehaviour
+         var targetPosition = animalModel.position + (isInVR ? offsetVR : Vector3.zero); 
+         var targetRotation = animalModel.rotation;
+ 
++        // Patch 3+4: Cache tß╗æc ─æß╗Ö mß╗Öt lß║ºn tr╞░ß╗¢c v├▓ng lß║╖p ─æß╗â tr├ính property lookup d╞░ thß╗½a
++        // v├á ─æß║úm bß║úo gi├í trß╗ï nhß║Ñt qu├ín trong suß╗æt animation di chuyß╗ân.
++        // Clamp tß╗æi thiß╗âu 0.05f ─æß╗â ng─ân infinite loop nß║┐u speed = 0 hoß║╖c ├óm tß╗½ Firestore.
++        float cachedSpeed = Mathf.Max(0.05f, EffectiveCameraMoveSpeed);
++
+         while (Vector3.Distance(mainCamera.transform.position, targetPosition) > 0.1f)
+         {
+-            mainCamera.transform.position = Vector3.Lerp(mainCamera.transform.position, targetPosition, Time.deltaTime * cameraMoveSpeed);
+-            mainCamera.transform.rotation = Quaternion.Lerp(mainCamera.transform.rotation, targetRotation, Time.deltaTime * cameraMoveSpeed);
++            mainCamera.transform.position = Vector3.Lerp(mainCamera.transform.position, targetPosition, Time.deltaTime * cachedSpeed);
++            mainCamera.transform.rotation = Quaternion.Lerp(mainCamera.transform.rotation, targetRotation, Time.deltaTime * cachedSpeed);
+             yield return null;
+         }
+         
+diff --git a/Assets/Project/Scripts/Gameplay/Quizzes/Controllers/QuizController.cs b/Assets/Project/Scripts/Gameplay/Quizzes/Controllers/QuizController.cs
+index 320e5365..54f3ea2e 100644
+--- a/Assets/Project/Scripts/Gameplay/Quizzes/Controllers/QuizController.cs
++++ b/Assets/Project/Scripts/Gameplay/Quizzes/Controllers/QuizController.cs
+@@ -1,4 +1,5 @@
+ using VRAutism.Core;
++using VRAutism.Core.Models;
+ using System;
+ using System.Collections;
+ using UnityEngine;
+@@ -29,6 +30,25 @@ namespace VRAutism.Gameplay.Quizzes{
+         private GameObject _currentAssociatedObject;
+         private int _currentQuestionIndex;
+ 
++        /// <summary>
++        /// Tham sß╗æ b├ái Quiz ─æß╗Öng: fallback vß╗ü gi├í trß╗ï legacy nß║┐u SessionContext ch╞░a khß╗ƒi tß║ío hoß║╖c sentinel.
++        /// </summary>
++        private LessonParameters QuizParams =>
++            SessionContext.Instance != null
++                ? SessionContext.Instance.CurrentParams
++                : LessonParameters.Default;  // D├╣ng singleton ─æß╗â tr├ính GC allocation
++
++        // Sentinel -1f = kh├┤ng ghi ─æ├¿; fallback vß╗ü gi├í trß╗ï legacy hardcode
++        // Patch 6: Clamp Mathf.Max(0f, ...) ─æß╗â bß║úo vß╗ç WaitForSeconds khß╗Åi nhß║¡n gi├í trß╗ï ├óm.
++        private float SafeQuizIntroDelay => Mathf.Max(0f,
++            QuizParams.QuizIntroDelay >= 0f ? QuizParams.QuizIntroDelay : 2f);
++
++        private float SafeQuizSoundGap => Mathf.Max(0f,
++            QuizParams.QuizSoundGap >= 0f ? QuizParams.QuizSoundGap : 0.5f);
++
++        private float SafeQuizEndDelay => Mathf.Max(0f,
++            QuizParams.QuizEndDelay >= 0f ? QuizParams.QuizEndDelay : 3f);
++
+         private void Awake()
+         {
+             // Subscribe to UI events ΓÇö controller reacts, UI just raises signals
+@@ -60,7 +80,7 @@ namespace VRAutism.Gameplay.Quizzes{
+ 
+         private IEnumerator PlayIntroAndStartQuiz()
+         {
+-            yield return new WaitForSeconds(2f);
++            yield return new WaitForSeconds(SafeQuizIntroDelay);
+ 
+             soundManager.PlayAudioClip(introAudioClip);
+             yield return new WaitForSeconds(introAudioClip.length);
+@@ -110,7 +130,7 @@ namespace VRAutism.Gameplay.Quizzes{
+             soundManager.StopLoopingSound();
+             TimeManager.Instance.SaveLessonTimeData("success", quiz_score.Value);
+             uiController.ShowGameOver(TimeManager.Instance.GetTotalElapsedSeconds());
+-            StartCoroutine(ReturnToMenuAfterDelay(3f));
++            StartCoroutine(ReturnToMenuAfterDelay(SafeQuizEndDelay));
+         }
+ 
+         /// <summary>
+@@ -166,7 +186,7 @@ namespace VRAutism.Gameplay.Quizzes{
+                 yield return new WaitUntil(() => !soundManager.IsPlaying());
+             }
+ 
+-            yield return new WaitForSeconds(0.5f);
++            yield return new WaitForSeconds(SafeQuizSoundGap);
+ 
+             if (_currentQuestion.animalSound != TypeSound.None)
+             {
+diff --git a/Assets/Project/Scripts/Player/Player/SpeechResponser.cs b/Assets/Project/Scripts/Player/Player/SpeechResponser.cs
+index 4e9d8447..4fcd133f 100644
+--- a/Assets/Project/Scripts/Player/Player/SpeechResponser.cs
++++ b/Assets/Project/Scripts/Player/Player/SpeechResponser.cs
+@@ -1,15 +1,36 @@
+-∩╗┐using System;
++using System;
+ using System.Collections;
+ using VRAutism.Core;
++using VRAutism.Core.Models;
+ using UnityEngine;
+ using UnityEngine.Events;
+ 
+ public class SpeechResponser : MonoBehaviour
+ {
+-    [SerializeField] private float timeBeforePrompt = 5f; // Thß╗¥i gian chß╗¥ tr╞░ß╗¢c khi gß╗úi ├╜
++    [SerializeField] private float timeBeforePrompt = 5f; // Fallback khi SessionContext ch╞░a sß║╡n s├áng
+     [SerializeField] private BooleanVariable finishCondition;
+     [SerializeField] private IntVariable hintCount;
+     [SerializeField] private SpeechCategory[] speechCategories; // Mß║úng chß╗⌐a c├íc chß╗º ─æß╗ü
++
++    /// <summary>
++    /// Thß╗¥i gian lß║╖ng ─æß╗Öng: ╞░u ti├¬n SessionContext.CurrentParams.SpeechSilenceTimeout,
++    /// fallback vß╗ü Inspector field nß║┐u SessionContext ch╞░a khß╗ƒi tß║ío hoß║╖c gi├í trß╗ï l├á sentinel (-1f).
++    /// Patch 6: Clamp Mathf.Max(0f, ...) ─æß╗â bß║úo vß╗ç WaitForSeconds khß╗Åi nhß║¡n gi├í trß╗ï ├óm.
++    /// </summary>
++    private float EffectiveSilenceTimeout
++    {
++        get
++        {
++            if (SessionContext.Instance != null)
++            {
++                float configuredTimeout = SessionContext.Instance.CurrentParams.SpeechSilenceTimeout;
++                // Chß╗ë d├╣ng gi├í trß╗ï config khi >= 0f (hß╗úp lß╗ç tß╗½ Firestore); -1f l├á sentinel
++                if (configuredTimeout >= 0f)
++                    return Mathf.Max(0f, configuredTimeout);
++            }
++            return Mathf.Max(0f, timeBeforePrompt);
++        }
++    }
+     
+     public Action<AudioClip> OnPrompt;
+     private Coroutine silenceTimer;
+@@ -84,7 +105,7 @@ public class SpeechResponser : MonoBehaviour
+ 
+     private IEnumerator SilenceCountdown()
+     {
+-        yield return new WaitForSeconds(timeBeforePrompt);
++        yield return new WaitForSeconds(EffectiveSilenceTimeout);
+         if (stop) yield break;
+         PromptTeacher();
+     }
+diff --git a/ProjectSettings/ProjectSettings.asset b/ProjectSettings/ProjectSettings.asset
+index 44840799..98a2bb08 100644
+--- a/ProjectSettings/ProjectSettings.asset
++++ b/ProjectSettings/ProjectSettings.asset
+@@ -85,7 +85,7 @@ PlayerSettings:
+   androidApplicationEntry: 1
+   defaultIsNativeResolution: 1
+   macRetinaSupport: 1
+-  runInBackground: 0
++  runInBackground: 1
+   muteOtherAudioSources: 0
+   Prepare IOS For Recording: 0
+   Force IOS Speakers When Recording: 0
+@@ -116,6 +116,7 @@ PlayerSettings:
+   xboxEnableGuest: 0
+   xboxEnablePIXSampling: 0
+   metalFramebufferOnly: 0
++  metalUseMetalDisplayLink: 0
+   xboxOneResolution: 0
+   xboxOneSResolution: 0
+   xboxOneXResolution: 3
+diff --git a/VR-Autism.slnx b/VR-Autism.slnx
+index ad2591fe..217eb506 100644
+--- a/VR-Autism.slnx
++++ b/VR-Autism.slnx
+@@ -1,191 +1,48 @@
+ ∩╗┐<Solution>
+-  <Project Path="Unity.Timeline.csproj" />
+   <Project Path="ReadyPlayerMe.Core.csproj" />
+-  <Project Path="Unity.RenderPipelines.GPUDriven.Runtime.csproj" />
+-  <Project Path="Unity.InputSystem.csproj" />
+-  <Project Path="Unity.PlasticSCM.Editor.csproj" />
+-  <Project Path="Unity.2D.Aseprite.Editor.csproj" />
+-  <Project Path="Unity.ShaderGraph.Editor.csproj" />
+   <Project Path="Assembly-CSharp.csproj" />
+-  <Project Path="Unity.RenderPipelines.Core.Runtime.csproj" />
+-  <Project Path="Unity.Mathematics.csproj" />
+-  <Project Path="Unity.Timeline.Editor.csproj" />
+-  <Project Path="Unity.Multiplayer.Center.Editor.csproj" />
+-  <Project Path="Unity.RenderPipelines.Core.Editor.csproj" />
+-  <Project Path="Unity.2D.Psdimporter.Editor.csproj" />
+   <Project Path="VRM.csproj" />
+-  <Project Path="UnityEngine.UI.csproj" />
+-  <Project Path="Unity.2D.IK.Runtime.csproj" />
+-  <Project Path="Unity.MemoryProfiler.Editor.csproj" />
+-  <Project Path="Unity.Collections.csproj" />
+   <Project Path="Assembly-CSharp-Editor.csproj" />
+-  <Project Path="Unity.RenderPipelines.Universal.Editor.csproj" />
+-  <Project Path="Unity.RenderPipelines.Universal.2D.Runtime.csproj" />
+-  <Project Path="Unity.PerformanceTesting.Editor.csproj" />
+-  <Project Path="glTFast.Editor.csproj" />
+-  <Project Path="UnityEngine.TestRunner.csproj" />
+-  <Project Path="Unity.XR.OpenXR.csproj" />
+   <Project Path="UniGLTF.csproj" />
+-  <Project Path="Unity.Burst.csproj" />
+-  <Project Path="Unity.XR.Oculus.csproj" />
+-  <Project Path="Unity.2D.Tilemap.Editor.csproj" />
+-  <Project Path="Unity.Tutorials.Core.Editor.csproj" />
+-  <Project Path="glTFast.csproj" />
+-  <Project Path="Unity.FilmInternalUtilities.Editor.csproj" />
+-  <Project Path="Unity.XR.Interaction.Toolkit.csproj" />
+-  <Project Path="Unity.Animation.Rigging.csproj" />
+-  <Project Path="Cinemachine.csproj" />
+-  <Project Path="Unity.Recorder.Editor.csproj" />
+-  <Project Path="Unity.2D.SpriteShape.Editor.csproj" />
+-  <Project Path="Unity.VisualStudio.Editor.csproj" />
+-  <Project Path="Unity.XR.Oculus.Editor.csproj" />
+-  <Project Path="Unity.Animation.Rigging.Editor.csproj" />
+-  <Project Path="Unity.XR.Interaction.Toolkit.Editor.csproj" />
+-  <Project Path="PPv2URPConverters.csproj" />
+-  <Project Path="Unity.2D.Animation.Editor.csproj" />
+-  <Project Path="Unity.XR.CoreUtils.csproj" />
+-  <Project Path="Unity.Searcher.Editor.csproj" />
+-  <Project Path="Unity.2D.SpriteShape.Runtime.csproj" />
+-  <Project Path="UnityEditor.TestRunner.csproj" />
+-  <Project Path="Unity.RenderPipelines.Universal.Runtime.csproj" />
+   <Project Path="MToon.Editor.csproj" />
+-  <Project Path="Unity.UnifiedRayTracing.Runtime.csproj" />
+-  <Project Path="Unity.AI.Navigation.Editor.ConversionSystem.csproj" />
+-  <Project Path="Autodesk.Fbx.csproj" />
+   <Project Path="UniGLTF.Editor.csproj" />
+-  <Project Path="Unity.Burst.CodeGen.csproj" />
+   <Project Path="ReadyPlayerMe.Samples.AvatarLoading.csproj" />
+   <Project Path="uLipSync.Samples.RuntimeSetup.Runtime.csproj" />
+-  <Project Path="Unity.PerformanceTesting.csproj" />
+-  <Project Path="Unity.FilmInternalUtilities.csproj" />
+-  <Project Path="Unity.2D.Tilemap.Extras.Editor.csproj" />
+   <Project Path="UniGLTF.Tests.csproj" />
+   <Project Path="MToon.csproj" />
+-  <Project Path="Unity.TextMeshPro.csproj" />
+-  <Project Path="Unity.Toonshader.csproj" />
+-  <Project Path="glTFast.Export.csproj" />
+   <Project Path="UnityChan.csproj" />
+   <Project Path="uLipSync.Runtime.csproj" />
+-  <Project Path="Unity.TextMeshPro.Editor.csproj" />
+-  <Project Path="PsdPlugin.csproj" />
+   <Project Path="uLipSync.Editor.csproj" />
+-  <Project Path="Unity.2D.IK.Editor.csproj" />
+-  <Project Path="Unity.XR.MockHMD.csproj" />
+-  <Project Path="Unity.InternalAPIEngineBridge.001.csproj" />
+-  <Project Path="com.unity.cinemachine.editor.csproj" />
+-  <Project Path="Unity.Burst.Editor.csproj" />
+-  <Project Path="Unity.2D.Common.Path.Editor.csproj" />
+-  <Project Path="Unity.2D.Common.Editor.csproj" />
+-  <Project Path="ScriptablePacker.csproj" />
+   <Project Path="ReadyPlayerMe.Core.Editor.csproj" />
+-  <Project Path="Unity.Rider.Editor.csproj" />
+-  <Project Path="Unity.2D.Tooling.Editor.csproj" />
+-  <Project Path="Unity.InternalAPIEditorBridge.001.csproj" />
+-  <Project Path="Unity.AI.Navigation.Updater.csproj" />
+-  <Project Path="Unity.Toonshader.Editor.csproj" />
+   <Project Path="UniHumanoid.csproj" />
+-  <Project Path="Unity.Formats.Fbx.Editor.csproj" />
+-  <Project Path="UnityEditor.UI.csproj" />
+-  <Project Path="HuggingFaceAPI.csproj" />
+-  <Project Path="glTFast.Newtonsoft.csproj" />
+-  <Project Path="Unity.RenderPipelines.Universal.2D.Editor.Overrides.csproj" />
+   <Project Path="UniVRM.Editor.csproj" />
+-  <Project Path="Unity.InternalAPIEngineBridge.007.csproj" />
+   <Project Path="Unity.XR.Interaction.Toolkit.Samples.DeviceSimulator.csproj" />
+-  <Project Path="Unity.2D.Sprite.Editor.csproj" />
+   <Project Path="uLipSync.Samples.Common.csproj" />
+-  <Project Path="Unity.XR.CoreUtils.Editor.csproj" />
+-  <Project Path="Unity.AI.Navigation.Editor.csproj" />
+-  <Project Path="Unity.2D.PixelPerfect.Editor.csproj" />
+   <Project Path="Oculus.LipSync.Editor.csproj" />
+-  <Project Path="Unity.MemoryProfiler.Editor.MemoryProfilerModule.csproj" />
+-  <Project Path="Unity.Recorder.csproj" />
+-  <Project Path="Unity.InternalAPIEditorBridge.007.csproj" />
+-  <Project Path="Unity.XR.OpenXR.Editor.csproj" />
+   <Project Path="ReadyPlayerMe.AvatarCreator.csproj" />
+-  <Project Path="Unity.Multiplayer.Center.Common.csproj" />
+   <Project Path="Oculus.LipSync.csproj" />
+-  <Project Path="glTFast.Documentation.Examples.csproj" />
+-  <Project Path="Unity.XR.Interaction.Toolkit.Analytics.Editor.csproj" />
+-  <Project Path="Unity.XR.Management.Editor.csproj" />
+-  <Project Path="Unity.XR.OpenXR.Features.MetaQuestSupport.Editor.csproj" />
+-  <Project Path="Unity.InputSystem.ForUI.csproj" />
+-  <Project Path="Unity.XR.Interaction.Toolkit.CodeSamples.Tests.csproj" />
+-  <Project Path="Unity.AI.Navigation.csproj" />
+-  <Project Path="Unity.XR.Interaction.Toolkit.Analytics.Hooks.Editor.csproj" />
+-  <Project Path="Unity.Collections.CodeGen.csproj" />
+-  <Project Path="Unity.XR.MockHMD.Editor.csproj" />
+-  <Project Path="Unity.2D.Tilemap.Extras.csproj" />
+-  <Project Path="Unity.2D.Animation.Runtime.csproj" />
+   <Project Path="UniGLTF.Utils.csproj" />
+-  <Project Path="Unity.XR.Management.csproj" />
+-  <Project Path="Unity.Mathematics.Editor.csproj" />
+   <Project Path="Unity.XR.Interaction.Toolkit.Samples.StarterAssets.csproj" />
+-  <Project Path="UnityEditor.UI.Analytics.csproj" />
+   <Project Path="SpringBoneJobs.csproj" />
+-  <Project Path="Unity.Tutorials.Core.csproj" />
+-  <Project Path="Unity.VSCode.Editor.csproj" />
+-  <Project Path="Unity.2D.Common.Runtime.csproj" />
+   <Project Path="ReadyPlayerMe.Samples.AvatarCreatorWizard.csproj" />
+   <Project Path="UniGLTF.UniUnlit.csproj" />
+   <Project Path="VRM.Samples.Editor.Tests.csproj" />
+   <Project Path="KBCore.Refs.csproj" />
+-  <Project Path="Unity.Settings.Editor.csproj" />
+-  <Project Path="Unity.InputSystem.TestFramework.csproj" />
+-  <Project Path="UnityEditor.XR.LegacyInputHelpers.csproj" />
+-  <Project Path="Unity.ShaderGraph.Utilities.csproj" />
+   <Project Path="uLipSync.Samples.VRM.Editor.csproj" />
+-  <Project Path="Unity.Recorder.Base.csproj" />
+   <Project Path="ReadyPlayerMe.Samples.QuickStart.csproj" />
+-  <Project Path="Unity.Profiling.Core.csproj" />
+-  <Project Path="Unity.2D.Aseprite.Common.csproj" />
+-  <Project Path="Unity.EditorCoroutines.Editor.csproj" />
+   <Project Path="ReadyPlayerMe.Samples.WebGLSample.csproj" />
+   <Project Path="uLipSync.Samples.VRM.Runtime.csproj" />
+   <Project Path="VRM.Tests.csproj" />
+-  <Project Path="HuggingFaceAPI.Editor.csproj" />
+-  <Project Path="Unity.XR.OpenXR.Features.MetaQuestSupport.csproj" />
+-  <Project Path="Unity.CollabProxy.Editor.csproj" />
+-  <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
+   <Project Path="ReadyPlayerMe.Samples.AvatarCreatorElements.csproj" />
+   <Project Path="UniHumanoid.Editor.csproj" />
+   <Project Path="uLipSync.Samples.WebGL.Runtime.csproj" />
+-  <Project Path="Unity.Bindings.OpenImageIO.Editor.csproj" />
+-  <Project Path="Unity.XR.OpenXR.Features.RuntimeDebugger.csproj" />
+-  <Project Path="UnityEngine.SpatialTracking.csproj" />
+-  <Project Path="Unity.XR.OpenXR.Features.OculusQuestSupport.Editor.csproj" />
+-  <Project Path="Unity.Animation.Rigging.DocCodeExamples.csproj" />
+-  <Project Path="Unity.2D.PixelPerfect.csproj" />
+-  <Project Path="UnityEngine.XR.LegacyInputHelpers.csproj" />
+   <Project Path="Unity.VSAttribution.Editor.csproj" />
+-  <Project Path="Unity.XR.OpenXR.Features.RuntimeDebugger.Editor.csproj" />
+-  <Project Path="Unity.InputSystem.DocCodeSamples.csproj" />
+   <Project Path="ReadyPlayerMe.Core.WebGLSample.Editor.csproj" />
+-  <Project Path="Unity.RenderPipelines.Universal.Shaders.csproj" />
+-  <Project Path="Unity.RenderPipelines.Core.Runtime.Shared.csproj" />
+   <Project Path="ReadyPlayerMe.AvatarCreator.Editor.csproj" />
+-  <Project Path="Unity.InternalAPIEngineBridge.004.csproj" />
+-  <Project Path="Unity.Formats.Fbx.Runtime.csproj" />
+-  <Project Path="Unity.RenderPipelines.Core.Editor.Shared.csproj" />
+-  <Project Path="Unity.MemoryProfiler.csproj" />
+-  <Project Path="glTFast.dots.csproj" />
+   <Project Path="ReadyPlayerMe.Samples.AvatarRenders.csproj" />
+-  <Project Path="Unity.XR.OpenXR.TestTooling.csproj" />
+-  <Project Path="Autodesk.Fbx.Editor.csproj" />
+-  <Project Path="Unity.XR.OpenXR.Features.ConformanceAutomation.csproj" />
+   <Project Path="UniHumanoid.Editor.Tests.csproj" />
+-  <Project Path="Unity.PlasticSCM.Editor.Entities.csproj" />
+   <Project Path="UniGLTF.UniUnlit.Editor.csproj" />
+-  <Project Path="Unity.XR.OpenXR.Features.MockRuntime.csproj" />
+-  <Project Path="UnityEditor.SpatialTracking.csproj" />
+   <Project Path="uLipSync.Example.RuntimeProfile.Runtime.csproj" />
+   <Project Path="uLipSync.Samples.Animator.Runtime.csproj" />
+-  <Project Path="Unity.Rendering.LightTransport.Editor.csproj" />
+   <Project Path="Unity.XR.Interaction.Toolkit.Samples.StarterAssets.Editor.csproj" />
+-  <Project Path="Unity.Collections.Editor.csproj" />
+-  <Project Path="Unity.RenderPipelines.Universal.Config.Runtime.csproj" />
+-  <Project Path="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.csproj" />
+-  <Project Path="Unity.RenderPipelines.Core.ShaderLibrary.csproj" />
+-  <Project Path="Unity.XR.OpenXR.Features.OculusQuestSupport.csproj" />
+-  <Project Path="Autodesk.Fbx.BuildTestAssets.csproj" />
+ </Solution>
+diff --git a/docs/ideas/WEB_DASHBOARD_IDEAS.md b/docs/ideas/WEB_DASHBOARD_IDEAS.md
+index 16b22f44..ddc6cc70 100644
+--- a/docs/ideas/WEB_DASHBOARD_IDEAS.md
++++ b/docs/ideas/WEB_DASHBOARD_IDEAS.md
+@@ -93,13 +93,7 @@ C├┤ng cß╗Ñ ─æß╗â gi├ío vi├¬n ─æ├│ng vai "Ch├║a tß╗â m├┤i tr╞░ß╗¥ng" khi trß║╗ ─æ
+ 
+ ---
+ 
+-## ≡ƒöæ 5. Luß╗ông Gh├⌐p ─É├┤i Nhanh (Smart TV Pairing)
+-
+-Thay v├¼ bß║»t trß║╗ phß║úi g├╡ b├án ph├¡m ß║úo trong k├¡nh VR (Rß║Ñt cß╗▒c), ta ├íp dß╗Ñng luß╗ông gh├⌐p m├ú PIN:
+-
+-1. **VR App:** Khi khß╗ƒi ─æß╗Öng, thß║ú 1 m├ú PIN (VD: `7A39B`) l╞í lß╗¡ng giß╗»a kh├┤ng trung v├á chß╗¥. 
+-2. **Web Dashboard:** Gi├ío vi├¬n chß╗ìn Hß╗ô s╞í B├⌐ Nam ΓåÆ Giao diß╗çn hß╗Åi m├ú PIN ─æß╗â gh├⌐p (C┼⌐ng c├│ thß╗â gh├⌐p sau khi v├áo dashboard)
+-3. **Thao t├íc:** Sau khi ─æ├ú pair, gi├ío vi├¬n c├│ thß╗â v├áo giao diß╗çn chß╗ìn b├ái hß╗ìc v├á start, k├¡nh VR sß║╜ nhß║¡n lß╗çnh v├á bß║»t ─æß║ºu b├ái hß╗ìc.
++## ≡ƒöæ 5. Luß╗ông Gh├⌐p ─É├┤i 
+ 
+ ---
+ 
+diff --git a/docs/planning/vr-autism-implementation.md b/docs/planning/vr-autism-implementation.md
+index f7b7daad..fd0c6085 100644
+--- a/docs/planning/vr-autism-implementation.md
++++ b/docs/planning/vr-autism-implementation.md
+@@ -11,7 +11,7 @@ Do Web Dashboard sß║╜ l├á mß╗Öt project t├ích biß╗çt, tß║¡p t├ái liß╗çu n├áy s
+ ## ≡ƒƒó GIAI ─ÉOß║áN 1: C├ÆN Lß║áI
+ 
+ ### Task 1.3: T├¡ch hß╗úp Behavior Snapshots (Telemetry tß║ºn sß╗æ cao) - Γ£à **─É├â HO├ÇN TH├ÇNH**
+-D:\Lab\VR-Autism\docs\design\TELEMETRY_GAZE_DESIGN.md
++* T├¡ch hß╗úp th├ánh c├┤ng hß╗ç thß╗æng telemetry thu thß║¡p vß╗ï tr├¡ ─æß║ºu v├á mß║»t cß╗ºa trß║╗ tß║ºn sß╗æ cao l├¬n RTDB. Chi tiß║┐t xem tß║íi [TELEMETRY_GAZE_DESIGN.md](file:///d:/Lab/VR-Autism/docs/design/TELEMETRY_GAZE_DESIGN.md).
+ 
+ ---
+ 
+@@ -20,12 +20,9 @@ D:\Lab\VR-Autism\docs\design\TELEMETRY_GAZE_DESIGN.md
+ ß╗₧ giai ─æoß║ín n├áy, team VR chuß║⌐n bß╗ï sß║╡n "ß╗ò cß║»m" (Listeners & Connectors). Ch├║ng ta kh├┤ng cß║ºn Web code xong m├án h├¼nh hiß╗ân thß╗ï, m├á chß╗ë cß║ºn thß╗æng nhß║Ñt vß╗¢i team Web vß╗ü **cß║Ñu tr├║c dß╗» liß╗çu JSON**. Ch├║ng ta c├│ thß╗â d├╣ng t├¡nh n─âng giß║ú lß║¡p cß╗ºa Firebase Console ─æß╗â test.
+ 
+ ### Task 2.1: C╞í chß║┐ Sinh m├ú PIN (Pairing) - Γ£à **─É├â HO├ÇN TH├ÇNH**
+-* **Kiß║┐n tr├║c:** Chuyß╗ân ─æß╗òi th├ánh c├┤ng sang m├┤ h├¼nh **Thin Client (Dumb Terminal)**. K├¡nh VR kh├┤ng tß╗▒ quyß║┐t ─æß╗ïnh b├ái hß╗ìc m├á lß╗ç thuß╗Öc ho├án to├án v├áo luß╗ông sß╗▒ kiß╗çn tß╗½ Web.
+-* **Quy tr├¼nh 2-b╞░ß╗¢c (Chained Listeners):** 
+-  1. Sinh PIN ngß║½u nhi├¬n -> Push l├¬n Firebase `pairing_codes/{PIN}` vß╗¢i `status: "waiting"`.
+-  2. Lß║»ng nghe `status` chuyß╗ân th├ánh `"paired"` (Web ─æ├ú nhß║¡n diß╗çn).
+-  3. Tß╗▒ ─æß╗Öng chuyß╗ân thang lß║»ng nghe sang tr╞░ß╗¥ng `lesson_id`. Ngay khi gi├ío vi├¬n bß║Ñm chß╗ìn b├ái tr├¬n Web, Firebase trigger Event cho Unity ─æß╗â `SceneMenuController.cs` tß╗▒ ─æß╗Öng gß╗ìi lß╗çnh `SceneManager.LoadScene()`.
+-* **Th├ánh tß╗▒u dß╗ìn dß║╣p:** ─É├ú x├│a sß║ích r├íc kß╗╣ thuß║¡t (Dead Code) bao gß╗ôm c├íc module UI chß╗ìn b├ái v├á biß╗âu ─æß╗ô cß╗Ñc bß╗Ö (`LessonUI`, `ReportController`, v.v.). Giß║úi ph├│ng ~30% bß╗Ö nhß╗¢ UI cho k├¡nh VR.
++* Chuyß╗ân ─æß╗òi th├ánh c├┤ng sang m├┤ h├¼nh **Thin Client (Dumb Terminal)**, k├¡nh VR ho├án to├án lß╗ç thuß╗Öc v├áo luß╗ông sß╗▒ kiß╗çn tß╗½ Web.
++* Ho├án tß║Ñt c╞í chß║┐ gh├⌐p ─æ├┤i qua m├ú PIN, tß╗▒ ─æß╗Öng chuyß╗ân ─æß╗òi listener sang nhß║¡n diß╗çn b├ái hß╗ìc (`lesson_id`) ─æß╗â tß║úi scene tß╗½ xa.
++* Dß╗ìn dß║╣p triß╗çt ─æß╗â c├íc UI c┼⌐ kh├┤ng sß╗¡ dß╗Ñng, giß║úi ph├│ng bß╗Ö nhß╗¢ hß╗ç thß╗æng.
+ 
+ ### Task 2.2: ─Éß╗ông bß╗Ö Cß║Ñu h├¼nh B├ái hß╗ìc (Per-Lesson Params)
+ * **Cß║ºn l├ám g├¼:** ├üp dß╗Ñng setting (├óm l╞░ß╗úng, ─æß╗Ö nhß║íy ├óm thanh, sß╗æ lß║ºn hint tß╗æi ─æa) theo hß╗ô s╞í cß╗ºa Trß║╗ tr╞░ß╗¢c khi v├áo game.
+@@ -45,15 +42,13 @@ D:\Lab\VR-Autism\docs\design\TELEMETRY_GAZE_DESIGN.md
+   - Lß║»ng nghe sß╗▒ kiß╗çn th├¬m mß╗¢i tß║íi nh├ính `live_sessions/{session_id}/commands`.
+   - Switch/case c├íc lß╗çnh (`verbal_hint`, `visual_cue`, `pause`) v├á gß╗ìi v├áo `EventChannel.cs` ─æß╗â c├íc ─æß╗æi t╞░ß╗úng 3D trong Unity react t╞░╞íng ß╗⌐ng.
+ 
+-### Task 3.2: Truyß╗ün H├¼nh ß║ónh (WebRTC / Video POV) - *T├¡nh n─âng n├óng cao*
+-* **Phß╗Ñ thuß╗Öc:** 100% ─æß╗úi team Web thiß║┐t lß║¡p xong k├¬nh WebRTC Signaling.
+-* **Cß║ºn l├ám g├¼:** ─Éß║⌐y khung h├¼nh Camera cß╗ºa Unity l├¬n Web.
+-* **L├ám nh╞░ thß║┐ n├áo:** D├╣ng Unity Render Streaming (hoß║╖c WebRTC package). Y├¬u cß║ºu bß║»t tay P2P giß╗»a 2 thiß║┐t bß╗ï trong c├╣ng mß║íng LAN.
++### Task 3.2: Truyß╗ün H├¼nh ß║ónh (WebRTC / Video POV) - Γ£à **─É├â HO├ÇN TH├ÇNH**
++* Triß╗ân khai ho├án tß║Ñt luß╗ông truyß╗ün h├¼nh ß║únh thß╗¥i gian thß╗▒c chß║Ñt l╞░ß╗úng cao tß╗½ Unity sang Web Dashboard bß║▒ng WebRTC.
++* T├ích biß╗çt camera phß╗Ñ ─æß╗â tr├ính ph├í vß╗í pipeline render VR (sß╗¡ dß╗Ñng camera phß╗Ñ sao ch├⌐p cß║Ñu h├¼nh render l├¬n render texture).
++* Quß║ún l├╜ lifecycle WebRTC sß║ích sß║╜, thß╗▒c hiß╗çn c╞í chß║┐ Signaling (Offer/Answer/ICE) qua Firebase RTDB ß╗òn ─æß╗ïnh.
+ 
+ ### Task 3.3: Auto-Alert (Cß║únh b├ío & Can thiß╗çp V├┤ hß║íi) - Γ£à **─É├â HO├ÇN TH├ÇNH**
+-* **Phß╗Ñ thuß╗Öc:** Web ph├ón t├¡ch xong BehaviorSnapshot v├á tß╗▒ ─æß╗Öng bß║»n lß╗çnh thay v├¼ con ng╞░ß╗¥i.
+-* **Cß║ºn l├ám g├¼ / Lß╗Ö tr├¼nh:** 
+-  - **Hiß╗çn tß║íi (Gi├ím s├ít):** VR chß╗ë gß╗¡i sensor data, Web hiß╗çn Cß║únh b├ío (Alert) ─æß╗â Gi├ío vi├¬n tß╗▒ ra quyß║┐t ─æß╗ïnh bß║Ñm n├║t can thiß╗çp.
+-  - **T╞░╞íng lai (Co-pilot):** Web tß╗▒ ─æß╗Öng bß║»t t├¡n hiß╗çu (vd: trß║╗ mß║Ñt tß║¡p trung >10s) v├á bß║»n ng╞░ß╗úc lß║íi c├íc lß╗çnh Can thiß╗çp v├┤ hß║íi (Soft-Interventions nh╞░ `highlight_object`), hoß║ít ─æß╗Öng nh╞░ Trß╗ú l├╜ sß╗æ s├ít c├ính c├╣ng chuy├¬n gia.
++* X├óy dß╗▒ng pipeline dß╗» liß╗çu thß╗¥i gian thß╗▒c tß╗½ VR hß╗ù trß╗ú Web dashboard ph├ón t├¡ch h├ánh vi v├á gß╗¡i cß║únh b├ío (Alert) cho gi├ío vi├¬n.
++* Hß╗ù trß╗ú k├¡ch hoß║ít c├íc Soft-Interventions (nh╞░ highlight vß║¡t thß╗â) tß╗½ xa th├┤ng qua lß╗çnh ─æiß╗üu khiß╗ân.
+ 
+ ---

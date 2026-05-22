@@ -70,3 +70,16 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# BMad / AI Agents
+.agent/
+.agents/
+_bmad/
+_bmad-output/
+memories/
+project-context.md
+.instructions.md
+.prompt.md
+.agent.md
+copilot-instructions.md
+AGENTS.md
