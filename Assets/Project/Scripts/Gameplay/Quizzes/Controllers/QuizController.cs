@@ -1,4 +1,5 @@
 using VRAutism.Core;
+using VRAutism.Core.Models;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -28,6 +29,25 @@ namespace VRAutism.Gameplay.Quizzes{
         private QuizQuestionData _currentQuestion;
         private GameObject _currentAssociatedObject;
         private int _currentQuestionIndex;
+
+        /// <summary>
+        /// Tham số bài Quiz động: fallback về giá trị legacy nếu SessionContext chưa khởi tạo hoặc sentinel.
+        /// </summary>
+        private LessonParameters QuizParams =>
+            SessionContext.Instance != null
+                ? SessionContext.Instance.CurrentParams
+                : LessonParameters.Default;  // Dùng singleton để tránh GC allocation
+
+        // Sentinel -1f = không ghi đè; fallback về giá trị legacy hardcode
+        // Patch 6: Clamp Mathf.Max(0f, ...) để bảo vệ WaitForSeconds khỏi nhận giá trị âm.
+        private float SafeQuizIntroDelay => Mathf.Max(0f,
+            QuizParams.QuizIntroDelay >= 0f ? QuizParams.QuizIntroDelay : 2f);
+
+        private float SafeQuizSoundGap => Mathf.Max(0f,
+            QuizParams.QuizSoundGap >= 0f ? QuizParams.QuizSoundGap : 0.5f);
+
+        private float SafeQuizEndDelay => Mathf.Max(0f,
+            QuizParams.QuizEndDelay >= 0f ? QuizParams.QuizEndDelay : 3f);
 
         private void Awake()
         {
@@ -60,7 +80,7 @@ namespace VRAutism.Gameplay.Quizzes{
 
         private IEnumerator PlayIntroAndStartQuiz()
         {
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(SafeQuizIntroDelay);
 
             soundManager.PlayAudioClip(introAudioClip);
             yield return new WaitForSeconds(introAudioClip.length);
@@ -110,7 +130,7 @@ namespace VRAutism.Gameplay.Quizzes{
             soundManager.StopLoopingSound();
             TimeManager.Instance.SaveLessonTimeData("success", quiz_score.Value);
             uiController.ShowGameOver(TimeManager.Instance.GetTotalElapsedSeconds());
-            StartCoroutine(ReturnToMenuAfterDelay(3f));
+            StartCoroutine(ReturnToMenuAfterDelay(SafeQuizEndDelay));
         }
 
         /// <summary>
@@ -166,7 +186,7 @@ namespace VRAutism.Gameplay.Quizzes{
                 yield return new WaitUntil(() => !soundManager.IsPlaying());
             }
 
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(SafeQuizSoundGap);
 
             if (_currentQuestion.animalSound != TypeSound.None)
             {

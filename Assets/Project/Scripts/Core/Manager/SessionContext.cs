@@ -1,4 +1,5 @@
 using UnityEngine;
+using VRAutism.Core.Models;
 
 namespace VRAutism.Core
 {
@@ -24,6 +25,13 @@ namespace VRAutism.Core
         
         // --- Thông tin expert điều khiển ---
         public string HostId { get; set; } = "";
+
+        // --- Cấu hình bài học động (được ghi đè từ Firestore tại Story 2.3) ---
+        /// <summary>
+        /// Tham số cấu hình bài học hiện tại.
+        /// Mặc định là LessonParameters.GetDefault() — giữ nguyên hành vi legacy.
+        /// </summary>
+        public LessonParameters CurrentParams { get; set; } = LessonParameters.GetDefault();
         
         private void Awake()
         {
@@ -50,6 +58,7 @@ namespace VRAutism.Core
             LevelIndex = 0;
             LessonType = "";
             HostId = "";
+            CurrentParams = LessonParameters.GetDefault();
         }
 
         private void Update()

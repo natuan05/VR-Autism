@@ -1,6 +1,8 @@
 using System;
 using KBCore.Refs;
 using Plugins.QuickOutline.Scripts;
+using VRAutism.Core;
+using VRAutism.Core.Models;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -65,13 +67,27 @@ namespace VRAutism.Gameplay.Actions
         {
             state = newState;
 
-            Vector3 bubblePos = posBubbleQuestion != null ? posBubbleQuestion.position : Vector3.zero;
-            Vector3 progressPos = posProgressBar != null ? posProgressBar.position : Vector3.zero;
+            // Đọc tham số tùy chỉnh từ SessionContext nếu có, fallback về default.
+            LessonParameters p = SessionContext.Instance != null
+                ? SessionContext.Instance.CurrentParams
+                : LessonParameters.Default;  // Dùng singleton để tránh GC allocation
 
-            RequestShowBubble?.Invoke(state == State.Enable, bubblePos);
+            Vector3 bubblePos  = posBubbleQuestion != null ? posBubbleQuestion.position : Vector3.zero;
+            Vector3 progressPos = posProgressBar   != null ? posProgressBar.position   : Vector3.zero;
+
+            // --- Bubble: chỉ hiện ở State.Enable khi EnableBubbleHints = true ---
+            bool showBubble = (state == State.Enable) && p.EnableBubbleHints;
+            RequestShowBubble?.Invoke(showBubble, bubblePos);
+
+            // --- Progress bar: chỉ hiện khi đang HoldTouch (State.Start) ---
             RequestShowProgressBar?.Invoke(state == State.Start, progressPos);
 
-            if (outline) outline.enabled = newState == State.Start;
+            // --- Outline: bật từ Enable, tắt khi Completed/Disable ---
+            if (outline)
+            {
+                bool showOutline = (state == State.Enable || state == State.Start) && p.EnableVisualGuidance;
+                outline.enabled = showOutline;
+            }
 
             if (state == State.Start)
             {
@@ -84,9 +100,12 @@ namespace VRAutism.Gameplay.Actions
                 OnQuestCompleted?.Invoke();
             }
 
+            // --- Reminder: ghi đè reminderCycle từ params nếu ActionReminderCycle >= 0 (non-sentinel) ---
             if (state == State.Enable)
             {
-                timeReminder = reminderCycle;
+                float overrideCycle = p.ActionReminderCycle;
+                // Sentinel -1f = không ghi đè; chỉ ghi đè khi giá trị params >= 0f hợp lệ
+                timeReminder = overrideCycle >= 0f ? overrideCycle : reminderCycle;
             }
         }
         
@@ -124,12 +143,21 @@ namespace VRAutism.Gameplay.Actions
 
         private void Update()
         {
-            if (state == State.Enable && reminderCycle > 0)
+            // Reminder: sử dụng timeReminder đã được set trong SetState (từ params hoặc Inspector).
+            // Dùng effectiveCycle để gate — không dùng reminderCycle cứng vì nếu Inspector = 0
+            // nhưng params override > 0 thì vòng lặp này sẽ bị chặn sai (dead code).
+            LessonParameters pUpdate = SessionContext.Instance != null
+                ? SessionContext.Instance.CurrentParams
+                : LessonParameters.Default;  // Dùng singleton để tránh GC allocation
+            float overrideCycleUpdate = pUpdate.ActionReminderCycle;
+            float effectiveCycle = overrideCycleUpdate >= 0f ? overrideCycleUpdate : reminderCycle;
+
+            if (state == State.Enable && effectiveCycle > 0f)
             {
                 timeReminder -= Time.deltaTime;
                 if (timeReminder < 0)
                 {
-                    timeReminder = reminderCycle;
+                    timeReminder = effectiveCycle;
                     onQuestReminder?.Invoke();
                 }
             }

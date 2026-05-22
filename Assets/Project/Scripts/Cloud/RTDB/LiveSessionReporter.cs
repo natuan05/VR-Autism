@@ -49,8 +49,16 @@ namespace VRAutism.Cloud.RTDB
 
             try
             {
-                await root.Child("live_sessions").Child(sessionId).Child("vr_state")
-                          .UpdateChildrenAsync(vrStateData);
+                var vrStateRef = root.Child("live_sessions").Child(sessionId).Child("vr_state");
+
+                // ĐĂNG KÝ SỰ KIỆN ONDISCONNECT: Nếu Unity Crash hoặc bấm Stop Play
+                // Firebase Server sẽ TỰ ĐỘNG điền status="disconnected" giùm ta.
+                vrStateRef.OnDisconnect().UpdateChildren(new Dictionary<string, object> {
+                    { "status", "disconnected" },
+                    { "ended_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }
+                });
+
+                await vrStateRef.UpdateChildrenAsync(vrStateData);
 
                 Debug.Log($"[LiveSessionReporter] ✅ Handshake gửi thành công → live_sessions/{sessionId}/vr_state (scene: {sceneName})");
 

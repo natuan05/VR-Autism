@@ -1,15 +1,36 @@
-﻿using System;
+using System;
 using System.Collections;
 using VRAutism.Core;
+using VRAutism.Core.Models;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class SpeechResponser : MonoBehaviour
 {
-    [SerializeField] private float timeBeforePrompt = 5f; // Thời gian chờ trước khi gợi ý
+    [SerializeField] private float timeBeforePrompt = 5f; // Fallback khi SessionContext chưa sẵn sàng
     [SerializeField] private BooleanVariable finishCondition;
     [SerializeField] private IntVariable hintCount;
     [SerializeField] private SpeechCategory[] speechCategories; // Mảng chứa các chủ đề
+
+    /// <summary>
+    /// Thời gian lặng động: ưu tiên SessionContext.CurrentParams.SpeechSilenceTimeout,
+    /// fallback về Inspector field nếu SessionContext chưa khởi tạo hoặc giá trị là sentinel (-1f).
+    /// Patch 6: Clamp Mathf.Max(0f, ...) để bảo vệ WaitForSeconds khỏi nhận giá trị âm.
+    /// </summary>
+    private float EffectiveSilenceTimeout
+    {
+        get
+        {
+            if (SessionContext.Instance != null)
+            {
+                float configuredTimeout = SessionContext.Instance.CurrentParams.SpeechSilenceTimeout;
+                // Chỉ dùng giá trị config khi >= 0f (hợp lệ từ Firestore); -1f là sentinel
+                if (configuredTimeout >= 0f)
+                    return Mathf.Max(0f, configuredTimeout);
+            }
+            return Mathf.Max(0f, timeBeforePrompt);
+        }
+    }
     
     public Action<AudioClip> OnPrompt;
     private Coroutine silenceTimer;
@@ -84,7 +105,7 @@ public class SpeechResponser : MonoBehaviour
 
     private IEnumerator SilenceCountdown()
     {
-        yield return new WaitForSeconds(timeBeforePrompt);
+        yield return new WaitForSeconds(EffectiveSilenceTimeout);
         if (stop) yield break;
         PromptTeacher();
     }

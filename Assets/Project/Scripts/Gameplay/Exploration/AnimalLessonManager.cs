@@ -1,5 +1,6 @@
 using System.Collections;
 using VRAutism.Core;
+using VRAutism.Core.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -37,6 +38,18 @@ public class AnimalLessonManager : MonoBehaviour
     
     [Header("Animals List")]
     public Animal[] animals;
+
+    // ── Runtime helpers — lấy từ SessionContext, fallback về giá trị Inspector ──────
+    // Sentinel -1f = không ghi đè; chỉ dùng params khi giá trị >= 0f (hợp lệ từ Firestore).
+    private float EffectiveCameraMoveSpeed =>
+        SessionContext.Instance != null && SessionContext.Instance.CurrentParams.CameraMoveSpeed >= 0f
+            ? SessionContext.Instance.CurrentParams.CameraMoveSpeed
+            : cameraMoveSpeed;
+
+    private float EffectiveSoundToDescriptionGap =>
+        SessionContext.Instance != null && SessionContext.Instance.CurrentParams.SoundToDescriptionGap >= 0f
+            ? SessionContext.Instance.CurrentParams.SoundToDescriptionGap
+            : timeSoundToDescription;
     
     private void Start()
     {
@@ -84,7 +97,7 @@ public class AnimalLessonManager : MonoBehaviour
             yield return new WaitForSeconds(animal.timeDescriptions);
             
             this.SendEvent(EventID.PlaySound, animal.sound);
-            yield return new WaitForSeconds(timeSoundToDescription);
+            yield return new WaitForSeconds(EffectiveSoundToDescriptionGap);
 
             if (animal.introUI != null)
                 animal.introUI.SetActive(false); 
@@ -103,10 +116,15 @@ public class AnimalLessonManager : MonoBehaviour
         var targetPosition = animalModel.position + (isInVR ? offsetVR : Vector3.zero); 
         var targetRotation = animalModel.rotation;
 
+        // Patch 3+4: Cache tốc độ một lần trước vòng lặp để tránh property lookup dư thừa
+        // và đảm bảo giá trị nhất quán trong suốt animation di chuyển.
+        // Clamp tối thiểu 0.05f để ngăn infinite loop nếu speed = 0 hoặc âm từ Firestore.
+        float cachedSpeed = Mathf.Max(0.05f, EffectiveCameraMoveSpeed);
+
         while (Vector3.Distance(mainCamera.transform.position, targetPosition) > 0.1f)
         {
-            mainCamera.transform.position = Vector3.Lerp(mainCamera.transform.position, targetPosition, Time.deltaTime * cameraMoveSpeed);
-            mainCamera.transform.rotation = Quaternion.Lerp(mainCamera.transform.rotation, targetRotation, Time.deltaTime * cameraMoveSpeed);
+            mainCamera.transform.position = Vector3.Lerp(mainCamera.transform.position, targetPosition, Time.deltaTime * cachedSpeed);
+            mainCamera.transform.rotation = Quaternion.Lerp(mainCamera.transform.rotation, targetRotation, Time.deltaTime * cachedSpeed);
             yield return null;
         }
         
