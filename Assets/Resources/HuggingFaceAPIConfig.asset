@@ -15,7 +15,7 @@ MonoBehaviour:
   _apiKey: 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
   _useBackupEndpoints: 1
   _waitForModel: 1
-  _maxTimeout: 3
+  _maxTimeout: 30
   _taskEndpoints:
   - taskName: AutomaticSpeechRecognition
     endpoint: https://api-inference.huggingface.co/models/nguyenvulebinh/wav2vec2-base-vietnamese-250h

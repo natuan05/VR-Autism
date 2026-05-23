@@ -18,19 +18,45 @@ public class SpeechRecognition : MonoBehaviour {
 
     private void Start()
     {
+        #if UNITY_ANDROID && !UNITY_EDITOR
+        if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.Microphone))
+        {
+            UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.Microphone);
+        }
+        #endif
+
         string[] devices = Microphone.devices;
-        Debug.Log("Available Microphone Devices:");
+        Debug.Log("[SpeechRecognition] Available Microphone Devices:");
         foreach (string device in devices)
         {
             Debug.Log("Mic: " + device);
         }
+        if (devices.Length == 0)
+        {
+            Debug.LogWarning("[SpeechRecognition] No microphone device detected! Please connect a microphone.");
+            if (text != null)
+            {
+                text.color = Color.yellow;
+                text.text = "No Microphone Detected";
+            }
+        }
     }
 
     public void StartRecording() {
+        if (Microphone.devices.Length == 0)
+        {
+            Debug.LogError("[SpeechRecognition] Cannot start recording: No microphone connected.");
+            if (text != null)
+            {
+                text.color = Color.red;
+                text.text = "Error: No Mic Connected";
+            }
+            return;
+        }
+
         text.color = Color.white;
         text.text = "Listening...";
         clip = Microphone.Start(null, true, clipLengthCycle, 44100);
-        recording = true;
         recording = true;
         lastSamplePosition = 0;
         StartCoroutine(CaptureAudioLoop());
@@ -88,9 +114,19 @@ public class SpeechRecognition : MonoBehaviour {
         }
 
         if (!string.IsNullOrEmpty(errorText)) {
-            Debug.LogError(errorText);
+            Debug.LogError("[SpeechRecognition] HuggingFace API Error: " + errorText);
+            
+            // Hỗ trợ chẩn đoán lỗi API Key hết hạn
+            if (errorText.Contains("Unauthorized") || errorText.Contains("Authorization") || errorText.Contains("401") || errorText.Contains("403"))
+            {
+                Debug.LogError("[SpeechRecognition] Diagnosis: Your HuggingFace API Key might be expired, invalid or rate-limited. Please update _apiKey in HuggingFaceAPIConfig.asset!");
+                text.text = "API Key Error (Unauthorized)";
+            }
+            else
+            {
+                text.text = "Error: " + errorText;
+            }
             text.color = Color.red;
-            text.text = errorText;
         } else {
             text.color = Color.white;
             text.text = responseText;

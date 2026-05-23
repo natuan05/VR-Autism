@@ -42,13 +42,13 @@ public class AnimalLessonManager : MonoBehaviour
     // ── Runtime helpers — lấy từ SessionContext, fallback về giá trị Inspector ──────
     // Sentinel -1f = không ghi đè; chỉ dùng params khi giá trị >= 0f (hợp lệ từ Firestore).
     private float EffectiveCameraMoveSpeed =>
-        SessionContext.Instance != null && SessionContext.Instance.CurrentParams.CameraMoveSpeed >= 0f
-            ? SessionContext.Instance.CurrentParams.CameraMoveSpeed
+        SessionContext.Instance != null && SessionContext.Instance.CurrentParams.Exploration.CameraMoveSpeed >= 0f
+            ? SessionContext.Instance.CurrentParams.Exploration.CameraMoveSpeed
             : cameraMoveSpeed;
 
     private float EffectiveSoundToDescriptionGap =>
-        SessionContext.Instance != null && SessionContext.Instance.CurrentParams.SoundToDescriptionGap >= 0f
-            ? SessionContext.Instance.CurrentParams.SoundToDescriptionGap
+        SessionContext.Instance != null && SessionContext.Instance.CurrentParams.Exploration.SoundToDescriptionGap >= 0f
+            ? SessionContext.Instance.CurrentParams.Exploration.SoundToDescriptionGap
             : timeSoundToDescription;
     
     private void Start()

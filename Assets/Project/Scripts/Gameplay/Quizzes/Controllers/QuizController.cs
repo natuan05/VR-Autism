@@ -41,13 +41,13 @@ namespace VRAutism.Gameplay.Quizzes{
         // Sentinel -1f = không ghi đè; fallback về giá trị legacy hardcode
         // Patch 6: Clamp Mathf.Max(0f, ...) để bảo vệ WaitForSeconds khỏi nhận giá trị âm.
         private float SafeQuizIntroDelay => Mathf.Max(0f,
-            QuizParams.QuizIntroDelay >= 0f ? QuizParams.QuizIntroDelay : 2f);
+            QuizParams.Quiz.QuizIntroDelay >= 0f ? QuizParams.Quiz.QuizIntroDelay : 2f);
 
         private float SafeQuizSoundGap => Mathf.Max(0f,
-            QuizParams.QuizSoundGap >= 0f ? QuizParams.QuizSoundGap : 0.5f);
+            QuizParams.Quiz.QuizSoundGap >= 0f ? QuizParams.Quiz.QuizSoundGap : 0.5f);
 
         private float SafeQuizEndDelay => Mathf.Max(0f,
-            QuizParams.QuizEndDelay >= 0f ? QuizParams.QuizEndDelay : 3f);
+            QuizParams.Quiz.QuizEndDelay >= 0f ? QuizParams.Quiz.QuizEndDelay : 3f);
 
         private void Awake()
         {

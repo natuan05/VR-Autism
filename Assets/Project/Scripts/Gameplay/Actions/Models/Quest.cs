@@ -76,7 +76,7 @@ namespace VRAutism.Gameplay.Actions
             Vector3 progressPos = posProgressBar   != null ? posProgressBar.position   : Vector3.zero;
 
             // --- Bubble: chỉ hiện ở State.Enable khi EnableBubbleHints = true ---
-            bool showBubble = (state == State.Enable) && p.EnableBubbleHints;
+            bool showBubble = (state == State.Enable) && p.Actions.EnableBubbleHints;
             RequestShowBubble?.Invoke(showBubble, bubblePos);
 
             // --- Progress bar: chỉ hiện khi đang HoldTouch (State.Start) ---
@@ -85,7 +85,7 @@ namespace VRAutism.Gameplay.Actions
             // --- Outline: bật từ Enable, tắt khi Completed/Disable ---
             if (outline)
             {
-                bool showOutline = (state == State.Enable || state == State.Start) && p.EnableVisualGuidance;
+                bool showOutline = (state == State.Enable || state == State.Start) && p.Actions.EnableVisualGuidance;
                 outline.enabled = showOutline;
             }
 
@@ -103,7 +103,7 @@ namespace VRAutism.Gameplay.Actions
             // --- Reminder: ghi đè reminderCycle từ params nếu ActionReminderCycle >= 0 (non-sentinel) ---
             if (state == State.Enable)
             {
-                float overrideCycle = p.ActionReminderCycle;
+                float overrideCycle = p.Actions.ActionReminderCycle;
                 // Sentinel -1f = không ghi đè; chỉ ghi đè khi giá trị params >= 0f hợp lệ
                 timeReminder = overrideCycle >= 0f ? overrideCycle : reminderCycle;
             }
@@ -149,7 +149,7 @@ namespace VRAutism.Gameplay.Actions
             LessonParameters pUpdate = SessionContext.Instance != null
                 ? SessionContext.Instance.CurrentParams
                 : LessonParameters.Default;  // Dùng singleton để tránh GC allocation
-            float overrideCycleUpdate = pUpdate.ActionReminderCycle;
+            float overrideCycleUpdate = pUpdate.Actions.ActionReminderCycle;
             float effectiveCycle = overrideCycleUpdate >= 0f ? overrideCycleUpdate : reminderCycle;
 
             if (state == State.Enable && effectiveCycle > 0f)
