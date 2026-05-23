@@ -1,0 +1,61 @@
+# generated: 2026-05-22T10:11:42+07:00
+# last_updated: 2026-05-22T22:29:00+07:00
+# project: VR-Autism
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: d:\Lab\VR-Autism\_bmad-output\implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+generated: 2026-05-22T10:11:42+07:00
+last_updated: 2026-05-22T22:29:00+07:00
+project: VR-Autism
+project_key: NOKEY
+tracking_system: file-system
+story_location: d:\Lab\VR-Autism\_bmad-output\implementation-artifacts
+
+development_status:
+  epic-1: done
+  1-1-gaze-tracking-design: done
+  1-2-telemetry-structure: done
+  1-3-high-frequency-behavior-snapshots: done
+  epic-1-retrospective: done
+
+  epic-2: in-progress
+  2-1-pin-pairing-thin-client: done
+  2-2-customizable-lesson-core: done
+  2-3-lesson-parameter-syncing: done
+  epic-2-retrospective: optional
+
+  epic-3: in-progress
+  3-1-controllable-lesson-event-bridge: ready-for-dev
+  3-2-webrtc-pov-stream: done
+  3-3-auto-alert-interventions: done
+  3-4-remote-control-commands-listener: backlog
+  epic-3-retrospective: optional
+
+  epic-4: in-progress
+  4-1-openxr-interaction-mapping: ready-for-dev
+  4-2-hardware-detection-visual-adjustments: backlog
+  4-3-htc-vive-platform-deployment-testing: backlog
+  epic-4-retrospective: optional

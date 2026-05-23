@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Firebase.Firestore;
 using Firebase.Extensions;
+using VRAutism.Core.Models;
 
 namespace VRAutism.Gameplay.WaitingArea{
     /// <summary>
@@ -48,11 +49,18 @@ namespace VRAutism.Gameplay.WaitingArea{
                 ctx.HostId = hostId ?? "";
             }
 
-            // Fetch lesson metadata từ Firestore collection "lessons"
+            var db = FirebaseFirestore.DefaultInstance;
+
+            // Fetch lesson metadata và child profile song song
+            var lessonTask = db.Collection(Cloud.FirebasePaths.Lessons).Document(lessonId).GetSnapshotAsync();
+            var childTask  = string.IsNullOrEmpty(childId)
+                ? System.Threading.Tasks.Task.FromResult<DocumentSnapshot>(null)
+                : db.Collection("child_profiles").Document(childId).GetSnapshotAsync();
+
+            // ── Fetch lesson metadata ──────────────────────────────────────
             try 
             {
-                var db = FirebaseFirestore.DefaultInstance;
-                DocumentSnapshot doc = await db.Collection(Cloud.FirebasePaths.Lessons).Document(lessonId).GetSnapshotAsync();
+                DocumentSnapshot doc = await lessonTask;
                 
                 if (doc.Exists && ctx != null)
                 {
@@ -82,6 +90,63 @@ namespace VRAutism.Gameplay.WaitingArea{
             {
                 if (ctx != null) ctx.LessonName = sceneName; // Fallback
                 Debug.LogError($"[SceneMenuController] Lỗi fetch Firestore (có thể mất mạng/alt-tab): {ex.Message}. Vẫn sẽ tiếp tục chuyển Scene.");
+            }
+
+            // ── Fetch child profile → đồng bộ default_lesson_params ────────────
+            // Khối này độc lập hoàn toàn: lỗi không bao giờ block việc load Scene.
+            try
+            {
+                DocumentSnapshot childDoc = await childTask;
+
+                if (childDoc != null && childDoc.Exists && ctx != null)
+                {
+                    System.Collections.Generic.Dictionary<string, object> lessonParamsMap = null;
+
+                    // Firestore SDK trả về IDictionary — giải mã an toàn qua GetValue hoặc fallback IDictionary
+                    if (childDoc.ContainsField("default_lesson_params"))
+                    {
+                        try
+                        {
+                            lessonParamsMap = childDoc.GetValue<System.Collections.Generic.Dictionary<string, object>>("default_lesson_params");
+                        }
+                        catch
+                        {
+                            var rawMap = childDoc.GetValue<object>("default_lesson_params");
+                            if (rawMap is System.Collections.IDictionary idict)
+                            {
+                                lessonParamsMap = new System.Collections.Generic.Dictionary<string, object>();
+                                foreach (System.Collections.DictionaryEntry entry in idict)
+                                {
+                                    lessonParamsMap[entry.Key.ToString()] = entry.Value;
+                                }
+                            }
+                        }
+                    }
+
+                    if (lessonParamsMap != null && lessonParamsMap.Count > 0)
+                    {
+                        ctx.CurrentParams = LessonParameters.FromDictionary(lessonParamsMap);
+                        Debug.Log($"[SceneMenuController] Đã sync default_lesson_params cho bé '{childId}'. " +
+                                  $"VisualGuidance={ctx.CurrentParams.Actions.EnableVisualGuidance}, " +
+                                  $"BubbleHints={ctx.CurrentParams.Actions.EnableBubbleHints}, " +
+                                  $"SpeechTimeout={ctx.CurrentParams.Actions.SpeechSilenceTimeout}");
+                    }
+                    else
+                    {
+                        ctx.CurrentParams = LessonParameters.Default;
+                        Debug.Log($"[SceneMenuController] default_lesson_params rỗng hoặc chưa có cho bé '{childId}'. Dùng Inspector defaults.");
+                    }
+                }
+                else
+                {
+                    if (ctx != null) ctx.CurrentParams = LessonParameters.Default;
+                    Debug.LogWarning($"[SceneMenuController] Không tìm thấy hồ sơ child_profiles/{childId}. Fallback về Inspector defaults.");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                if (ctx != null) ctx.CurrentParams = LessonParameters.Default;
+                Debug.LogWarning($"[SceneMenuController] Lỗi fetch child profile: {ex.Message}. Fallback về Inspector defaults.");
             }
             
             // ⚠️ Luôn chuyển Scene khi đã nhận lệnh của Web để đồng bộ trạng thái,
