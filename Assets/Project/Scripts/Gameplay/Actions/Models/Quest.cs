@@ -141,6 +141,41 @@ namespace VRAutism.Gameplay.Actions
             }
         }
 
+        private void OnEnable()
+        {
+            Cloud.RTDB.RemoteCommandListener.OnTriggerHint += HandleRemoteTriggerHint;
+            Cloud.RTDB.RemoteCommandListener.OnSkipQuest += HandleRemoteSkipQuest;
+        }
+
+        private void OnDisable()
+        {
+            Cloud.RTDB.RemoteCommandListener.OnTriggerHint -= HandleRemoteTriggerHint;
+            Cloud.RTDB.RemoteCommandListener.OnSkipQuest -= HandleRemoteSkipQuest;
+        }
+
+        private void HandleRemoteTriggerHint()
+        {
+            // Chỉ phản hồi gợi ý khi Quest đang ở trạng thái active (Enable hoặc Start)
+            if (state == State.Enable || state == State.Start)
+            {
+                Debug.Log($"[Quest] {questName} nhận lệnh OnTriggerHint -> Kích hoạt gợi ý khẩn cấp");
+                // 1. Cưỡng chế bật outline phát sáng
+                if (outline) outline.enabled = true;
+                // 2. Kích hoạt âm nhắc nhở ngay lập tức bằng cách reset timeReminder về 0
+                timeReminder = 0f;
+            }
+        }
+
+        private void HandleRemoteSkipQuest()
+        {
+            // Chỉ bỏ qua khi Quest đang ở trạng thái active (Enable hoặc Start)
+            if (state == State.Enable || state == State.Start)
+            {
+                Debug.Log($"[Quest] {questName} nhận lệnh OnSkipQuest -> Bỏ qua và hoàn thành lập tức!");
+                SetState(State.Completed);
+            }
+        }
+
         private void Update()
         {
             // Reminder: sử dụng timeReminder đã được set trong SetState (từ params hoặc Inspector).

@@ -29,6 +29,7 @@ namespace VRAutism.Gameplay.Quizzes{
         private QuizQuestionData _currentQuestion;
         private GameObject _currentAssociatedObject;
         private int _currentQuestionIndex;
+        private bool _isQuestionAnswered;
 
         /// <summary>
         /// Tham số bài Quiz động: fallback về giá trị legacy nếu SessionContext chưa khởi tạo hoặc sentinel.
@@ -62,6 +63,39 @@ namespace VRAutism.Gameplay.Quizzes{
             uiController.OnNextClicked    -= OnNextQuestionClicked;
         }
 
+        private void OnEnable()
+        {
+            Cloud.RTDB.RemoteCommandListener.OnTriggerHint += HandleRemoteTriggerHint;
+            Cloud.RTDB.RemoteCommandListener.OnSkipQuest += HandleRemoteSkipQuest;
+        }
+
+        private void OnDisable()
+        {
+            Cloud.RTDB.RemoteCommandListener.OnTriggerHint -= HandleRemoteTriggerHint;
+            Cloud.RTDB.RemoteCommandListener.OnSkipQuest -= HandleRemoteSkipQuest;
+        }
+
+        private void HandleRemoteTriggerHint()
+        {
+            // Chỉ phát gợi ý (phát lại câu hỏi/tiếng kêu) khi câu hỏi đang active và chưa trả lời xong
+            if (_currentQuestion != null && !_isQuestionAnswered)
+            {
+                Debug.Log("[QuizController] Nhận lệnh OnTriggerHint -> Phát lại câu hỏi âm thanh");
+                StopAllCoroutines();
+                StartCoroutine(HandleQuestionSounds());
+            }
+        }
+
+        private void HandleRemoteSkipQuest()
+        {
+            // Bỏ qua câu hỏi hiện tại: Tự động submit câu trả lời đúng để cho trẻ đi tiếp
+            if (_currentQuestion != null && !_isQuestionAnswered)
+            {
+                Debug.Log("[QuizController] Nhận lệnh OnSkipQuest -> Bỏ qua câu hỏi hiện tại");
+                SubmitAnswer(_currentQuestion.correctAnswer);
+            }
+        }
+
         private void Start()
         {
             quiz_score.Value    = 0;
@@ -90,6 +124,7 @@ namespace VRAutism.Gameplay.Quizzes{
 
         private void PresentQuestion()
         {
+            _isQuestionAnswered = false;
             uiController.StopAllEffects();
             uiController.HideNextButton();
 
@@ -148,6 +183,9 @@ namespace VRAutism.Gameplay.Quizzes{
 
         private void SubmitAnswer(int answerIndex)
         {
+            if (_isQuestionAnswered) return;
+            _isQuestionAnswered = true;
+
             bool isCorrect = (answerIndex == _currentQuestion.correctAnswer);
             if (isCorrect) quiz_score.Value++;
 

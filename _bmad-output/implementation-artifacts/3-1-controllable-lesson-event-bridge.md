@@ -1,6 +1,6 @@
 # Story 3.1: Controllable Lesson Event Bridge
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -37,31 +37,31 @@ so that I can dynamically guide and moderate the child's session from the Web Da
 ## Tasks / Subtasks
 
 ### Phase 1: Expose C# Events in `RemoteCommandListener.cs`
-- [ ] Uncomment/define static C# events in `RemoteCommandListener.cs`:
+- [x] Uncomment/define static C# events in `RemoteCommandListener.cs`:
   - `public static event System.Action OnTriggerHint;`
   - `public static event System.Action OnSkipQuest;`
   - `public static event System.Action OnPauseLesson;`
   - `public static event System.Action OnResumeLesson;`
-- [ ] Expose public methods to trigger these events safely:
+- [x] Expose public methods to trigger these events safely:
   - `public void TriggerHint()`
   - `public void TriggerSkipQuest()`
   - `public void TriggerPauseLesson()`
   - `public void TriggerResumeLesson()`
 
 ### Phase 2: Action Gameplay Event Bridging (`Quest.cs`)
-- [ ] Modify `Quest.cs` to subscribe to `RemoteCommandListener.OnTriggerHint` and `RemoteCommandListener.OnSkipQuest` in `Start()` / `OnEnable()`.
-- [ ] Handle hint triggers by forcing the visual outline enable: `outline.enabled = true` and invoking verbal prompts if active.
-- [ ] Handle skip triggers by marking the quest completed: `SetState(State.Completed)`.
-- [ ] Properly unsubscribe from `RemoteCommandListener` events in `OnDestroy()` or `OnDisable()`.
+- [x] Modify `Quest.cs` to subscribe to `RemoteCommandListener.OnTriggerHint` and `RemoteCommandListener.OnSkipQuest` in `Start()` / `OnEnable()`.
+- [x] Handle hint triggers by forcing the visual outline enable: `outline.enabled = true` and invoking verbal prompts if active.
+- [x] Handle skip triggers by marking the quest completed: `SetState(State.Completed)`.
+- [x] Properly unsubscribe from `RemoteCommandListener` events in `OnDestroy()` or `OnDisable()`.
 
 ### Phase 3: Quiz Gameplay Event Bridging (`QuizController.cs`)
-- [ ] Modify `QuizController.cs` to subscribe to `RemoteCommandListener.OnTriggerHint` and `RemoteCommandListener.OnSkipQuest` in `Awake()` or `Start()`.
-- [ ] Handle hint triggers by **re-playing the existing question and animal sounds** (by running `StartCoroutine(HandleQuestionSounds())`). This serves as the hint by reminding the child of the question, requiring **zero new audio assets**.
-- [ ] Handle skip triggers by force-answering the current question correctly/incorrectly and enabling the Next button or moving to the next question.
-- [ ] Properly unsubscribe from `RemoteCommandListener` events in `OnDestroy()`.
+- [x] Modify `QuizController.cs` to subscribe to `RemoteCommandListener.OnTriggerHint` and `RemoteCommandListener.OnSkipQuest` in `Awake()` or `Start()`.
+- [x] Handle hint triggers by **re-playing the existing question and animal sounds** (by running `StartCoroutine(HandleQuestionSounds())`). This serves as the hint by reminding the child of the question, requiring **zero new audio assets**.
+- [x] Handle skip triggers by force-answering the current question correctly/incorrectly and enabling the Next button or moving to the next question.
+- [x] Properly unsubscribe from `RemoteCommandListener` events in `OnDestroy()`.
 
 ### Phase 4: Verification & Dry-run
-- [ ] Write a temporary debug UI or script in Unity (e.g. keybinds `H` for Hint, `S` for Skip) to call `RemoteCommandListener.Instance.TriggerHint()` / `TriggerSkipQuest()` and verify gameplay components respond flawlessly.
+- [x] Write a temporary debug UI or script in Unity (e.g. keybinds `H` for Hint, `S` for Skip) to call `RemoteCommandListener.Instance.TriggerHint()` / `TriggerSkipQuest()` and verify gameplay components respond flawlessly.
 
 ## Dev Notes
 - **Dangling Delegates Hazard (Critical)**:
