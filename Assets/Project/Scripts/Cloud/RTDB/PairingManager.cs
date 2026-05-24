@@ -45,6 +45,7 @@ namespace VRAutism.Cloud.RTDB
                 return;
             }
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
 
         // ══════════════════════════════════════════════════════════════

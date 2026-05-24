@@ -1,11 +1,8 @@
 using System;
 using System.Collections;
-using KBCore.Refs;
-using Plugins.QuickOutline.Scripts;
-using VRAutism.Core;
-using VRAutism.Core.Models;
 using UnityEngine;
 using UnityEngine.Events;
+using Plugins.QuickOutline.Scripts;
 
 namespace VRAutism.Gameplay.Actions
 {
@@ -34,149 +31,57 @@ namespace VRAutism.Gameplay.Actions
         [SerializeField] private float reminderCycle;
         [SerializeField] private UnityEvent onQuestReminder;
 
-        
+        // Getters for Controller to read
         public int Id => id;
         public string Name => questName;
+        public QuestType Type => questType;
+        public float Duration => duration;
         public bool IsSendData => isSendData;
+        public float ReminderCycle => reminderCycle;
         
-        // Observer Pattern Actions
-        public Action<bool, Vector3> RequestShowBubble;
-        public Action<bool, Vector3> RequestShowProgressBar;
-        public Action<float> RequestSetProgress;
-        public Action OnQuestCompleted;
-        
-        private State state;
-        private float progress;
+        public Vector3 BubblePosition => posBubbleQuestion != null ? posBubbleQuestion.position : Vector3.zero;
+        public Vector3 ProgressBarPosition => posProgressBar != null ? posProgressBar.position : Vector3.zero;
 
-        private float timeReminder;
+        // Event hooks for physics collisions
+        public event Action<Quest> OnCharacterEnter;
+        public event Action<Quest> OnCharacterExit;
+
         private Coroutine _hintBlinkCoroutine;
-        
-        public enum State
-        {
-            Disable,
-            Enable,
-            Start,
-            Completed
-        }
-        
+
+        // UnityEvents helper triggers
+        public void TriggerStartedEvent() => onQuestStarted?.Invoke();
+        public void TriggerFinishedEvent() => onQuestFinished?.Invoke();
+        public void TriggerCanceledEvent() => onQuestCanceled?.Invoke();
+        public void TriggerReminderEvent() => onQuestReminder?.Invoke();
+
         public void Init()
         {
-            state = State.Disable;
             if (outline) outline.enabled = false;
         }
 
-        public void SetState(State newState)
+        // View logic: Toggle Outline
+        public void SetOutline(bool enable)
         {
-            state = newState;
+            if (outline) outline.enabled = enable;
+            
+            if (!enable && _hintBlinkCoroutine != null)
+            {
+                StopCoroutine(_hintBlinkCoroutine);
+                _hintBlinkCoroutine = null;
+            }
+        }
 
-            // Đọc tham số tùy chỉnh từ SessionContext nếu có, fallback về default.
-            LessonParameters p = SessionContext.Instance != null
-                ? SessionContext.Instance.CurrentParams
-                : LessonParameters.Default;  // Dùng singleton để tránh GC allocation
-
-            Vector3 bubblePos  = posBubbleQuestion != null ? posBubbleQuestion.position : Vector3.zero;
-            Vector3 progressPos = posProgressBar   != null ? posProgressBar.position   : Vector3.zero;
-
-            // --- Bubble: chỉ hiện ở State.Enable khi EnableBubbleHints = true ---
-            bool showBubble = (state == State.Enable) && p.Actions.EnableBubbleHints;
-            RequestShowBubble?.Invoke(showBubble, bubblePos);
-
-            // --- Progress bar: chỉ hiện khi đang HoldTouch (State.Start) ---
-            RequestShowProgressBar?.Invoke(state == State.Start, progressPos);
-
-            // --- Outline: bật từ Enable, tắt khi Completed/Disable ---
+        // View logic: Blink Hint Outline
+        public void BlinkHintOutline(bool restoreVisualGuidance)
+        {
             if (outline)
             {
-                bool showOutline = (state == State.Enable || state == State.Start) && p.Actions.EnableVisualGuidance;
-                outline.enabled = showOutline;
-            }
-
-            if (state == State.Start)
-            {
-                progress = 0;
-                onQuestStarted?.Invoke();
-            }
-            if (state == State.Completed)
-            {
-                onQuestFinished?.Invoke();
-                OnQuestCompleted?.Invoke();
-            }
-
-            // --- Reminder: ghi đè reminderCycle từ params nếu ActionReminderCycle >= 0 (non-sentinel) ---
-            if (state == State.Enable)
-            {
-                float overrideCycle = p.Actions.ActionReminderCycle;
-                // Sentinel -1f = không ghi đè; chỉ ghi đè khi giá trị params >= 0f hợp lệ
-                timeReminder = overrideCycle >= 0f ? overrideCycle : reminderCycle;
-            }
-        }
-        
-
-        private void OnTriggerEnter(Collider other)
-        {
-            if (!other.CompareTag("Character") || state == State.Disable) return;
-            onQuestTriggerEnter?.Invoke();
-
-            if (state == State.Enable)
-            {
-                switch (questType)
-                {
-                    case QuestType.Touch:
-                        SetState(State.Completed);
-                        break;
-                    case QuestType.HoldTouch:
-                        SetState(State.Start);
-                        break;
-                    // QuestType.Condition ignored (handled via WaitUntil elsewhere)
-                }
+                if (_hintBlinkCoroutine != null) StopCoroutine(_hintBlinkCoroutine);
+                _hintBlinkCoroutine = StartCoroutine(BlinkOutlineHintRoutine(restoreVisualGuidance));
             }
         }
 
-        private void OnTriggerExit(Collider other)
-        {
-            if (!other.CompareTag("Character") || state == State.Disable) return;
-            onQuestTriggerExit?.Invoke();
-
-            if (state != State.Completed)
-            {
-                SetState(State.Enable);
-            }
-        }
-
-        private void OnEnable()
-        {
-            Cloud.RTDB.RemoteCommandListener.OnTriggerHint += HandleRemoteTriggerHint;
-            Cloud.RTDB.RemoteCommandListener.OnSkipQuest += HandleRemoteSkipQuest;
-        }
-
-        private void OnDisable()
-        {
-            Cloud.RTDB.RemoteCommandListener.OnTriggerHint -= HandleRemoteTriggerHint;
-            Cloud.RTDB.RemoteCommandListener.OnSkipQuest -= HandleRemoteSkipQuest;
-        }
-
-        private void HandleRemoteTriggerHint()
-        {
-            // Chỉ phản hồi gợi ý khi Quest đang ở trạng thái active (Enable hoặc Start)
-            if (state == State.Enable || state == State.Start)
-            {
-                Debug.Log($"[Quest] {questName} nhận lệnh OnTriggerHint -> Kích hoạt gợi ý khẩn cấp");
-                // 1. Bật blink animation 3 chu kỳ trên outline (thu hút sự chú ý của trẻ)
-                if (outline)
-                {
-                    if (_hintBlinkCoroutine != null) StopCoroutine(_hintBlinkCoroutine);
-                    _hintBlinkCoroutine = StartCoroutine(BlinkOutlineHint());
-                }
-                // 2. Phát âm nhắc nhở ngay lập tức (hoạt động kể cả khi reminderCycle = 0)
-                onQuestReminder?.Invoke();
-            }
-        }
-
-        /// <summary>
-        /// Blink outline 3 chu kỳ (on/off mỗi 0.3s) để thu hút sự chú ý của trẻ,
-        /// sau đó khôi phục trạng thái outline theo lesson params hiện tại.
-        /// </summary>
-        private IEnumerator BlinkOutlineHint()
+        private IEnumerator BlinkOutlineHintRoutine(bool restoreVisualGuidance)
         {
             for (int i = 0; i < 3; i++)
             {
@@ -185,56 +90,27 @@ namespace VRAutism.Gameplay.Actions
                 outline.enabled = false;
                 yield return new WaitForSeconds(0.3f);
             }
-            // Khôi phục trạng thái outline đúng theo lesson params (tôn trọng EnableVisualGuidance)
-            LessonParameters p = SessionContext.Instance != null
-                ? SessionContext.Instance.CurrentParams
-                : LessonParameters.Default;
-            bool showOutline = (state == State.Enable || state == State.Start) && p.Actions.EnableVisualGuidance;
-            outline.enabled = showOutline;
+            
+            SetOutline(restoreVisualGuidance);
             _hintBlinkCoroutine = null;
         }
 
-        private void HandleRemoteSkipQuest()
+        private void OnTriggerEnter(Collider other)
         {
-            // Chỉ bỏ qua khi Quest đang ở trạng thái active (Enable hoặc Start)
-            if (state == State.Enable || state == State.Start)
+            if (other.CompareTag("Character"))
             {
-                Debug.Log($"[Quest] {questName} nhận lệnh OnSkipQuest -> Bỏ qua và hoàn thành lập tức!");
-                SetState(State.Completed);
+                onQuestTriggerEnter?.Invoke();
+                OnCharacterEnter?.Invoke(this);
             }
         }
 
-        private void Update()
+        private void OnTriggerExit(Collider other)
         {
-            // Reminder: sử dụng timeReminder đã được set trong SetState (từ params hoặc Inspector).
-            // Dùng effectiveCycle để gate — không dùng reminderCycle cứng vì nếu Inspector = 0
-            // nhưng params override > 0 thì vòng lặp này sẽ bị chặn sai (dead code).
-            LessonParameters pUpdate = SessionContext.Instance != null
-                ? SessionContext.Instance.CurrentParams
-                : LessonParameters.Default;  // Dùng singleton để tránh GC allocation
-            float overrideCycleUpdate = pUpdate.Actions.ActionReminderCycle;
-            float effectiveCycle = overrideCycleUpdate >= 0f ? overrideCycleUpdate : reminderCycle;
-
-            if (state == State.Enable && effectiveCycle > 0f)
+            if (other.CompareTag("Character"))
             {
-                timeReminder -= Time.deltaTime;
-                if (timeReminder < 0)
-                {
-                    timeReminder = effectiveCycle;
-                    onQuestReminder?.Invoke();
-                }
+                onQuestTriggerExit?.Invoke();
+                OnCharacterExit?.Invoke(this);
             }
-            
-            if (state != State.Start) return;
-            
-            progress += Time.deltaTime / duration;
-            RequestSetProgress?.Invoke(progress);
-            if (progress >= 1)
-            {
-                progress = 1;
-                SetState(State.Completed);
-            }
-            
         }
     }
 
@@ -247,5 +123,3 @@ namespace VRAutism.Gameplay.Actions
         Condition
     }
 }
-
-
