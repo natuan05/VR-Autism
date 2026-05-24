@@ -57,6 +57,6 @@ development_status:
 
   epic-4: in-progress
   4-1-openxr-interaction-mapping: review
-  4-2-hardware-detection-visual-adjustments: backlog
+  4-2-hardware-detection-visual-adjustments: ready-for-dev
   4-3-htc-vive-platform-deployment-testing: backlog
   epic-4-retrospective: optional
