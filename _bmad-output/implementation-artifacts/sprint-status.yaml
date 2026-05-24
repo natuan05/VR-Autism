@@ -1,5 +1,5 @@
 # generated: 2026-05-22T10:11:42+07:00
-# last_updated: 2026-05-24T13:15:00+07:00
+# last_updated: 2026-05-24T21:36:00+07:00
 # project: VR-Autism
 # project_key: NOKEY
 # tracking_system: file-system
@@ -28,7 +28,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-05-22T10:11:42+07:00
-last_updated: 2026-05-24T13:15:00+07:00
+last_updated: 2026-05-24T21:36:00+07:00
 project: VR-Autism
 project_key: NOKEY
 tracking_system: file-system
@@ -51,7 +51,8 @@ development_status:
   3-1-controllable-lesson-event-bridge: done
   3-2-webrtc-pov-stream: done
   3-3-auto-alert-interventions: done
-  3-4-remote-control-commands-listener: backlog
+  3-4-remote-control-commands-listener: done
+  3-5-web-remote-control-interface: done
   epic-3-retrospective: optional
 
   epic-4: in-progress

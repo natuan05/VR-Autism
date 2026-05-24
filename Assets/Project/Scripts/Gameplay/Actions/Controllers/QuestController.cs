@@ -29,6 +29,8 @@ namespace VRAutism.Gameplay.Actions
         private bool isCharacterInsideTrigger;
         private int characterColliderCount;
         private LessonParameters activeParams;
+        private int _currentQuestHintsVerbal;
+        private int _currentQuestHintsVisual;
 
         private void Awake()
         {
@@ -71,6 +73,7 @@ namespace VRAutism.Gameplay.Actions
                 {
                     curReminderTimer = curEffectiveCycle;
                     activeQuest.TriggerReminderEvent(); // Phát âm thanh nhắc nhở / UnityEvent
+                    _currentQuestHintsVerbal++;
                 }
             }
 
@@ -155,6 +158,8 @@ namespace VRAutism.Gameplay.Actions
             isCharacterInsideTrigger = false;
             characterColliderCount = 0;
             curQuestProgress = 0;
+            _currentQuestHintsVerbal = 0;
+            _currentQuestHintsVisual = 0;
 
             // Setup hiển thị Outline và Bubble tập trung
             activeQuest.SetOutline(activeParams.Actions.EnableVisualGuidance);
@@ -193,7 +198,9 @@ namespace VRAutism.Gameplay.Actions
                 TimeManager.Instance.LogQuestComplete(
                     questIndex:       curQuestId,
                     questName:        activeQuest.Name,
-                    completionStatus: "success"
+                    completionStatus: "success",
+                    hintsVerbal:      _currentQuestHintsVerbal,
+                    hintsVisual:      _currentQuestHintsVisual
                 );
             }
 
@@ -228,6 +235,12 @@ namespace VRAutism.Gameplay.Actions
                 Debug.Log($"[QuestController] Nhận lệnh Hint từ xa -> Kích hoạt Blink và nhắc nhở.");
                 activeQuest.BlinkHintOutline(activeParams.Actions.EnableVisualGuidance);
                 activeQuest.TriggerReminderEvent();
+
+                if (activeParams.Actions.EnableVisualGuidance)
+                {
+                    _currentQuestHintsVisual++;
+                }
+                _currentQuestHintsVerbal++;
             }
         }
 

@@ -31,6 +31,8 @@ namespace VRAutism.Gameplay.Quizzes{
         private int _currentQuestionIndex;
         private bool _isQuestionAnswered;
         private Coroutine _questionSoundCoroutine;
+        private int _currentQuestHintsVerbal;
+        private int _currentQuestHintsVisual;
 
         /// <summary>
         /// Tham số bài Quiz động: fallback về giá trị legacy nếu SessionContext chưa khởi tạo hoặc sentinel.
@@ -82,6 +84,13 @@ namespace VRAutism.Gameplay.Quizzes{
             if (_currentQuestion != null && !_isQuestionAnswered)
             {
                 Debug.Log("[QuizController] Nhận lệnh OnTriggerHint -> Phát lại câu hỏi âm thanh");
+                
+                _currentQuestHintsVerbal++;
+                if (QuizParams.Actions.EnableVisualGuidance)
+                {
+                    _currentQuestHintsVisual++;
+                }
+
                 // Chỉ stop coroutine âm thanh, không dùng StopAllCoroutines() để tránh cắt ngang intro
                 if (_questionSoundCoroutine != null)
                 {
@@ -152,6 +161,8 @@ namespace VRAutism.Gameplay.Quizzes{
         private void PresentQuestion()
         {
             _isQuestionAnswered = false;
+            _currentQuestHintsVerbal = 0;
+            _currentQuestHintsVisual = 0;
             
             if (_questionSoundCoroutine != null)
             {
@@ -225,7 +236,9 @@ namespace VRAutism.Gameplay.Quizzes{
             TimeManager.Instance.LogQuestComplete(
                 _currentQuestionIndex,
                 _currentQuestion.question,
-                isCorrect ? "success" : "failed"
+                isCorrect ? "success" : "failed",
+                hintsVerbal:      _currentQuestHintsVerbal,
+                hintsVisual:      _currentQuestHintsVisual
             );
             _currentQuestionIndex++;
 
