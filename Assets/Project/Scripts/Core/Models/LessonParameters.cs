@@ -30,13 +30,13 @@ namespace VRAutism.Core.Models
             /// Bật/tắt hiệu ứng viền phát sáng (Outline) của vật thể mục tiêu
             /// khi Quest ở trạng thái Enable hoặc Start.
             /// </summary>
-            public bool EnableVisualGuidance = true;
+            public bool EnableVisualGuidance = false;
 
             /// <summary>
             /// Bật/tắt bong bóng câu hỏi (Bubble) nổi bên cạnh vật thể mục tiêu
             /// khi Quest ở trạng thái Enable.
             /// </summary>
-            public bool EnableBubbleHints = true;
+            public bool EnableBubbleHints = false;
 
             /// <summary>
             /// Khoảng lặng (giây) trước khi SpeechResponser kích hoạt gợi ý giáo viên.
