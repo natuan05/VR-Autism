@@ -19,7 +19,7 @@ Nằm tại thư mục `Assets/Project/Scripts/Cloud/`. Chịu trách nhiệm đ
 *   `RTDB/RTDBConnection.cs`: Quản lý kết nối trung tâm và giữ tham chiếu đến Firebase Database Reference.
 *   `RTDB/PairingManager.cs`: Máy trạng thái (State Machine) quản lý quy trình ghép đôi mã PIN ( PIN Pairing). Sinh mã PIN 6 số, lắng nghe sự thay đổi trên node `pairing_codes/{pin}` để hoàn thành kết nối giữa Web Dashboard và VR Client.
 *   `RTDB/LiveSessionReporter.cs`: Đồng bộ hóa trạng thái ứng dụng VR lên RTDB (`live_sessions/{session_id}/vr_state`) bao gồm trạng thái kết nối, trạng thái WebRTC, trạng thái bài học hiện tại để phục vụ tính năng giám sát thời gian thực trên Web.
-*   `RTDB/RemoteCommandListener.cs`: Lắng nghe lệnh điều khiển thời gian thực từ giáo viên gửi qua RTDB (`live_sessions/{session_id}/commands`), thực hiện phân tách các lệnh như kích hoạt gợi ý (verbal/visual), tạm dừng (pause), bỏ qua bước (skip) và chuyển tiếp lệnh vào `EventChannel.cs`.
+*   `RTDB/RemoteCommandListener.cs`: Lắng nghe lệnh điều khiển thời gian thực từ giáo viên gửi qua RTDB (`live_sessions/{session_id}/commands`), thực hiện phân tách các lệnh như kích hoạt gợi ý (`trigger_verbal_hint`/`trigger_visual_hint`), tạm dừng (`pause_lesson`), bỏ qua bước (`skip_quest`), điều hòa âm lượng (`set_volume`) và chuyển tiếp lệnh bằng các C# Static Events (`OnTriggerVerbalHint`, `OnTriggerVisualHint`, `OnSkipQuest`, `OnPauseLesson`, `OnResumeLesson`, etc.) để các Controller trong phân cảnh xử lý. Hỗ trợ phím tắt Editor (H = Visual Hint, V = Verbal Hint, S = Skip, P = Pause, R = Resume).
 *   `RTDB/TelemetryUploader.cs`: Đẩy các gói dữ liệu hành vi đã được tổng hợp (`AggregatedSnapshot`) lên node `behavior_snapshots/{session_id}/{timestamp}` định kỳ mỗi 2 giây.
 *   `RTDB/WebRTCManager.cs`: Thiết lập và quản lý vòng đời kết nối WebRTC Peer-to-Peer nội bộ (LAN) để truyền video góc nhìn thứ nhất (POV Streaming) từ kính về Web Dashboard. Điều khiển luồng khởi tạo, tắt kết nối và cơ chế thử lại (retry) tối đa 3 lần.
 *   `RTDB/WebRTCSignaling.cs`: Xử lý quá trình trao đổi tín hiệu (Offer, Answer, ICE Candidates) giữa Web Dashboard và VR Client thông qua RTDB làm trung gian truyền tải gói tin SDP.
@@ -139,23 +139,27 @@ sequenceDiagram
     participant Web as Web Dashboard (Browser)
     participant RTDB as Firebase RTDB
     participant Listener as RemoteCommandListener (VR)
-    participant EC as EventChannel (VR)
-    participant Gameplay as Gameplay Controller (VR)
+    participant Gameplay as QuestController / Gameplay Manager
     
     Web->>RTDB: live_sessions/{session_id}/commands -> Giáo viên nhấn nút và ghi lệnh mới
     RTDB-->>Listener: Lắng nghe thấy sự kiện con mới (OnChildAdded)
-    Listener->>Listener: Phân tích tham số lệnh (verbal_hint, skip_quest, pause)
+    Listener->>Listener: Phân tích tham số lệnh (verbal, visual, skip, volume, pause)
     
-    alt Lệnh verbal_hint
-        Listener->>EC: SendEvent(EventID.PlaySound, TypeSound)
-        EC-->>Gameplay: Phát giọng nói chỉ dẫn/nhắc nhở của NPC trong kính
+    alt Lệnh trigger_verbal_hint
+        Listener->>Gameplay: Invoke OnTriggerVerbalHint
+        Gameplay-->>Gameplay: Phát âm thanh hướng dẫn bằng giọng nói (NPC Audio)
+    else Lệnh trigger_visual_hint
+        Listener->>Gameplay: Invoke OnTriggerVisualHint
+        Gameplay-->>Gameplay: Nhấp nháy viền sáng của vật thể mục tiêu (BlinkHintOutline)
     else Lệnh skip_quest
-        Listener->>Gameplay: Tự động chuyển trạng thái Quest hiện tại thành Completed
-    else Lệnh pause
-        Listener->>Gameplay: Ngưng vòng lặp Coroutine của bài học / Pause Audio
+        Listener->>Gameplay: Invoke OnSkipQuest
+        Gameplay-->>Gameplay: Tự động chuyển trạng thái Quest hiện tại thành Completed
+    else Lệnh pause_lesson
+        Listener->>Gameplay: Invoke OnPauseLesson
+        Gameplay-->>Gameplay: Ngưng vòng lặp Coroutine của bài học / Fade-to-black khẩn cấp
     end
     
-    Listener->>RTDB: live_sessions/{session_id}/commands/{command_id} -> Xóa gói tin lệnh sau khi xử lý thành công
+    Listener->>RTDB: live_sessions/{session_id}/commands/{command_id} -> Xóa gói tin lệnh trên RTDB ngay lập tức
 ```
 
 ### 2.5 Cơ Chế Vận Hành Chi Tiết Của 3 Dạng Bài Học (Execution Models)
