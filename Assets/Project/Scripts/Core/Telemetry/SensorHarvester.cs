@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using VRAutism.Core.Models;
 using VRAutism.Gameplay.Actions;

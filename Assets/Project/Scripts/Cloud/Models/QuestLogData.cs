@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Firebase.Firestore;
 
 namespace VRAutism.Cloud.Models

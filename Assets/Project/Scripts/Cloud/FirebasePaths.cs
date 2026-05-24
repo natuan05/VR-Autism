@@ -1,4 +1,4 @@
-namespace VRAutism.Cloud
+﻿namespace VRAutism.Cloud
 {
     public static class FirebasePaths
     {

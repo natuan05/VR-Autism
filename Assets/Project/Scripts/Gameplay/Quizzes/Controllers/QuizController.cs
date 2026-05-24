@@ -1,4 +1,4 @@
-using VRAutism.Core;
+﻿using VRAutism.Core;
 using VRAutism.Core.Models;
 using System;
 using System.Collections;
@@ -68,29 +68,27 @@ namespace VRAutism.Gameplay.Quizzes{
 
         private void OnEnable()
         {
-            Cloud.RTDB.RemoteCommandListener.OnTriggerHint += HandleRemoteTriggerHint;
+            Cloud.RTDB.RemoteCommandListener.OnTriggerVerbalHint += HandleRemoteTriggerVerbalHint;
+            Cloud.RTDB.RemoteCommandListener.OnTriggerVisualHint += HandleRemoteTriggerVisualHint;
             Cloud.RTDB.RemoteCommandListener.OnSkipQuest += HandleRemoteSkipQuest;
         }
-
+ 
         private void OnDisable()
         {
-            Cloud.RTDB.RemoteCommandListener.OnTriggerHint -= HandleRemoteTriggerHint;
+            Cloud.RTDB.RemoteCommandListener.OnTriggerVerbalHint -= HandleRemoteTriggerVerbalHint;
+            Cloud.RTDB.RemoteCommandListener.OnTriggerVisualHint -= HandleRemoteTriggerVisualHint;
             Cloud.RTDB.RemoteCommandListener.OnSkipQuest -= HandleRemoteSkipQuest;
         }
-
-        private void HandleRemoteTriggerHint()
+ 
+        private void HandleRemoteTriggerVerbalHint()
         {
             // Chỉ phát gợi ý (phát lại câu hỏi/tiếng kêu) khi câu hỏi đang active và chưa trả lời xong
             if (_currentQuestion != null && !_isQuestionAnswered)
             {
-                Debug.Log("[QuizController] Nhận lệnh OnTriggerHint -> Phát lại câu hỏi âm thanh");
+                Debug.Log("[QuizController] Nhận lệnh OnTriggerVerbalHint -> Phát lại câu hỏi âm thanh");
                 
                 _currentQuestHintsVerbal++;
-                if (QuizParams.Actions.EnableVisualGuidance)
-                {
-                    _currentQuestHintsVisual++;
-                }
-
+ 
                 // Chỉ stop coroutine âm thanh, không dùng StopAllCoroutines() để tránh cắt ngang intro
                 if (_questionSoundCoroutine != null)
                 {
@@ -98,6 +96,15 @@ namespace VRAutism.Gameplay.Quizzes{
                     _questionSoundCoroutine = null;
                 }
                 _questionSoundCoroutine = StartCoroutine(HandleQuestionSounds());
+            }
+        }
+
+        private void HandleRemoteTriggerVisualHint()
+        {
+            if (_currentQuestion != null && !_isQuestionAnswered)
+            {
+                Debug.Log("[QuizController] Nhận lệnh OnTriggerVisualHint -> Tăng bộ đếm gợi ý thị giác");
+                _currentQuestHintsVisual++;
             }
         }
 

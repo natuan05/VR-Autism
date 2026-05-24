@@ -14,3 +14,7 @@ This file tracks technical debt and findings deferred during code reviews and de
 
 - OnSetVolume/OnPlayNpcScript no subscribers in Story 3.1 scope [Assets/Project/Scripts/Cloud/RTDB/RemoteCommandListener.cs] — deferred, these events are intended for future stories. Will have subscribers when SetVolume and PlayNpcScript command handlers are implemented.
 - Spec AC4 instance null-check inaccuracy [Assets/Project/Scripts/Cloud/RTDB/RemoteCommandListener.cs] — deferred, spec wording says "null checks on RemoteCommandListener.Instance" but static event subscription does not require the instance. Not a code bug — update spec wording in a future cleanup pass.
+
+## Deferred from: code review of 3-5-web-remote-control-interface.md (2026-05-24)
+- Local state isPaused chưa đồng bộ global [src/app/dashboard/expert/session/_components/ControlSidebar.tsx]
+- Volume bị hardcode gửi giá trị 0.2, chưa có UI Slider (Ưu tiên hoàn thiện luồng chính trước)

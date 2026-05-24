@@ -31,7 +31,8 @@ namespace VRAutism.Cloud.RTDB
         public static RemoteCommandListener Instance { get; private set; }
 
         // ── C# Events cho các lệnh điều khiển từ xa (Story 3.1) ──
-        public static event System.Action OnTriggerHint;
+        public static event System.Action OnTriggerVerbalHint;
+        public static event System.Action OnTriggerVisualHint;
         public static event System.Action<float> OnSetVolume;
         public static event System.Action<string> OnPlayNpcScript;
         public static event System.Action OnSkipQuest;
@@ -167,9 +168,12 @@ namespace VRAutism.Cloud.RTDB
         {
             switch (commandType)
             {
-                case "trigger_hint":
-                case "force_hint":
-                    TriggerHint();
+                case "trigger_verbal_hint":
+                    TriggerVerbalHint();
+                    break;
+
+                case "trigger_visual_hint":
+                    TriggerVisualHint();
                     break;
 
                 case "skip_quest":
@@ -210,10 +214,16 @@ namespace VRAutism.Cloud.RTDB
         }
 
         // ── Public Dispatchers (Cầu nối kích hoạt sự kiện) ──
-        public void TriggerHint()
+        public void TriggerVerbalHint()
         {
-            Debug.Log("[RemoteCommandListener] 📡 Đã nhận lệnh: Gợi ý (OnTriggerHint)");
-            OnTriggerHint?.Invoke();
+            Debug.Log("[RemoteCommandListener] 📡 Đã nhận lệnh: Gợi ý Lời nói (OnTriggerVerbalHint)");
+            OnTriggerVerbalHint?.Invoke();
+        }
+
+        public void TriggerVisualHint()
+        {
+            Debug.Log("[RemoteCommandListener] 📡 Đã nhận lệnh: Gợi ý Thị giác (OnTriggerVisualHint)");
+            OnTriggerVisualHint?.Invoke();
         }
 
         public void TriggerSetVolume(float volume)
@@ -249,8 +259,9 @@ namespace VRAutism.Cloud.RTDB
         private void Update()
         {
 #if UNITY_EDITOR
-            // Phím H = Hint | S = Skip Quest | P = Pause | R = Resume
-            if (Input.GetKeyDown(KeyCode.H)) TriggerHint();
+            // Phím H = Visual Hint | V = Verbal Hint | S = Skip Quest | P = Pause | R = Resume
+            if (Input.GetKeyDown(KeyCode.H)) TriggerVisualHint();
+            if (Input.GetKeyDown(KeyCode.V)) TriggerVerbalHint();
             if (Input.GetKeyDown(KeyCode.S)) TriggerSkipQuest();
             if (Input.GetKeyDown(KeyCode.P)) TriggerPauseLesson();
             if (Input.GetKeyDown(KeyCode.R)) TriggerResumeLesson();

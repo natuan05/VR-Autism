@@ -1,4 +1,4 @@
-/// <summary>
+﻿/// <summary>
 /// Pure C# data model for a single quiz question.
 /// Text and answer fields are JSON/Firestore-serializable.
 /// Sound fields use TypeSound enum for type-safety — migrate to string keys only when Firestore integration is needed.

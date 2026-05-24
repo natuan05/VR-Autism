@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using VRAutism.Core.Models;
 
 namespace VRAutism.Core

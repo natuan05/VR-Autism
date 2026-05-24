@@ -1,4 +1,4 @@
-using VRAutism.Core;
+﻿using VRAutism.Core;
 using System;
 using TMPro;
 using UnityEngine;

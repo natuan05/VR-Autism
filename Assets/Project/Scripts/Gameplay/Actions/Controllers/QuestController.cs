@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using VRAutism.Core;
 using VRAutism.Core.Models;
@@ -54,7 +54,8 @@ namespace VRAutism.Gameplay.Actions
         private void Start()
         {
             Cloud.RTDB.RemoteCommandListener.OnSkipQuest += HandleSkipCurrentQuest;
-            Cloud.RTDB.RemoteCommandListener.OnTriggerHint += HandleTriggerHintCurrentQuest;
+            Cloud.RTDB.RemoteCommandListener.OnTriggerVerbalHint += HandleTriggerVerbalHintCurrentQuest;
+            Cloud.RTDB.RemoteCommandListener.OnTriggerVisualHint += HandleTriggerVisualHintCurrentQuest;
 
             activeParams = SessionContext.Instance != null 
                 ? SessionContext.Instance.CurrentParams 
@@ -72,8 +73,12 @@ namespace VRAutism.Gameplay.Actions
                 if (curReminderTimer < 0)
                 {
                     curReminderTimer = curEffectiveCycle;
-                    activeQuest.TriggerReminderEvent(); // Phát âm thanh nhắc nhở / UnityEvent
-                    _currentQuestHintsVerbal++;
+                    // Chu kỳ nhắc nhở tự động: sử dụng visual hint nhấp nháy viền (nếu được phép)
+                    if (activeParams.Actions.EnableVisualGuidance)
+                    {
+                        activeQuest.BlinkHintOutline(true);
+                        _currentQuestHintsVisual++;
+                    }
                 }
             }
 
@@ -227,20 +232,25 @@ namespace VRAutism.Gameplay.Actions
             }
         }
 
-        private void HandleTriggerHintCurrentQuest()
+        private void HandleTriggerVerbalHintCurrentQuest()
         {
             Quest activeQuest = GetCurQuest();
             if (activeQuest != null)
             {
-                Debug.Log($"[QuestController] Nhận lệnh Hint từ xa -> Kích hoạt Blink và nhắc nhở.");
-                activeQuest.BlinkHintOutline(activeParams.Actions.EnableVisualGuidance);
+                Debug.Log($"[QuestController] Nhận lệnh Gợi ý Lời nói từ xa -> Kích hoạt nhắc nhở NPC.");
                 activeQuest.TriggerReminderEvent();
-
-                if (activeParams.Actions.EnableVisualGuidance)
-                {
-                    _currentQuestHintsVisual++;
-                }
                 _currentQuestHintsVerbal++;
+            }
+        }
+
+        private void HandleTriggerVisualHintCurrentQuest()
+        {
+            Quest activeQuest = GetCurQuest();
+            if (activeQuest != null)
+            {
+                Debug.Log($"[QuestController] Nhận lệnh Gợi ý Thị giác từ xa -> Kích hoạt Blink nhấp nháy viền.");
+                activeQuest.BlinkHintOutline(true);
+                _currentQuestHintsVisual++;
             }
         }
 
@@ -259,7 +269,8 @@ namespace VRAutism.Gameplay.Actions
         private void OnDestroy()
         {
             Cloud.RTDB.RemoteCommandListener.OnSkipQuest -= HandleSkipCurrentQuest;
-            Cloud.RTDB.RemoteCommandListener.OnTriggerHint -= HandleTriggerHintCurrentQuest;
+            Cloud.RTDB.RemoteCommandListener.OnTriggerVerbalHint -= HandleTriggerVerbalHintCurrentQuest;
+            Cloud.RTDB.RemoteCommandListener.OnTriggerVisualHint -= HandleTriggerVisualHintCurrentQuest;
 
             foreach (var quest in quests)
             {
