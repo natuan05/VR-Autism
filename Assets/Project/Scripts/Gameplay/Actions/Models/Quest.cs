@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using KBCore.Refs;
 using Plugins.QuickOutline.Scripts;
 using VRAutism.Core;
@@ -48,6 +49,7 @@ namespace VRAutism.Gameplay.Actions
         private float progress;
 
         private float timeReminder;
+        private Coroutine _hintBlinkCoroutine;
         
         public enum State
         {
@@ -159,11 +161,37 @@ namespace VRAutism.Gameplay.Actions
             if (state == State.Enable || state == State.Start)
             {
                 Debug.Log($"[Quest] {questName} nhận lệnh OnTriggerHint -> Kích hoạt gợi ý khẩn cấp");
-                // 1. Cưỡng chế bật outline phát sáng
-                if (outline) outline.enabled = true;
-                // 2. Kích hoạt âm nhắc nhở ngay lập tức bằng cách reset timeReminder về 0
-                timeReminder = 0f;
+                // 1. Bật blink animation 3 chu kỳ trên outline (thu hút sự chú ý của trẻ)
+                if (outline)
+                {
+                    if (_hintBlinkCoroutine != null) StopCoroutine(_hintBlinkCoroutine);
+                    _hintBlinkCoroutine = StartCoroutine(BlinkOutlineHint());
+                }
+                // 2. Phát âm nhắc nhở ngay lập tức (hoạt động kể cả khi reminderCycle = 0)
+                onQuestReminder?.Invoke();
             }
+        }
+
+        /// <summary>
+        /// Blink outline 3 chu kỳ (on/off mỗi 0.3s) để thu hút sự chú ý của trẻ,
+        /// sau đó khôi phục trạng thái outline theo lesson params hiện tại.
+        /// </summary>
+        private IEnumerator BlinkOutlineHint()
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                outline.enabled = true;
+                yield return new WaitForSeconds(0.3f);
+                outline.enabled = false;
+                yield return new WaitForSeconds(0.3f);
+            }
+            // Khôi phục trạng thái outline đúng theo lesson params (tôn trọng EnableVisualGuidance)
+            LessonParameters p = SessionContext.Instance != null
+                ? SessionContext.Instance.CurrentParams
+                : LessonParameters.Default;
+            bool showOutline = (state == State.Enable || state == State.Start) && p.Actions.EnableVisualGuidance;
+            outline.enabled = showOutline;
+            _hintBlinkCoroutine = null;
         }
 
         private void HandleRemoteSkipQuest()

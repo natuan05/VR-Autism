@@ -1,6 +1,6 @@
 # Story 3.1: Controllable Lesson Event Bridge
 
-Status: review
+Status: done
 
 ## Story
 
@@ -68,3 +68,33 @@ so that I can dynamically guide and moderate the child's session from the Web Da
   Since static events on `RemoteCommandListener` are held globally, any subscription (`+=`) **MUST** be cleared (`-=`) in `OnDestroy()` or `OnDisable()`. Failure to do so will keep references to destroyed MonoBehaviours alive, causing severe memory leaks and null-reference exceptions on subsequent runs.
 - **Quest Completion Safety**:
   When forcing completion via skip, ensure all transition effects, UI bars, and progress calculations are safely reset/notified just as if the user triggered it naturally.
+
+## Senior Developer Review (AI)
+
+**Review Date:** 2026-05-23
+**Outcome:** Approved (all patches applied)
+**Layers:** Blind Hunter ✅ | Edge Case Hunter ✅ | Acceptance Auditor ✅
+
+### Action Items
+
+#### decision_needed (3) — all resolved
+
+- [x] [Review][Decision] StopAllCoroutines() in QuizController hint handler is too broad — **Fixed:** Added `_questionSoundCoroutine` field; hint handler now stops only the sound coroutine. [QuizController.cs:86-91]
+- [x] [Review][Decision] RemoteCommandListener scene lifecycle undefined — **Resolved:** No DontDestroyOnLoad by design. Added detailed lifecycle comment in class summary. [RemoteCommandListener.cs]
+- [x] [Review][Decision] Spec says "flashing the glow outline" — **Fixed:** Implemented 3-cycle blink animation (`BlinkOutlineHint()`) that respects `EnableVisualGuidance` after blinking ends. [Quest.cs]
+
+#### patch (3) — all applied
+
+- [x] [Review][Patch] Debug keybinds Update() not guarded with #if UNITY_EDITOR — **Fixed:** Wrapped entire `Update()` in `#if UNITY_EDITOR / #endif`. [RemoteCommandListener.cs]
+- [x] [Review][Patch] Quest hint resets timeReminder=0f but onQuestReminder never fires when reminderCycle=0 — **Fixed:** Now directly calls `onQuestReminder?.Invoke()` instead of relying on timer reset. [Quest.cs]
+- [x] [Review][Patch] Missing main-thread safety comment — **Fixed:** Added explicit MAIN THREAD ONLY warning comment with Story 3.4 note on all dispatchers. [RemoteCommandListener.cs]
+
+#### defer (2)
+
+- [x] [Review][Defer] OnSetVolume/OnPlayNpcScript have no subscribers in this story's scope [RemoteCommandListener.cs] — deferred, will be consumed by future stories
+- [x] [Review][Defer] Spec AC4 describes null-check on RemoteCommandListener.Instance but static event subscription doesn't require instance — spec inaccuracy, not a code bug [RemoteCommandListener.cs] — deferred, update spec wording in future
+
+### Review Follow-ups (AI)
+
+- Applied 2026-05-24: All 3 decisions resolved, all 3 patches applied. Story marked `done`.
+

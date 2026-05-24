@@ -30,6 +30,7 @@ namespace VRAutism.Gameplay.Quizzes{
         private GameObject _currentAssociatedObject;
         private int _currentQuestionIndex;
         private bool _isQuestionAnswered;
+        private Coroutine _questionSoundCoroutine;
 
         /// <summary>
         /// Tham số bài Quiz động: fallback về giá trị legacy nếu SessionContext chưa khởi tạo hoặc sentinel.
@@ -81,8 +82,13 @@ namespace VRAutism.Gameplay.Quizzes{
             if (_currentQuestion != null && !_isQuestionAnswered)
             {
                 Debug.Log("[QuizController] Nhận lệnh OnTriggerHint -> Phát lại câu hỏi âm thanh");
-                StopAllCoroutines();
-                StartCoroutine(HandleQuestionSounds());
+                // Chỉ stop coroutine âm thanh, không dùng StopAllCoroutines() để tránh cắt ngang intro
+                if (_questionSoundCoroutine != null)
+                {
+                    StopCoroutine(_questionSoundCoroutine);
+                    _questionSoundCoroutine = null;
+                }
+                _questionSoundCoroutine = StartCoroutine(HandleQuestionSounds());
             }
         }
 
@@ -125,6 +131,7 @@ namespace VRAutism.Gameplay.Quizzes{
         private void PresentQuestion()
         {
             _isQuestionAnswered = false;
+            _questionSoundCoroutine = null;
             uiController.StopAllEffects();
             uiController.HideNextButton();
 
@@ -231,6 +238,7 @@ namespace VRAutism.Gameplay.Quizzes{
                 Debug.Log("[QuizController] Playing animal sound: " + _currentQuestion.animalSound);
                 soundManager.PlaySound(_currentQuestion.animalSound);
             }
+            _questionSoundCoroutine = null;
         }
 
         // ─── Helpers ───────────────────────────────────────────────────────────
