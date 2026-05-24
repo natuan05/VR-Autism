@@ -94,11 +94,32 @@ namespace VRAutism.Gameplay.Quizzes{
 
         private void HandleRemoteSkipQuest()
         {
-            // Bỏ qua câu hỏi hiện tại: Tự động submit câu trả lời đúng để cho trẻ đi tiếp
-            if (_currentQuestion != null && !_isQuestionAnswered)
+            if (_currentQuestion != null)
             {
-                Debug.Log("[QuizController] Nhận lệnh OnSkipQuest -> Bỏ qua câu hỏi hiện tại");
-                SubmitAnswer(_currentQuestion.correctAnswer);
+                if (!_isQuestionAnswered)
+                {
+                    Debug.Log("[QuizController] Nhận lệnh OnSkipQuest -> Bỏ qua câu hiện tại, tự động submit và chuyển câu");
+                    SubmitAnswer(_currentQuestion.correctAnswer);
+                    StartCoroutine(AutoNextQuestionRoutine());
+                }
+                else
+                {
+                    // Nếu đã trả lời rồi nhưng bị kẹt (ví dụ quên bấm Next), Skip lần 2 sẽ ép qua câu luôn
+                    Debug.Log("[QuizController] Nhận lệnh OnSkipQuest -> Ép chuyển sang câu tiếp theo");
+                    OnNextQuestionClicked();
+                }
+            }
+        }
+
+        private IEnumerator AutoNextQuestionRoutine()
+        {
+            // Chờ một chút để trẻ nghe tiếng đúng (Win) và thấy UI đáp án sáng lên
+            yield return new WaitForSeconds(1.5f);
+            
+            // Kiểm tra xem chưa bị ai (hoặc lệnh Skip thứ 2) bấm Next
+            if (_isQuestionAnswered)
+            {
+                OnNextQuestionClicked();
             }
         }
 
@@ -131,7 +152,13 @@ namespace VRAutism.Gameplay.Quizzes{
         private void PresentQuestion()
         {
             _isQuestionAnswered = false;
-            _questionSoundCoroutine = null;
+            
+            if (_questionSoundCoroutine != null)
+            {
+                StopCoroutine(_questionSoundCoroutine);
+                _questionSoundCoroutine = null;
+            }
+            
             uiController.StopAllEffects();
             uiController.HideNextButton();
 
@@ -161,8 +188,7 @@ namespace VRAutism.Gameplay.Quizzes{
             
             // Báo cáo Cloud: Đang ở câu hỏi số mấy để Web vẽ nút
             OnQuizActivityChanged?.Invoke("Quiz_Q" + (_currentQuestionIndex + 1));
-            
-            StartCoroutine(HandleQuestionSounds());
+            _questionSoundCoroutine = StartCoroutine(HandleQuestionSounds());
         }
 
         private void EndQuiz()
