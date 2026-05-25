@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using VRAutism.Core;
 using VRAutism.Core.Models;
@@ -67,7 +67,7 @@ namespace VRAutism.Gameplay.Actions
             Quest activeQuest = GetCurQuest();
             if (activeQuest == null || (congratulationUI != null && congratulationUI.activeSelf)) return;
 
-            if (!isCharacterInsideTrigger && curEffectiveCycle > 0f)
+            if (activeParams.Actions.EnableAutoHint && !isCharacterInsideTrigger && curEffectiveCycle > 0f)
             {
                 curReminderTimer -= Time.deltaTime;
                 if (curReminderTimer < 0)

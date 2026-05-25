@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace VRAutism.Core.Models
@@ -26,6 +26,11 @@ namespace VRAutism.Core.Models
         [Serializable]
         public class ActionParams
         {
+            /// <summary>
+            /// Bật/tắt chế độ tự động nhắc nhở (Auto Hint) của bài học.
+            /// </summary>
+            public bool EnableAutoHint = true;
+
             /// <summary>
             /// Bật/tắt hiệu ứng viền phát sáng (Outline) của vật thể mục tiêu
             /// khi Quest ở trạng thái Enable hoặc Start.
@@ -135,6 +140,7 @@ namespace VRAutism.Core.Models
                 result.Actions.EnableBubbleHints    = GetBool(actionsDict, "enable_bubble_hints",    "enableBubbleHints",    result.Actions.EnableBubbleHints);
                 result.Actions.SpeechSilenceTimeout = GetFloat(actionsDict, "speech_silence_timeout", "speechSilenceTimeout", result.Actions.SpeechSilenceTimeout);
                 result.Actions.ActionReminderCycle  = GetFloat(actionsDict, "action_reminder_cycle",  "actionReminderCycle",  result.Actions.ActionReminderCycle);
+                result.Actions.EnableAutoHint       = GetBool(actionsDict, "enable_auto_hint",       "enableAutoHint",       result.Actions.EnableAutoHint);
             }
             else
             {
@@ -143,6 +149,7 @@ namespace VRAutism.Core.Models
                 result.Actions.EnableBubbleHints    = GetBool(dict, "enable_bubble_hints",    "enableBubbleHints",    result.Actions.EnableBubbleHints);
                 result.Actions.SpeechSilenceTimeout = GetFloat(dict, "speech_silence_timeout", "speechSilenceTimeout", result.Actions.SpeechSilenceTimeout);
                 result.Actions.ActionReminderCycle  = GetFloat(dict, "action_reminder_cycle",  "actionReminderCycle",  result.Actions.ActionReminderCycle);
+                result.Actions.EnableAutoHint       = GetBool(dict, "enable_auto_hint",       "enableAutoHint",       result.Actions.EnableAutoHint);
             }
 
             // --- Quiz ---
