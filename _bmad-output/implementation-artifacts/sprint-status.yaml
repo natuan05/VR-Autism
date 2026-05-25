@@ -39,6 +39,7 @@ development_status:
   1-1-gaze-tracking-design: done
   1-2-telemetry-structure: done
   1-3-high-frequency-behavior-snapshots: done
+  1-4-dynamic-gaze-cone-calculation: backlog
   epic-1-retrospective: done
 
   epic-2: in-progress
@@ -53,6 +54,8 @@ development_status:
   3-3-auto-alert-interventions: done
   3-4-remote-control-commands-listener: done
   3-5-web-remote-control-interface: done
+  3-6-dynamic-npc-speech-verbal-hint-engine: backlog
+  3-7-automated-multi-tiered-prompt-hierarchy: backlog
   epic-3-retrospective: optional
 
   epic-4: in-progress
@@ -60,3 +63,8 @@ development_status:
   4-2-hardware-detection-visual-adjustments: ready-for-dev
   4-3-htc-vive-platform-deployment-testing: backlog
   epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-learntoask-action-rework: backlog
+  5-2-gestures-eye-contact-integration: backlog
+  epic-5-retrospective: optional
