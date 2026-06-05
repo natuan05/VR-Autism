@@ -1,6 +1,6 @@
 # Story 1.4: Dynamic Gaze Cone Calculation
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -26,16 +26,16 @@ so that we obtain physically accurate focus ratio telemetry, ensuring strict joi
 
 ## Tasks / Subtasks
 
-- [ ] Update fields in `SensorHarvester.cs` (AC: #1)
-  - [ ] Remove `gazeConeHalfAngle` field.
-  - [ ] Add `gazeConeMinAngle`, `gazeConeMaxAngle`, and `gazeConeMaxDistance`.
-- [ ] Implement dynamic angle calculation in `SampleToBuffer()` (AC: #2, #3, #4, #5)
-  - [ ] Compute distance `d` from the camera to the target visual center.
-  - [ ] Calculate LERP parameter `t` and interpolate `currentHalfAngle`.
-  - [ ] Use `currentHalfAngle` for the gaze cone inclusion check.
-- [ ] Update Editor debug rendering in `OnDrawGizmos()` (AC: #6)
-  - [ ] Dynamically compute `currentHalfAngle` based on distance inside `OnDrawGizmos()`.
-  - [ ] Draw the wireframe debug cone at `maxRaycastDistance` using the dynamic angle.
+- [x] Update fields in `SensorHarvester.cs` (AC: #1)
+  - [x] Remove `gazeConeHalfAngle` field.
+  - [x] Add `gazeConeMinAngle`, `gazeConeMaxAngle`, and `gazeConeMaxDistance`.
+- [x] Implement dynamic angle calculation in `SampleToBuffer()` (AC: #2, #3, #4, #5)
+  - [x] Compute distance `d` from the camera to the target visual center.
+  - [x] Calculate LERP parameter `t` and interpolate `currentHalfAngle`.
+  - [x] Use `currentHalfAngle` for the gaze cone inclusion check.
+- [x] Update Editor debug rendering in `OnDrawGizmos()` (AC: #6)
+  - [x] Dynamically compute `currentHalfAngle` based on distance inside `OnDrawGizmos()`.
+  - [x] Draw the wireframe debug cone at `maxRaycastDistance` using the dynamic angle.
 
 ## Dev Notes
 
@@ -65,8 +65,15 @@ Gemini 3.5 Flash
 
 ### Debug Log References
 
+- None (Unity compilation verified, manual review confirms mathematical and logical accuracy)
+
 ### Completion Notes List
+
+- Replaced legacy static `gazeConeHalfAngle` field with three configurable inspector parameters: `gazeConeMinAngle` (default 5.0f), `gazeConeMaxAngle` (default 15.0f), and `gazeConeMaxDistance` (default 8.0f).
+- Implemented dynamic angle calculation inside `SampleToBuffer()` using `Mathf.Lerp` and `Mathf.Clamp01` based on Method B (0m is 5 degrees, >=8m is 15 degrees).
+- Updated `OnDrawGizmos()` to dynamically calculate the cone angle in the Unity Editor based on target distance, creating a dynamic visual representation in Scene View.
 
 ### File List
 
 - [SensorHarvester.cs](file:///D:/Lab/VR-Autism/Assets/Project/Scripts/Core/Telemetry/SensorHarvester.cs)
+

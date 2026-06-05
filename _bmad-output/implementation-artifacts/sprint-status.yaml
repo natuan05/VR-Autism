@@ -1,5 +1,5 @@
 # generated: 2026-05-22T10:11:42+07:00
-# last_updated: 2026-06-05T18:55:00+07:00
+# last_updated: 2026-06-05T19:32:00+07:00
 # project: VR-Autism
 # project_key: NOKEY
 # tracking_system: file-system
@@ -28,7 +28,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-05-22T10:11:42+07:00
-last_updated: 2026-06-05T18:55:00+07:00
+last_updated: 2026-06-05T19:32:00+07:00
 project: VR-Autism
 project_key: NOKEY
 tracking_system: file-system
@@ -39,7 +39,7 @@ development_status:
   1-1-gaze-tracking-design: done
   1-2-telemetry-structure: done
   1-3-high-frequency-behavior-snapshots: done
-  1-4-dynamic-gaze-cone-calculation: ready-for-dev
+  1-4-dynamic-gaze-cone-calculation: review
   epic-1-retrospective: done
 
   epic-2: in-progress

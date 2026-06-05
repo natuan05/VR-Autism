@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using VRAutism.Core.Models;
 using VRAutism.Gameplay.Actions;
@@ -20,8 +20,11 @@ namespace VRAutism.Core.Telemetry
         public Transform rightHand;
 
         [Header("Tùy biến Gaze Cone")]
-        [Range(5f, 30f)]
-        public float gazeConeHalfAngle = 20f;
+        [Range(1f, 45f)]
+        public float gazeConeMinAngle = 5f;
+        [Range(1f, 45f)]
+        public float gazeConeMaxAngle = 15f;
+        public float gazeConeMaxDistance = 8f;
         public float maxRaycastDistance = 20f;
         public LayerMask focusLayerMask = Physics.DefaultRaycastLayers;
 
@@ -266,7 +269,12 @@ namespace VRAutism.Core.Telemetry
                     var currentQuest = _currentQuestTarget.GetComponent<Quest>();
                     string expectedTargetName = currentQuest != null ? currentQuest.Name : _currentQuestTarget.name;
 
-                    bool inGazeCone = (angleToTarget <= gazeConeHalfAngle);
+                    // Tính toán nửa góc nón động theo Method B: Gần hẹp - Xa rộng
+                    float distance = dirToTarget.magnitude;
+                    float t = Mathf.Clamp01(distance / gazeConeMaxDistance);
+                    float currentHalfAngle = Mathf.Lerp(gazeConeMinAngle, gazeConeMaxAngle, t);
+
+                    bool inGazeCone = (angleToTarget <= currentHalfAngle);
                     bool raycastHitTarget = (raycastObjName != "None" && raycastObjName == expectedTargetName);
 
                     if (inGazeCone || raycastHitTarget)
@@ -344,21 +352,34 @@ namespace VRAutism.Core.Telemetry
                 raycastObjName = questHit != null ? questHit.Name : hit.collider.gameObject.name;
             }
 
+            float currentHalfAngle = gazeConeMaxAngle;
             if (_currentQuestTarget != null)
             {
+                var col = _currentQuestTarget.GetComponentInChildren<Collider>();
+                if (col != null) _targetVisualCenter = col.bounds.center;
+                else
+                {
+                    var rend = _currentQuestTarget.GetComponentInChildren<Renderer>();
+                    _targetVisualCenter = rend != null ? rend.bounds.center : _currentQuestTarget.position;
+                }
+
+                Vector3 dirToTarget = _targetVisualCenter - camPos;
+                float d = dirToTarget.magnitude;
+                float t = Mathf.Clamp01(d / gazeConeMaxDistance);
+                currentHalfAngle = Mathf.Lerp(gazeConeMinAngle, gazeConeMaxAngle, t);
+
                 var currentQuest = _currentQuestTarget.GetComponent<Quest>();
                 string targetName = currentQuest != null ? currentQuest.Name : _currentQuestTarget.name;
 
-                Vector3 dirToTarget = _targetVisualCenter - camPos;
                 float angle = Vector3.Angle(forward, dirToTarget);
                 
-                isFocusing = (angle <= gazeConeHalfAngle) || (raycastObjName != "None" && raycastObjName == targetName);
+                isFocusing = (angle <= currentHalfAngle) || (raycastObjName != "None" && raycastObjName == targetName);
             }
 
             Gizmos.color = isFocusing ? Color.green : new Color(1, 0, 0, 0.4f);
             
             int segments = 12;
-            float radHalfAngle = gazeConeHalfAngle * Mathf.Deg2Rad;
+            float radHalfAngle = currentHalfAngle * Mathf.Deg2Rad;
             float radius = Mathf.Tan(radHalfAngle) * maxRaycastDistance;
 
             for (int i = 0; i < segments; i++)
