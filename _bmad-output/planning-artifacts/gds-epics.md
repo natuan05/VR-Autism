@@ -70,7 +70,7 @@ Cho phép nhập kịch bản nói (NPC Script) trực tiếp trên Web Dashboar
 *Status: backlog*
 
 ### Story 3.7: Automated Multi-Tiered Prompt Hierarchy
-Xây dựng chu kỳ tự động nhắc nhở phân bậc (Bậc 1: phát loa lời nói nhắc nhở Verbal Hint, Bậc 2: nhấp nháy viền sáng Visual Hint của Quest sau khoảng lặng) và khắc phục lỗi loa NPC im lặng trong các bài Actions (Bathroom).
+Xây dựng chu kỳ tự động nhắc nhở phân bậc (Bậc 1: phát loa lời nói nhắc nhở Verbal Hint, Bậc 2: nhấp nháy viền sáng Visual Hint của Quest sau khoảng lặng) và khắc phục lỗi loa NPC im lặng trong các bài Actions (Bathroom). **Bổ sung chế độ Bật/Tắt Auto-Hint lưu trực tiếp vào profile của trẻ trên Firestore, đồng bộ xuống kính để bật/tắt toàn bộ kịch bản tự động này.**
 *Status: backlog*
 
 ---
