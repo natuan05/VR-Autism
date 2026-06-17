@@ -48,14 +48,20 @@ namespace VRAutism.Core.Models
             /// Sentinel -1f = không ghi đè (dùng giá trị Inspector).
             /// Legacy hardcode: 5f.
             /// </summary>
-            public float SpeechSilenceTimeout = -1f;
+            public float SpeechSilenceTimeout = 5f;
 
             /// <summary>
             /// Chu kỳ (giây) giữa các lần nhắc nhở tự động của Quest (reminderCycle).
             /// Sentinel -1f = không ghi đè (dùng giá trị Inspector per-Quest).
             /// Legacy: 0f = không bao giờ nhắc nhở (giữ nguyên hành vi Inspector).
             /// </summary>
-            public float ActionReminderCycle = -1f;
+            public float ActionReminderCycle = 5f;
+
+            /// <summary>
+            /// Góc mở toàn phần của hình nón thị giác (độ). Cấu hình từ web [5 - 15].
+            /// Sentinel -1f = không ghi đè (dùng giá trị mặc định của SensorHarvester).
+            /// </summary>
+            public float GazeConeAngle = -1f;
         }
 
         [Serializable]
@@ -141,6 +147,7 @@ namespace VRAutism.Core.Models
                 result.Actions.SpeechSilenceTimeout = GetFloat(actionsDict, "speech_silence_timeout", "speechSilenceTimeout", result.Actions.SpeechSilenceTimeout);
                 result.Actions.ActionReminderCycle  = GetFloat(actionsDict, "action_reminder_cycle",  "actionReminderCycle",  result.Actions.ActionReminderCycle);
                 result.Actions.EnableAutoHint       = GetBool(actionsDict, "enable_auto_hint",       "enableAutoHint",       result.Actions.EnableAutoHint);
+                result.Actions.GazeConeAngle        = GetFloat(actionsDict, "gaze_cone_angle",        "gazeConeAngle",        result.Actions.GazeConeAngle);
             }
             else
             {
@@ -150,6 +157,7 @@ namespace VRAutism.Core.Models
                 result.Actions.SpeechSilenceTimeout = GetFloat(dict, "speech_silence_timeout", "speechSilenceTimeout", result.Actions.SpeechSilenceTimeout);
                 result.Actions.ActionReminderCycle  = GetFloat(dict, "action_reminder_cycle",  "actionReminderCycle",  result.Actions.ActionReminderCycle);
                 result.Actions.EnableAutoHint       = GetBool(dict, "enable_auto_hint",       "enableAutoHint",       result.Actions.EnableAutoHint);
+                result.Actions.GazeConeAngle        = GetFloat(dict, "gaze_cone_angle",        "gazeConeAngle",        result.Actions.GazeConeAngle);
             }
 
             // --- Quiz ---

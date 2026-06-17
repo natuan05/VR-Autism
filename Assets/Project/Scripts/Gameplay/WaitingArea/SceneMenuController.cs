@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using Firebase.Firestore;
 using Firebase.Extensions;
@@ -100,6 +100,40 @@ namespace VRAutism.Gameplay.WaitingArea{
 
                 if (childDoc != null && childDoc.Exists && ctx != null)
                 {
+                    // ── Đọc giới hạn âm lượng max_volume hoặc map từ sound_sensitivity ──
+                    float parsedMaxVolume = 0.5f;
+                    bool hasMaxVolume = false;
+
+                    if (childDoc.ContainsField("max_volume"))
+                    {
+                        try {
+                            parsedMaxVolume = System.Convert.ToSingle(childDoc.GetValue<object>("max_volume"));
+                            hasMaxVolume = true;
+                        } catch {}
+                    }
+                    else if (childDoc.ContainsField("maxVolume"))
+                    {
+                        try {
+                            parsedMaxVolume = System.Convert.ToSingle(childDoc.GetValue<object>("maxVolume"));
+                            hasMaxVolume = true;
+                        } catch {}
+                    }
+
+                    if (!hasMaxVolume && childDoc.ContainsField("sound_sensitivity"))
+                    {
+                        try
+                        {
+                            int sensitivity = System.Convert.ToInt32(childDoc.GetValue<object>("sound_sensitivity"));
+                            // Nhạy cảm âm thanh càng cao (5) thì âm lượng tối đa càng nhỏ (0.2)
+                            // Nhạy cảm âm thanh càng thấp (1) thì âm lượng tối đa có thể lớn (0.8)
+                            parsedMaxVolume = Mathf.Clamp(1.0f - (sensitivity * 0.15f), 0.1f, 1.0f);
+                        }
+                        catch {}
+                    }
+
+                    ctx.MaxVolume = parsedMaxVolume;
+                    Debug.Log($"[SceneMenuController] Đã thiết lập MaxVolume = {ctx.MaxVolume} cho bé '{childId}'");
+
                     System.Collections.Generic.Dictionary<string, object> lessonParamsMap = null;
 
                     // Firestore SDK trả về IDictionary — giải mã an toàn qua GetValue hoặc fallback IDictionary

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using VRAutism.Core.Models;
 
 namespace VRAutism.Core
@@ -25,6 +25,19 @@ namespace VRAutism.Core
         
         // --- Thông tin expert điều khiển ---
         public string HostId { get; set; } = "";
+
+        // --- Cấu hình an toàn âm thanh ---
+        private float _maxVolume = 0.5f;
+        public float MaxVolume
+        {
+            get { return _maxVolume; }
+            set
+            {
+                _maxVolume = value;
+                AudioListener.volume = value;
+                Debug.Log($"[SessionContext] MaxVolume set to {value}. AudioListener.volume is now {AudioListener.volume}");
+            }
+        }
 
         // --- Cấu hình bài học động (được ghi đè từ Firestore tại Story 2.3) ---
         /// <summary>
@@ -59,6 +72,22 @@ namespace VRAutism.Core
             LessonType = "";
             HostId = "";
             CurrentParams = LessonParameters.GetDefault();
+            MaxVolume = 0.5f;
+        }
+
+        private void OnEnable()
+        {
+            VRAutism.Cloud.RTDB.RemoteCommandListener.OnSetVolume += HandleSetVolume;
+        }
+
+        private void OnDisable()
+        {
+            VRAutism.Cloud.RTDB.RemoteCommandListener.OnSetVolume -= HandleSetVolume;
+        }
+
+        private void HandleSetVolume(float volume)
+        {
+            MaxVolume = volume;
         }
 
         private void Update()
