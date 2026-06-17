@@ -110,6 +110,7 @@ erDiagram
         string log_id PK
         int index
         float response_time "Giây"
+        float response_time_since_last_hint "Thời gian từ gợi ý gần nhất đến khi xong quest (Giây). -1 nếu không có gợi ý."
         string completion_status "success | skipped | assisted"
         int hints_verbal "Nhắc bằng lời (audio qua tai nghe)"
         int hints_visual "Visual cue: mũi tên / highlight trong VR"

@@ -43,7 +43,7 @@ Truy vấn cấu hình cá nhân hóa `default_lesson_params` từ profile của
 ---
 
 ## Epic 3: Remote Control & Monitoring
-Giám sát thời gian thực và cho phép giáo viên can thiệp hoặc điều khiển bài học của trẻ từ xa.
+Giám sát thời gian thực, cho phép giáo viên can thiệp hoặc điều khiển bài học của trẻ từ xa, và đo lường hiệu quả của gợi ý trị liệu.
 
 ### Story 3.1: Controllable Lesson Event Bridge
 Nâng cấp hệ thống kịch bản bài học cũ để nhận tín hiệu điều khiển ngoài (Hint, Skip, Pause).
@@ -70,7 +70,7 @@ Cho phép nhập kịch bản nói (NPC Script) trực tiếp trên Web Dashboar
 *Status: backlog*
 
 ### Story 3.7: Automated Multi-Tiered Prompt Hierarchy
-Xây dựng chu kỳ tự động nhắc nhở phân bậc (Bậc 1: phát loa lời nói nhắc nhở Verbal Hint, Bậc 2: nhấp nháy viền sáng Visual Hint của Quest sau khoảng lặng) và khắc phục lỗi loa NPC im lặng trong các bài Actions (Bathroom). **Bổ sung chế độ Bật/Tắt Auto-Hint lưu trực tiếp vào profile của trẻ trên Firestore, đồng bộ xuống kính để bật/tắt toàn bộ kịch bản tự động này.**
+Xây dựng chu kỳ tự động nhắc nhở phân bậc (Bậc 1: phát loa lời nói nhắc nhở Verbal Hint, Bậc 2: nhấp nháy viền sáng Visual Hint của Quest sau khoảng lặng) và khắc phục lỗi loa NPC im lặng trong các bài Actions (Bathroom). Bổ sung chế độ Bật/Tắt Auto-Hint lưu trực tiếp vào profile của trẻ trên Firestore, đồng bộ xuống kính để bật/tắt toàn bộ kịch bản tự động này. **Đồng thời đo lường chỉ số "thời gian phản hồi kể từ gợi ý gần nhất" (đo từ thời điểm gợi ý cuối cùng được phát đến khi trẻ hoàn thành Quest, lưu vào quest logs trên Firestore để đánh giá hiệu quả gợi ý).**
 *Status: backlog*
 
 ---

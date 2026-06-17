@@ -1,6 +1,6 @@
 # Story 1.4: Dynamic Gaze Cone Calculation
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -77,4 +77,10 @@ Gemini 3.5 Flash
 ### File List
 
 - [SensorHarvester.cs](file:///D:/Lab/VR-Autism/Assets/Project/Scripts/Core/Telemetry/SensorHarvester.cs)
+
+### Review Findings
+
+- [ ] [Review][Patch] `SampleToBuffer` lacks `Renderer` bounds fallback for `R` compared to `OnDrawGizmos` [`SensorHarvester.cs`]
+- [ ] [Review][Patch] `Mathf.Clamp` fails unpredictably if `gazeConeMinAngle` > `gazeConeMaxAngle` in Inspector [`SensorHarvester.cs`]
+- [ ] [Review][Patch] `defaultTargetRadius` can be negative in Inspector, causing invalid `Atan2` results [`SensorHarvester.cs`]
 
