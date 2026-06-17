@@ -203,7 +203,20 @@ namespace VRAutism.Cloud.RTDB
                     break;
 
                 case "play_npc_script":
-                    string script = paramObj != null ? paramObj.ToString() : "";
+                    string script = "";
+                    if (paramObj != null)
+                    {
+                        if (paramObj is Dictionary<string, object> dict)
+                        {
+                            string audioUrl = dict.ContainsKey("audio_url") ? dict["audio_url"]?.ToString() : "";
+                            string text = dict.ContainsKey("text") ? dict["text"]?.ToString() : "";
+                            script = $"{audioUrl}|||{text}";
+                        }
+                        else
+                        {
+                            script = paramObj.ToString();
+                        }
+                    }
                     TriggerPlayNpcScript(script);
                     break;
 
