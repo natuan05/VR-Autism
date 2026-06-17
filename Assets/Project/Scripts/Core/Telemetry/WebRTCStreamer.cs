@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 using Unity.WebRTC;
@@ -23,6 +23,7 @@ namespace VRAutism.Core.Telemetry
         private Camera captureCamera; // Camera phụ dành riêng cho WebRTC
         private bool isStreaming = false;
         private Coroutine webRtcUpdateCoroutine;
+        private Coroutine manualRenderCoroutine;
 
         private void OnDestroy()
         {
@@ -32,6 +33,8 @@ namespace VRAutism.Core.Telemetry
         public IEnumerator StartStreaming(Camera camera, Action<string> onOfferCreated)
         {
             if (isStreaming) yield break;
+
+            isStreaming = true;
 
             sourceCamera = camera;
 
@@ -45,9 +48,13 @@ namespace VRAutism.Core.Telemetry
             captureCamera = captureCamObj.AddComponent<Camera>();
             captureCamera.CopyFrom(sourceCamera); // Copy y hệt FOV, Culling Mask,...
             captureCamera.targetDisplay = 8; // Đẩy ra màn hình ảo để không đè lên kính VR
+            captureCamera.enabled = false; // Tắt tự động render để tiết kiệm hiệu năng trên Quest 2
 
             // Dùng camera phụ để encode WebRTC
             videoTrack = captureCamera.CaptureStreamTrack(width, height);
+
+            // Bắt đầu luồng render thủ công theo tốc độ khung hình chỉ định
+            manualRenderCoroutine = StartCoroutine(ManualRenderRoutine());
 
             // Lưu lại RenderTexture để dọn dẹp sau này
             renderTexture = captureCamera.targetTexture;
@@ -91,6 +98,7 @@ namespace VRAutism.Core.Telemetry
             if (offerOperation.IsError)
             {
                 Debug.LogError($"Error creating WebRTC offer: {offerOperation.Error.message}");
+                StopStreaming();
                 yield break;
             }
 
@@ -101,6 +109,7 @@ namespace VRAutism.Core.Telemetry
             if (localDescOp.IsError)
             {
                 Debug.LogError($"Error setting local description: {localDescOp.Error.message}");
+                StopStreaming();
                 yield break;
             }
 
@@ -111,7 +120,6 @@ namespace VRAutism.Core.Telemetry
                 sdp = offerDesc.sdp
             });
 
-            isStreaming = true;
             onOfferCreated?.Invoke(sdpJson);
         }
 
@@ -166,6 +174,12 @@ namespace VRAutism.Core.Telemetry
                 webRtcUpdateCoroutine = null;
             }
 
+            if (manualRenderCoroutine != null)
+            {
+                StopCoroutine(manualRenderCoroutine);
+                manualRenderCoroutine = null;
+            }
+
             if (captureCamera != null)
             {
                 captureCamera.targetTexture = null;
@@ -197,7 +211,17 @@ namespace VRAutism.Core.Telemetry
                 Destroy(renderTexture);
                 renderTexture = null;
             }
+        }
 
+        private IEnumerator ManualRenderRoutine()
+        {
+            float interval = 1f / frameRate;
+            var wait = new WaitForSeconds(interval);
+            while (captureCamera != null)
+            {
+                captureCamera.Render();
+                yield return wait;
+            }
         }
 
         private RTCConfiguration GetRTCConfiguration()
