@@ -5,6 +5,7 @@
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="UniGLTF.csproj" />
   <Project Path="MToon.Editor.csproj" />
+  <Project Path="Unity.XR.Interaction.Toolkit.Samples.InteractionSimulator.csproj" />
   <Project Path="UniGLTF.Editor.csproj" />
   <Project Path="ReadyPlayerMe.Samples.AvatarLoading.csproj" />
   <Project Path="uLipSync.Samples.RuntimeSetup.Runtime.csproj" />
@@ -39,6 +40,7 @@
   <Project Path="Unity.VSAttribution.Editor.csproj" />
   <Project Path="ReadyPlayerMe.Core.WebGLSample.Editor.csproj" />
   <Project Path="ReadyPlayerMe.AvatarCreator.Editor.csproj" />
+  <Project Path="Unity.XR.Interaction.Toolkit.Samples.InteractionSimulator.Editor.csproj" />
   <Project Path="ReadyPlayerMe.Samples.AvatarRenders.csproj" />
   <Project Path="UniHumanoid.Editor.Tests.csproj" />
   <Project Path="UniGLTF.UniUnlit.Editor.csproj" />

@@ -23,7 +23,6 @@ namespace VRAutism.Gameplay.Actions
         [Header("Events")]
         [SerializeField] private UnityEvent onQuestStarted;
         [SerializeField] private UnityEvent onQuestFinished;
-        [SerializeField] private UnityEvent onQuestCanceled;
         [SerializeField] private UnityEvent onQuestTriggerEnter;
         [SerializeField] private UnityEvent onQuestTriggerExit;
         
@@ -51,7 +50,6 @@ namespace VRAutism.Gameplay.Actions
         // UnityEvents helper triggers
         public void TriggerStartedEvent() => onQuestStarted?.Invoke();
         public void TriggerFinishedEvent() => onQuestFinished?.Invoke();
-        public void TriggerCanceledEvent() => onQuestCanceled?.Invoke();
         public void TriggerReminderEvent() => onQuestReminder?.Invoke();
 
         public void Init()

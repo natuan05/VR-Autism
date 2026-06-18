@@ -44,19 +44,10 @@ namespace VRAutism.Gameplay.Actions
             }
             
             Debug.Log("[Debug] <color=#00ff48>All actions have been finished. Quay về sảnh chính...</color>");
+            yield return new WaitForSeconds(3f);
             UnityEngine.SceneManagement.SceneManager.LoadScene("GameMenu");
         }
     }
 
-    [Serializable]
-    public class ActionEvent
-    {
-        public string name; 
-        public bool on; 
-        public float duration; 
-        public UnityEvent onStart; 
-        public UnityEvent onFinished; 
-        public BooleanVariable isConditionMet;
-    }
 }
 
