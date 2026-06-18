@@ -14,12 +14,6 @@ public class NPC : MonoBehaviour
         SetAction(action);
     }
 
-    // Update is called once per frame
-    private void Update()
-    {
-        
-    }
-
     public void SetAction(NPCAction action)
     {
         switch (action)

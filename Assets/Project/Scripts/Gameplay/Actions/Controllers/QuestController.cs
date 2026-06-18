@@ -60,6 +60,8 @@ namespace VRAutism.Gameplay.Actions
             activeParams = SessionContext.Instance != null 
                 ? SessionContext.Instance.CurrentParams 
                 : LessonParameters.Default;
+
+            enabled = false; // Tắt Update loop ban đầu để tối ưu hóa hiệu năng
         }
 
         private void Update()
@@ -144,6 +146,7 @@ namespace VRAutism.Gameplay.Actions
         // ── ĐIỀU PHỐI TRẠNG THÁI QUEST ──────────────────────────────────────
         public void StartRunningQuest()
         {
+            enabled = true; // Kích hoạt lại Update loop khi bài học bắt đầu
             isConditionMet.Value = false;
             TimeManager.Instance?.StartLessonTime(); // Bấm giờ từ lúc trẻ bắt đầu làm bài
             StartNewQuest();
@@ -214,6 +217,7 @@ namespace VRAutism.Gameplay.Actions
                 if (congratulationUI != null) congratulationUI.SetActive(true);
                 // Quest cuối hoàn thành → ActionManager sẽ tự xử lý tiếp
                 isConditionMet.Value = true;
+                enabled = false; // Tắt Update loop khi tất cả các Quest đã hoàn thành
                 return;
             }
 
