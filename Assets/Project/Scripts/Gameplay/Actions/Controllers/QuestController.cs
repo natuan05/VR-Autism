@@ -14,16 +14,15 @@ namespace VRAutism.Gameplay.Actions
         // Báo hiệu Transform của vật thể mục tiêu mới cho Telemetry bắt đầu tracking
         public static event Action<Transform> OnTargetTransformChanged;
 
+        // Sự kiện kết thúc toàn bộ bài học
+        public event Action OnAllQuestsCompleted;
+
         [SerializeField] private Quest[] quests;
-        [SerializeField] private QuestProgressUI questProgressUI;
-        [SerializeField] private GameObject bubbleQuestion;
-        [SerializeField] private GameObject congratulationUI;
         [SerializeField] private BooleanVariable isConditionMet;
 
         private int curQuestId;
         private string[] questNames;
 
-        private float curQuestProgress;
         private float curReminderTimer;
         private float curEffectiveCycle;
         private bool isCharacterInsideTrigger;
@@ -32,20 +31,20 @@ namespace VRAutism.Gameplay.Actions
         private int _currentQuestHintsVerbal;
         private int _currentQuestHintsVisual;
 
+        // Getter công khai để lấy danh sách Quest cho QuestUIController đăng ký sự kiện
+        public Quest[] Quests => quests;
+
         private void Awake()
         {
             foreach (var quest in quests)
             {
+                if (quest == null) continue;
                 quest.Init();
-                quest.OnCharacterEnter += HandleQuestCharacterEnter;
-                quest.OnCharacterExit += HandleQuestCharacterExit;
+                quest.CharacterCanEnter += HandleQuestCharacterEnter;
+                quest.CharacterExit += HandleQuestCharacterExit;
             }
 
-            questNames = quests.Where(q => q.IsSendData).Select(q => q.Name).ToArray();
-
-            if (questProgressUI != null) questProgressUI.gameObject.SetActive(false);
-            if (bubbleQuestion != null) bubbleQuestion.SetActive(false);
-            if (congratulationUI != null) congratulationUI.SetActive(false);
+            questNames = quests.Where(q => q != null && q.IsSendData).Select(q => q.Name).ToArray();
 
             curQuestId = 0;
             activeParams = LessonParameters.Default;
@@ -67,7 +66,7 @@ namespace VRAutism.Gameplay.Actions
         private void Update()
         {
             Quest activeQuest = GetCurQuest();
-            if (activeQuest == null || (congratulationUI != null && congratulationUI.activeSelf)) return;
+            if (activeQuest == null) return;
 
             if (activeParams.Actions.EnableAutoHint && !isCharacterInsideTrigger && curEffectiveCycle > 0f)
             {
@@ -75,7 +74,6 @@ namespace VRAutism.Gameplay.Actions
                 if (curReminderTimer < 0)
                 {
                     curReminderTimer = curEffectiveCycle;
-                    // Chu kỳ nhắc nhở tự động: sử dụng visual hint nhấp nháy viền (nếu được phép)
                     if (activeParams.Actions.EnableVisualGuidance)
                     {
                         activeQuest.BlinkHintOutline(true);
@@ -84,18 +82,8 @@ namespace VRAutism.Gameplay.Actions
                 }
             }
 
-            // 2. Logic tính toán Thanh tiến trình (HoldTouch Progress) tập trung
-            if (activeQuest.Type == QuestType.HoldTouch && isCharacterInsideTrigger)
-            {
-                curQuestProgress += Time.deltaTime / activeQuest.Duration;
-                if (questProgressUI != null) questProgressUI.SetProgress(curQuestProgress);
-
-                if (curQuestProgress >= 1f)
-                {
-                    curQuestProgress = 1f;
-                    CompleteActiveQuest();
-                }
-            }
+            // Ủy quyền tính toán tiến độ cho Quest hiện tại
+            activeQuest.OnUpdateInteraction(this);
         }
 
         // ── XỬ LÝ VẬT LÝ TỪ QUEST ──────────────────────────────────────────
@@ -107,23 +95,10 @@ namespace VRAutism.Gameplay.Actions
             if (characterColliderCount > 1) return; // Đã ở trong trigger từ trước
 
             isCharacterInsideTrigger = true;
-            quest.TriggerStartedEvent();
+            quest.AllowCharacterEnter();
 
-            if (quest.Type == QuestType.Touch)
-            {
-                CompleteActiveQuest();
-            }
-            else if (quest.Type == QuestType.HoldTouch)
-            {
-                // Bật UI Progress Bar tại vị trí Quest
-                if (questProgressUI != null)
-                {
-                    questProgressUI.gameObject.SetActive(true);
-                    questProgressUI.transform.position = quest.ProgressBarPosition;
-                    questProgressUI.SetProgress(0);
-                }
-                curQuestProgress = 0;
-            }
+            // Ủy quyền xử lý cho Quest con
+            quest.OnStartInteraction(this);
         }
 
         private void HandleQuestCharacterExit(Quest quest)
@@ -135,12 +110,9 @@ namespace VRAutism.Gameplay.Actions
             if (characterColliderCount < 0) characterColliderCount = 0;
 
             isCharacterInsideTrigger = false;
-            
-            if (quest.Type == QuestType.HoldTouch)
-            {
-                if (questProgressUI != null) questProgressUI.gameObject.SetActive(false);
-                curQuestProgress = 0;
-            }
+
+            // Ủy quyền xử lý cho Quest con
+            quest.OnCancelInteraction(this);
         }
 
         // ── ĐIỀU PHỐI TRẠNG THÁI QUEST ──────────────────────────────────────
@@ -154,7 +126,7 @@ namespace VRAutism.Gameplay.Actions
 
         private void StartNewQuest()
         {
-            TimeManager.Instance?.StartQuestTime();   // stamp _questStartSecond before quest begins
+            TimeManager.Instance?.StartQuestTime();
 
             Quest activeQuest = GetCurQuest();
             if (activeQuest == null)
@@ -165,17 +137,11 @@ namespace VRAutism.Gameplay.Actions
 
             isCharacterInsideTrigger = false;
             characterColliderCount = 0;
-            curQuestProgress = 0;
             _currentQuestHintsVerbal = 0;
             _currentQuestHintsVisual = 0;
 
-            // Setup hiển thị Outline và Bubble tập trung
+            // Setup hiển thị Outline tập trung
             activeQuest.SetOutline(activeParams.Actions.EnableVisualGuidance);
-            if (bubbleQuestion != null)
-            {
-                bubbleQuestion.SetActive(activeParams.Actions.EnableBubbleHints);
-                bubbleQuestion.transform.position = activeQuest.BubblePosition;
-            }
 
             // Reset bộ đếm nhắc nhở
             float overrideCycle = activeParams.Actions.ActionReminderCycle;
@@ -186,21 +152,21 @@ namespace VRAutism.Gameplay.Actions
 
             // Báo cho SensorHarvester biết mục tiêu mới để bắt đầu tracking Gaze & Proximity
             OnTargetTransformChanged?.Invoke(activeQuest.transform);
+
+            // Báo cho các đối tượng quan tâm (ví dụ UI) là Quest đã được kích hoạt chạy
+            activeQuest.OnQuestActive(this);
         }
 
-        private void CompleteActiveQuest()
+        public void CompleteActiveQuest()
         {
             Quest activeQuest = GetCurQuest();
             if (activeQuest == null) return;
 
-            // Tắt hiển thị visuals của Quest vừa xong
+            // Tắt hiển thị viền của Quest vừa xong
             activeQuest.SetOutline(false);
-            if (bubbleQuestion != null) bubbleQuestion.SetActive(false);
-            if (questProgressUI != null) questProgressUI.gameObject.SetActive(false);
+            activeQuest.AllowCharacterExit();
 
-            activeQuest.TriggerFinishedEvent();
-
-            // Lưu kết quả
+            // Ghi nhận log hoàn thành
             if (TimeManager.Instance)
             {
                 TimeManager.Instance.LogQuestComplete(
@@ -214,10 +180,11 @@ namespace VRAutism.Gameplay.Actions
 
             if (curQuestId >= quests.Length - 1)
             {
-                if (congratulationUI != null) congratulationUI.SetActive(true);
-                // Quest cuối hoàn thành → ActionManager sẽ tự xử lý tiếp
                 isConditionMet.Value = true;
                 enabled = false; // Tắt Update loop khi tất cả các Quest đã hoàn thành
+                
+                // Kích hoạt sự kiện kết thúc toàn bộ nhiệm vụ
+                OnAllQuestsCompleted?.Invoke();
                 return;
             }
 
@@ -242,7 +209,7 @@ namespace VRAutism.Gameplay.Actions
             if (activeQuest != null)
             {
                 Debug.Log($"[QuestController] Nhận lệnh Gợi ý Lời nói từ xa -> Kích hoạt nhắc nhở NPC.");
-                activeQuest.TriggerReminderEvent();
+                activeQuest.AllowReminderEvent();
                 _currentQuestHintsVerbal++;
             }
         }
@@ -258,7 +225,8 @@ namespace VRAutism.Gameplay.Actions
             }
         }
 
-        private Quest GetCurQuest()
+
+        public Quest GetCurQuest()
         {
             if (curQuestId >= 0 && curQuestId < quests.Length)
                 return quests[curQuestId];
@@ -279,8 +247,8 @@ namespace VRAutism.Gameplay.Actions
             foreach (var quest in quests)
             {
                 if (quest == null) continue;
-                quest.OnCharacterEnter -= HandleQuestCharacterEnter;
-                quest.OnCharacterExit -= HandleQuestCharacterExit;
+                quest.CharacterCanEnter -= HandleQuestCharacterEnter;
+                quest.CharacterExit -= HandleQuestCharacterExit;
             }
         }
     }

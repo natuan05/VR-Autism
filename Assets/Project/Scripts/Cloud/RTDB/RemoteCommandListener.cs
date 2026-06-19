@@ -275,7 +275,7 @@ namespace VRAutism.Cloud.RTDB
             // Phím H = Visual Hint | V = Verbal Hint | S = Skip Quest | P = Pause | R = Resume
             if (Input.GetKeyDown(KeyCode.H)) TriggerVisualHint();
             if (Input.GetKeyDown(KeyCode.V)) TriggerVerbalHint();
-            if (Input.GetKeyDown(KeyCode.S)) TriggerSkipQuest();
+            if (Input.GetKeyDown(KeyCode.C)) TriggerSkipQuest();
             if (Input.GetKeyDown(KeyCode.P)) TriggerPauseLesson();
             if (Input.GetKeyDown(KeyCode.R)) TriggerResumeLesson();
 #endif

@@ -238,10 +238,15 @@ PrefabInstance:
       propertyPath: isSendData
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 12280573}
   m_SourcePrefab: {fileID: 100100000, guid: 18945e38d72d82d4b99ed45e696d6bd3, type: 3}
 --- !u!4 &12280569 stripped
 Transform:
@@ -249,18 +254,59 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 12280568}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &12280570 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+--- !u!4 &12280570 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2590795681918958675, guid: 18945e38d72d82d4b99ed45e696d6bd3,
     type: 3}
   m_PrefabInstance: {fileID: 12280568}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+--- !u!4 &12280571 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4168093031038524077, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+    type: 3}
+  m_PrefabInstance: {fileID: 12280568}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &12280572 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+    type: 3}
+  m_PrefabInstance: {fileID: 12280568}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &12280573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 12280572}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42b49253bf134a64ca77812ed7ffeca7, type: 3}
+  m_Script: {fileID: 11500000, guid: f0848034b0740a1479b22a2e2aaffb83, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.HoldTouchQuest
+  id: 5
+  questName: "Lau tay v\u1EDBi kh\u0103n"
+  duration: 3
+  isSendData: 0
+  outline: {fileID: 1647964552}
+  posBubbleQuestion: {fileID: 12280571}
+  posProgressBar: {fileID: 12280570}
+  onQuestStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestFinished:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestTriggerEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestTriggerExit:
+    m_PersistentCalls:
+      m_Calls: []
+  reminderCycle: 0
+  onQuestReminder:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &73881163
 GameObject:
   m_ObjectHideFlags: 0
@@ -1044,6 +1090,7 @@ Transform:
   - {fileID: 743512960}
   - {fileID: 721296235}
   - {fileID: 73881168}
+  - {fileID: 1261611783}
   m_Father: {fileID: 113919261}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &548681582
@@ -1975,10 +2022,15 @@ PrefabInstance:
       propertyPath: isSendData
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 807225353}
   m_SourcePrefab: {fileID: 100100000, guid: 18945e38d72d82d4b99ed45e696d6bd3, type: 3}
 --- !u!4 &807225349 stripped
 Transform:
@@ -1986,18 +2038,59 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 807225348}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &807225350 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+--- !u!4 &807225350 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2590795681918958675, guid: 18945e38d72d82d4b99ed45e696d6bd3,
     type: 3}
   m_PrefabInstance: {fileID: 807225348}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+--- !u!4 &807225351 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4168093031038524077, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+    type: 3}
+  m_PrefabInstance: {fileID: 807225348}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &807225352 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+    type: 3}
+  m_PrefabInstance: {fileID: 807225348}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &807225353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 807225352}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42b49253bf134a64ca77812ed7ffeca7, type: 3}
+  m_Script: {fileID: 11500000, guid: f0848034b0740a1479b22a2e2aaffb83, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.HoldTouchQuest
+  id: 1
+  questName: "L\xE0m \u01B0\u1EDBt tay"
+  duration: 0
+  isSendData: 0
+  outline: {fileID: 548681584}
+  posBubbleQuestion: {fileID: 807225351}
+  posProgressBar: {fileID: 807225350}
+  onQuestStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestFinished:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestTriggerEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestTriggerExit:
+    m_PersistentCalls:
+      m_Calls: []
+  reminderCycle: 0
+  onQuestReminder:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &840482452
 GameObject:
   m_ObjectHideFlags: 0
@@ -7058,7 +7151,35 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1137181979}
+    - targetCorrespondingSourceObject: {fileID: -8380157826906577798, guid: a4fe84c3dfbd6484d8b4ee48832aa629,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1051749701}
   m_SourcePrefab: {fileID: 100100000, guid: a4fe84c3dfbd6484d8b4ee48832aa629, type: 3}
+--- !u!1 &1051749700 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -8380157826906577798, guid: a4fe84c3dfbd6484d8b4ee48832aa629,
+    type: 3}
+  m_PrefabInstance: {fileID: 1051749699}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1051749701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1051749700}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Plugins.QuickOutline.Scripts.Outline
+  outlineMode: 1
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &1092115362
 GameObject:
   m_ObjectHideFlags: 0
@@ -7504,10 +7625,15 @@ PrefabInstance:
       propertyPath: onQuestTriggerEnter.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1148527856}
   m_SourcePrefab: {fileID: 100100000, guid: 18945e38d72d82d4b99ed45e696d6bd3, type: 3}
 --- !u!4 &1148527852 stripped
 Transform:
@@ -7515,18 +7641,71 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1148527851}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1148527853 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+--- !u!4 &1148527853 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2590795681918958675, guid: 18945e38d72d82d4b99ed45e696d6bd3,
     type: 3}
   m_PrefabInstance: {fileID: 1148527851}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+--- !u!4 &1148527854 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4168093031038524077, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+    type: 3}
+  m_PrefabInstance: {fileID: 1148527851}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1148527855 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+    type: 3}
+  m_PrefabInstance: {fileID: 1148527851}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1148527856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1148527855}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42b49253bf134a64ca77812ed7ffeca7, type: 3}
+  m_Script: {fileID: 11500000, guid: f0848034b0740a1479b22a2e2aaffb83, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.HoldTouchQuest
+  id: 2
+  questName: "X\u1ECBt x\xE0 ph\xF2ng"
+  duration: 0.1
+  isSendData: 0
+  outline: {fileID: 6091149152165092283}
+  posBubbleQuestion: {fileID: 1148527854}
+  posProgressBar: {fileID: 1148527853}
+  onQuestStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestFinished:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestTriggerEnter:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2053423259}
+        m_TargetAssemblyTypeName: VRAutism.Entities.DispenserController, Assembly-CSharp
+        m_MethodName: Push
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onQuestTriggerExit:
+    m_PersistentCalls:
+      m_Calls: []
+  reminderCycle: 0
+  onQuestReminder:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1196268499 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5679163250247730776, guid: aeb4453d2bd01f94aad6ff0d0328d43e,
@@ -7666,6 +7845,54 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1241834992}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1261611782
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1261611783}
+  - component: {fileID: 1261611784}
+  m_Layer: 0
+  m_Name: QuestUIManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1261611783
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1261611782}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.90052, y: 1.00269, z: -0.17417}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 492935883}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1261611784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1261611782}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ef572d7e3782fe4e9ce727891b9b81d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.QuestUIController
+  questController: {fileID: 1336548301}
+  questProgressUI: {fileID: 743512962}
+  bubbleQuestion: {fileID: 721296230}
+  congratulationUI: {fileID: 73881163}
 --- !u!1 &1261611801
 GameObject:
   m_ObjectHideFlags: 0
@@ -7869,15 +8096,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   quests:
-  - {fileID: 7252140110639882981}
-  - {fileID: 807225350}
-  - {fileID: 1148527853}
-  - {fileID: 1930545533}
-  - {fileID: 1620873893}
-  - {fileID: 12280570}
-  questProgressUI: {fileID: 743512962}
-  bubbleQuestion: {fileID: 721296230}
-  congratulationUI: {fileID: 73881163}
+  - {fileID: 7252140110639882984}
+  - {fileID: 807225353}
+  - {fileID: 1148527856}
+  - {fileID: 1930545536}
+  - {fileID: 1620873896}
+  - {fileID: 12280573}
   isConditionMet: {fileID: 11400000, guid: a8e38e13912aab046bec3e66c434c42d, type: 2}
 --- !u!4 &1336548302
 Transform:
@@ -9266,10 +9490,15 @@ PrefabInstance:
       propertyPath: onQuestTriggerEnter.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1620873896}
   m_SourcePrefab: {fileID: 100100000, guid: 18945e38d72d82d4b99ed45e696d6bd3, type: 3}
 --- !u!4 &1620873892 stripped
 Transform:
@@ -9277,18 +9506,95 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1620873891}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1620873893 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+--- !u!4 &1620873893 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2590795681918958675, guid: 18945e38d72d82d4b99ed45e696d6bd3,
     type: 3}
   m_PrefabInstance: {fileID: 1620873891}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+--- !u!4 &1620873894 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4168093031038524077, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+    type: 3}
+  m_PrefabInstance: {fileID: 1620873891}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1620873895 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+    type: 3}
+  m_PrefabInstance: {fileID: 1620873891}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1620873896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1620873895}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42b49253bf134a64ca77812ed7ffeca7, type: 3}
+  m_Script: {fileID: 11500000, guid: e58823f5bb9939b4ba973bfc6e4c1204, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.TouchQuest
+  id: 4
+  questName: "T\u1EAFt v\xF2i n\u01B0\u1EDBc"
+  duration: 0.1
+  isSendData: 0
+  outline: {fileID: 1051749701}
+  posBubbleQuestion: {fileID: 1620873894}
+  posProgressBar: {fileID: 1620873893}
+  onQuestStarted:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1137181981}
+        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
+        m_MethodName: Interact
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onQuestFinished:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestTriggerEnter:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1137181981}
+        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
+        m_MethodName: ReachSet
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+  onQuestTriggerExit:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1137181981}
+        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
+        m_MethodName: ReachSet
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  reminderCycle: 0
+  onQuestReminder:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1633564737
 GameObject:
   m_ObjectHideFlags: 0
@@ -9397,7 +9703,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
@@ -10011,10 +10317,15 @@ PrefabInstance:
       propertyPath: onQuestFinished.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1930545536}
   m_SourcePrefab: {fileID: 100100000, guid: 18945e38d72d82d4b99ed45e696d6bd3, type: 3}
 --- !u!4 &1930545532 stripped
 Transform:
@@ -10022,18 +10333,71 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1930545531}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1930545533 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+--- !u!4 &1930545533 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2590795681918958675, guid: 18945e38d72d82d4b99ed45e696d6bd3,
     type: 3}
   m_PrefabInstance: {fileID: 1930545531}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+--- !u!4 &1930545534 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4168093031038524077, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+    type: 3}
+  m_PrefabInstance: {fileID: 1930545531}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1930545535 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+    type: 3}
+  m_PrefabInstance: {fileID: 1930545531}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1930545536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1930545535}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42b49253bf134a64ca77812ed7ffeca7, type: 3}
+  m_Script: {fileID: 11500000, guid: f0848034b0740a1479b22a2e2aaffb83, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.HoldTouchQuest
+  id: 3
+  questName: "R\u1EEDa tay"
+  duration: 3
+  isSendData: 0
+  outline: {fileID: 548681584}
+  posBubbleQuestion: {fileID: 1930545534}
+  posProgressBar: {fileID: 1930545533}
+  onQuestStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestFinished:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1137181981}
+        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
+        m_MethodName: Interact
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onQuestTriggerEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestTriggerExit:
+    m_PersistentCalls:
+      m_Calls: []
+  reminderCycle: 0
+  onQuestReminder:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &2053423257
 GameObject:
   m_ObjectHideFlags: 0
@@ -16434,10 +16798,15 @@ PrefabInstance:
       propertyPath: onQuestTriggerEnter.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7252140110639882984}
   m_SourcePrefab: {fileID: 100100000, guid: 18945e38d72d82d4b99ed45e696d6bd3, type: 3}
 --- !u!4 &7252140110639882980 stripped
 Transform:
@@ -16445,18 +16814,95 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 7252140110639882979}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7252140110639882981 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8789362967001776651, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+--- !u!4 &7252140110639882981 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2590795681918958675, guid: 18945e38d72d82d4b99ed45e696d6bd3,
     type: 3}
   m_PrefabInstance: {fileID: 7252140110639882979}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+--- !u!4 &7252140110639882982 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4168093031038524077, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+    type: 3}
+  m_PrefabInstance: {fileID: 7252140110639882979}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &7252140110639882983 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3104006268137648392, guid: 18945e38d72d82d4b99ed45e696d6bd3,
+    type: 3}
+  m_PrefabInstance: {fileID: 7252140110639882979}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7252140110639882984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7252140110639882983}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42b49253bf134a64ca77812ed7ffeca7, type: 3}
+  m_Script: {fileID: 11500000, guid: e58823f5bb9939b4ba973bfc6e4c1204, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.TouchQuest
+  id: 0
+  questName: "B\u1EADt v\xF2i n\u01B0\u1EDBc"
+  duration: 0.1
+  isSendData: 0
+  outline: {fileID: 1051749701}
+  posBubbleQuestion: {fileID: 7252140110639882982}
+  posProgressBar: {fileID: 7252140110639882981}
+  onQuestStarted:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1137181981}
+        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
+        m_MethodName: Interact
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onQuestFinished:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestTriggerEnter:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1137181981}
+        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
+        m_MethodName: ReachSet
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+  onQuestTriggerExit:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1137181981}
+        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
+        m_MethodName: ReachSet
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  reminderCycle: 0
+  onQuestReminder:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &7418370608618542183
 GameObject:
   m_ObjectHideFlags: 0

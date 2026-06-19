@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
@@ -6,12 +6,11 @@ using Plugins.QuickOutline.Scripts;
 
 namespace VRAutism.Gameplay.Actions
 {
-    public class Quest : MonoBehaviour
+    public abstract class Quest : MonoBehaviour
     {
         [Header("Setup quest")] 
         [SerializeField] private int id;
         [SerializeField] private string questName;
-        [SerializeField] private QuestType questType;
         [SerializeField] private float duration;
         [SerializeField] private bool isSendData;
 
@@ -23,8 +22,8 @@ namespace VRAutism.Gameplay.Actions
         [Header("Events")]
         [SerializeField] private UnityEvent onQuestStarted;
         [SerializeField] private UnityEvent onQuestFinished;
-        [SerializeField] private UnityEvent onQuestTriggerEnter;
-        [SerializeField] private UnityEvent onQuestTriggerExit;
+        [SerializeField] private UnityEvent onTriggerEnter;
+        [SerializeField] private UnityEvent onTriggerExit;
         
         [Header("Reminder")] 
         [SerializeField] private float reminderCycle;
@@ -33,7 +32,6 @@ namespace VRAutism.Gameplay.Actions
         // Getters for Controller to read
         public int Id => id;
         public string Name => questName;
-        public QuestType Type => questType;
         public float Duration => duration;
         public bool IsSendData => isSendData;
         public float ReminderCycle => reminderCycle;
@@ -42,15 +40,25 @@ namespace VRAutism.Gameplay.Actions
         public Vector3 ProgressBarPosition => posProgressBar != null ? posProgressBar.position : Vector3.zero;
 
         // Event hooks for physics collisions
-        public event Action<Quest> OnCharacterEnter;
-        public event Action<Quest> OnCharacterExit;
+        public event Action<Quest> CharacterCanEnter;
+        public event Action<Quest> CharacterExit;
+
+        // UI events
+        public event Action<Quest> OnStarted;
+        public event Action<Quest, float> OnProgressChanged;
+        public event Action<Quest> OnFinished;
+
+        // Helper methods for subclasses to raise UI events
+        protected void RaiseStarted() => OnStarted?.Invoke(this);
+        protected void RaiseProgressChanged(float progress) => OnProgressChanged?.Invoke(this, progress);
+        protected void RaiseFinished() => OnFinished?.Invoke(this);
 
         private Coroutine _hintBlinkCoroutine;
 
         // UnityEvents helper triggers
-        public void TriggerStartedEvent() => onQuestStarted?.Invoke();
-        public void TriggerFinishedEvent() => onQuestFinished?.Invoke();
-        public void TriggerReminderEvent() => onQuestReminder?.Invoke();
+        public void AllowCharacterEnter() => onTriggerEnter?.Invoke();
+        public void AllowCharacterExit() => onTriggerExit?.Invoke();
+        public void AllowReminderEvent() => onQuestReminder?.Invoke();
 
         public void Init()
         {
@@ -97,8 +105,8 @@ namespace VRAutism.Gameplay.Actions
         {
             if (other.CompareTag("Character"))
             {
-                onQuestTriggerEnter?.Invoke();
-                OnCharacterEnter?.Invoke(this);
+                onTriggerEnter?.Invoke(); // For UnityEvents
+                CharacterCanEnter?.Invoke(this); // For C# events
             }
         }
 
@@ -106,18 +114,18 @@ namespace VRAutism.Gameplay.Actions
         {
             if (other.CompareTag("Character"))
             {
-                onQuestTriggerExit?.Invoke();
-                OnCharacterExit?.Invoke(this);
+                onTriggerExit?.Invoke();
+                CharacterExit?.Invoke(this);
             }
         }
-    }
 
-    public enum QuestType
-    {
-        Click,
-        Touch,
-        HoldClick,
-        HoldTouch,
-        Condition
+        // Virtual lifecycle methods for subclasses
+        public virtual void OnQuestActive(QuestController controller)
+        {
+            RaiseStarted();
+        }
+        public virtual void OnStartInteraction(QuestController controller) {}
+        public virtual void OnCancelInteraction(QuestController controller) {}
+        public virtual void OnUpdateInteraction(QuestController controller) {}
     }
 }
