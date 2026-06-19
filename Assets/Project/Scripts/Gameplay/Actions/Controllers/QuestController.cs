@@ -82,8 +82,11 @@ namespace VRAutism.Gameplay.Actions
                 }
             }
 
-            // Ủy quyền tính toán tiến độ cho Quest hiện tại
-            activeQuest.OnUpdateInteraction(this);
+            // Chỉ tính toán tiến độ khi nhân vật đang ở trong vùng tương tác
+            if (isCharacterInsideTrigger)
+            {
+                activeQuest.OnUpdateInteraction(this);
+            }
         }
 
         // ── XỬ LÝ VẬT LÝ TỪ QUEST ──────────────────────────────────────────

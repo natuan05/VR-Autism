@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 using Plugins.QuickOutline.Scripts;
 
 namespace VRAutism.Gameplay.Actions
@@ -22,8 +23,10 @@ namespace VRAutism.Gameplay.Actions
         [Header("Events")]
         [SerializeField] private UnityEvent onQuestStarted;
         [SerializeField] private UnityEvent onQuestFinished;
-        [SerializeField] private UnityEvent onTriggerEnter;
-        [SerializeField] private UnityEvent onTriggerExit;
+        [FormerlySerializedAs("onTriggerEnter")]
+        [SerializeField] private UnityEvent onQuestTriggerEnter;
+        [FormerlySerializedAs("onTriggerExit")]
+        [SerializeField] private UnityEvent onQuestTriggerExit;
         
         [Header("Reminder")] 
         [SerializeField] private float reminderCycle;
@@ -56,8 +59,8 @@ namespace VRAutism.Gameplay.Actions
         private Coroutine _hintBlinkCoroutine;
 
         // UnityEvents helper triggers
-        public void AllowCharacterEnter() => onTriggerEnter?.Invoke();
-        public void AllowCharacterExit() => onTriggerExit?.Invoke();
+        public void AllowCharacterEnter() => onQuestStarted?.Invoke();
+        public void AllowCharacterExit() => onQuestFinished?.Invoke();
         public void AllowReminderEvent() => onQuestReminder?.Invoke();
 
         public void Init()
@@ -105,7 +108,7 @@ namespace VRAutism.Gameplay.Actions
         {
             if (other.CompareTag("Character"))
             {
-                onTriggerEnter?.Invoke(); // For UnityEvents
+                onQuestTriggerEnter?.Invoke(); // For UnityEvents
                 CharacterCanEnter?.Invoke(this); // For C# events
             }
         }
@@ -114,7 +117,7 @@ namespace VRAutism.Gameplay.Actions
         {
             if (other.CompareTag("Character"))
             {
-                onTriggerExit?.Invoke();
+                onQuestTriggerExit?.Invoke();
                 CharacterExit?.Invoke(this);
             }
         }

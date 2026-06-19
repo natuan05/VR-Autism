@@ -2070,7 +2070,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.HoldTouchQuest
   id: 1
   questName: "L\xE0m \u01B0\u1EDBt tay"
-  duration: 0
+  duration: 3
   isSendData: 0
   outline: {fileID: 548681584}
   posBubbleQuestion: {fileID: 807225351}
@@ -7400,7 +7400,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1137181977}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
   m_Name: 
@@ -7686,19 +7686,7 @@ MonoBehaviour:
       m_Calls: []
   onQuestTriggerEnter:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2053423259}
-        m_TargetAssemblyTypeName: VRAutism.Entities.DispenserController, Assembly-CSharp
-        m_MethodName: Push
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   onQuestTriggerExit:
     m_PersistentCalls:
       m_Calls: []
@@ -9024,6 +9012,11 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 4843263358228554029, guid: 76b11e64bce04214494e29984ec1c87a,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4843449649118444401, guid: 76b11e64bce04214494e29984ec1c87a,
         type: 3}
       propertyPath: m_Layer
@@ -9548,6 +9541,18 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1137181981}
         m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
+        m_MethodName: ReachSet
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 1137181981}
+        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
         m_MethodName: Interact
         m_Mode: 1
         m_Arguments:
@@ -9560,24 +9565,6 @@ MonoBehaviour:
         m_CallState: 2
   onQuestFinished:
     m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerEnter:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1137181981}
-        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
-        m_MethodName: ReachSet
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-  onQuestTriggerExit:
-    m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1137181981}
         m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
@@ -9591,6 +9578,12 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  onQuestTriggerEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestTriggerExit:
+    m_PersistentCalls:
+      m_Calls: []
   reminderCycle: 0
   onQuestReminder:
     m_PersistentCalls:
@@ -10375,19 +10368,7 @@ MonoBehaviour:
       m_Calls: []
   onQuestFinished:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1137181981}
-        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
-        m_MethodName: Interact
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   onQuestTriggerEnter:
     m_PersistentCalls:
       m_Calls: []
@@ -16856,6 +16837,30 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1137181981}
         m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
+        m_MethodName: ReachSet
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 1137181981}
+        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
+        m_MethodName: Interact
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1137181981}
+        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
         m_MethodName: Interact
         m_Mode: 1
         m_Arguments:
@@ -16868,24 +16873,6 @@ MonoBehaviour:
         m_CallState: 2
   onQuestFinished:
     m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerEnter:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1137181981}
-        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
-        m_MethodName: ReachSet
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-  onQuestTriggerExit:
-    m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1137181981}
         m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
@@ -16899,6 +16886,12 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  onQuestTriggerEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestTriggerExit:
+    m_PersistentCalls:
+      m_Calls: []
   reminderCycle: 0
   onQuestReminder:
     m_PersistentCalls:
