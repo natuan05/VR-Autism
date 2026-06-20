@@ -307,6 +307,67 @@ MonoBehaviour:
   onQuestReminder:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &61527199
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 61527200}
+  - component: {fileID: 61527202}
+  - component: {fileID: 61527201}
+  m_Layer: 0
+  m_Name: QuestRemoteBridge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &61527200
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 61527199}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.99975, y: 0.34612, z: -0.17417}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1336548302}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &61527201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 61527199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efb3fc817af71f44c9d06ec3083c9e15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.QuestRemoteBridge
+  questController: {fileID: 1336548301}
+--- !u!114 &61527202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 61527199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b67575af9a3c4d329142a6936583b928, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.QuestController
+  quests: []
+  isConditionMet: {fileID: 0}
+  verbalHintCount: {fileID: 0}
 --- !u!1 &73881163
 GameObject:
   m_ObjectHideFlags: 0
@@ -1093,6 +1154,51 @@ Transform:
   - {fileID: 1261611783}
   m_Father: {fileID: 113919261}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &516055590
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 516055591}
+  - component: {fileID: 516055592}
+  m_Layer: 0
+  m_Name: RemoteBridge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &516055591
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 516055590}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 861802641}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &516055592
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 516055590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0a701a5316e9db40984333badad8b42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Entities.NPCRemoteBridge
+  npcController: {fileID: 861802640}
 --- !u!1 &548681582
 GameObject:
   m_ObjectHideFlags: 0
@@ -1225,6 +1331,55 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 293364205748894483, guid: aeb4453d2bd01f94aad6ff0d0328d43e, type: 3}
+--- !u!1 &587083003
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 587083005}
+  - component: {fileID: 587083004}
+  m_Layer: 0
+  m_Name: VoicePlayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &587083004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 587083003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01674a82612cb464e8473ebe8a7685ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Entities.NPCVoicePlayer
+  npcs:
+  - {fileID: 1896006789}
+  audioClips: []
+  reminders: []
+  hintCount: {fileID: 11400000, guid: 53dfd328cd0727b418ccd3842dc87dfa, type: 2}
+--- !u!4 &587083005
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 587083003}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 861802641}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &601055413
 GameObject:
   m_ObjectHideFlags: 0
@@ -2164,11 +2319,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3beba1e910f0044a27662389581e35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Entities.NPCController
-  npcs:
-  - {fileID: 1896006789}
-  audioClips: []
-  reminders: []
-  hintCount: {fileID: 0}
+  voicePlayer: {fileID: 587083004}
+  bubblePresenter: {fileID: 1762575536}
+  lookAtPlayer: {fileID: 1465194059}
   speechResponser: []
 --- !u!4 &861802641
 Transform:
@@ -2178,12 +2331,16 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 861802639}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.11931, y: 0.89699, z: -0.68004}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
+  m_Children:
+  - {fileID: 1465194060}
+  - {fileID: 516055591}
+  - {fileID: 587083005}
+  - {fileID: 1762575537}
+  m_Father: {fileID: 1896006788}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &865076692
 GameObject:
@@ -7694,6 +7851,37 @@ MonoBehaviour:
   onQuestReminder:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &1148577592
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1148577593}
+  m_Layer: 0
+  m_Name: Speech Bubble Pos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1148577593
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1148577592}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.958, z: -0.284}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1762575537}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1196268499 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5679163250247730776, guid: aeb4453d2bd01f94aad6ff0d0328d43e,
@@ -8021,7 +8209,7 @@ GameObject:
   - component: {fileID: 1298686751}
   - component: {fileID: 1298686750}
   m_Layer: 0
-  m_Name: Remote
+  m_Name: RemoteCommandOffline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8091,6 +8279,7 @@ MonoBehaviour:
   - {fileID: 1620873896}
   - {fileID: 12280573}
   isConditionMet: {fileID: 11400000, guid: a8e38e13912aab046bec3e66c434c42d, type: 2}
+  verbalHintCount: {fileID: 11400000, guid: 53dfd328cd0727b418ccd3842dc87dfa, type: 2}
 --- !u!4 &1336548302
 Transform:
   m_ObjectHideFlags: 0
@@ -8110,6 +8299,7 @@ Transform:
   - {fileID: 1930545532}
   - {fileID: 1620873892}
   - {fileID: 12280569}
+  - {fileID: 61527200}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1358340697
@@ -8240,47 +8430,47 @@ PrefabInstance:
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.205
+      value: 0.044929594
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.11683929
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.282
+      value: -1.2172825
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.7139952
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0.16768384
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0.6617689
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0.15541837
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
+      value: -26.433
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: -85.652
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
@@ -8310,22 +8500,32 @@ PrefabInstance:
     - target: {fileID: 4812816877853377933, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.777
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4812816877853377933, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9623423
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4812816877853377933, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4812816877853377933, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.27184066
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4812816877853377933, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4812816877853377933, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -31.548
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5739240775831857170, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
@@ -8763,6 +8963,52 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 1
           m_CallState: 2
+--- !u!1 &1465194058
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1465194060}
+  - component: {fileID: 1465194059}
+  m_Layer: 0
+  m_Name: NPCLootAtPlayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1465194059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465194058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90eb71c65a3e8cc46a5715079119ef4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Entities.NPCLookAtPlayer
+  npcTransform: {fileID: 543450653523555783}
+  slerpSpeed: 3
+--- !u!4 &1465194060
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465194058}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 861802641}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1489955201
 GameObject:
   m_ObjectHideFlags: 0
@@ -9947,6 +10193,54 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1663159424}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1762575535
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1762575537}
+  - component: {fileID: 1762575536}
+  m_Layer: 0
+  m_Name: SpeechBubblePresenter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1762575536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762575535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b3b30a083d94844d9aa0acd069ab84d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Entities.SpeechBubblePresenter
+  speechBubblePrefab: {fileID: 4120424360935808415, guid: b39154abd1d4eb64d8c6d54a4bd32c48,
+    type: 3}
+  bubbleAnchor: {fileID: 1148577593}
+--- !u!4 &1762575537
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762575535}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1148577593}
+  m_Father: {fileID: 861802641}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1875027358
 GameObject:
   m_ObjectHideFlags: 0
@@ -10048,11 +10342,12 @@ Transform:
   m_GameObject: {fileID: 1896006787}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.594, y: -0.005058776, z: -1.252}
+  m_LocalPosition: {x: -0.594, y: 0, z: -1.252}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 543450653523555783}
+  - {fileID: 861802641}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &1896006789
@@ -11410,12 +11705,7 @@ PrefabInstance:
     - target: {fileID: 129752600271898344, guid: 2177bb0f5ffef8042b74166c8824052d,
         type: 3}
       propertyPath: m_WarningMessage
-      value: "\nBinding warning: Some generic clip(s) animate transforms that are
-        already bound by a Humanoid avatar. These transforms can only be changed
-        by Humanoid clips.\n\tTransform 'RightForeArm'\n\tTransform 'LeftArm'\n\tTransform
-        'RightArm'\n\tTransform 'LeftForeArm'\n\tTransform 'LeftHand'\n\tTransform
-        'RightHand'\n\tTransform 'RightForeArm'\n\tTransform 'LeftArm'\n\tTransform
-        'RightArm'\n\tTransform 'LeftForeArm'\n\tand more ..."
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 171924553662103154, guid: 2177bb0f5ffef8042b74166c8824052d,
         type: 3}
@@ -17123,4 +17413,3 @@ SceneRoots:
   - {fileID: 632125631}
   - {fileID: 840482454}
   - {fileID: 1298686751}
-  - {fileID: 861802641}
