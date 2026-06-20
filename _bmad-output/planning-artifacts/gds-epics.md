@@ -67,10 +67,18 @@ Xây dựng giao diện điều khiển trên Web Dashboard (Next.js) để chuy
 
 ### Story 3.6: Dynamic NPC Speech & Verbal Hint Engine
 Cho phép nhập kịch bản nói (NPC Script) trực tiếp trên Web Dashboard và truyền xuống kính VR thời gian thực qua lệnh `play_npc_script` để NPC phát loa tiếng nói.
-*Status: backlog*
+*Status: done*
 
 ### Story 3.7: Automated Multi-Tiered Prompt Hierarchy
 Xây dựng chu kỳ tự động nhắc nhở phân bậc (Bậc 1: phát loa lời nói nhắc nhở Verbal Hint, Bậc 2: nhấp nháy viền sáng Visual Hint của Quest sau khoảng lặng) và khắc phục lỗi loa NPC im lặng trong các bài Actions (Bathroom). Bổ sung chế độ Bật/Tắt Auto-Hint lưu trực tiếp vào profile của trẻ trên Firestore, đồng bộ xuống kính để bật/tắt toàn bộ kịch bản tự động này. **Đồng thời đo lường chỉ số "thời gian phản hồi kể từ gợi ý gần nhất" (đo từ thời điểm gợi ý cuối cùng được phát đến khi trẻ hoàn thành Quest, lưu vào quest logs trên Firestore để đánh giá hiệu quả gợi ý).**
+*Status: backlog*
+
+### Story 3.8: Google Cloud TTS Voice Customization
+Cho phép cấu hình các tham số giọng nói của NPC (giọng nam/nữ, tốc độ đọc, cao độ, mã ngôn ngữ) trực tiếp từ Web Dashboard, lưu vào cấu hình của trẻ và đồng bộ xuống kính để áp dụng cho Google Cloud TTS thời gian thực.
+*Status: backlog*
+
+### Story 3.9: Quick Template Phrases by Lesson
+Xây dựng thư viện các mẫu câu thoại nhanh chuẩn bị sẵn cho NPC phân loại theo từng bài học (ví dụ: Rửa tay, Đánh răng, Siêu thị) trên giao diện Web Dashboard giúp giáo viên kích hoạt nhanh hơn mà không cần gõ phím.
 *Status: backlog*
 
 ---

@@ -55,8 +55,10 @@ development_status:
   3-3-auto-alert-interventions: done
   3-4-remote-control-commands-listener: done
   3-5-web-remote-control-interface: done
-  3-6-dynamic-npc-speech-verbal-hint-engine: review
+  3-6-dynamic-npc-speech-verbal-hint-engine: done
   3-7-automated-multi-tiered-prompt-hierarchy: backlog
+  3-8-google-cloud-tts-voice-customization: backlog
+  3-9-quick-template-phrases-by-lesson: backlog
   epic-3-retrospective: optional
 
   epic-4: in-progress
