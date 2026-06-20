@@ -6,20 +6,20 @@ namespace VRAutism.Gameplay.Actions
     {
         private float _progress = 0f;
 
-        public override void OnStartInteraction(QuestController controller)
+        public override void OnStartInteraction(IQuestFlowController controller)
         {
             _progress = 0f;
             RaiseUIStarted();
             RaiseUIProgressChanged(0f);
         }
 
-        public override void OnCancelInteraction(QuestController controller)
+        public override void OnCancelInteraction(IQuestFlowController controller)
         {
             _progress = 0f;
             RaiseUIFinished();
         }
 
-        public override void OnUpdateInteraction(QuestController controller)
+        public override void OnUpdateInteraction(IQuestFlowController controller)
         {
             _progress += Time.deltaTime / Duration;
             RaiseUIProgressChanged(_progress);

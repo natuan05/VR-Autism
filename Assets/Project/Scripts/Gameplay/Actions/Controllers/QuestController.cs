@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace VRAutism.Gameplay.Actions
 {
-    public class QuestController : MonoBehaviour
+    public class QuestController : MonoBehaviour, IQuestFlowController
     {
         // Báo hiệu mỗi khi chuyển sang quest mới
         public static event Action<string> OnQuestActivityChanged;
@@ -54,10 +54,6 @@ namespace VRAutism.Gameplay.Actions
 
         private void Start()
         {
-            Cloud.RTDB.RemoteCommandListener.OnSkipQuest += HandleSkipCurrentQuest;
-            Cloud.RTDB.RemoteCommandListener.OnTriggerVerbalHint += HandleTriggerVerbalHintCurrentQuest;
-            Cloud.RTDB.RemoteCommandListener.OnTriggerVisualHint += HandleTriggerVisualHintCurrentQuest;
-
             activeParams = SessionContext.Instance != null 
                 ? SessionContext.Instance.CurrentParams 
                 : LessonParameters.Default;
@@ -162,7 +158,7 @@ namespace VRAutism.Gameplay.Actions
             activeQuest.OnQuestActive(this);
         }
 
-        public void CompleteActiveQuest()
+        public void CompleteActiveQuest(string status = "success")
         {
             Quest activeQuest = GetCurQuest();
             if (activeQuest == null) return;
@@ -170,7 +166,7 @@ namespace VRAutism.Gameplay.Actions
             // Tắt hiển thị viền của Quest vừa xong
             activeQuest.SetOutline(false);
             activeQuest.ActiveQuestFinished();
-            ActiveQuestFinished?.Invoke(curQuestId, activeQuest.Name, "success", _currentQuestHintsVerbal, _currentQuestHintsVisual, 0);
+            ActiveQuestFinished?.Invoke(curQuestId, activeQuest.Name, status, _currentQuestHintsVerbal, _currentQuestHintsVisual, 0);
 
             if (curQuestId >= quests.Length - 1)
             {
@@ -186,34 +182,34 @@ namespace VRAutism.Gameplay.Actions
             StartNewQuest();
         }
 
-        // ── REMOTE COMMANDS ──────────────────────────────────────────────────
-        private void HandleSkipCurrentQuest()
+        // ── REMOTE COMMANDS (public — được gọi từ QuestRemoteBridge) ──────────
+        public void TriggerSkip()
         {
             Quest activeQuest = GetCurQuest();
             if (activeQuest != null)
             {
-                Debug.Log($"[QuestController] Nhận lệnh Skip từ xa -> Chuyển tiếp tới Quest hiện tại: {activeQuest.Name}");
-                CompleteActiveQuest();
+                Debug.Log($"[QuestController] Skip -\u003e Quest: {activeQuest.Name}");
+                CompleteActiveQuest("skipped");
             }
         }
 
-        private void HandleTriggerVerbalHintCurrentQuest()
+        public void TriggerVerbalHint()
         {
             Quest activeQuest = GetCurQuest();
             if (activeQuest != null)
             {
-                Debug.Log($"[QuestController] Nhận lệnh Gợi ý Lời nói từ xa -> Kích hoạt nhắc nhở NPC.");
+                Debug.Log($"[QuestController] Gợi ý Lời nói -\u003e Kích hoạt nhắc nhở NPC.");
                 activeQuest.AllowReminderEvent();
                 _currentQuestHintsVerbal++;
             }
         }
 
-        private void HandleTriggerVisualHintCurrentQuest()
+        public void TriggerVisualHint()
         {
             Quest activeQuest = GetCurQuest();
             if (activeQuest != null)
             {
-                Debug.Log($"[QuestController] Nhận lệnh Gợi ý Thị giác từ xa -> Kích hoạt Blink nhấp nháy viền.");
+                Debug.Log($"[QuestController] Gợi ý Thị giác -\u003e Kích hoạt Blink nhấp nháy viền.");
                 activeQuest.BlinkHintOutline(true);
                 _currentQuestHintsVisual++;
             }
@@ -234,10 +230,6 @@ namespace VRAutism.Gameplay.Actions
 
         private void OnDestroy()
         {
-            Cloud.RTDB.RemoteCommandListener.OnSkipQuest -= HandleSkipCurrentQuest;
-            Cloud.RTDB.RemoteCommandListener.OnTriggerVerbalHint -= HandleTriggerVerbalHintCurrentQuest;
-            Cloud.RTDB.RemoteCommandListener.OnTriggerVisualHint -= HandleTriggerVisualHintCurrentQuest;
-
             foreach (var quest in quests)
             {
                 if (quest == null) continue;

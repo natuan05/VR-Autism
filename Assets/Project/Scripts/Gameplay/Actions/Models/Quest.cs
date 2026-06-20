@@ -123,12 +123,12 @@ namespace VRAutism.Gameplay.Actions
         }
 
         // Virtual lifecycle methods for subclasses
-        public virtual void OnQuestActive(QuestController controller)
+        public virtual void OnQuestActive(IQuestFlowController controller)
         {
             RaiseUIStarted();
         }
-        public virtual void OnStartInteraction(QuestController controller) {}
-        public virtual void OnCancelInteraction(QuestController controller) {}
-        public virtual void OnUpdateInteraction(QuestController controller) {}
+        public virtual void OnStartInteraction(IQuestFlowController controller) {}
+        public virtual void OnCancelInteraction(IQuestFlowController controller) {}
+        public virtual void OnUpdateInteraction(IQuestFlowController controller) {}
     }
 }
