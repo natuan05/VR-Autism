@@ -30,8 +30,8 @@ namespace VRAutism.Gameplay.Actions
         private bool isCharacterInsideTrigger;
         private int characterColliderCount;
         private LessonParameters activeParams;
-        private int _currentQuestHintsVerbal;
         private int _currentQuestHintsVisual;
+        [SerializeField] private IntVariable verbalHintCount;
 
         // Getter công khai để lấy danh sách Quest cho QuestUIController đăng ký sự kiện
         public Quest[] Quests => quests;
@@ -138,7 +138,10 @@ namespace VRAutism.Gameplay.Actions
 
             isCharacterInsideTrigger = false;
             characterColliderCount = 0;
-            _currentQuestHintsVerbal = 0;
+            if (verbalHintCount != null)
+            {
+                verbalHintCount.Value = 0;
+            }
             _currentQuestHintsVisual = 0;
 
             // Setup hiển thị Outline tập trung
@@ -166,7 +169,14 @@ namespace VRAutism.Gameplay.Actions
             // Tắt hiển thị viền của Quest vừa xong
             activeQuest.SetOutline(false);
             activeQuest.ActiveQuestFinished();
-            ActiveQuestFinished?.Invoke(curQuestId, activeQuest.Name, status, _currentQuestHintsVerbal, _currentQuestHintsVisual, 0);
+            
+            int hintsVerbal = verbalHintCount != null ? verbalHintCount.Value : 0;
+            ActiveQuestFinished?.Invoke(curQuestId, activeQuest.Name, status, hintsVerbal, _currentQuestHintsVisual, 0);
+
+            if (verbalHintCount != null)
+            {
+                verbalHintCount.Value = 0;
+            }
 
             if (curQuestId >= quests.Length - 1)
             {
@@ -200,7 +210,6 @@ namespace VRAutism.Gameplay.Actions
             {
                 Debug.Log($"[QuestController] Gợi ý Lời nói -\u003e Kích hoạt nhắc nhở NPC.");
                 activeQuest.AllowReminderEvent();
-                _currentQuestHintsVerbal++;
             }
         }
 
