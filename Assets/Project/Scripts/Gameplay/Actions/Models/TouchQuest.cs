@@ -6,10 +6,10 @@ namespace VRAutism.Gameplay.Actions
     {
         public override void OnStartInteraction(QuestController controller)
         {
-            RaiseStarted();
+            RaiseUIStarted();
             // Vừa chạm vào là hoàn thành ngay lập tức
             controller.CompleteActiveQuest();
-            RaiseFinished();
+            RaiseUIFinished();
         }
     }
 }

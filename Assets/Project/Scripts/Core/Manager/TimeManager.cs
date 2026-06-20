@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +9,7 @@ using Debug = UnityEngine.Debug;
 using VRAutism.Cloud;
 using VRAutism.Cloud.Models;
 using VRAutism.Core.Telemetry;
+using VRAutism.Gameplay.Actions;
 
 namespace VRAutism.Core
 {
@@ -34,8 +35,15 @@ namespace VRAutism.Core
             Instance = this;
         }
 
+        private void OnDestroy()
+        {
+            QuestController.ActiveQuestFinished -= LogQuestComplete;
+        }
+
         private void Start()
         {
+            QuestController.ActiveQuestFinished += LogQuestComplete;
+
             _startTime = DateTime.Now;
 
             var ctx = SessionContext.Instance;

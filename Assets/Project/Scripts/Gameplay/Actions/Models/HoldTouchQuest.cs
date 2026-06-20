@@ -9,26 +9,26 @@ namespace VRAutism.Gameplay.Actions
         public override void OnStartInteraction(QuestController controller)
         {
             _progress = 0f;
-            RaiseStarted();
-            RaiseProgressChanged(0f);
+            RaiseUIStarted();
+            RaiseUIProgressChanged(0f);
         }
 
         public override void OnCancelInteraction(QuestController controller)
         {
             _progress = 0f;
-            RaiseFinished();
+            RaiseUIFinished();
         }
 
         public override void OnUpdateInteraction(QuestController controller)
         {
             _progress += Time.deltaTime / Duration;
-            RaiseProgressChanged(_progress);
+            RaiseUIProgressChanged(_progress);
 
             if (_progress >= 1f)
             {
                 _progress = 1f;
                 controller.CompleteActiveQuest();
-                RaiseFinished();
+                RaiseUIFinished();
             }
         }
     }

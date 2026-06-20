@@ -47,20 +47,20 @@ namespace VRAutism.Gameplay.Actions
         public event Action<Quest> CharacterExit;
 
         // UI events
-        public event Action<Quest> OnStarted;
-        public event Action<Quest, float> OnProgressChanged;
-        public event Action<Quest> OnFinished;
+        public event Action<Quest> OnUIStarted;
+        public event Action<Quest, float> OnUIProgressChanged;
+        public event Action<Quest> OnUIFinished;
 
         // Helper methods for subclasses to raise UI events
-        protected void RaiseStarted() => OnStarted?.Invoke(this);
-        protected void RaiseProgressChanged(float progress) => OnProgressChanged?.Invoke(this, progress);
-        protected void RaiseFinished() => OnFinished?.Invoke(this);
+        protected void RaiseUIStarted() => OnUIStarted?.Invoke(this);
+        protected void RaiseUIProgressChanged(float progress) => OnUIProgressChanged?.Invoke(this, progress);
+        protected void RaiseUIFinished() => OnUIFinished?.Invoke(this);
 
         private Coroutine _hintBlinkCoroutine;
 
         // UnityEvents helper triggers
-        public void AllowCharacterEnter() => onQuestStarted?.Invoke();
-        public void AllowCharacterExit() => onQuestFinished?.Invoke();
+        public void QuestIsActivated() => onQuestStarted?.Invoke();
+        public void ActiveQuestFinished() => onQuestFinished?.Invoke();
         public void AllowReminderEvent() => onQuestReminder?.Invoke();
 
         public void Init()
@@ -125,7 +125,7 @@ namespace VRAutism.Gameplay.Actions
         // Virtual lifecycle methods for subclasses
         public virtual void OnQuestActive(QuestController controller)
         {
-            RaiseStarted();
+            RaiseUIStarted();
         }
         public virtual void OnStartInteraction(QuestController controller) {}
         public virtual void OnCancelInteraction(QuestController controller) {}

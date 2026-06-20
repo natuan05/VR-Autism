@@ -14,6 +14,8 @@ namespace VRAutism.Gameplay.Actions
         // Báo hiệu Transform của vật thể mục tiêu mới cho Telemetry bắt đầu tracking
         public static event Action<Transform> OnTargetTransformChanged;
 
+        public static event Action<int, string, string, int, int, int> ActiveQuestFinished;
+
         // Sự kiện kết thúc toàn bộ bài học
         public event Action OnAllQuestsCompleted;
 
@@ -98,7 +100,7 @@ namespace VRAutism.Gameplay.Actions
             if (characterColliderCount > 1) return; // Đã ở trong trigger từ trước
 
             isCharacterInsideTrigger = true;
-            quest.AllowCharacterEnter();
+            quest.QuestIsActivated();
 
             // Ủy quyền xử lý cho Quest con
             quest.OnStartInteraction(this);
@@ -167,19 +169,8 @@ namespace VRAutism.Gameplay.Actions
 
             // Tắt hiển thị viền của Quest vừa xong
             activeQuest.SetOutline(false);
-            activeQuest.AllowCharacterExit();
-
-            // Ghi nhận log hoàn thành
-            if (TimeManager.Instance)
-            {
-                TimeManager.Instance.LogQuestComplete(
-                    questIndex:       curQuestId,
-                    questName:        activeQuest.Name,
-                    completionStatus: "success",
-                    hintsVerbal:      _currentQuestHintsVerbal,
-                    hintsVisual:      _currentQuestHintsVisual
-                );
-            }
+            activeQuest.ActiveQuestFinished();
+            ActiveQuestFinished?.Invoke(curQuestId, activeQuest.Name, "success", _currentQuestHintsVerbal, _currentQuestHintsVisual, 0);
 
             if (curQuestId >= quests.Length - 1)
             {

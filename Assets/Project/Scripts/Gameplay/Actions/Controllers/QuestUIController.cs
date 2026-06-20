@@ -48,9 +48,9 @@ namespace VRAutism.Gameplay.Actions
             foreach (var quest in questController.Quests)
             {
                 if (quest == null) continue;
-                quest.OnStarted += HandleQuestStarted;
-                quest.OnProgressChanged += HandleQuestProgressChanged;
-                quest.OnFinished += HandleQuestFinished;
+                quest.OnUIStarted += HandleQuestStarted;
+                quest.OnUIProgressChanged += HandleQuestProgressChanged;
+                quest.OnUIFinished += HandleQuestFinished;
             }
         }
 
@@ -60,9 +60,9 @@ namespace VRAutism.Gameplay.Actions
             foreach (var quest in questController.Quests)
             {
                 if (quest == null) continue;
-                quest.OnStarted -= HandleQuestStarted;
-                quest.OnProgressChanged -= HandleQuestProgressChanged;
-                quest.OnFinished -= HandleQuestFinished;
+                quest.OnUIStarted -= HandleQuestStarted;
+                quest.OnUIProgressChanged -= HandleQuestProgressChanged;
+                quest.OnUIFinished -= HandleQuestFinished;
             }
         }
 
