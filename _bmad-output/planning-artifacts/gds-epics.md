@@ -69,8 +69,8 @@ Xây dựng giao diện điều khiển trên Web Dashboard (Next.js) để chuy
 Cho phép nhập kịch bản nói (NPC Script) trực tiếp trên Web Dashboard và truyền xuống kính VR thời gian thực qua lệnh `play_npc_script` để NPC phát loa tiếng nói.
 *Status: done*
 
-### Story 3.7: Automated Multi-Tiered Prompt Hierarchy
-Xây dựng chu kỳ tự động nhắc nhở phân bậc (Bậc 1: phát loa lời nói nhắc nhở Verbal Hint, Bậc 2: nhấp nháy viền sáng Visual Hint của Quest sau khoảng lặng) và khắc phục lỗi loa NPC im lặng trong các bài Actions (Bathroom). Bổ sung chế độ Bật/Tắt Auto-Hint lưu trực tiếp vào profile của trẻ trên Firestore, đồng bộ xuống kính để bật/tắt toàn bộ kịch bản tự động này. **Đồng thời đo lường chỉ số "thời gian phản hồi kể từ gợi ý gần nhất" (đo từ thời điểm gợi ý cuối cùng được phát đến khi trẻ hoàn thành Quest, lưu vào quest logs trên Firestore để đánh giá hiệu quả gợi ý).**
+### Story 3.7: Automated Visual Prompt Engine
+Xây dựng chu kỳ tự động nhắc nhở bằng hình ảnh (Visual Hint: tự động nhấp nháy viền sáng của Quest sau khoảng lặng `ActionReminderCycle`). Bổ sung chế độ Bật/Tắt Auto-Visual-Hint lưu trực tiếp vào profile của trẻ trên Firestore và đồng bộ xuống kính VR. **Đồng thời đo lường chỉ số "thời gian phản hồi kể từ gợi ý gần nhất" (đo từ thời điểm gợi ý trực quan cuối cùng được phát đến khi trẻ hoàn thành Quest, lưu vào quest logs trên Firestore để đánh giá hiệu quả gợi ý).**
 *Status: backlog*
 
 ### Story 3.8: Google Cloud TTS Voice Customization
@@ -79,6 +79,10 @@ Cho phép cấu hình các tham số giọng nói của NPC (giọng nam/nữ, t
 
 ### Story 3.9: Quick Template Phrases by Lesson
 Xây dựng thư viện các mẫu câu thoại nhanh chuẩn bị sẵn cho NPC phân loại theo từng bài học (ví dụ: Rửa tay, Đánh răng, Siêu thị) trên giao diện Web Dashboard giúp giáo viên kích hoạt nhanh hơn mà không cần gõ phím.
+*Status: backlog*
+
+### Story 3.10: Automated Verbal Prompt Engine (Deferred)
+Xây dựng chu kỳ tự động nhắc nhở bằng lời nói từ NPC sau khoảng lặng (Verbal Hint). Kế thừa từ thiết lập `ActionReminderCycle` và lưu trực tiếp cài đặt Bật/Tắt Auto-Verbal-Hint vào cấu hình trẻ trên Firestore.
 *Status: backlog*
 
 ---
