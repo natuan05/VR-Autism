@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using VRAutism.Core;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
@@ -19,6 +20,7 @@ namespace VRAutism.Gameplay.Actions
         [SerializeField] private Outline outline;
         [SerializeField] private Transform posBubbleQuestion;
         [SerializeField] private Transform posProgressBar;
+        [SerializeField] private AudioClip hintSound;
         
         [Header("Events")]
         [SerializeField] private UnityEvent onQuestStarted;
@@ -80,9 +82,25 @@ namespace VRAutism.Gameplay.Actions
             }
         }
 
+        public void PlayHintSound(Vector3? customPosition = null)
+        {
+            if (hintSound != null)
+            {
+                Vector3 playPos = customPosition ?? transform.position;
+                float volume = 0.6f;
+                if (SessionContext.Instance != null)
+                {
+                    volume *= SessionContext.Instance.MaxVolume;
+                }
+                AudioSource.PlayClipAtPoint(hintSound, playPos, volume);
+            }
+        }
+
         // View logic: Blink Hint Outline
         public void BlinkHintOutline(bool restoreVisualGuidance)
         {
+            PlayHintSound();
+
             if (outline)
             {
                 if (_hintBlinkCoroutine != null) StopCoroutine(_hintBlinkCoroutine);

@@ -110,7 +110,8 @@ namespace VRAutism.Core
         /// to FirebaseManager's in-memory accumulator.
         /// </summary>
         public void LogQuestComplete(int questIndex, string questName, string completionStatus,
-                                     int hintsVerbal = 0, int hintsVisual = 0, int hintsPhysical = 0)
+                                     int hintsVerbal = 0, int hintsVisual = 0, int hintsPhysical = 0,
+                                     double responseTimeFromHint = -1.0)
         {
             double responseTime = TimeUtils.CurrentSecond - _questStartSecond;
 
@@ -122,7 +123,8 @@ namespace VRAutism.Core
                 completion_status = completionStatus,
                 hints_verbal      = hintsVerbal,
                 hints_visual      = hintsVisual,
-                hints_physical    = hintsPhysical
+                hints_physical    = hintsPhysical,
+                response_time_from_hint = responseTimeFromHint
             };
 
             FirebaseManager.Instance.AccumulateQuestLog(log);

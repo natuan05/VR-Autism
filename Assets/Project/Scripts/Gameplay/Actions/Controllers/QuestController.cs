@@ -8,13 +8,15 @@ namespace VRAutism.Gameplay.Actions
 {
     public class QuestController : MonoBehaviour, IQuestFlowController
     {
+        public static QuestController Instance { get; private set; }
+
         // Báo hiệu mỗi khi chuyển sang quest mới
         public static event Action<string> OnQuestActivityChanged;
 
         // Báo hiệu Transform của vật thể mục tiêu mới cho Telemetry bắt đầu tracking
         public static event Action<Transform> OnTargetTransformChanged;
 
-        public static event Action<int, string, string, int, int, int> ActiveQuestFinished;
+        public static event Action<int, string, string, int, int, int, double> ActiveQuestFinished;
 
         // Sự kiện kết thúc toàn bộ bài học
         public event Action OnAllQuestsCompleted;
@@ -32,12 +34,20 @@ namespace VRAutism.Gameplay.Actions
         private LessonParameters activeParams;
         private int _currentQuestHintsVisual;
         [SerializeField] private IntVariable verbalHintCount;
+        private float _lastVisualHintTime;
+        private float _questStartTime;
 
         // Getter công khai để lấy danh sách Quest cho QuestUIController đăng ký sự kiện
         public Quest[] Quests => quests;
 
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
             foreach (var quest in quests)
             {
                 if (quest == null) continue;
@@ -72,11 +82,7 @@ namespace VRAutism.Gameplay.Actions
                 if (curReminderTimer < 0)
                 {
                     curReminderTimer = curEffectiveCycle;
-                    if (activeParams.Actions.EnableVisualGuidance)
-                    {
-                        activeQuest.BlinkHintOutline(true);
-                        _currentQuestHintsVisual++;
-                    }
+                    TriggerVisualHint();
                 }
             }
 
@@ -128,6 +134,8 @@ namespace VRAutism.Gameplay.Actions
         private void StartNewQuest()
         {
             TimeManager.Instance?.StartQuestTime();
+            
+            _questStartTime = TimeManager.Instance != null ? (float)TimeManager.Instance.GetTotalElapsedSeconds() : 0f;
 
             Quest activeQuest = GetCurQuest();
             if (activeQuest == null)
@@ -143,6 +151,7 @@ namespace VRAutism.Gameplay.Actions
                 verbalHintCount.Value = 0;
             }
             _currentQuestHintsVisual = 0;
+            _lastVisualHintTime = -1f;
 
             // Setup hiển thị Outline tập trung
             activeQuest.SetOutline(activeParams.Actions.EnableVisualGuidance);
@@ -171,7 +180,13 @@ namespace VRAutism.Gameplay.Actions
             activeQuest.ActiveQuestFinished();
             
             int hintsVerbal = verbalHintCount != null ? verbalHintCount.Value : 0;
-            ActiveQuestFinished?.Invoke(curQuestId, activeQuest.Name, status, hintsVerbal, _currentQuestHintsVisual, 0);
+            double responseTimeFromHint = -1.0;
+            if (_lastVisualHintTime >= 0f)
+            {
+                double currentElapsed = TimeManager.Instance != null ? TimeManager.Instance.GetTotalElapsedSeconds() : 0.0;
+                responseTimeFromHint = currentElapsed - _lastVisualHintTime;
+            }
+            ActiveQuestFinished?.Invoke(curQuestId, activeQuest.Name, status, hintsVerbal, _currentQuestHintsVisual, 0, responseTimeFromHint);
 
             if (verbalHintCount != null)
             {
@@ -219,9 +234,15 @@ namespace VRAutism.Gameplay.Actions
             if (activeQuest != null)
             {
                 Debug.Log($"[QuestController] Gợi ý Thị giác -\u003e Kích hoạt Blink nhấp nháy viền.");
-                activeQuest.BlinkHintOutline(true);
+                activeQuest.BlinkHintOutline(activeParams.Actions.EnableVisualGuidance);
                 _currentQuestHintsVisual++;
+                _lastVisualHintTime = TimeManager.Instance != null ? (float)TimeManager.Instance.GetTotalElapsedSeconds() : 0f;
             }
+        }
+
+        public float GetLastVisualHintOrQuestStartTime()
+        {
+            return _lastVisualHintTime >= 0f ? _lastVisualHintTime : _questStartTime;
         }
 
 
@@ -239,6 +260,10 @@ namespace VRAutism.Gameplay.Actions
 
         private void OnDestroy()
         {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
             foreach (var quest in quests)
             {
                 if (quest == null) continue;

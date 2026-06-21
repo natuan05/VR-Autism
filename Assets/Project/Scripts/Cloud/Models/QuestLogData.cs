@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Firebase.Firestore;
 
 namespace VRAutism.Cloud.Models
@@ -18,5 +18,6 @@ namespace VRAutism.Cloud.Models
         [FirestoreProperty] public int hints_verbal { get; set; }          // verbal audio cues given
         [FirestoreProperty] public int hints_visual { get; set; }          // visual cue arrows/highlights
         [FirestoreProperty] public int hints_physical { get; set; }        // physical assistance (logged manually)
+        [FirestoreProperty] public double response_time_from_hint { get; set; } // seconds since last visual hint, -1.0 if none
     }
 }

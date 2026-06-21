@@ -316,7 +316,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 61527200}
-  - component: {fileID: 61527202}
   - component: {fileID: 61527201}
   m_Layer: 0
   m_Name: QuestRemoteBridge
@@ -353,21 +352,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.QuestRemoteBridge
   questController: {fileID: 1336548301}
---- !u!114 &61527202
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 61527199}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b67575af9a3c4d329142a6936583b928, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.QuestController
-  quests: []
-  isConditionMet: {fileID: 0}
-  verbalHintCount: {fileID: 0}
 --- !u!1 &73881163
 GameObject:
   m_ObjectHideFlags: 0

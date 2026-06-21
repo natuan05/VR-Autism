@@ -1,5 +1,5 @@
 # generated: 2026-05-22T10:11:42+07:00
-# last_updated: 2026-06-05T22:54:00+07:00
+# last_updated: 2026-06-21T16:23:26+07:00
 # project: VR-Autism
 # project_key: NOKEY
 # tracking_system: file-system
@@ -28,7 +28,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-05-22T10:11:42+07:00
-last_updated: 2026-06-05T22:54:00+07:00
+last_updated: 2026-06-21T16:23:26+07:00
 project: VR-Autism
 project_key: NOKEY
 tracking_system: file-system
@@ -56,7 +56,7 @@ development_status:
   3-4-remote-control-commands-listener: done
   3-5-web-remote-control-interface: done
   3-6-dynamic-npc-speech-verbal-hint-engine: done
-  3-7-automated-visual-prompt-engine: in-progress
+  3-7-automated-visual-prompt-engine: done
   3-8-google-cloud-tts-voice-customization: backlog
   3-9-quick-template-phrases-by-lesson: backlog
   3-10-automated-verbal-prompt-engine: backlog

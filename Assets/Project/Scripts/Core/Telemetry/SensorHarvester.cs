@@ -144,6 +144,15 @@ namespace VRAutism.Core.Telemetry
         {
             AggregatedSnapshot snapshot = new AggregatedSnapshot();
             snapshot.time_offset = sessionTimeOffset;
+
+            if (QuestController.Instance != null)
+            {
+                snapshot.last_visual_hint_time = QuestController.Instance.GetLastVisualHintOrQuestStartTime();
+            }
+            else
+            {
+                snapshot.last_visual_hint_time = -1f;
+            }
             
             if (_currentQuestTarget != null)
             {

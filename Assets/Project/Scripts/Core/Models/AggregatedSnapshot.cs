@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace VRAutism.Core.Models
@@ -38,6 +38,9 @@ namespace VRAutism.Core.Models
         [Header("Proximity")]
         public float hand_near_ratio;   // Tỷ lệ tay gần mục tiêu (0.0-1.0)
         public float min_hand_dist;     // Khoảng cách gần nhất tay->target (m)
+
+        [Header("Auto Hint Metadata")]
+        public float last_visual_hint_time; // Lesson-relative seconds of last visual hint or quest start
 
         public AggregatedSnapshot() { }
     }

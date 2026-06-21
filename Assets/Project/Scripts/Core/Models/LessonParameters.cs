@@ -29,7 +29,7 @@ namespace VRAutism.Core.Models
             /// <summary>
             /// Bật/tắt chế độ tự động nhắc nhở (Auto Hint) của bài học.
             /// </summary>
-            public bool EnableAutoHint = true;
+            public bool EnableAutoHint = false;
 
             /// <summary>
             /// Bật/tắt hiệu ứng viền phát sáng (Outline) của vật thể mục tiêu
@@ -48,14 +48,14 @@ namespace VRAutism.Core.Models
             /// Sentinel -1f = không ghi đè (dùng giá trị Inspector).
             /// Legacy hardcode: 5f.
             /// </summary>
-            public float SpeechSilenceTimeout = 5f;
+            public float SpeechSilenceTimeout = -1f;
 
             /// <summary>
             /// Chu kỳ (giây) giữa các lần nhắc nhở tự động của Quest (reminderCycle).
             /// Sentinel -1f = không ghi đè (dùng giá trị Inspector per-Quest).
             /// Legacy: 0f = không bao giờ nhắc nhở (giữ nguyên hành vi Inspector).
             /// </summary>
-            public float ActionReminderCycle = 5f;
+            public float ActionReminderCycle = -1f;
 
             /// <summary>
             /// Góc mở toàn phần của hình nón thị giác (độ). Cấu hình từ web [5 - 15].
