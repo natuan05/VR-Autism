@@ -3,7 +3,7 @@ using VRAutism.Cloud.RTDB;
 
 namespace VRAutism.Gameplay.Actions
 {
-    public class QuestRemoteBridge : MonoBehaviour
+    public class QuestRemoteBridge : MonoBehaviour //triển khai của Adapter Pattern, để tách biệt QuestController khỏi RemoteCommandListener
     {
         [SerializeField] private QuestController questController;
 

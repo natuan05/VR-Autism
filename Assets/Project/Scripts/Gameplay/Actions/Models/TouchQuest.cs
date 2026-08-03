@@ -1,14 +1,20 @@
-using UnityEngine;
-
 namespace VRAutism.Gameplay.Actions
 {
-    public class TouchQuest : Quest
+    /// <summary>
+    /// Quest chạm vào là hoàn thành ngay lập tức.
+    /// </summary>
+    public class TouchQuest : VisualQuest
     {
-        public override void OnStartInteraction(IQuestFlowController controller)
+        protected override void OnBegin()
         {
+            base.OnBegin();
             RaiseUIStarted();
-            // Vừa chạm vào là hoàn thành ngay lập tức
-            controller.CompleteActiveQuest();
+        }
+
+        protected override void OnCharacterEnter()
+        {
+            
+            Controller.CompleteActiveQuest();
             RaiseUIFinished();
         }
     }

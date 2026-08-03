@@ -58,7 +58,7 @@ development_status:
   3-6-dynamic-npc-speech-verbal-hint-engine: done
   3-7-automated-visual-prompt-engine: done
   3-8-google-cloud-tts-voice-customization: backlog
-  3-9-quick-template-phrases-by-lesson: backlog
+  3-9-quick-template-phrases-by-lesson: done
   3-10-automated-verbal-prompt-engine: backlog
   epic-3-retrospective: optional
 

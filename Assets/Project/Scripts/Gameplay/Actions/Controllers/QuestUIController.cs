@@ -47,10 +47,12 @@ namespace VRAutism.Gameplay.Actions
             if (questController == null || questController.Quests == null) return;
             foreach (var quest in questController.Quests)
             {
-                if (quest == null) continue;
-                quest.OnUIStarted += HandleQuestStarted;
-                quest.OnUIProgressChanged += HandleQuestProgressChanged;
-                quest.OnUIFinished += HandleQuestFinished;
+                if (quest is VisualQuest visual)
+                {
+                    visual.OnUIStarted += HandleQuestStarted;
+                    visual.OnUIProgressChanged += HandleQuestProgressChanged;
+                    visual.OnUIFinished += HandleQuestFinished;
+                }
             }
         }
 
@@ -59,23 +61,25 @@ namespace VRAutism.Gameplay.Actions
             if (questController == null || questController.Quests == null) return;
             foreach (var quest in questController.Quests)
             {
-                if (quest == null) continue;
-                quest.OnUIStarted -= HandleQuestStarted;
-                quest.OnUIProgressChanged -= HandleQuestProgressChanged;
-                quest.OnUIFinished -= HandleQuestFinished;
+                if (quest is VisualQuest visual)
+                {
+                    visual.OnUIStarted -= HandleQuestStarted;
+                    visual.OnUIProgressChanged -= HandleQuestProgressChanged;
+                    visual.OnUIFinished -= HandleQuestFinished;
+                }
             }
         }
 
-        private void HandleQuestStarted(Quest quest)
+        private void HandleQuestStarted(VisualQuest quest)
         {
-            if (bubbleQuestion != null)
+            if (bubbleQuestion != null && quest is IQuestHasVisual visual)
             {
                 bubbleQuestion.SetActive(_activeParams.Actions.EnableBubbleHints);
-                bubbleQuestion.transform.position = quest.BubblePosition;
+                bubbleQuestion.transform.position = visual.BubblePosition;
             }
         }
 
-        private void HandleQuestProgressChanged(Quest quest, float progress)
+        private void HandleQuestProgressChanged(VisualQuest quest, float progress)
         {
             if (questProgressUI != null)
             {
@@ -83,12 +87,15 @@ namespace VRAutism.Gameplay.Actions
                 {
                     questProgressUI.gameObject.SetActive(true);
                 }
-                questProgressUI.transform.position = quest.ProgressBarPosition;
+                if (quest is IQuestHasVisual visual)
+                {
+                    questProgressUI.transform.position = visual.ProgressBarPosition;
+                }
                 questProgressUI.SetProgress(progress);
             }
         }
 
-        private void HandleQuestFinished(Quest quest)
+        private void HandleQuestFinished(VisualQuest quest)
         {
             if (questProgressUI != null) questProgressUI.gameObject.SetActive(false);
             if (bubbleQuestion != null) bubbleQuestion.SetActive(false);

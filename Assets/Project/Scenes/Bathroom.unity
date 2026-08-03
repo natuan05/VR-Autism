@@ -291,6 +291,7 @@ MonoBehaviour:
   outline: {fileID: 1647964552}
   posBubbleQuestion: {fileID: 12280571}
   posProgressBar: {fileID: 12280570}
+  hintSound: {fileID: 8300000, guid: 65c044d99f12afc4794b744c1be15dc8, type: 3}
   onQuestStarted:
     m_PersistentCalls:
       m_Calls: []
@@ -648,7 +649,7 @@ MonoBehaviour:
         m_Calls: []
     isConditionMet: {fileID: 0}
   - name: "Ch\u1EA1y Timeline h\u01B0\u1EDBng d\u1EABn"
-    on: 0
+    on: 1
     duration: 0
     onStart:
       m_PersistentCalls:
@@ -2214,6 +2215,7 @@ MonoBehaviour:
   outline: {fileID: 548681584}
   posBubbleQuestion: {fileID: 807225351}
   posProgressBar: {fileID: 807225350}
+  hintSound: {fileID: 8300000, guid: 65c044d99f12afc4794b744c1be15dc8, type: 3}
   onQuestStarted:
     m_PersistentCalls:
       m_Calls: []
@@ -7819,9 +7821,22 @@ MonoBehaviour:
   outline: {fileID: 6091149152165092283}
   posBubbleQuestion: {fileID: 1148527854}
   posProgressBar: {fileID: 1148527853}
+  hintSound: {fileID: 8300000, guid: 65c044d99f12afc4794b744c1be15dc8, type: 3}
   onQuestStarted:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2053423259}
+        m_TargetAssemblyTypeName: VRAutism.Entities.DispenserController, Assembly-CSharp
+        m_MethodName: Push
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onQuestFinished:
     m_PersistentCalls:
       m_Calls: []
@@ -8414,52 +8429,52 @@ PrefabInstance:
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.044929594
+      value: 0.6646365
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.11683929
+      value: 0.007894874
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.2172825
+      value: -1.3029697
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7139952
+      value: 0.8450833
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.16768384
+      value: 0.047693644
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.6617689
+      value: -0.53132075
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.15541837
+      value: 0.03546679
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: -26.433
+      value: 6.794
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -85.652
+      value: -64.285
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
+      value: 0.535
       objectReference: {fileID: 0}
     - target: {fileID: 3187309919060079607, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
@@ -9037,11 +9052,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1137181978}
     m_Modifications:
+    - target: {fileID: 4723276261255623753, guid: 76b11e64bce04214494e29984ec1c87a,
+        type: 3}
+      propertyPath: playOnAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4751475525461871839, guid: 76b11e64bce04214494e29984ec1c87a,
         type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 3fea8f88dc20a4d43ad9e956a30f14bb, type: 2}
+    - target: {fileID: 4751923684141429303, guid: 76b11e64bce04214494e29984ec1c87a,
+        type: 3}
+      propertyPath: playOnAwake
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4752299323344384709, guid: 76b11e64bce04214494e29984ec1c87a,
+        type: 3}
+      propertyPath: playOnAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4752299323344384709, guid: 76b11e64bce04214494e29984ec1c87a,
         type: 3}
       propertyPath: ShapeModule.type
@@ -9050,6 +9080,11 @@ PrefabInstance:
     - target: {fileID: 4752299323344384709, guid: 76b11e64bce04214494e29984ec1c87a,
         type: 3}
       propertyPath: SubModule.enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4752299323344384709, guid: 76b11e64bce04214494e29984ec1c87a,
+        type: 3}
+      propertyPath: moveWithTransform
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4752299323344384709, guid: 76b11e64bce04214494e29984ec1c87a,
@@ -9112,11 +9147,21 @@ PrefabInstance:
       propertyPath: prewarm
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4752399657422084969, guid: 76b11e64bce04214494e29984ec1c87a,
+        type: 3}
+      propertyPath: playOnAwake
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4752860171844234295, guid: 76b11e64bce04214494e29984ec1c87a,
         type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 0795041a55921bb44a6d287cfce30415, type: 2}
+    - target: {fileID: 4753544075773936249, guid: 76b11e64bce04214494e29984ec1c87a,
+        type: 3}
+      propertyPath: m_RenderMode
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4753544075773936249, guid: 76b11e64bce04214494e29984ec1c87a,
         type: 3}
       propertyPath: m_CastShadows
@@ -9127,6 +9172,16 @@ PrefabInstance:
       propertyPath: m_LightProbeUsage
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4753544075773936249, guid: 76b11e64bce04214494e29984ec1c87a,
+        type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 3fea8f88dc20a4d43ad9e956a30f14bb, type: 2}
+    - target: {fileID: 4753544075773936249, guid: 76b11e64bce04214494e29984ec1c87a,
+        type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 10301, guid: 0000000000000000f000000000000000, type: 0}
     - target: {fileID: 4837769640065112801, guid: 76b11e64bce04214494e29984ec1c87a,
         type: 3}
       propertyPath: m_LocalScale.x
@@ -9766,6 +9821,7 @@ MonoBehaviour:
   outline: {fileID: 1051749701}
   posBubbleQuestion: {fileID: 1620873894}
   posProgressBar: {fileID: 1620873893}
+  hintSound: {fileID: 8300000, guid: 65c044d99f12afc4794b744c1be15dc8, type: 3}
   onQuestStarted:
     m_PersistentCalls:
       m_Calls:
@@ -10642,6 +10698,7 @@ MonoBehaviour:
   outline: {fileID: 548681584}
   posBubbleQuestion: {fileID: 1930545534}
   posProgressBar: {fileID: 1930545533}
+  hintSound: {fileID: 8300000, guid: 65c044d99f12afc4794b744c1be15dc8, type: 3}
   onQuestStarted:
     m_PersistentCalls:
       m_Calls: []
@@ -17106,6 +17163,7 @@ MonoBehaviour:
   outline: {fileID: 1051749701}
   posBubbleQuestion: {fileID: 7252140110639882982}
   posProgressBar: {fileID: 7252140110639882981}
+  hintSound: {fileID: 8300000, guid: 65c044d99f12afc4794b744c1be15dc8, type: 3}
   onQuestStarted:
     m_PersistentCalls:
       m_Calls:
@@ -17120,18 +17178,6 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 1137181981}
-        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
-        m_MethodName: Interact
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 1137181981}
         m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp

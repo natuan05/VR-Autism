@@ -1,152 +1,64 @@
-using System;
-using System.Collections;
-using VRAutism.Core;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.Serialization;
-using Plugins.QuickOutline.Scripts;
 
 namespace VRAutism.Gameplay.Actions
 {
+    /// <summary>
+    /// Abstract base class for all Quest types.
+    /// Data + minimal lifecycle hooks — subclass tự quản lý vòng đời.
+    /// </summary>
     public abstract class Quest : MonoBehaviour
     {
-        [Header("Setup quest")] 
+        [Header("Setup Quest Data")]
         [SerializeField] private int id;
         [SerializeField] private string questName;
         [SerializeField] private float duration;
-        [SerializeField] private bool isSendData;
-
-        [Header("Components")] 
-        [SerializeField] private Outline outline;
-        [SerializeField] private Transform posBubbleQuestion;
-        [SerializeField] private Transform posProgressBar;
-        [SerializeField] private AudioClip hintSound;
-        
-        [Header("Events")]
-        [SerializeField] private UnityEvent onQuestStarted;
-        [SerializeField] private UnityEvent onQuestFinished;
-        [FormerlySerializedAs("onTriggerEnter")]
-        [SerializeField] private UnityEvent onQuestTriggerEnter;
-        [FormerlySerializedAs("onTriggerExit")]
-        [SerializeField] private UnityEvent onQuestTriggerExit;
-        
-        [Header("Reminder")] 
         [SerializeField] private float reminderCycle;
-        [SerializeField] private UnityEvent onQuestReminder;
 
-        // Getters for Controller to read
         public int Id => id;
         public string Name => questName;
         public float Duration => duration;
-        public bool IsSendData => isSendData;
         public float ReminderCycle => reminderCycle;
-        
-        public Vector3 BubblePosition => posBubbleQuestion != null ? posBubbleQuestion.position : Vector3.zero;
-        public Vector3 ProgressBarPosition => posProgressBar != null ? posProgressBar.position : Vector3.zero;
 
-        // Event hooks for physics collisions
-        public event Action<Quest> CharacterCanEnter;
-        public event Action<Quest> CharacterExit;
+        /// <summary>Controller hiện tại đang điều phối Quest này. Null nếu chưa active.</summary>
+        protected IQuestFlowController Controller { get; private set; }
 
-        // UI events
-        public event Action<Quest> OnUIStarted;
-        public event Action<Quest, float> OnUIProgressChanged;
-        public event Action<Quest> OnUIFinished;
+        // ── Lifecycle ──────────────────────────────────────────────────────
 
-        // Helper methods for subclasses to raise UI events
-        protected void RaiseUIStarted() => OnUIStarted?.Invoke(this);
-        protected void RaiseUIProgressChanged(float progress) => OnUIProgressChanged?.Invoke(this, progress);
-        protected void RaiseUIFinished() => OnUIFinished?.Invoke(this);
+        /// <summary>Khởi tạo ban đầu (gọi 1 lần trong Awake của QuestController).</summary>
+        public virtual void Init() {}
 
-        private Coroutine _hintBlinkCoroutine;
-
-        // UnityEvents helper triggers
-        public void QuestIsActivated() => onQuestStarted?.Invoke();
-        public void ActiveQuestFinished() => onQuestFinished?.Invoke();
-        public void AllowReminderEvent() => onQuestReminder?.Invoke();
-
-        public void Init()
+        /// <summary>Quest được kích hoạt — lưu controller rồi gọi OnBegin cho subclass.</summary>
+        public void Begin(IQuestFlowController controller)
         {
-            if (outline) outline.enabled = false;
+            Controller = controller;
+            OnBegin();
         }
 
-        // View logic: Toggle Outline
-        public void SetOutline(bool enable)
+        /// <summary>Quest kết thúc — gọi OnEnd rồi xóa controller.</summary>
+        public void End()
         {
-            if (outline) outline.enabled = enable;
-            
-            if (!enable && _hintBlinkCoroutine != null)
-            {
-                StopCoroutine(_hintBlinkCoroutine);
-                _hintBlinkCoroutine = null;
-            }
+            OnEnd();
+            Controller = null;
         }
 
-        public void PlayHintSound(Vector3? customPosition = null)
-        {
-            if (hintSound != null)
-            {
-                Vector3 playPos = customPosition ?? transform.position;
-                float volume = 0.6f;
-                if (SessionContext.Instance != null)
-                {
-                    volume *= SessionContext.Instance.MaxVolume;
-                }
-                AudioSource.PlayClipAtPoint(hintSound, playPos, volume);
-            }
-        }
+        /// <summary>Subclass override để xử lý khi quest bắt đầu.</summary>
+        protected virtual void OnBegin() {}
 
-        // View logic: Blink Hint Outline
-        public void BlinkHintOutline(bool restoreVisualGuidance)
-        {
-            PlayHintSound();
+        /// <summary>Subclass override để cleanup khi quest kết thúc.</summary>
+        protected virtual void OnEnd() {}
 
-            if (outline)
-            {
-                if (_hintBlinkCoroutine != null) StopCoroutine(_hintBlinkCoroutine);
-                _hintBlinkCoroutine = StartCoroutine(BlinkOutlineHintRoutine(restoreVisualGuidance));
-            }
-        }
+        /// <summary>Gọi mỗi frame khi quest đang active.</summary>
+        public virtual void Tick() {}
 
-        private IEnumerator BlinkOutlineHintRoutine(bool restoreVisualGuidance)
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                outline.enabled = true;
-                yield return new WaitForSeconds(0.3f);
-                outline.enabled = false;
-                yield return new WaitForSeconds(0.3f);
-            }
-            
-            SetOutline(restoreVisualGuidance);
-            _hintBlinkCoroutine = null;
-        }
+        // ── Hint Hooks ─────────────────────────────────────────────────────
 
-        private void OnTriggerEnter(Collider other)
-        {
-            if (other.CompareTag("Character"))
-            {
-                onQuestTriggerEnter?.Invoke(); // For UnityEvents
-                CharacterCanEnter?.Invoke(this); // For C# events
-            }
-        }
+        /// <summary>QuestController kiểm tra trước khi auto-hint. Mặc định: luôn cho phép.</summary>
+        public virtual bool ShouldAutoHint => true;
 
-        private void OnTriggerExit(Collider other)
-        {
-            if (other.CompareTag("Character"))
-            {
-                onQuestTriggerExit?.Invoke();
-                CharacterExit?.Invoke(this);
-            }
-        }
+        /// <summary>Xử lý gợi ý thị giác — mỗi loại Quest tự quyết cách hiển thị.</summary>
+        public virtual void OnVisualHint(bool enableVisualGuidance) {}
 
-        // Virtual lifecycle methods for subclasses
-        public virtual void OnQuestActive(IQuestFlowController controller)
-        {
-            RaiseUIStarted();
-        }
-        public virtual void OnStartInteraction(IQuestFlowController controller) {}
-        public virtual void OnCancelInteraction(IQuestFlowController controller) {}
-        public virtual void OnUpdateInteraction(IQuestFlowController controller) {}
+        /// <summary>Xử lý gợi ý lời nói — mỗi loại Quest tự quyết cách kích hoạt.</summary>
+        public virtual void OnVerbalHint() {}
     }
 }

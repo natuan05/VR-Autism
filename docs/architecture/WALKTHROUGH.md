@@ -20,7 +20,7 @@ Nằm tại thư mục `Assets/Project/Scripts/Cloud/`. Chịu trách nhiệm đ
 *   `RTDB/PairingManager.cs`: Máy trạng thái (State Machine) quản lý quy trình ghép đôi mã PIN ( PIN Pairing). Sinh mã PIN 6 số, lắng nghe sự thay đổi trên node `pairing_codes/{pin}` để hoàn thành kết nối giữa Web Dashboard và VR Client.
 *   `RTDB/LiveSessionReporter.cs`: Đồng bộ hóa trạng thái ứng dụng VR lên RTDB (`live_sessions/{session_id}/vr_state`) bao gồm trạng thái kết nối, trạng thái WebRTC, trạng thái bài học hiện tại để phục vụ tính năng giám sát thời gian thực trên Web.
 *   `RTDB/RemoteCommandListener.cs`: Lắng nghe lệnh điều khiển thời gian thực từ giáo viên gửi qua RTDB (`live_sessions/{session_id}/commands`), thực hiện phân tách các lệnh như kích hoạt gợi ý (`trigger_verbal_hint`/`trigger_visual_hint`), tạm dừng (`pause_lesson`), bỏ qua bước (`skip_quest`), điều hòa âm lượng (`set_volume`) và chuyển tiếp lệnh bằng các C# Static Events (`OnTriggerVerbalHint`, `OnTriggerVisualHint`, `OnSkipQuest`, `OnPauseLesson`, `OnResumeLesson`, etc.) để các Controller trong phân cảnh xử lý. Hỗ trợ phím tắt Editor (H = Visual Hint, V = Verbal Hint, S = Skip, P = Pause, R = Resume).
-*   `RTDB/TelemetryUploader.cs`: Đẩy các gói dữ liệu hành vi đã được tổng hợp (`AggregatedSnapshot`) lên node `behavior_snapshots/{session_id}/{timestamp}` định kỳ mỗi 2 giây.
+*   `RTDB/TelemetryUploader.cs`: Cung cấp chức năng Đẩy các gói dữ liệu hành vi đã được tổng hợp (`AggregatedSnapshot`) lên node `behavior_snapshots/{session_id}/{timestamp}` định kỳ mỗi 2 giây.
 *   `RTDB/WebRTCManager.cs`: Thiết lập và quản lý vòng đời kết nối WebRTC Peer-to-Peer nội bộ (LAN) để truyền video góc nhìn thứ nhất (POV Streaming) từ kính về Web Dashboard. Điều khiển luồng khởi tạo, tắt kết nối và cơ chế thử lại (retry) tối đa 3 lần.
 *   `RTDB/WebRTCSignaling.cs`: Xử lý quá trình trao đổi tín hiệu (Offer, Answer, ICE Candidates) giữa Web Dashboard và VR Client thông qua RTDB làm trung gian truyền tải gói tin SDP.
 
@@ -39,14 +39,24 @@ Nằm tại thư mục `Assets/Project/Scripts/Core/`. Cung cấp hạ tầng x�
 *   `Telemetry/SensorHarvester.cs`: Bộ thu hoạch dữ liệu vật lý chạy trong chu kỳ `FixedUpdate` (50Hz) để ghi nhận tọa độ, vận tốc, gia tốc góc của Đầu (Head Tracker) và 2 Tay cầm (Hand Controller). Tính toán các chỉ số hành vi như tỉ lệ hội tụ ánh nhìn (`focus_ratio`), khoảng cách tiệm cận tay (`hand_near_ratio`), và đối tượng đang tập trung nhìn (`focus_object`) thông qua cấu trúc bộ đệm tròn (Circular Buffer) không cấp phát rác bộ nhớ (Zero GC Alloc).
 *   `Models/AggregatedSnapshot.cs`: Mô hình dữ liệu nén tổng hợp các chỉ số kinematic để gửi lên Cloud.
 
-### 1.3 Lớp Gameplay & Điều Phối Kịch Bản
+### 1.3 Lớp Gameplay & Điều Phối Kịch Bản (Actions)
 Nằm tại thư mục `Assets/Project/Scripts/Gameplay/`. Triển khai cụ thể kịch bản và cách thức tương tác của trẻ.
 
+#### Gameplay Actions Controllers:
 *   `Actions/Controllers/ActionManager.cs`: Điều phối chuỗi kịch bản tuyến tính của bài học dạng **Actions (Thực hành)**. Sử dụng một vòng lặp coroutine để duyệt qua danh sách các `ActionEvent` được cấu hình sẵn trong Inspector, kiểm soát thời gian trễ và các điều kiện kích hoạt.
-*   `Actions/Controllers/QuestController.cs`: Quản lý một mảng các đối tượng Quest cụ thể trong phân cảnh. Kích hoạt Quest tiếp theo, quản lý việc ghi nhận thời gian bắt đầu Quest qua `TimeManager` và báo cáo hoàn thành Quest để chuyển tiếp kịch bản.
-*   `Actions/Models/Quest.cs`: Máy trạng thái (Disable ➔ Enable ➔ Start ➔ Completed) đi kèm với Collider kích hoạt tương tác (Click, Touch, HoldTouch). Quản lý chu kỳ nhắc nhở cục bộ (`reminderCycle`), kích hoạt sự kiện viền sáng (`Outline`) và điều phối hiển thị giao diện bong bóng hỗ trợ.
-*   `Actions/Models/QuestEventData.cs`: ScriptableObject định nghĩa các delegate sự kiện của Quest.
+*   `Actions/Controllers/IQuestFlowController.cs`: Giao diện tối giản định nghĩa luồng điều khiển Quest mà các lớp Quest con có thể nhìn thấy để báo cáo trạng thái hoàn thành Quest (`CompleteActiveQuest`) và truy xuất Quest đang hoạt động (`GetCurQuest`), đảm bảo nguyên lý thiết kế ISP (Interface Segregation Principle).
+*   `Actions/Controllers/QuestController.cs`: Bộ điều phối trung tâm của các Quest trong phân cảnh. Theo dõi va chạm vật lý giữa trẻ (tay cầm) và Collider nhiệm vụ, quản lý trạng thái kích hoạt, tính toán chu kỳ gợi ý/nhắc nhở tự động, xử lý ghi đè tham số bài học động và quản lý chuyển đổi giữa các bước kịch bản.
+*   `Actions/Controllers/QuestRemoteBridge.cs`: Thành phần cầu nối trung gian, đăng ký và lắng nghe sự kiện từ xa từ `RemoteCommandListener` (như bỏ qua nhiệm vụ `OnSkipQuest`, gợi ý âm thanh `OnTriggerVerbalHint`, gợi ý ánh sáng `OnTriggerVisualHint`) và chuyển tiếp cuộc gọi đến các phương thức xử lý trong `QuestController`.
+*   `Actions/Controllers/QuestUIController.cs`: Quản lý hiển thị các thành phần giao diện 3D world-space trong màn chơi như bong bóng câu hỏi (Question Bubble), thanh tiến trình khi bé nhấn giữ (Quest Progress Bar) và UI chúc mừng khi hoàn thành nhiệm vụ, dựa trên việc đăng ký các sự kiện tương tác (`OnUIStarted`, `OnUIProgressChanged`, `OnUIFinished`) của Quest.
+*   `Actions/Controllers/TutorialController.cs`: Điều phối chuỗi hướng dẫn (Tutorial) ban đầu cho trẻ thông qua việc phát các đoạn Timeline ngắn (`PlayableDirector`) giới thiệu cách thức tương tác.
+
+#### Gameplay Actions Models & UI:
+*   `Actions/Models/ActionEvent.cs`: Lớp mô hình dữ liệu chứa thông tin của một bước kịch bản (tên, trạng thái kích hoạt, thời gian trễ, sự kiện `onStart`/`onFinished` và liên kết điều kiện logic `BooleanVariable`).
+*   `Actions/Models/Quest.cs`: Lớp cơ sở trừu tượng (abstract base class) định nghĩa cấu trúc của một nhiệm vụ tương tác vật lý trong VR. Lưu trữ cấu hình ID, tên, thời lượng, âm thanh gợi ý, các UnityEvents và quản lý hiển thị viền phát sáng (`Outline`) hỗ trợ trẻ định vị vật thể.
+*   `Actions/Models/TouchQuest.cs`: Kế thừa từ `Quest`, đại diện cho nhiệm vụ tương tác một chạm đơn giản (Click/Touch), tự động hoàn thành ngay khi nhận được tín hiệu bắt đầu tương tác vật lý.
+*   `Actions/Models/HoldTouchQuest.cs`: Kế thừa từ `Quest`, đại diện cho nhiệm vụ yêu cầu bé phải chạm và nhấn giữ vật thể trong một khoảng thời gian nhất định (Duration). Tính toán tiến trình (`progress`) tăng dần theo thời gian thực và kích hoạt các sự kiện cập nhật UI tương ứng trước khi báo cáo hoàn thành.
 *   `Actions/UI/QuestProgressUI.cs`: Quản lý hiển thị thanh tiến trình (ProgressBar) dạng 3D world-space nổi bên cạnh vật thể khi trẻ tương tác dạng nhấn giữ (HoldTouch).
+
 *   `Quizzes/Controllers/QuizController.cs`: Điều phối các bài học dạng **Quizzes (Trắc nghiệm)**. Nhận sự kiện chọn câu trả lời từ giao diện, đối chiếu tính đúng sai, phát âm thanh chúc mừng/sửa sai, chuyển tiếp câu hỏi và kích hoạt kết thúc bài học.
 *   `Quizzes/Models/QuizConfig.cs`: ScriptableObject lưu trữ danh sách các câu hỏi trắc nghiệm cùng với tham chiếu trực tiếp đến các Prefab mô hình 3D tương ứng.
 *   `Quizzes/Models/QuizQuestionData.cs`: Lớp lưu trữ cấu trúc câu hỏi, đáp án, đáp án đúng và khóa định danh mô hình 3D.
@@ -165,12 +175,15 @@ sequenceDiagram
 ### 2.5 Cơ Chế Vận Hành Chi Tiết Của 3 Dạng Bài Học (Execution Models)
 
 #### 1. Dạng bài Actions (Thực hành hành vi)
-*   **Thành phần vận hành:** `ActionManager` (Quản lý kịch bản chung) ➔ `QuestController` (Quản lý các bước trong kịch bản) ➔ `Quest` (Thực thể 3D nhận tương tác).
+*   **Thành phần vận hành:** `ActionManager` (Điều phối kịch bản chung) ➔ `QuestController` (Quản lý và kích hoạt các Quest) ➔ `IQuestFlowController` (Interface bảo vệ luồng) ➔ `Quest` (Lớp cơ sở trừu tượng tương tác) ➔ `TouchQuest` / `HoldTouchQuest` (Các lớp con tương tác cụ thể) ➔ `QuestUIController` (Quản lý UI).
 *   **Vận hành:**
-    *   `ActionManager` duyệt qua mảng `actionEvents`. Khi một event có trigger tương tác, nó gọi `QuestController.StartRunningQuest()`.
-    *   `QuestController` bật Quest mục tiêu. Quest chuyển sang `State.Enable`. Lúc này, hệ thống sẽ kích hoạt **hiệu ứng viền phát sáng (Outline)** của vật thể và hiển thị **bong bóng chỉ dẫn (Bubble)** nếu được bật trong cấu hình trị liệu.
-    *   Trẻ tiến hành tương tác vật lý (Chạm - `Touch` hoặc Giữ - `HoldTouch`). Nếu là `HoldTouch`, Quest chuyển sang `State.Start`, hiển thị thanh tiến trình 3D (`QuestProgressUI`) tăng dần theo thời gian giữ.
-    *   Khi tương tác đạt yêu cầu (100% thời gian giữ hoặc chạm thành công), Quest chuyển sang `State.Completed`. Kích hoạt sự kiện ẩn viền sáng, ẩn bong bóng câu hỏi, và ghi log lại thời gian hoàn thành lên bộ nhớ tạm của `FirebaseManager`. Kịch bản chuyển sang bước kế tiếp.
+    *   `ActionManager` duyệt qua danh sách `actionEvents`. Khi đến bước yêu cầu trẻ thực hiện nhiệm vụ tương tác, nó gọi `QuestController.StartRunningQuest()`.
+    *   `QuestController` xác định đối tượng Quest hiện tại và kích hoạt trạng thái của nó. Đồng thời phối hợp với `QuestUIController` để bật **hiệu ứng viền phát sáng (Outline)** và hiển thị **bong bóng câu hỏi (Question Bubble)** tại vị trí `BubblePosition` cấu hình trên Quest (nếu được bật trong tham số bài học `LessonParameters` tải về).
+    *   Trẻ tiến hành tương tác vật lý thông qua tay cầm ảo (Virtual Hand Controller) chạm vào Collider của Quest. Cơ chế tương tác phụ thuộc vào lớp con cụ thể:
+        *   **Với `TouchQuest` (Một chạm):** Ngay khi nhận tín hiệu bắt đầu tương tác (`OnStartInteraction`), nó lập tức gọi `controller.CompleteActiveQuest()` để hoàn thành nhiệm vụ mà không yêu cầu thời gian giữ.
+        *   **Với `HoldTouchQuest` (Nhấn giữ):** Khi tương tác bắt đầu, nó kích hoạt sự kiện UI và trong mỗi khung hình (`OnUpdateInteraction`), nó tăng chỉ số tiến trình `_progress` dựa trên tỉ lệ thời gian trôi qua so với tổng thời lượng `Duration` yêu cầu. Cập nhật này liên tục phát tín hiệu `OnUIProgressChanged` để `QuestUIController` cập nhật thanh tiến trình 3D `QuestProgressUI` hiển thị trực quan cho trẻ.
+    *   Khi điều kiện hoàn thành được thỏa mãn (tiến trình của `HoldTouchQuest` đạt 100% hoặc chạm thành công đối với `TouchQuest`), lớp con sẽ phát sự kiện kết thúc UI và gọi `CompleteActiveQuest` trên interface `IQuestFlowController`.
+    *   `QuestController` thực hiện thu dọn (ẩn viền phát sáng, ẩn thanh tiến trình và bong bóng câu hỏi), báo cáo kết quả ghi nhận thời gian phản hồi về `FirebaseManager` để tích lũy dữ liệu, và chuyển tiếp kịch bản `ActionManager` sang bước tiếp theo.
 
 #### 2. Dạng bài Quizzes (Lý thuyết / Nhận diện)
 *   **Thành phần vận hành:** `QuizController` ➔ `QuizUIController` ➔ `QuizConfig`.

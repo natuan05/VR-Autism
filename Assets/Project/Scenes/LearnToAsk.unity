@@ -2909,7 +2909,7 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-        - m_Target: {fileID: 1658387840}
+        - m_Target: {fileID: 1658387841}
           m_TargetAssemblyTypeName: SpeechResponser, Assembly-CSharp
           m_MethodName: StartResponse
           m_Mode: 1
@@ -2924,7 +2924,7 @@ MonoBehaviour:
     onFinished:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1658387840}
+        - m_Target: {fileID: 1658387841}
           m_TargetAssemblyTypeName: SpeechResponser, Assembly-CSharp
           m_MethodName: StopResponse
           m_Mode: 1
@@ -34579,8 +34579,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1005230633}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 6.184, y: 0.205, z: -2.316}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -34588,7 +34588,7 @@ Transform:
   - {fileID: 1005509875}
   - {fileID: 1005567227}
   - {fileID: 1005556293}
-  m_Father: {fileID: 1883205729}
+  m_Father: {fileID: 1605182952}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!4 &1005509875
 Transform:
@@ -37652,16 +37652,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3beba1e910f0044a27662389581e35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  npcs:
-  - {fileID: 107818164}
-  audioClips:
-  - {fileID: 8300000, guid: 2b572d8eed261584dacf8d24806c79b0, type: 3}
-  - {fileID: 8300000, guid: 2ac6a836ed07a93489765ab5cda7571d, type: 3}
-  - {fileID: 8300000, guid: 990faf17fded01e4d99461092673427c, type: 3}
-  - {fileID: 8300000, guid: d7c2f6319f86e704da610398b9ec2a48, type: 3}
-  reminders:
-  - {fileID: 11400000, guid: 61989c1b0cce329429d1a69119140ee6, type: 2}
-  hintCount: {fileID: 11400000, guid: c854ceea369507c4b99c5e5fb7ed0666, type: 2}
+  voicePlayer: {fileID: 0}
+  bubblePresenter: {fileID: 0}
+  lookAtPlayer: {fileID: 0}
   speechResponser:
   - {fileID: 1047925799}
   - {fileID: 1658387841}
@@ -39164,7 +39157,8 @@ Transform:
   m_LocalPosition: {x: 6.184, y: 0.205, z: -2.316}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1005485947}
   m_Father: {fileID: 1883205729}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &1605182953
@@ -39197,48 +39191,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 1605182951}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42b49253bf134a64ca77812ed7ffeca7, type: 3}
+  m_Script: {fileID: 11500000, guid: f0848034b0740a1479b22a2e2aaffb83, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.HoldTouchQuest
   id: 0
-  questName: "Di chuy\u1EC3n t\u1EDBi v\u1ECB tr\xED"
-  questType: 1
-  duration: 0
-  isSendData: 0
+  questName: "Di chuy\u1EC3n l\xEAn b\u1EA3ng"
+  duration: 5
+  reminderCycle: 0
   outline: {fileID: 0}
   posBubbleQuestion: {fileID: 0}
   posProgressBar: {fileID: 0}
+  hintSound: {fileID: 0}
   onQuestStarted:
     m_PersistentCalls:
       m_Calls: []
   onQuestFinished:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 11400000, guid: 15707155b79bdaa4ebc209d7a4c849b9, type: 2}
-        m_TargetAssemblyTypeName: Dajunctic.Scripts.Events.BooleanVariable, Assembly-CSharp
-        m_MethodName: set_Value
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 1005230633}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  onQuestCanceled:
     m_PersistentCalls:
       m_Calls: []
   onQuestTriggerEnter:
@@ -39247,22 +39214,9 @@ MonoBehaviour:
   onQuestTriggerExit:
     m_PersistentCalls:
       m_Calls: []
-  reminderCycle: 15
   onQuestReminder:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1417027144}
-        m_TargetAssemblyTypeName: Dajunctic.Scripts.NPC.NPCController, Assembly-CSharp
-        m_MethodName: SayRandomReminder
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!1 &1622994242
 GameObject:
   m_ObjectHideFlags: 0
@@ -40687,10 +40641,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   quests:
   - {fileID: 1605182954}
-  questProgressUI: {fileID: 0}
-  bubbleQuestion: {fileID: 0}
-  congratulationUI: {fileID: 0}
   isConditionMet: {fileID: 11400000, guid: 15707155b79bdaa4ebc209d7a4c849b9, type: 2}
+  verbalHintCount: {fileID: 11400000, guid: 53dfd328cd0727b418ccd3842dc87dfa, type: 2}
 --- !u!4 &1883205729
 Transform:
   m_ObjectHideFlags: 0
@@ -40705,7 +40657,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1605182952}
-  - {fileID: 1005485947}
   - {fileID: 321313160}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

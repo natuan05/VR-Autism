@@ -37,12 +37,12 @@ namespace VRAutism.Core
 
         private void OnDestroy()
         {
-            QuestController.ActiveQuestFinished -= LogQuestComplete;
+            QuestController.OnActiveQuestCompleted -= LogQuestComplete;
         }
 
         private void Start()
         {
-            QuestController.ActiveQuestFinished += LogQuestComplete;
+            QuestController.OnActiveQuestCompleted += LogQuestComplete;
 
             _startTime = DateTime.Now;
 
@@ -103,6 +103,20 @@ namespace VRAutism.Core
         public void MarkQuestStart()
         {
             _questStartSecond = TimeUtils.CurrentSecond;
+        }
+
+        private void LogQuestComplete(object sender, ActiveQuestFinishedEventArgs e)
+        {
+            if (e == null) return;
+            LogQuestComplete(
+                e.QuestIndex,
+                e.QuestName,
+                e.CompletionStatus,
+                e.HintsVerbal,
+                e.HintsVisual,
+                e.HintsPhysical,
+                e.ResponseTimeFromHint
+            );
         }
 
         /// <summary>

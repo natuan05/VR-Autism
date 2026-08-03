@@ -6,40 +6,46 @@ using UnityEngine;
 
 namespace VRAutism.Gameplay.Actions
 {
+    /// <summary>
+    /// Pure Sequencer — chỉ lo điều phối thứ tự Quest và phát telemetry events.
+    /// Không biết VisualQuest, TouchQuest, hay bất kỳ loại Quest cụ thể nào.
+    /// </summary>
     public class QuestController : MonoBehaviour, IQuestFlowController
     {
         public static QuestController Instance { get; private set; }
 
-        // Báo hiệu mỗi khi chuyển sang quest mới
+        // ── Events ─────────────────────────────────────────────────────────
+        /// <summary>Báo hiệu mỗi khi chuyển sang quest mới.</summary>
         public static event Action<string> OnQuestActivityChanged;
 
-        // Báo hiệu Transform của vật thể mục tiêu mới cho Telemetry bắt đầu tracking
+        /// <summary>Báo hiệu khi một quest hoàn thành (kèm dữ liệu telemetry).</summary>
+        public static event EventHandler<ActiveQuestFinishedEventArgs> OnActiveQuestCompleted;
+
+        /// <summary>Báo hiệu Transform mục tiêu mới cho SensorHarvester tracking.</summary>
         public static event Action<Transform> OnTargetTransformChanged;
 
-        public static event Action<int, string, string, int, int, int, double> ActiveQuestFinished;
-
-        // Sự kiện kết thúc toàn bộ bài học
+        /// <summary>Báo hiệu khi tất cả quest đã hoàn thành.</summary>
         public event Action OnAllQuestsCompleted;
 
+        // ── Serialized Fields ──────────────────────────────────────────────
         [SerializeField] private Quest[] quests;
         [SerializeField] private BooleanVariable isConditionMet;
+        [SerializeField] private IntVariable verbalHintCount;
 
+        // ── Public Accessors ───────────────────────────────────────────────
+        public Quest[] Quests => quests;
+
+        // ── Private State ──────────────────────────────────────────────────
         private int curQuestId;
         private string[] questNames;
-
+        private LessonParameters activeParams;
         private float curReminderTimer;
         private float curEffectiveCycle;
-        private bool isCharacterInsideTrigger;
-        private int characterColliderCount;
-        private LessonParameters activeParams;
         private int _currentQuestHintsVisual;
-        [SerializeField] private IntVariable verbalHintCount;
         private float _lastVisualHintTime;
         private float _questStartTime;
 
-        // Getter công khai để lấy danh sách Quest cho QuestUIController đăng ký sự kiện
-        public Quest[] Quests => quests;
-
+        // ── Setup ──────────────────────────────────────────────────────────
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -48,35 +54,32 @@ namespace VRAutism.Gameplay.Actions
                 return;
             }
             Instance = this;
+
             foreach (var quest in quests)
-            {
-                if (quest == null) continue;
-                quest.Init();
-                quest.CharacterCanEnter += HandleQuestCharacterEnter;
-                quest.CharacterExit += HandleQuestCharacterExit;
-            }
+                quest?.Init();
 
-            questNames = quests.Where(q => q != null && q.IsSendData).Select(q => q.Name).ToArray();
-
+            questNames = quests.Where(q => q != null).Select(q => q.Name).ToArray();
             curQuestId = 0;
             activeParams = LessonParameters.Default;
         }
 
         private void Start()
         {
-            activeParams = SessionContext.Instance != null 
-                ? SessionContext.Instance.CurrentParams 
+            activeParams = SessionContext.Instance != null
+                ? SessionContext.Instance.CurrentParams
                 : LessonParameters.Default;
 
-            enabled = false; // Tắt Update loop ban đầu để tối ưu hóa hiệu năng
+            enabled = false; // Tắt Update loop ban đầu
         }
 
+        // ── Main Loop ──────────────────────────────────────────────────────
         private void Update()
         {
-            Quest activeQuest = GetCurQuest();
-            if (activeQuest == null) return;
+            Quest quest = GetCurQuest();
+            if (quest == null) return;
 
-            if (activeParams.Actions.EnableAutoHint && !isCharacterInsideTrigger && curEffectiveCycle > 0f)
+            // Auto-hint timer — hỏi Quest xem có nên hint không
+            if (activeParams.Actions.EnableAutoHint && quest.ShouldAutoHint && curEffectiveCycle > 0f)
             {
                 curReminderTimer -= Time.deltaTime;
                 if (curReminderTimer < 0)
@@ -86,166 +89,124 @@ namespace VRAutism.Gameplay.Actions
                 }
             }
 
-            // Chỉ tính toán tiến độ khi nhân vật đang ở trong vùng tương tác
-            if (isCharacterInsideTrigger)
-            {
-                activeQuest.OnUpdateInteraction(this);
-            }
+            // Delegate frame update cho Quest tự xử lý
+            quest.Tick();
         }
 
-        // ── XỬ LÝ VẬT LÝ TỪ QUEST ──────────────────────────────────────────
-        private void HandleQuestCharacterEnter(Quest quest)
-        {
-            if (quest != GetCurQuest()) return; // Chỉ xử lý nếu chạm đúng Quest hiện tại
-
-            characterColliderCount++;
-            if (characterColliderCount > 1) return; // Đã ở trong trigger từ trước
-
-            isCharacterInsideTrigger = true;
-            quest.QuestIsActivated();
-
-            // Ủy quyền xử lý cho Quest con
-            quest.OnStartInteraction(this);
-        }
-
-        private void HandleQuestCharacterExit(Quest quest)
-        {
-            if (quest != GetCurQuest()) return;
-
-            characterColliderCount--;
-            if (characterColliderCount > 0) return; // Vẫn còn collider bên trong
-            if (characterColliderCount < 0) characterColliderCount = 0;
-
-            isCharacterInsideTrigger = false;
-
-            // Ủy quyền xử lý cho Quest con
-            quest.OnCancelInteraction(this);
-        }
-
-        // ── ĐIỀU PHỐI TRẠNG THÁI QUEST ──────────────────────────────────────
+        // ── Quest Flow ─────────────────────────────────────────────────────
         public void StartRunningQuest()
         {
-            enabled = true; // Kích hoạt lại Update loop khi bài học bắt đầu
+            enabled = true;
             isConditionMet.Value = false;
-            TimeManager.Instance?.StartLessonTime(); // Bấm giờ từ lúc trẻ bắt đầu làm bài
-            StartNewQuest();
+            TimeManager.Instance?.StartLessonTime();
+            ActivateQuest();
         }
 
-        private void StartNewQuest()
+        private void ActivateQuest()
         {
             TimeManager.Instance?.StartQuestTime();
-            
-            _questStartTime = TimeManager.Instance != null ? (float)TimeManager.Instance.GetTotalElapsedSeconds() : 0f;
+            _questStartTime = TimeManager.Instance != null
+                ? (float)TimeManager.Instance.GetTotalElapsedSeconds()
+                : 0f;
 
-            Quest activeQuest = GetCurQuest();
-            if (activeQuest == null)
+            Quest quest = GetCurQuest();
+            if (quest == null)
             {
                 Debug.LogError($"Quest {curQuestId} not found in total {quests.Length} quests");
                 return;
             }
 
-            isCharacterInsideTrigger = false;
-            characterColliderCount = 0;
-            if (verbalHintCount != null)
-            {
-                verbalHintCount.Value = 0;
-            }
+            // Reset hint counters
+            if (verbalHintCount != null) verbalHintCount.Value = 0;
             _currentQuestHintsVisual = 0;
             _lastVisualHintTime = -1f;
 
-            // Setup hiển thị Outline tập trung
-            activeQuest.SetOutline(activeParams.Actions.EnableVisualGuidance);
-
-            // Reset bộ đếm nhắc nhở
+            // Reset reminder timer
             float overrideCycle = activeParams.Actions.ActionReminderCycle;
-            curEffectiveCycle = overrideCycle >= 0f ? overrideCycle : activeQuest.ReminderCycle;
+            curEffectiveCycle = overrideCycle >= 0f ? overrideCycle : quest.ReminderCycle;
             curReminderTimer = curEffectiveCycle;
 
-            OnQuestActivityChanged?.Invoke("Action_" + activeQuest.Name);
+            // Quest setup — outline, trigger, voice prompt...
+            quest.Begin(this);
 
-            // Báo cho SensorHarvester biết mục tiêu mới để bắt đầu tracking Gaze & Proximity
-            OnTargetTransformChanged?.Invoke(activeQuest.transform);
-
-            // Báo cho các đối tượng quan tâm (ví dụ UI) là Quest đã được kích hoạt chạy
-            activeQuest.OnQuestActive(this);
+            // Telemetry events
+            OnQuestActivityChanged?.Invoke("Action_" + quest.Name);
+            OnTargetTransformChanged?.Invoke(quest.transform);
         }
 
         public void CompleteActiveQuest(string status = "success")
         {
-            Quest activeQuest = GetCurQuest();
-            if (activeQuest == null) return;
+            Quest quest = GetCurQuest();
+            if (quest == null) return;
 
-            // Tắt hiển thị viền của Quest vừa xong
-            activeQuest.SetOutline(false);
-            activeQuest.ActiveQuestFinished();
-            
+            // Quest tự lo cleanup
+            quest.End();
+
+            // Telemetry
             int hintsVerbal = verbalHintCount != null ? verbalHintCount.Value : 0;
             double responseTimeFromHint = -1.0;
             if (_lastVisualHintTime >= 0f)
             {
-                double currentElapsed = TimeManager.Instance != null ? TimeManager.Instance.GetTotalElapsedSeconds() : 0.0;
+                double currentElapsed = TimeManager.Instance != null
+                    ? TimeManager.Instance.GetTotalElapsedSeconds()
+                    : 0.0;
                 responseTimeFromHint = currentElapsed - _lastVisualHintTime;
             }
-            ActiveQuestFinished?.Invoke(curQuestId, activeQuest.Name, status, hintsVerbal, _currentQuestHintsVisual, 0, responseTimeFromHint);
+            OnActiveQuestCompleted?.Invoke(this, new ActiveQuestFinishedEventArgs(
+                curQuestId, quest.Name, status,
+                hintsVerbal, _currentQuestHintsVisual, 0,
+                responseTimeFromHint));
 
-            if (verbalHintCount != null)
-            {
-                verbalHintCount.Value = 0;
-            }
+            if (verbalHintCount != null) verbalHintCount.Value = 0;
 
+            // Advance hoặc kết thúc
             if (curQuestId >= quests.Length - 1)
             {
                 isConditionMet.Value = true;
-                enabled = false; // Tắt Update loop khi tất cả các Quest đã hoàn thành
-                
-                // Kích hoạt sự kiện kết thúc toàn bộ nhiệm vụ
+                enabled = false;
                 OnAllQuestsCompleted?.Invoke();
                 return;
             }
 
             curQuestId++;
-            StartNewQuest();
+            ActivateQuest();
         }
 
-        // ── REMOTE COMMANDS (public — được gọi từ QuestRemoteBridge) ──────────
+        // ── Remote Commands ────────────────────────────────────────────────
         public void TriggerSkip()
         {
-            Quest activeQuest = GetCurQuest();
-            if (activeQuest != null)
+            Quest quest = GetCurQuest();
+            if (quest != null)
             {
-                Debug.Log($"[QuestController] Skip -\u003e Quest: {activeQuest.Name}");
+                Debug.Log($"[QuestController] Skip -> Quest: {quest.Name}");
                 CompleteActiveQuest("skipped");
             }
         }
 
         public void TriggerVerbalHint()
         {
-            Quest activeQuest = GetCurQuest();
-            if (activeQuest != null)
+            Quest quest = GetCurQuest();
+            if (quest != null)
             {
-                Debug.Log($"[QuestController] Gợi ý Lời nói -\u003e Kích hoạt nhắc nhở NPC.");
-                activeQuest.AllowReminderEvent();
+                Debug.Log($"[QuestController] Gợi ý Lời nói -> Quest: {quest.Name}");
+                quest.OnVerbalHint();
             }
         }
 
         public void TriggerVisualHint()
         {
-            Quest activeQuest = GetCurQuest();
-            if (activeQuest != null)
-            {
-                Debug.Log($"[QuestController] Gợi ý Thị giác -\u003e Kích hoạt Blink nhấp nháy viền.");
-                activeQuest.BlinkHintOutline(activeParams.Actions.EnableVisualGuidance);
-                _currentQuestHintsVisual++;
-                _lastVisualHintTime = TimeManager.Instance != null ? (float)TimeManager.Instance.GetTotalElapsedSeconds() : 0f;
-            }
+            Quest quest = GetCurQuest();
+            if (quest == null) return;
+
+            Debug.Log($"[QuestController] Gợi ý Thị giác -> Quest: {quest.Name}");
+            quest.OnVisualHint(activeParams.Actions.EnableVisualGuidance);
+            _currentQuestHintsVisual++;
+            _lastVisualHintTime = TimeManager.Instance != null
+                ? (float)TimeManager.Instance.GetTotalElapsedSeconds()
+                : 0f;
         }
 
-        public float GetLastVisualHintOrQuestStartTime()
-        {
-            return _lastVisualHintTime >= 0f ? _lastVisualHintTime : _questStartTime;
-        }
-
-
+        // ── Getters ────────────────────────────────────────────────────────
         public Quest GetCurQuest()
         {
             if (curQuestId >= 0 && curQuestId < quests.Length)
@@ -253,23 +214,14 @@ namespace VRAutism.Gameplay.Actions
             return null;
         }
 
-        public string[] GetAllQuestNames()
-        {
-            return questNames;
-        }
+        public string[] GetAllQuestNames() => questNames;
+
+        public float GetLastVisualHintOrQuestStartTime()
+            => _lastVisualHintTime >= 0f ? _lastVisualHintTime : _questStartTime;
 
         private void OnDestroy()
         {
-            if (Instance == this)
-            {
-                Instance = null;
-            }
-            foreach (var quest in quests)
-            {
-                if (quest == null) continue;
-                quest.CharacterCanEnter -= HandleQuestCharacterEnter;
-                quest.CharacterExit -= HandleQuestCharacterExit;
-            }
+            if (Instance == this) Instance = null;
         }
     }
 }
