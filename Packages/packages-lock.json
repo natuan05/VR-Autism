@@ -569,6 +569,15 @@
       },
       "url": "https://packages.unity.com"
     },
+    "io.livekit.livekit-sdk": {
+      "version": "https://github.com/livekit/client-sdk-unity.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
+      },
+      "hash": "6de59b7669804d82ea044f1ed1388caf077baf21"
+    },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
       "depth": 0,

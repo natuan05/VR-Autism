@@ -58,9 +58,10 @@ namespace VRAutism.Gameplay.WaitingArea{
                 : db.Collection("child_profiles").Document(childId).GetSnapshotAsync();
 
             // ── Fetch lesson metadata ──────────────────────────────────────
+            DocumentSnapshot doc = null;
             try 
             {
-                DocumentSnapshot doc = await lessonTask;
+                doc = await lessonTask;
                 
                 if (doc.Exists && ctx != null)
                 {
@@ -169,6 +170,70 @@ namespace VRAutism.Gameplay.WaitingArea{
                     {
                         ctx.CurrentParams = LessonParameters.Default;
                         Debug.Log($"[SceneMenuController] default_lesson_params rỗng hoặc chưa có cho bé '{childId}'. Dùng Inspector defaults.");
+                    }
+
+                    // ── Đọc quick_phrases cho bài học hiện tại từ child profile hoặc lesson doc ──
+                    try
+                    {
+                        var activePhrasesList = new System.Collections.Generic.List<string[]>();
+                        bool foundPhrases = false;
+
+                        if (childDoc.ContainsField("quick_phrases"))
+                        {
+                            var quickPhrasesRaw = childDoc.GetValue<object>("quick_phrases");
+                            if (quickPhrasesRaw is System.Collections.IDictionary qMap && qMap.Contains(lessonId))
+                            {
+                                var lessonPhrasesRaw = qMap[lessonId];
+                                if (lessonPhrasesRaw is System.Collections.IList qList)
+                                {
+                                    foreach (var questItem in qList)
+                                    {
+                                        if (questItem is System.Collections.IDictionary questDict && questDict.Contains("phrases"))
+                                        {
+                                            var phrasesObj = questDict["phrases"];
+                                            if (phrasesObj is System.Collections.IList pList)
+                                            {
+                                                var phrasesStr = new System.Collections.Generic.List<string>();
+                                                foreach (var p in pList) if (p != null) phrasesStr.Add(p.ToString());
+                                                activePhrasesList.Add(phrasesStr.ToArray());
+                                            }
+                                        }
+                                    }
+                                    foundPhrases = activePhrasesList.Count > 0;
+                                }
+                            }
+                        }
+
+                        // Fallback: Đọc từ document bài học gốc nếu child profile chưa có
+                        if (!foundPhrases && doc != null && doc.Exists && doc.ContainsField("quests"))
+                        {
+                            var questsRaw = doc.GetValue<object>("quests");
+                            if (questsRaw is System.Collections.IList qList)
+                            {
+                                foreach (var questItem in qList)
+                                {
+                                    if (questItem is System.Collections.IDictionary questDict && questDict.Contains("default_phrases"))
+                                    {
+                                        var phrasesObj = questDict["default_phrases"];
+                                        if (phrasesObj is System.Collections.IList pList)
+                                        {
+                                            var phrasesStr = new System.Collections.Generic.List<string>();
+                                            foreach (var p in pList) if (p != null) phrasesStr.Add(p.ToString());
+                                            activePhrasesList.Add(phrasesStr.ToArray());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (ctx != null)
+                        {
+                            ctx.SetActivePhrases(activePhrasesList);
+                        }
+                    }
+                    catch (System.Exception exPhrases)
+                    {
+                        Debug.LogWarning($"[SceneMenuController] Lỗi parse quick_phrases từ Firestore: {exPhrases.Message}");
                     }
                 }
                 else

@@ -1,0 +1,6 @@
+{
+  "name": "ConvaiIgnore",
+  "defineConstraints": [
+    "DISABLE_CONVAI_SCRIPTS_PERMANENTLY"
+  ]
+}

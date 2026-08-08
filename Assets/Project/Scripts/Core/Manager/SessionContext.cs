@@ -46,6 +46,24 @@ namespace VRAutism.Core
         /// </summary>
         public LessonParameters CurrentParams { get; set; } = LessonParameters.GetDefault();
         
+        // --- Danh sách câu gợi ý (quick_phrases) theo từng quest index (0, 1, 2...) ---
+        public System.Collections.Generic.List<string[]> ActivePhrasesByQuestIndex { get; private set; } = new System.Collections.Generic.List<string[]>();
+
+        public void SetActivePhrases(System.Collections.Generic.List<string[]> phrasesList)
+        {
+            ActivePhrasesByQuestIndex = phrasesList ?? new System.Collections.Generic.List<string[]>();
+            Debug.Log($"[SessionContext] Đã nạp {ActivePhrasesByQuestIndex.Count} bộ câu hỏi gợi ý cho bài học.");
+        }
+
+        public string[] GetPhrasesByQuestIndex(int index)
+        {
+            if (ActivePhrasesByQuestIndex != null && index >= 0 && index < ActivePhrasesByQuestIndex.Count)
+            {
+                return ActivePhrasesByQuestIndex[index];
+            }
+            return null;
+        }
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -73,6 +91,7 @@ namespace VRAutism.Core
             HostId = "";
             CurrentParams = LessonParameters.GetDefault();
             MaxVolume = 0.5f;
+            ActivePhrasesByQuestIndex.Clear();
         }
 
         private void OnEnable()

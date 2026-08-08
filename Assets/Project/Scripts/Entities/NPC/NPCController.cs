@@ -4,14 +4,14 @@ namespace VRAutism.Entities
 {
     public class NPCController : MonoBehaviour
     {
-        [SerializeField] private NPCVoicePlayer voicePlayer;
+        [SerializeField] private NPCVoice voicePlayer;
         [SerializeField] private SpeechBubblePresenter bubblePresenter;
         [SerializeField] private NPCLookAtPlayer lookAtPlayer;
         [SerializeField] private SpeechResponser[] speechResponser;
 
         private void Start()
         {
-            if (voicePlayer == null) voicePlayer = GetComponent<NPCVoicePlayer>();
+            if (voicePlayer == null) voicePlayer = GetComponent<NPCVoice>();
             if (bubblePresenter == null) bubblePresenter = GetComponent<SpeechBubblePresenter>();
             if (lookAtPlayer == null) lookAtPlayer = GetComponent<NPCLookAtPlayer>();
 
@@ -32,14 +32,6 @@ namespace VRAutism.Entities
             }
         }
 
-        public void SaySomething(int id)
-        {
-            if (voicePlayer != null)
-            {
-                voicePlayer.PlayClipById(id);
-            }
-        }
-
         public void SayAudio(AudioClip clip)
         {
             if (voicePlayer != null)
@@ -48,13 +40,13 @@ namespace VRAutism.Entities
             }
         }
 
-        public void SayRandomReminder(int id)
-        {
-            if (voicePlayer != null)
-            {
-                voicePlayer.PlayRandomReminder(id);
-            }
-        }
+        // public void SayRandomReminder(int id)
+        // {
+        //     if (voicePlayer != null)
+        //     {
+        //         voicePlayer.PlayRandomReminder(id);
+        //     }
+        // }
 
         public void PlayRemoteVoice(AudioClip clip, string subtitle)
         {
