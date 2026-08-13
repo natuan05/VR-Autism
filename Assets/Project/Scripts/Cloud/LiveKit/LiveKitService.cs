@@ -52,6 +52,7 @@ namespace VRAutism.Cloud.LiveKit
             room = new Room();
             room.DataReceived += OnDataReceived;
             room.TrackSubscribed += OnTrackSubscribed;
+            room.TrackUnsubscribed += OnTrackUnsubscribed;
 
             try
             {
@@ -99,6 +100,7 @@ namespace VRAutism.Cloud.LiveKit
             {
                 room.DataReceived -= OnDataReceived;
                 room.TrackSubscribed -= OnTrackSubscribed;
+                room.TrackUnsubscribed -= OnTrackUnsubscribed;
                 room.Disconnect();
                 room = null;
             }
@@ -194,12 +196,22 @@ namespace VRAutism.Cloud.LiveKit
             }
         }
 
+        private RemoteAudioTrack pendingAudioTrack;
+
         public void SetAudioSource(AudioSource source)
         {
             npcAudioSource = source;
             if (source != null)
             {
                 Debug.Log($"[LiveKitService] 🔊 Đã cập nhật NPC AudioSource: '{source.gameObject.name}'");
+
+                // Nếu có luồng âm thanh AI vừa đăng ký trước đó đang đứng chờ -> Bind ngay vào AudioSource này!
+                if (pendingAudioTrack != null)
+                {
+                    Debug.Log($"[LiveKitService] 🔗 Tự động kết nối luồng tiếng AI đang chờ vào AudioSource của '{source.gameObject.name}'!");
+                    BindAudioTrack(pendingAudioTrack, source);
+                    pendingAudioTrack = null;
+                }
             }
         }
 
@@ -207,13 +219,47 @@ namespace VRAutism.Cloud.LiveKit
         {
             if (track is RemoteAudioTrack audioTrack)
             {
-                Debug.Log($"[LiveKitService] 🔊 AI AGENT VỪA PHÁT GIỌNG NÓI! (Participant: {participant.Identity} | Track: {audioTrack.Sid})");
+                Debug.Log($"[LiveKitService] 🔊 AI AGENT VỪA ĐĂNG KÝ LUỒNG ÂM THANH! (Participant: {participant.Identity} | Track: {audioTrack.Sid})");
 
-                AudioSource targetSource = npcAudioSource != null ? npcAudioSource : gameObject.AddComponent<AudioSource>();
-                AudioStream audiostream = new AudioStream(audioTrack, targetSource);
-                remoteAudioStreams[audioTrack.Sid] = (audiostream, targetSource.gameObject);
+                if (npcAudioSource == null)
+                {
+                    Debug.Log("[LiveKitService] ⏳ Chưa có NPC AudioSource tại thời điểm đăng ký. Đang lưu luồng âm thanh vào hàng chờ (Pending)...");
+                    pendingAudioTrack = audioTrack;
+                    return;
+                }
 
-                Debug.Log($"[LiveKitService] 🔊 Đã kết nối luồng tiếng AI vào AudioSource của NPC '{targetSource.gameObject.name}'");
+                BindAudioTrack(audioTrack, npcAudioSource);
+            }
+        }
+
+        private void BindAudioTrack(RemoteAudioTrack audioTrack, AudioSource targetSource)
+        {
+            if (audioTrack == null || targetSource == null) return;
+
+            // Dọn dẹp AudioStream cũ nếu cùng Track SID được đăng ký lại
+            if (remoteAudioStreams.TryGetValue(audioTrack.Sid, out var existingEntry))
+            {
+                try { existingEntry.stream.Dispose(); } catch { }
+                remoteAudioStreams.Remove(audioTrack.Sid);
+                Debug.Log($"[LiveKitService] 🧹 Đã Dispose AudioStream cũ trùng lặp cho Track '{audioTrack.Sid}'");
+            }
+
+            AudioStream audiostream = new AudioStream(audioTrack, targetSource);
+            remoteAudioStreams[audioTrack.Sid] = (audiostream, targetSource.gameObject);
+
+            Debug.Log($"[LiveKitService] 🔊 ĐÃ KẾT NỐI LUỒNG TIẾNG AI VÀO AUDIOSOURCE CỦA NPC '{targetSource.gameObject.name}' THÀNH CÔNG!");
+        }
+
+        private void OnTrackUnsubscribed(IRemoteTrack track, RemoteTrackPublication publication, RemoteParticipant participant)
+        {
+            if (track is RemoteAudioTrack audioTrack)
+            {
+                if (remoteAudioStreams.TryGetValue(audioTrack.Sid, out var entry))
+                {
+                    try { entry.stream.Dispose(); } catch { }
+                    remoteAudioStreams.Remove(audioTrack.Sid);
+                    Debug.Log($"[LiveKitService] 🔇 Đã dọn dẹp AudioStream cho Track HỦY ĐĂNG KÝ '{audioTrack.Sid}'");
+                }
             }
         }
 
