@@ -76,9 +76,6 @@ namespace VRAutism.Gameplay.Actions
         {
             Debug.Log($"[VoiceQuest] 🔊 Kích hoạt Verbal Hint cho Quest '{Name}' (Id: {Id})");
 
-            // 1. Kích hoạt UnityEvent (đã kéo thả NPCVoice.PlayRandomReminder trong Inspector nếu có)
-            onQuestReminder?.Invoke();
-
             // 2. Đã có thể truy cập mảng phrases động của Quest hiện tại
             string[] currentPhrases = GetActivePhrases();
             if (currentPhrases != null && currentPhrases.Length > 0)

@@ -57,9 +57,9 @@ development_status:
   3-5-web-remote-control-interface: done
   3-6-dynamic-npc-speech-verbal-hint-engine: done
   3-7-automated-visual-prompt-engine: done
-  3-8-google-cloud-tts-voice-customization: backlog
+  3-8-google-cloud-tts-voice-customization: done
   3-9-quick-template-phrases-by-lesson: done
-  3-10-automated-verbal-prompt-engine: backlog
+  3-10-automated-verbal-prompt-engine: done
   epic-3-retrospective: optional
 
   epic-4: in-progress
@@ -69,6 +69,6 @@ development_status:
   epic-4-retrospective: optional
 
   epic-5: backlog
-  5-1-learntoask-action-rework: backlog
+  5-1-learntoask-action-rework: in-progress
   5-2-gestures-eye-contact-integration: backlog
   epic-5-retrospective: optional
