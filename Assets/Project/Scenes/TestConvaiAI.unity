@@ -1075,61 +1075,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.033781093, y: 0.04240994, z: 0.012264636}
   m_Center: {x: 0.00081598974, y: -0.0012049463, z: 0.00027008782}
---- !u!1 &180992144
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 180992145}
-  - component: {fileID: 180992146}
-  m_Layer: 0
-  m_Name: Quest_1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &180992145
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 180992144}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1883205729}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &180992146
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 180992144}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 794294772fb225f478dd77816bcd4d77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.VoiceQuest
-  id: 1
-  questName: "Ch\xE0o c\xE1c b\u1EA1n"
-  duration: 0
-  reminderCycle: 10
-  defaultPhrases:
-  - "Con h\xE3y ch\xE0o c\xE1c b\u1EA1n \u0111i"
-  - "Con ch\xE0o c\u1EA3 l\u1EDBp tr\u01B0\u1EDBc nh\xE9"
-  npcAudioSource: {fileID: 107818164}
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &196203172
 GameObject:
   m_ObjectHideFlags: 0
@@ -1885,61 +1830,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 349157863}
   m_Mesh: {fileID: 7786917514013589829, guid: 68ed229a1578d6a438d82a545f652616, type: 3}
---- !u!1 &354501293
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 354501294}
-  - component: {fileID: 354501295}
-  m_Layer: 0
-  m_Name: Quest_3
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &354501294
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 354501293}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1883205729}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &354501295
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 354501293}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 794294772fb225f478dd77816bcd4d77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.VoiceQuest
-  id: 3
-  questName: "Gi\u1EDBi thi\u1EC7u tu\u1ED5i"
-  duration: 0
-  reminderCycle: 0
-  defaultPhrases:
-  - "Con n\u0103m nay bao tu\u1ED5i r\u1ED3i"
-  - "C\xF2n tu\u1ED5i c\u1EE7a con th\xEC sao nh\u1EC9"
-  npcAudioSource: {fileID: 107818164}
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &356598639
 GameObject:
   m_ObjectHideFlags: 0
@@ -2037,53 +1927,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1409148464}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &400990085
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 400990087}
-  - component: {fileID: 400990086}
-  m_Layer: 0
-  m_Name: LiveKitService
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &400990086
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 400990085}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f8bef0df4906ad4c9c4e69914f459f8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Cloud.LiveKit.LiveKitService
-  autoConnectOnStart: 1
-  testRoomUrl: wss://vra-9jrt51dr.livekit.cloud
-  testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBUElyR29RV0pWcjQyY2kiLCJzdWIiOiJhdHVhbiIsImV4cCI6MTc4NjcwNzA5MywibmJmIjoxNzg2Njk4MDkzLCJpYXQiOjE3ODY2OTgwOTMsImlkZW50aXR5IjoiYXR1YW4iLCJ2aWRlbyI6eyJyb29tSm9pbiI6dHJ1ZSwicm9vbSI6IjE0MDgiLCJjYW5QdWJsaXNoIjp0cnVlLCJjYW5TdWJzY3JpYmUiOnRydWUsImNhblB1Ymxpc2hEYXRhIjp0cnVlfX0.tBgVA3m_7r9HJKsljWrkqujcDXM9f9q9cig7MoDmcRY
---- !u!4 &400990087
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 400990085}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.73833, y: 2.13887, z: 0.6}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &401051148
 GameObject:
@@ -2637,6 +2480,59 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 492133605}
   m_Mesh: {fileID: -6252355047151040247, guid: 68ed229a1578d6a438d82a545f652616, type: 3}
+--- !u!1 &506044685
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 506044687}
+  - component: {fileID: 506044688}
+  m_Layer: 0
+  m_Name: SpeechManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &506044687
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 506044685}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1061610102}
+  - {fileID: 1047925798}
+  - {fileID: 1658387842}
+  - {fileID: 1557223272}
+  - {fileID: 1316607390}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &506044688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 506044685}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 594251787b7580c439321879b35a9b30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speechResponser: {fileID: 1047925799}
+  text: {fileID: 1494399995}
+  clipLengthCycle: 15
+  checkInterval: 6
 --- !u!1 &526339933
 GameObject:
   m_ObjectHideFlags: 0
@@ -2805,76 +2701,6 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls: []
     isConditionMet: {fileID: 0}
-  - name: "Di chuy\u1EC3n t\u1EDBi v\u1ECB tr\xED \u0111\u1EE9ng"
-    on: 1
-    duration: 0
-    onStart:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1005230633}
-          m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_MethodName: SetActive
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-        - m_Target: {fileID: 986183649}
-          m_TargetAssemblyTypeName: UnityEngine.ParticleSystem, UnityEngine
-          m_MethodName: Play
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 321313159}
-          m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_MethodName: SetActive
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
-        - m_Target: {fileID: 1883205728}
-          m_TargetAssemblyTypeName: Dajunctic.Scripts.Quest.QuestController, Assembly-CSharp
-          m_MethodName: StartRunningQuest
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-    onFinished:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 321313159}
-          m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_MethodName: SetActive
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-    isConditionMet: {fileID: 11400000, guid: 15707155b79bdaa4ebc209d7a4c849b9, type: 2}
   - name: "Gi\xE1o vi\xEAn gi\u1EDBi thi\u1EC7u"
     on: 1
     duration: 10
@@ -2937,6 +2763,296 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls: []
     isConditionMet: {fileID: 11400000, guid: 66ffbc00f69200041864a29423affd50, type: 2}
+  - name: "Di chuy\u1EC3n t\u1EDBi v\u1ECB tr\xED \u0111\u1EE9ng"
+    on: 1
+    duration: 0
+    onStart:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1005230633}
+          m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_MethodName: SetActive
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
+        - m_Target: {fileID: 986183649}
+          m_TargetAssemblyTypeName: UnityEngine.ParticleSystem, UnityEngine
+          m_MethodName: Play
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 1883205728}
+          m_TargetAssemblyTypeName: Dajunctic.Scripts.Quest.QuestController, Assembly-CSharp
+          m_MethodName: StartRunningQuest
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 321313159}
+          m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_MethodName: SetActive
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
+    onFinished:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 321313159}
+          m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_MethodName: SetActive
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    isConditionMet: {fileID: 11400000, guid: 15707155b79bdaa4ebc209d7a4c849b9, type: 2}
+  - name: "Xin ch\xE0o"
+    on: 1
+    duration: 0
+    onStart:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 506044688}
+          m_TargetAssemblyTypeName: SpeechRecognition, Assembly-CSharp
+          m_MethodName: StartRecording
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 1047925799}
+          m_TargetAssemblyTypeName: SpeechResponser, Assembly-CSharp
+          m_MethodName: StartResponse
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    onFinished:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1047925799}
+          m_TargetAssemblyTypeName: SpeechResponser, Assembly-CSharp
+          m_MethodName: StopResponse
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 11400000, guid: 372d23cc1eaf77c4693fa9c7d501f0cf, type: 2}
+          m_TargetAssemblyTypeName: Dajunctic.Scripts.Events.BooleanVariable, Assembly-CSharp
+          m_MethodName: set_Value
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    isConditionMet: {fileID: 11400000, guid: 71a3d7d0fca1d1847a300509cd3a4754, type: 2}
+  - name: "Gi\u1EDBi thi\u1EC7u t\xEAn"
+    on: 1
+    duration: 0
+    onStart:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 506044688}
+          m_TargetAssemblyTypeName: SpeechRecognition, Assembly-CSharp
+          m_MethodName: SetSpeechResponser
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 1658387841}
+            m_ObjectArgumentAssemblyTypeName: SpeechResponser, Assembly-CSharp
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 1658387841}
+          m_TargetAssemblyTypeName: SpeechResponser, Assembly-CSharp
+          m_MethodName: StartResponse
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    onFinished:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1658387841}
+          m_TargetAssemblyTypeName: SpeechResponser, Assembly-CSharp
+          m_MethodName: StopResponse
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 11400000, guid: 4f403c9289742594fb9a0b7d39dba791, type: 2}
+          m_TargetAssemblyTypeName: Dajunctic.Scripts.Events.BooleanVariable, Assembly-CSharp
+          m_MethodName: set_Value
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    isConditionMet: {fileID: 11400000, guid: 372d23cc1eaf77c4693fa9c7d501f0cf, type: 2}
+  - name: "Gi\u1EDBi thi\u1EC7u tu\u1ED5i"
+    on: 1
+    duration: 0
+    onStart:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 506044688}
+          m_TargetAssemblyTypeName: SpeechRecognition, Assembly-CSharp
+          m_MethodName: SetSpeechResponser
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 1557223273}
+            m_ObjectArgumentAssemblyTypeName: SpeechResponser, Assembly-CSharp
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 1557223273}
+          m_TargetAssemblyTypeName: SpeechResponser, Assembly-CSharp
+          m_MethodName: StartResponse
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    onFinished:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1557223273}
+          m_TargetAssemblyTypeName: SpeechResponser, Assembly-CSharp
+          m_MethodName: StopResponse
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 11400000, guid: 07e61450a8326bd40a69c858ff9af2f0, type: 2}
+          m_TargetAssemblyTypeName: Dajunctic.Scripts.Events.BooleanVariable, Assembly-CSharp
+          m_MethodName: set_Value
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    isConditionMet: {fileID: 11400000, guid: 4f403c9289742594fb9a0b7d39dba791, type: 2}
+  - name: "Gi\u1EDBi thi\u1EC7u s\u1EDF th\xEDch"
+    on: 1
+    duration: 0
+    onStart:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 506044688}
+          m_TargetAssemblyTypeName: SpeechRecognition, Assembly-CSharp
+          m_MethodName: SetSpeechResponser
+          m_Mode: 2
+          m_Arguments:
+            m_ObjectArgument: {fileID: 1316607389}
+            m_ObjectArgumentAssemblyTypeName: SpeechResponser, Assembly-CSharp
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 1316607389}
+          m_TargetAssemblyTypeName: SpeechResponser, Assembly-CSharp
+          m_MethodName: StartResponse
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    onFinished:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 506044688}
+          m_TargetAssemblyTypeName: SpeechRecognition, Assembly-CSharp
+          m_MethodName: StopRecording
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    isConditionMet: {fileID: 11400000, guid: 07e61450a8326bd40a69c858ff9af2f0, type: 2}
   - name: "K\u1EBFt th\xFAc"
     on: 1
     duration: 5
@@ -3980,62 +4096,6 @@ Transform:
   - {fileID: 1877993944}
   m_Father: {fileID: 4703181182351335769}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &760028424
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 760028425}
-  - component: {fileID: 760028426}
-  m_Layer: 0
-  m_Name: Quest_2
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &760028425
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 760028424}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1883205729}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &760028426
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 760028424}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 794294772fb225f478dd77816bcd4d77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.VoiceQuest
-  id: 2
-  questName: "Gi\u1EDBi thi\u1EC7u t\xEAn c\u1EE7a m\xECnh"
-  duration: 0
-  reminderCycle: 0
-  defaultPhrases:
-  - "Con t\xEAn l\xE0 g\xEC nh\u1EC9"
-  - "H\xE3y gi\u1EDBi thi\u1EC7u t\xEAn c\u1EE7a m\xECnh \u0111i con"
-  - "Con c\xF3 th\u1EC3 cho c\xF4 bi\u1EBFt t\xEAn \u0111\u01B0\u1EE3c kh\xF4ng"
-  npcAudioSource: {fileID: 107818164}
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &770908265
 GameObject:
   m_ObjectHideFlags: 0
@@ -34843,6 +34903,60 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1025955335}
   m_Mesh: {fileID: 5454144085375349945, guid: 68ed229a1578d6a438d82a545f652616, type: 3}
+--- !u!1 &1047925797
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1047925798}
+  - component: {fileID: 1047925799}
+  m_Layer: 0
+  m_Name: HelloSpeechResponser
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1047925798
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1047925797}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 506044687}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1047925799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1047925797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba743457ed6a32f4f90b843801cff7ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeBeforePrompt: 15
+  finishCondition: {fileID: 11400000, guid: 71a3d7d0fca1d1847a300509cd3a4754, type: 2}
+  hintCount: {fileID: 11400000, guid: c854ceea369507c4b99c5e5fb7ed0666, type: 2}
+  speechCategories:
+  - key: "ch\xE0o,hai,h\xEA l\xE2u,h\xEA l\xF4,h\u1EBF,h\xEA,l\xF4,hello"
+    audios:
+    - {fileID: 8300000, guid: d67455742f1cad8449dacda7a76e9c6e, type: 3}
+    - {fileID: 8300000, guid: 602dcfc8e94794241b3963c8cd56084b, type: 3}
+    - {fileID: 8300000, guid: 554a1209196f708448eb2d185a561525, type: 3}
+    hasSpoken: 0
 --- !u!1 &1059948408
 GameObject:
   m_ObjectHideFlags: 0
@@ -34933,6 +35047,108 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1059948408}
   m_Mesh: {fileID: -4876846478594440770, guid: 68ed229a1578d6a438d82a545f652616, type: 3}
+--- !u!1 &1061610101
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1061610102}
+  - component: {fileID: 1061610105}
+  - component: {fileID: 1061610104}
+  - component: {fileID: 1061610103}
+  m_Layer: 5
+  m_Name: Canvas
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1061610102
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1061610101}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1494399994}
+  m_Father: {fileID: 506044687}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 0}
+--- !u!114 &1061610103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1061610101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &1061610104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1061610101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_UiScaleMode: 1
+  m_ReferencePixelsPerUnit: 100
+  m_ScaleFactor: 1
+  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ScreenMatchMode: 0
+  m_MatchWidthOrHeight: 0
+  m_PhysicalUnit: 3
+  m_FallbackScreenDPI: 96
+  m_DefaultSpriteDPI: 96
+  m_DynamicPixelsPerUnit: 1
+  m_PresetInfoIsWorld: 0
+--- !u!223 &1061610105
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1061610101}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 0
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 25
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
 --- !u!1 &1111411395
 GameObject:
   m_ObjectHideFlags: 0
@@ -36594,6 +36810,60 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1313634155}
   m_Mesh: {fileID: 3040904436197568297, guid: 68ed229a1578d6a438d82a545f652616, type: 3}
+--- !u!1 &1316607388
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1316607390}
+  - component: {fileID: 1316607389}
+  m_Layer: 0
+  m_Name: HobbyResponser
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1316607389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316607388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba743457ed6a32f4f90b843801cff7ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeBeforePrompt: 15
+  finishCondition: {fileID: 11400000, guid: 07e61450a8326bd40a69c858ff9af2f0, type: 2}
+  hintCount: {fileID: 11400000, guid: c854ceea369507c4b99c5e5fb7ed0666, type: 2}
+  speechCategories:
+  - key: "th\xEDch,mu\u1ED1n,ch\u01A1i,th\u01B0\u1EDDng,l\xE0m"
+    audios:
+    - {fileID: 8300000, guid: 73144907195cc0f43ae8a642f1230b5c, type: 3}
+    - {fileID: 8300000, guid: cb740b79259de5a4db02948eeed94d89, type: 3}
+    - {fileID: 8300000, guid: 82e671e4a6977084998b5b63d32cb01e, type: 3}
+    hasSpoken: 0
+--- !u!4 &1316607390
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316607388}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 506044687}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1343989874
 GameObject:
   m_ObjectHideFlags: 0
@@ -37228,10 +37498,10 @@ MonoBehaviour:
   bubblePresenter: {fileID: 0}
   lookAtPlayer: {fileID: 0}
   speechResponser:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 1047925799}
+  - {fileID: 1658387841}
+  - {fileID: 1557223273}
+  - {fileID: 1316607389}
 --- !u!4 &1417027145
 Transform:
   m_ObjectHideFlags: 0
@@ -38053,6 +38323,158 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1484544309}
   m_Mesh: {fileID: 3040904436197568297, guid: 68ed229a1578d6a438d82a545f652616, type: 3}
+--- !u!1 &1494399993
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1494399994}
+  - component: {fileID: 1494399996}
+  - component: {fileID: 1494399995}
+  - component: {fileID: 1494399997}
+  m_Layer: 5
+  m_Name: Text (TMP)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &1494399994
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1494399993}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1061610102}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 461}
+  m_SizeDelta: {x: 200, y: 50}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1494399995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1494399993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: New Text
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 36
+  m_fontSizeBase: 36
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_characterHorizontalScale: 1
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 1
+  m_ActiveFontFeatures: 00000000
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &1494399996
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1494399993}
+  m_CullTransparentMesh: 1
+--- !u!114 &1494399997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1494399993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HorizontalFit: 0
+  m_VerticalFit: 0
 --- !u!4 &1505378112 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 827bb0c918c0a55418083eb9aad3f355,
@@ -38366,6 +38788,60 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &1557223271
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1557223272}
+  - component: {fileID: 1557223273}
+  m_Layer: 0
+  m_Name: AgeResponser
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1557223272
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1557223271}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 506044687}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1557223273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1557223271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba743457ed6a32f4f90b843801cff7ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeBeforePrompt: 15
+  finishCondition: {fileID: 11400000, guid: 4f403c9289742594fb9a0b7d39dba791, type: 2}
+  hintCount: {fileID: 11400000, guid: c854ceea369507c4b99c5e5fb7ed0666, type: 2}
+  speechCategories:
+  - key: "tu\u1ED5i,m\u1ED9t,hai,ba,b\u1ED1n,n\u0103m,s\xE1u,b\u1EA3y,t\xE1m,ch\xEDn,m\u01B0\u1EDDi"
+    audios:
+    - {fileID: 8300000, guid: 6b11562f13a1ad349b6c189546880b47, type: 3}
+    - {fileID: 8300000, guid: f50622de2f6b6604ebc81b396d1daf5f, type: 3}
+    - {fileID: 8300000, guid: 946b236e12b29854190e601142efbfdb, type: 3}
+    hasSpoken: 0
 --- !u!1 &1584909664
 GameObject:
   m_ObjectHideFlags: 0
@@ -38763,6 +39239,60 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1648875698}
   m_Mesh: {fileID: -6252355047151040247, guid: 68ed229a1578d6a438d82a545f652616, type: 3}
+--- !u!1 &1658387840
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1658387842}
+  - component: {fileID: 1658387841}
+  m_Layer: 0
+  m_Name: NameResponser
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1658387841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1658387840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba743457ed6a32f4f90b843801cff7ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeBeforePrompt: 15
+  finishCondition: {fileID: 11400000, guid: 372d23cc1eaf77c4693fa9c7d501f0cf, type: 2}
+  hintCount: {fileID: 11400000, guid: c854ceea369507c4b99c5e5fb7ed0666, type: 2}
+  speechCategories:
+  - key: "t\xEAn,con l\xE0,em l\xE0,t\xF4i l\xE0"
+    audios:
+    - {fileID: 8300000, guid: 8fc3b8832e2d9664b8027c1850536cd4, type: 3}
+    - {fileID: 8300000, guid: 5f7c5ebee807e884bb0fdd7ef75f312a, type: 3}
+    - {fileID: 8300000, guid: b07a5890a40bb7f44b635568010f8bf3, type: 3}
+    hasSpoken: 0
+--- !u!4 &1658387842
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1658387840}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 506044687}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1682648219
 GameObject:
   m_ObjectHideFlags: 0
@@ -39953,9 +40483,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   quests:
   - {fileID: 1605182954}
-  - {fileID: 180992146}
-  - {fileID: 760028426}
-  - {fileID: 354501295}
   isConditionMet: {fileID: 11400000, guid: 15707155b79bdaa4ebc209d7a4c849b9, type: 2}
   verbalHintCount: {fileID: 11400000, guid: 53dfd328cd0727b418ccd3842dc87dfa, type: 2}
 --- !u!4 &1883205729
@@ -39973,9 +40500,6 @@ Transform:
   m_Children:
   - {fileID: 1605182952}
   - {fileID: 321313160}
-  - {fileID: 180992145}
-  - {fileID: 760028425}
-  - {fileID: 354501294}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1885920099
@@ -107973,8 +108497,8 @@ SceneRoots:
   - {fileID: 252710530}
   - {fileID: 2047998752}
   - {fileID: 1883205729}
+  - {fileID: 506044687}
   - {fileID: 1417027145}
   - {fileID: 405125984}
   - {fileID: 640600587}
   - {fileID: 107818165}
-  - {fileID: 400990087}

@@ -37,7 +37,6 @@
   <Project Path="ReadyPlayerMe.Samples.AvatarCreatorElements.csproj" />
   <Project Path="UniHumanoid.Editor.csproj" />
   <Project Path="uLipSync.Samples.WebGL.Runtime.csproj" />
-  <Project Path="Unity.VSAttribution.Editor.csproj" />
   <Project Path="ReadyPlayerMe.Core.WebGLSample.Editor.csproj" />
   <Project Path="ReadyPlayerMe.AvatarCreator.Editor.csproj" />
   <Project Path="Unity.XR.Interaction.Toolkit.Samples.InteractionSimulator.Editor.csproj" />

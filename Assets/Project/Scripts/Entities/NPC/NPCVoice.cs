@@ -30,13 +30,6 @@ namespace VRAutism.Entities
             }
         }
 
-        public void PlayClip(AudioClip clip)
-        {
-            if (npcAudioSource == null) return;
-            npcAudioSource.clip = clip;
-            npcAudioSource.Play();
-        }
-
         // public void PlayRandomReminder(int questionId)
         // {
             

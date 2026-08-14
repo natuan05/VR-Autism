@@ -7,7 +7,6 @@ namespace VRAutism.Entities
         [SerializeField] private NPCVoice voicePlayer;
         [SerializeField] private SpeechBubblePresenter bubblePresenter;
         [SerializeField] private NPCLookAtPlayer lookAtPlayer;
-        [SerializeField] private SpeechResponser[] speechResponser;
 
         private void Start()
         {
@@ -15,30 +14,15 @@ namespace VRAutism.Entities
             if (bubblePresenter == null) bubblePresenter = GetComponent<SpeechBubblePresenter>();
             if (lookAtPlayer == null) lookAtPlayer = GetComponent<NPCLookAtPlayer>();
 
-            foreach (var responser in speechResponser)
-            {
-                if (responser != null)
-                {
-                    responser.OnPrompt += SayAudio;
-                }
-            }
         }
 
-        public void SetNpc(int id)
-        {
-            if (voicePlayer != null)
-            {
-                voicePlayer.SetNpc(id);
-            }
-        }
-
-        public void SayAudio(AudioClip clip)
-        {
-            if (voicePlayer != null)
-            {
-                voicePlayer.PlayClip(clip);
-            }
-        }
+        // public void SetNpc(int id)
+        // {
+        //     if (voicePlayer != null)
+        //     {
+        //         voicePlayer.SetNpc(id);
+        //     }
+        // }
 
         // public void SayRandomReminder(int id)
         // {
