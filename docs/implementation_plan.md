@@ -12,11 +12,11 @@ The VR-Autism platform comprises three interconnected subsystems that must conve
 graph TD
     subgraph Firebase["🔥 Firebase (Persistent Storage)"]
         FS[Cloud Firestore<br/>Users, Sessions, Lessons]
-        RTDB[Realtime DB<br/>PIN Pairing, Telemetry]
+        RTDB[Realtime DB<br/>PIN Pairing, Telemetry,<br/>pause/skip/volume commands]
     end
 
-    subgraph LK["🌐 LiveKit Unified Room (lesson_session_123)"]
-        VT[📹 POV Video Track]
+    subgraph LK["🌐 LiveKit Cloud Room (lesson_session_123)"]
+        VT[📹 POV Video Track<br/>720p @ 30 FPS]
         AT[🎙️ User Audio Track]
         DP[📡 DataPacket Bus<br/>SET_QUEST / MATCHED / HINT / REMINDER / SPEAK_SCRIPT]
         AgentAudio[🔊 Agent Audio Track<br/>TTS → NPC Speaker]
@@ -57,6 +57,8 @@ graph TD
     QC -->|ON_REMINDER| DP
     FS -.->|Lesson Metadata| Web
     RTDB -.->|PIN Pairing & Telemetry| VR
+    RTDB -.->|pause/skip/volume| VR
+    Web -.->|pause/skip/volume| RTDB
 ```
 
 ### Subsystems
@@ -73,10 +75,11 @@ graph TD
 
 > [!IMPORTANT]
 > **Breaking Change: Web Dashboard WebRTC Migration**
-> The entire Web Dashboard POV streaming and remote command system will be migrated from native WebRTC + Firebase RTDB to LiveKit SDK. This changes:
+> The entire Web Dashboard POV streaming and **voice/speech** remote commands will be migrated from native WebRTC + Firebase RTDB to LiveKit SDK. This changes:
 > - How the teacher sees the VR POV stream (LiveKit room subscription instead of P2P)
-> - How remote commands are sent (LiveKit DataPackets instead of RTDB commands)
+> - How voice-related commands are sent (`VERBAL_HINT`, `SPEAK_SCRIPT` via LiveKit DataPackets)
 > - Requires a LiveKit token generation API route on the web server
+> - **Non-voice commands** (`pause_lesson`, `skip_quest`, `set_volume`) **remain on Firebase RTDB**
 
 > [!WARNING]
 > **Unity Legacy Code Removal**
@@ -92,13 +95,22 @@ graph TD
 
 ---
 
-## 3. Open Questions
+## 3. Resolved Design Decisions
 
-> [!IMPORTANT]
-> 1. **POV Video Resolution & FPS**: What resolution and framerate should the VR camera publish to LiveKit? (720p@30fps is recommended for bandwidth balance). Does the existing `WebRTCStreamer.cs` capture at a specific resolution?
-> 2. **LiveKit Cloud vs Self-Hosted**: The agent `.env` references `wss://vra-9jrt51dr.livekit.cloud`. Will the POV video also route through LiveKit Cloud, or should it use a self-hosted SFU for LAN optimization?
-> 3. **Firebase RTDB Commands Deprecation Timeline**: Should we keep RTDB commands as a fallback for non-LiveKit features (pause_lesson, set_volume, skip_quest for non-voice quests), or migrate everything to DataPackets?
-> 4. **Telemetry Data Path**: Behavior telemetry (head/hand kinematics) currently uses Firebase RTDB at 2s intervals. Should this remain on RTDB or also move to LiveKit DataPackets?
+The following decisions have been confirmed by the project owner:
+
+| # | Question | Decision |
+|---|----------|----------|
+| 1 | **POV Video Resolution & FPS** | **720p @ 30 FPS** via LiveKit video track |
+| 2 | **LiveKit Cloud vs Self-Hosted** | **LiveKit Cloud** — continue using `wss://vra-9jrt51dr.livekit.cloud`. Simpler ops, no server maintenance, built-in TURN/scaling |
+| 3 | **Firebase RTDB Commands** | **Hybrid routing** — Voice/speech commands (`VERBAL_HINT`, `SPEAK_SCRIPT`, `ON_REMINDER`) use LiveKit DataPackets. Control commands (`pause_lesson`, `skip_quest`, `set_volume`) **remain on Firebase RTDB** |
+| 4 | **Telemetry Data Path** | **Keep on Firebase RTDB** — Sensor telemetry (head/hand kinematics at 2s intervals) stays on RTDB. No migration to LiveKit DataPackets |
+
+> [!NOTE]
+> **Implications of Hybrid Command Routing**:
+> - `RemoteCommandListener.cs` (Unity) and `pushRemoteCommand` (Web) are **kept** for `pause_lesson`, `skip_quest`, `set_volume`
+> - Only `verbal_hint` and `play_npc_script` RTDB command paths are deprecated (replaced by LiveKit DataPackets)
+> - `QuestRemoteBridge.cs` continues routing RTDB-based commands to `QuestController`
 
 ---
 
@@ -120,7 +132,7 @@ graph TD
 | [HoldTouchQuest.cs](file:///D:/Lab/VR-Autism/Assets/Project/Scripts/Gameplay/Actions/Models/HoldTouchQuest.cs) | `HoldTouchQuest` | Hold-touch quests | ✅ Keep |
 | [NPCVoice.cs](file:///D:/Lab/VR-Autism/Assets/Project/Scripts/Entities/NPC/NPCVoice.cs) | `NPCVoice` | NPC audio source management | ✅ Keep |
 | [QuestRemoteBridge.cs](file:///D:/Lab/VR-Autism/Assets/Project/Scripts/Gameplay/Actions/Controllers/QuestRemoteBridge.cs) | `QuestRemoteBridge` | Routes remote commands to QuestController | ✅ Keep |
-| [RemoteCommandListener.cs](file:///D:/Lab/VR-Autism/Assets/Project/Scripts/Cloud/RTDB/RemoteCommandListener.cs) | `RemoteCommandListener` | Listens to RTDB commands | ✅ Keep (for non-LiveKit commands) |
+| [RemoteCommandListener.cs](file:///D:/Lab/VR-Autism/Assets/Project/Scripts/Cloud/RTDB/RemoteCommandListener.cs) | `RemoteCommandListener` | Listens to RTDB commands | ✅ Keep (handles `pause_lesson`, `skip_quest`, `set_volume`) |
 | [LiveSessionReporter.cs](file:///D:/Lab/VR-Autism/Assets/Project/Scripts/Cloud/RTDB/LiveSessionReporter.cs) | `LiveSessionReporter` | Reports VR state to RTDB | ⚠️ Requires refactor (remove WebRTCManager trigger) |
 | [PairingManager.cs](file:///D:/Lab/VR-Autism/Assets/Project/Scripts/Cloud/RTDB/PairingManager.cs) | `PairingManager` | PIN pairing state machine | ✅ Keep |
 | [SensorHarvester.cs](file:///D:/Lab/VR-Autism/Assets/Project/Scripts/Core/Telemetry/SensorHarvester.cs) | `SensorHarvester` | Kinematic data collection | ✅ Keep |
@@ -196,7 +208,7 @@ graph TD
 | [layout.tsx](file:///D:/Lab/VRA-web/src/app/layout.tsx) | Root layout with AuthProvider | ✅ Keep |
 | `src/actions/*.ts` | Server Actions for Firestore CRUD | ✅ Keep |
 | `src/lib/firebase/client.ts` & `admin.ts` | Firebase initialization | ✅ Keep |
-| `src/lib/firebase/rtdb.ts` | RTDB functions (pairing, telemetry) | ⚠️ Keep for pairing/telemetry, remove command functions |
+| `src/lib/firebase/rtdb.ts` | RTDB functions (pairing, telemetry) | ⚠️ Keep for pairing, telemetry, and control commands (`pause_lesson`, `skip_quest`, `set_volume`). Remove only `verbal_hint` and `play_npc_script` command paths |
 | [StartLessonButton.tsx](file:///D:/Lab/VRA-web/src/app/dashboard/expert/lessons/_components/StartLessonButton.tsx) | Lesson start trigger | ✅ Keep (still triggers via RTDB for pairing) |
 | Dashboard pages (expert, center, admin, parent) | Full dashboard UI | ✅ Keep |
 
@@ -204,7 +216,7 @@ graph TD
 
 | File | Issue | Required Change |
 |------|-------|----------------|
-| [session/[id]/page.tsx](file:///D:/Lab/VRA-web/src/app/dashboard/expert/session/%5Bid%5D/page.tsx) | Uses RTDB for remote commands | Replace `pushRemoteCommand` calls with LiveKit DataPacket sends |
+| [session/[id]/page.tsx](file:///D:/Lab/VRA-web/src/app/dashboard/expert/session/%5Bid%5D/page.tsx) | Uses RTDB for voice/speech commands | Replace `pushRemoteCommand` for `verbal_hint` and `play_npc_script` with LiveKit DataPackets. **Keep** RTDB for `pause_lesson`, `skip_quest`, `set_volume` |
 | [POVMonitor.tsx](file:///D:/Lab/VRA-web/src/app/dashboard/expert/session/_components/POVMonitor.tsx) | Uses native `<video>` + P2P WebRTC | Replace with `@livekit/components-react` `<VideoTrack>` component |
 
 #### 🆕 Missing Components (NEW)
@@ -224,7 +236,7 @@ graph TD
 | [useWebRTCViewer.ts](file:///D:/Lab/VRA-web/src/app/dashboard/expert/session/_hooks/useWebRTCViewer.ts) | Legacy native WebRTC viewer — replaced by LiveKit |
 | [useWebRTCSignaling.ts](file:///D:/Lab/VRA-web/src/app/dashboard/expert/session/_hooks/useWebRTCSignaling.ts) | Legacy RTDB-based WebRTC signaling |
 | `/api/tts/route.ts` | Server-side TTS generation — now handled by LiveKit Agent |
-| RTDB `pushRemoteCommand` for `verbal_hint` / `play_npc_script` | Commands now via LiveKit DataPackets |
+| RTDB `pushRemoteCommand` for `verbal_hint` / `play_npc_script` | These two command types now via LiveKit DataPackets. Other commands (`pause_lesson`, `skip_quest`, `set_volume`) **stay on RTDB** |
 
 ---
 
@@ -310,8 +322,8 @@ All DataPackets are sent as **reliable** UTF-8 JSON strings via LiveKit's Data C
 
 #### [MODIFY] [LiveKitService.cs](file:///D:/Lab/VR-Autism/Assets/Project/Scripts/Cloud/LiveKit/LiveKitService.cs)
 - Add `EnablePOVCamera(Camera vrCamera)` method
-- Create `RtcVideoSource` that captures from the VR camera's render texture
-- Create `LocalVideoTrack` and publish it to the room
+- Create `RtcVideoSource` that captures from the VR camera's render texture at **720p (1280×720) @ 30 FPS**
+- Create `LocalVideoTrack` and publish it to the LiveKit Cloud room
 - Add `DisablePOVCamera()` for cleanup
 
 #### [MODIFY] [LiveSessionReporter.cs](file:///D:/Lab/VR-Autism/Assets/Project/Scripts/Cloud/RTDB/LiveSessionReporter.cs)
@@ -338,7 +350,7 @@ npm install @livekit/components-react livekit-client livekit-server-sdk
 - Generate LiveKit access tokens using `livekit-server-sdk`
 - Accept `roomName`, `participantName`, `role` (viewer vs publisher)
 - Return signed JWT token
-- Use env vars: `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `LIVEKIT_URL`
+- Use env vars: `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `LIVEKIT_URL` (LiveKit Cloud URL)
 
 #### [NEW] `src/components/livekit/LiveKitRoomProvider.tsx`
 - Wrap `@livekit/components-react` `<LiveKitRoom>` component
@@ -366,12 +378,14 @@ npm install @livekit/components-react livekit-client livekit-server-sdk
 - Wrap session page in `<LiveKitRoomProvider>`
 - Replace `handleTriggerVerbalHint` to use `sendDataPacket("VERBAL_HINT", {...})`
 - Replace `handlePlayNPCScript` to use `sendDataPacket("SPEAK_SCRIPT", {...})`
+- **Keep** RTDB-based handlers for `pause_lesson`, `skip_quest`, `set_volume`
 - Add QUEST_STATUS listener for real-time quest display
 
 #### [DELETE/DISABLE] Legacy WebRTC hooks
 - `useWebRTCViewer.ts` → delete
 - `useWebRTCSignaling.ts` → delete
 - `/api/tts/route.ts` → delete (TTS now in LiveKit Agent)
+- RTDB `pushRemoteCommand` for `verbal_hint` / `play_npc_script` → delete these two paths only
 
 ---
 

@@ -1,0 +1,25 @@
+{
+  "token_budget": 2800,
+  "weights": {
+    "unity": 1.0,
+    "python": 1.2,
+    "web": 1.0,
+    "contract": 1.5
+  },
+  "paths": {
+    "unity_path": "Assets/Project/Scripts",
+    "python_path": "LiveKitAgent/src",
+    "web_path": "VRA-web/src"
+  },
+  "ignore_patterns": [
+    "Library",
+    "node_modules",
+    ".venv",
+    ".git",
+    "Packages",
+    "obj",
+    "Temp",
+    "dist",
+    ".next"
+  ]
+}
