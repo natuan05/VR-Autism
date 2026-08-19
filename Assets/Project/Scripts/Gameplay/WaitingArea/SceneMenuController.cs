@@ -23,13 +23,19 @@ namespace VRAutism.Gameplay.WaitingArea{
 
         private void Start()
         {
+            // Đảm bảo khi ở GameMenu, luồng LiveKit POV và Mic luôn tắt hoàn toàn
+            if (Cloud.LiveKit.LiveKitService.Instance != null)
+            {
+                Cloud.LiveKit.LiveKitService.Instance.Disconnect();
+            }
+
             if (Cloud.RTDB.PairingManager.Instance != null)
             {
                 Cloud.RTDB.PairingManager.Instance.OnNewSessionCommand += LoadRemoteLesson;
             }
         }
 
-        private async void LoadRemoteLesson(string childId, string sceneName, string lessonId, string sessionId, string hostId)
+        private async void LoadRemoteLesson(string childId, string sceneName, string lessonId, string sessionId, string hostId, string livekitToken)
         {
             if (string.IsNullOrEmpty(lessonId) || string.IsNullOrEmpty(sceneName))
             {
@@ -47,6 +53,7 @@ namespace VRAutism.Gameplay.WaitingArea{
                 ctx.ChildId = childId;
                 ctx.LessonId = lessonId;
                 ctx.HostId = hostId ?? "";
+                ctx.LiveKitToken = livekitToken ?? "";
             }
 
             var db = FirebaseFirestore.DefaultInstance;

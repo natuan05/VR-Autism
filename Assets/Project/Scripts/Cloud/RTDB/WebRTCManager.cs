@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using VRAutism.Core.Telemetry;
 
@@ -13,6 +13,7 @@ namespace VRAutism.Cloud.RTDB
     ///   StopStream()           → dọn dẹp PeerConnection + Signaling
     ///   Thất bại 3 lần        → quay về GameMenu
     /// </summary>
+    [System.Obsolete("Replaced by LiveKitService unified room architecture")]
     public class WebRTCManager : MonoBehaviour
     {
         public static WebRTCManager Instance { get; private set; }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 using Firebase.Database;
@@ -6,6 +6,7 @@ using Firebase.Extensions;
 
 namespace VRAutism.Cloud.RTDB
 {
+    [System.Obsolete("Replaced by LiveKitService unified room architecture")]
     public class WebRTCSignaling : MonoBehaviour
     {
         public Action<string> OnAnswerReceived;

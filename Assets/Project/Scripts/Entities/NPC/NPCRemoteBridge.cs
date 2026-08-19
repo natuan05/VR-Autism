@@ -5,6 +5,7 @@ using VRAutism.Cloud.RTDB;
 
 namespace VRAutism.Entities
 {
+    [System.Obsolete("Replaced by LiveKitService agent audio track streaming")]
     public class NPCRemoteBridge : MonoBehaviour
     {
         [SerializeField] private NPCController npcController;

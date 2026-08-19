@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using HuggingFace.API;
 
+[System.Obsolete("Replaced by LiveKitService unified speech pipeline")]
 public class VoiceProcessor : MonoBehaviour
 {
     public bool IsRecording => _audioClip != null && Microphone.IsRecording(CurrentDeviceName);

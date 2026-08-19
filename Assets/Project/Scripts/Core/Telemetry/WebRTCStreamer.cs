@@ -5,6 +5,7 @@ using Unity.WebRTC;
 
 namespace VRAutism.Core.Telemetry
 {
+    [System.Obsolete("Replaced by LiveKitService unified room architecture")]
     public class WebRTCStreamer : MonoBehaviour
     {
         [Header("Settings")]

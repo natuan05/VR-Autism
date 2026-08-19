@@ -6,9 +6,9 @@ VR-Autism là một giải pháp công nghệ toàn diện kết hợp giữa K�
 Khi trẻ tham gia bài học bằng kính thực tế ảo, giáo viên hoặc trị liệu viên có thể ngồi bên cạnh theo dõi toàn bộ quá trình qua màn hình máy tính và hỗ trợ trẻ từ xa khi cần.
 
 ## Các phân hệ chính dành cho người học (Trải nghiệm VR)
-- **Tập làm các công việc hàng ngày:** Trẻ thực hành các chuỗi hành động như rửa tay, đánh răng hoặc đi siêu thị bằng cách chạm, cầm nắm các đồ vật ảo.
+- **Tập làm các công việc hàng ngày:** Trẻ thực hành các chuỗi hành động như rửa tay bằng cách chạm, cầm nắm các đồ vật ảo.
 - **Học giao tiếp và trò chuyện:** Trẻ thực hành lắng nghe và đáp lại lời thoại của các nhân vật ảo (NPC), rèn luyện phản xạ ngôn ngữ. Nếu trẻ im lặng quá lâu, hệ thống sẽ tự động đưa ra câu hỏi gợi ý để khuyến khích trẻ nói.
-- **Tham quan và nhận biết:** Trẻ tham gia chuyến tham quan vườn thú tự động để làm quen với các âm thanh và hình ảnh loài vật. Ngay sau chuyến tham quan, trẻ sẽ thực hành nhận biết thông qua việc trả lời các câu hỏi trắc nghiệm bằng cách tương tác trực tiếp với các mô hình con vật 3D tương ứng.
+- **Tham quan và nhận biết:** Trẻ tham gia chuyến tham quan vườn thú tự động để làm quen với các âm thanh và hình ảnh loài vật. Ngay sau chuyến tham quan, trẻ sẽ thực hành nhận biết thông qua việc trả lời các câu hỏi trắc nghiệm.
 
 ## Các phân hệ chính dành cho người hướng dẫn (Trang quản lý Web)
 - **Xem trực tiếp góc nhìn của trẻ:** Màn hình máy tính hiển thị chính xác những gì trẻ đang nhìn thấy trong kính với độ trễ cực thấp.

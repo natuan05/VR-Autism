@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using HuggingFace.API;
 using TMPro;
@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Threading.Tasks;
 
+[System.Obsolete("Replaced by LiveKitService unified speech pipeline")]
 public class SpeechRecognition : MonoBehaviour {
     [SerializeField] private SpeechResponser speechResponser;
     [SerializeField] private TextMeshProUGUI text;
@@ -18,6 +19,13 @@ public class SpeechRecognition : MonoBehaviour {
 
     private void Start()
     {
+        // Vô hiệu hoá auto-start để tránh tranh chấp Microphone với LiveKitService
+        if (VRAutism.Cloud.LiveKit.LiveKitService.Instance != null)
+        {
+            Debug.Log("[SpeechRecognition] Disabled in favor of LiveKitService.");
+            enabled = false;
+            return;
+        }
         #if UNITY_ANDROID && !UNITY_EDITOR
         if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.Microphone))
         {

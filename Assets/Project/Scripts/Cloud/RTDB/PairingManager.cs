@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Firebase.Database;
 using System.Threading.Tasks;
 using System;
@@ -31,7 +31,7 @@ namespace VRAutism.Cloud.RTDB
         public event Action<string> OnPinGenerated;           // PIN đã tạo xong
         public event Action OnPairedSuccess;                   // Web vừa ghép nối thành công
         public event Action OnDisconnectedByWeb;               // Web chủ động ngắt kết nối
-        public event Action<string, string, string, string, string> OnNewSessionCommand; // (childId, sceneName, lessonId, sessionId, hostId)
+        public event Action<string, string, string, string, string, string> OnNewSessionCommand; // (childId, sceneName, lessonId, sessionId, hostId, livekitToken)
 
         // ─── Properties cho UI đọc trạng thái hiện tại ───
         public bool IsPaired => _isPaired;
@@ -173,6 +173,7 @@ namespace VRAutism.Cloud.RTDB
             string sceneName = args.Snapshot.Child("target_scene_name").Value?.ToString() ?? "";
             string lessonId  = args.Snapshot.Child("current_lesson_id").Value?.ToString() ?? "";
             string hostId    = args.Snapshot.Child("host_id").Value?.ToString() ?? "";
+            string livekitToken = args.Snapshot.Child("livekit_token").Value?.ToString() ?? "";
 
             // ── Xử lý thay đổi Status ──
             if (newStatus == "paired" && !_isPaired)
@@ -195,8 +196,8 @@ namespace VRAutism.Cloud.RTDB
                 if (!string.IsNullOrEmpty(sceneName) && !string.IsNullOrEmpty(lessonId))
                 {
                     _lastProcessedSessionId = sessionId;
-                    Debug.Log($"[PairingManager] Nhận lệnh Session mới → Bé: {childId}, Scene: {sceneName}, Bài: {lessonId}");
-                    OnNewSessionCommand?.Invoke(childId, sceneName, lessonId, sessionId, hostId);
+                    Debug.Log($"[PairingManager] Nhận lệnh Session mới → Bé: {childId}, Scene: {sceneName}, Bài: {lessonId}, LiveKitToken: {(!string.IsNullOrEmpty(livekitToken) ? "Có" : "Không")}");
+                    OnNewSessionCommand?.Invoke(childId, sceneName, lessonId, sessionId, hostId, livekitToken);
                 }
                 else
                 {
@@ -211,6 +212,9 @@ namespace VRAutism.Cloud.RTDB
 
                 if (VRAutism.Core.SessionContext.Instance != null)
                     VRAutism.Core.SessionContext.Instance.Clear();
+
+                if (VRAutism.Cloud.LiveKit.LiveKitService.Instance != null)
+                    VRAutism.Cloud.LiveKit.LiveKitService.Instance.Disconnect();
 
                 SceneManager.LoadScene("GameMenu");
             }

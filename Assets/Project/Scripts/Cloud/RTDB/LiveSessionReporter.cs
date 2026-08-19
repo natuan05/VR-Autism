@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections.Generic;
+using VRAutism.Cloud.LiveKit;
 
 namespace VRAutism.Cloud.RTDB
 {
@@ -27,7 +28,7 @@ namespace VRAutism.Cloud.RTDB
 
         /// <summary>
         /// Gọi ngay sau khi Scene bài học load xong (từ TimeManager.Start).
-        /// Ghi vr_state với status="ready" và khởi động WebRTC stream.
+        /// Ghi vr_state với status="ready" và khởi động LiveKit POV Video stream.
         /// </summary>
         public async void SendLiveSessionHandshake(string sessionId, string sceneName)
         {
@@ -62,16 +63,30 @@ namespace VRAutism.Cloud.RTDB
 
                 Debug.Log($"[LiveSessionReporter] ✅ Handshake gửi thành công → live_sessions/{sessionId}/vr_state (scene: {sceneName})");
 
-                // Đảm bảo WebRTCManager tồn tại, tự động thêm nếu người dùng quên gán trong Editor
-                var webrtcManager = WebRTCManager.Instance;
-                if (webrtcManager == null)
+                // Khởi động LiveKit POV Video Stream nếu camera chính có sẵn
+                if (LiveKitService.Instance != null)
                 {
-                    webrtcManager = gameObject.AddComponent<WebRTCManager>();
-                    Debug.Log("[LiveSessionReporter] Auto-added WebRTCManager to GameObject.");
-                }
+                    var ctx = VRAutism.Core.SessionContext.Instance;
+                    string token = ctx != null ? ctx.LiveKitToken : "";
+                    string livekitUrl = !string.IsNullOrEmpty(ctx?.LiveKitUrl) ? ctx.LiveKitUrl : "wss://vra-9jrt51dr.livekit.cloud";
 
-                // Uỷ quyền khởi động stream
-                webrtcManager.StartStream(sessionId);
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        Debug.Log($"[LiveSessionReporter] 🌐 Đang kết nối LiveKit Room cho phiên: {sessionId}...");
+                        LiveKitService.Instance.Connect(livekitUrl, token);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[LiveSessionReporter] ⚠️ Không tìm thấy LiveKitToken trong SessionContext.");
+                    }
+
+                    var mainCamera = Camera.main;
+                    if (mainCamera != null)
+                    {
+                        Debug.Log("[LiveSessionReporter] 📹 Khởi động LiveKit POV Stream cho camera chính...");
+                        LiveKitService.Instance.EnablePOVCamera(mainCamera);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -105,7 +120,7 @@ namespace VRAutism.Cloud.RTDB
 
         /// <summary>
         /// Gọi khi bài học kết thúc (từ TimeManager.SaveLessonTimeData).
-        /// Dừng WebRTC stream và ghi vr_state.status = "ended".
+        /// Dừng LiveKit POV stream và ghi vr_state.status = "ended".
         /// </summary>
         public async void SendLiveSessionEnded(string sessionId)
         {
@@ -115,8 +130,8 @@ namespace VRAutism.Cloud.RTDB
                 return;
             }
 
-            // Uỷ quyền dọn dẹp stream cho WebRTCManager
-            WebRTCManager.Instance?.StopStream();
+            // Dọn dẹp POV Video Stream trong LiveKitService
+            LiveKitService.Instance?.DisablePOVCamera();
 
             var root = GetRoot();
             if (root == null) return;
@@ -139,15 +154,6 @@ namespace VRAutism.Cloud.RTDB
                 Debug.LogError($"[LiveSessionReporter] SendLiveSessionEnded thất bại: {ex.Message}");
             }
         }
-
-        // ══════════════════════════════════════════════════════════════
-        //  TODO (Task C2 — Watchdog / Heartbeat)
-        //  Sẽ triển khai theo kế hoạch RTDB_REFACTORING_PLAN.md §3.3
-        // ══════════════════════════════════════════════════════════════
-
-        // public void StartHeartbeat(string sessionId) { ... }
-        // public void StopHeartbeat() { ... }
-        // private IEnumerator HeartbeatRoutine(string sessionId) { ... }
 
         private Firebase.Database.DatabaseReference GetRoot() => RTDBConnection.Instance?.RootRef;
     }

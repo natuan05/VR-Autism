@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using TMPro;
 
 namespace VRAutism.UI
@@ -76,7 +76,7 @@ namespace VRAutism.UI
         }
 
         // ─── Callback: Giáo viên đã chọn bài, sắp chuyển scene ───
-        private void HandleLessonReady(string childId, string sceneName, string lessonId, string sessionId, string hostId)
+        private void HandleLessonReady(string childId, string sceneName, string lessonId, string sessionId, string hostId, string livekitToken)
         {
             // Dùng tham số trực tiếp từ RTDB snapshot — không đọc SessionContext.LessonName
             // vì SceneMenuController.LoadRemoteLesson() là async và chưa fetch Firestore xong

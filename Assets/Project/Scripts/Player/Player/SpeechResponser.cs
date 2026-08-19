@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections;
 using VRAutism.Core;
 using VRAutism.Core.Models;
 using UnityEngine;
 using UnityEngine.Events;
 
+[System.Obsolete("Replaced by LiveKitService unified speech pipeline")]
 public class SpeechResponser : MonoBehaviour
 {
     [SerializeField] private float timeBeforePrompt = 5f; // Fallback khi SessionContext chưa sẵn sàng

@@ -2228,7 +2228,6 @@ MonoBehaviour:
   voicePlayer: {fileID: 587083004}
   bubblePresenter: {fileID: 1762575536}
   lookAtPlayer: {fileID: 1465194059}
-  speechResponser: []
 --- !u!4 &861802641
 Transform:
   m_ObjectHideFlags: 0
@@ -10038,53 +10037,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1467213766}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1812034426
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1812034428}
-  - component: {fileID: 1812034427}
-  m_Layer: 0
-  m_Name: LiveKitService
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1812034427
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1812034426}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f8bef0df4906ad4c9c4e69914f459f8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Cloud.LiveKit.LiveKitService
-  autoConnectOnStart: 1
-  testRoomUrl: wss://vra-9jrt51dr.livekit.cloud
-  testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBUElyR29RV0pWcjQyY2kiLCJzdWIiOiJhdHVhbiIsImV4cCI6MTc4NjcwNzA5MywibmJmIjoxNzg2Njk4MDkzLCJpYXQiOjE3ODY2OTgwOTMsImlkZW50aXR5IjoiYXR1YW4iLCJ2aWRlbyI6eyJyb29tSm9pbiI6dHJ1ZSwicm9vbSI6IjE0MDgiLCJjYW5QdWJsaXNoIjp0cnVlLCJjYW5TdWJzY3JpYmUiOnRydWUsImNhblB1Ymxpc2hEYXRhIjp0cnVlfX0.tBgVA3m_7r9HJKsljWrkqujcDXM9f9q9cig7MoDmcRY
---- !u!4 &1812034428
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1812034426}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.42281, y: 4.40827, z: -2.13818}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1875027358
 GameObject:
   m_ObjectHideFlags: 0
@@ -16931,4 +16883,3 @@ SceneRoots:
   - {fileID: 632125631}
   - {fileID: 840482454}
   - {fileID: 1298686751}
-  - {fileID: 1812034428}

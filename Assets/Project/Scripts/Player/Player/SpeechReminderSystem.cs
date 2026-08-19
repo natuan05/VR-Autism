@@ -1,8 +1,9 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+[System.Obsolete("Replaced by LiveKitService unified speech pipeline")]
 public class SpeechReminderSystem : MonoBehaviour
 {
     public TextMeshProUGUI reminderText;

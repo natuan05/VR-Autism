@@ -15,6 +15,8 @@ namespace VRAutism.Core
         // --- Thông tin phiên ---
         public string SessionId { get; set; } = "";
         public string ChildId { get; set; } = "";
+        public string LiveKitToken { get; set; } = "";
+        public string LiveKitUrl { get; set; } = "wss://vra-9jrt51dr.livekit.cloud";
         
         // --- Thông tin bài học (fetch từ Firestore theo lesson_id) ---
         public string LessonId { get; set; } = "";

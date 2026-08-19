@@ -70,24 +70,25 @@ namespace VRAutism.Gameplay.Actions
         }
 
         /// <summary>
-        /// Kích hoạt gợi ý lời nói (Verbal Hint) cho Quest hiện tại.
+        /// Kích hoạt gợi ý lời nói (Verbal Hint / Reminder) cho Quest hiện tại.
         /// </summary>
         public override void OnVerbalHint()
         {
             Debug.Log($"[VoiceQuest] 🔊 Kích hoạt Verbal Hint cho Quest '{Name}' (Id: {Id})");
 
-            // 2. Đã có thể truy cập mảng phrases động của Quest hiện tại
-            string[] currentPhrases = GetActivePhrases();
-            if (currentPhrases != null && currentPhrases.Length > 0)
+            // 1. Kích hoạt UnityEvent nếu có cấu hình
+            onQuestReminder?.Invoke();
+
+            // 2. Gửi tín hiệu VERBAL_HINT tới LiveKit Agent để phát câu gợi ý từ cache
+            if (LiveKitService.Instance != null)
             {
-                string randomPhrase = currentPhrases[Random.Range(0, currentPhrases.Length)];
-                Debug.Log($"[VoiceQuest] 💬 Câu gợi ý của Quest '{Name}': \"{randomPhrase}\"");
+                LiveKitService.Instance.SendVerbalHint();
             }
         }
 
         private void HandleSpeechMatched()
         {
-            Debug.Log($"[VoiceQuest] 🎉 6. NHẬN TÍN HIỆU THÀNH CÔNG từ AI! Trẻ đọc đúng Quest '{Name}' ➔ Hoàn thành Quest!");
+            Debug.Log($"[VoiceQuest] 🎉 NHẬN TÍN HIỆU THÀNH CÔNG từ AI! Trẻ đọc đúng Quest '{Name}' ➔ Hoàn thành Quest!");
             Controller?.CompleteActiveQuest();
         }
     }   

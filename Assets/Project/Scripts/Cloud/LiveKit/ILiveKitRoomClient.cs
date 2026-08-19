@@ -1,17 +1,23 @@
 using System;
+using UnityEngine;
 
 namespace VRAutism.Cloud.LiveKit
 {
     public interface ILiveKitRoomClient
     {
-        public event Action OnSpeechMatched;
+        event Action OnSpeechMatched;
+        event Action<string> OnAgentError;
+        event Action<string, string> OnQuestStatusUpdate;
 
-        public void Connect(string roomUrl, string token);
-        public void Disconnect();
+        void Connect(string roomUrl, string token);
+        void Disconnect();
         
-        public void SendActiveQuest(string questName, string[] defaultPhrases);
+        void SendActiveQuest(string questName, string[] defaultPhrases);
+        void SendVerbalHint();
+        void SendOnReminder();
 
-        public void EnableMicrophone(bool enable);
-
+        void EnableMicrophone(bool enable);
+        void EnablePOVCamera(Camera vrCamera);
+        void DisablePOVCamera();
     }
 }
