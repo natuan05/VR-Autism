@@ -1,14 +1,7 @@
 """
 LiveKit AI Voice Agent for VR Autism Application
-Architecture: Pipeline Mode (Google STT -> Gemini LLM -> Google TTS Chirp 3 HD + Silero VAD)
+Pipeline: Google STT (Chirp 3) -> Gemini LLM (3.5 Flash Lite) -> Google TTS (Chirp 3 HD) + Silero VAD
 SDK: LiveKit Agents 1.6+
-
-Features:
-  1. Dynamic active quest evaluation via Gemini LLM and `complete_quest` tool.
-  2. Instant response using cached TTS frames for opening phrases and hints/reminders.
-  3. Real-time handling of VERBAL_HINT, ON_REMINDER, and SPEAK_SCRIPT LiveKit DataPackets.
-  4. Broadcasts QUEST_STATUS updates back to Web Dashboard and Unity VR.
-  5. Isolated per-job runtime state and robust error reporting via AGENT_INIT_FAILED.
 """
 
 import asyncio
@@ -24,10 +17,13 @@ from livekit.agents import (
     AutoSubscribe,
     JobContext,
     JobProcess,
+    RunContext,
     WorkerOptions,
     cli,
+    function_tool,
     llm,
 )
+from livekit.agents import tts as agents_tts
 from livekit.agents.voice import Agent, AgentSession
 from livekit.plugins import google, silero
 from google.cloud import texttospeech as gcp_tts
@@ -67,7 +63,7 @@ WAITING_INSTRUCTIONS = (
 
 
 def build_quest_instructions(quest_name: str, phrases: List[str]) -> str:
-    """Build dynamic system prompt for the active quest received from Unity VR."""
+    """Build dynamic system prompt for active quest from Unity VR."""
     return (
         BASE_INSTRUCTIONS + "\n\n"
         f"=== ACTIVE QUEST ===\n"
@@ -84,19 +80,13 @@ def build_quest_instructions(quest_name: str, phrases: List[str]) -> str:
 # ---------------------------------------------------------------------------
 # TTS Phrase Cache
 # ---------------------------------------------------------------------------
-# Keyed by phrase text -> list of rtc.AudioFrame.
-from livekit.agents import tts as agents_tts
-_tts_cache: Dict[str, List[rtc.AudioFrame]] = {}
-
-
 async def _synthesize_phrases(
     tts: agents_tts.TTS,
     phrases: List[str],
+    cache: Dict[str, List[rtc.AudioFrame]],
 ) -> None:
-    """Synthesize all phrases concurrently and store results in _tts_cache.
-    Skips phrases that are already cached.
-    """
-    to_synthesize = [p for p in phrases if p not in _tts_cache]
+    """Pre-synthesize phrases concurrently into per-job cache."""
+    to_synthesize = [p for p in phrases if p not in cache]
     if not to_synthesize:
         return
 
@@ -107,23 +97,25 @@ async def _synthesize_phrases(
                 async for event in stream:
                     if event.frame:
                         frames.append(event.frame)
-            _tts_cache[text] = frames
-            logger.debug("[TTS CACHE] Cached %d frames for: %r", len(frames), text)
+            cache[text] = frames
+            logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
         except Exception as exc:
-            logger.warning("[TTS CACHE] Failed to synthesize %r: %s", text, exc)
+            logger.warning("[TTS] Failed to synthesize phrase %r: %s", text, exc)
 
     await asyncio.gather(*[_synth_one(p) for p in to_synthesize])
 
 
 async def _frames_to_async_gen(frames: List[rtc.AudioFrame]):
-    """Wrap a cached list of AudioFrame into an AsyncIterable."""
+    """Convert AudioFrame list to async generator for session.say."""
     for frame in frames:
         yield frame
 
 
 # ---------------------------------------------------------------------------
+# Runtime & State Management
+# ---------------------------------------------------------------------------
 class QuestState:
-    """Quản lý trạng thái bài học hiện tại. Một instance riêng cho mỗi job/room."""
+    """Track active quest state per job instance."""
 
     def __init__(self) -> None:
         self.active: bool = False
@@ -142,14 +134,16 @@ class QuestState:
 
 
 class JobRuntime:
-    """Gói toàn bộ state thuộc về MỘT job/room cụ thể."""
+    """Container for per-job isolated runtime state and background tasks."""
 
     def __init__(self, job_ctx: JobContext) -> None:
         self.job_ctx = job_ctx
         self.quest_state = QuestState()
         self.background_tasks: set[asyncio.Task[Any]] = set()
+        self.tts_cache: Dict[str, List[rtc.AudioFrame]] = {}
 
     def spawn(self, coro: Any) -> None:
+        """Spawn background task with auto-cleanup on completion."""
         task = asyncio.create_task(coro)
         self.background_tasks.add(task)
         task.add_done_callback(self.background_tasks.discard)
@@ -161,9 +155,9 @@ class JobRuntime:
 async def send_rtc_event(
     runtime: JobRuntime, event_name: str, extra_data: Optional[Dict[str, Any]] = None
 ) -> bool:
-    """Gửi gói tin DataPacket về Unity VR và Web Dashboard qua LiveKit RTC DataChannel."""
+    """Broadcast JSON DataPacket to Unity VR and Web Dashboard."""
     if not runtime.job_ctx or not runtime.job_ctx.room:
-        logger.warning("[RTC] Không thể gửi gói tin '%s': Chưa kết nối LiveKit Room.", event_name)
+        logger.warning("[RTC] Cannot send '%s': room not connected", event_name)
         return False
 
     try:
@@ -173,78 +167,60 @@ async def send_rtc_event(
 
         payload_bytes = json.dumps(payload_dict).encode("utf-8")
         await runtime.job_ctx.room.local_participant.publish_data(payload_bytes, reliable=True)
-        logger.info("[RTC] Đã bắn sự kiện '%s' thành công qua DataChannel.", event_name)
+        logger.info("[RTC] Sent event: %s | payload: %s", event_name, payload_dict)
         return True
     except Exception as err:
-        logger.error("[RTC] Lỗi khi gửi dữ liệu '%s': %s", event_name, err)
+        logger.error("[RTC] Error sending event '%s': %s", event_name, err)
         return False
 
 
 async def clear_agent_chat_history(agent: Agent) -> None:
-    """Xóa lịch sử hội thoại cũ qua agent.update_chat_ctx()."""
+    """Reset LLM chat context for new quest."""
     try:
         empty_ctx = llm.ChatContext.empty()
         await agent.update_chat_ctx(empty_ctx)
-        logger.info("[SESSION] Đã dọn dẹp lịch sử hội thoại cũ cho Quest mới.")
+        logger.info("[SESSION] Chat history cleared for new quest context")
     except Exception as err:
-        logger.error("[SESSION] Lỗi khi xóa lịch sử hội thoại: %s", err)
-
-
-# ---------------------------------------------------------------------------
-# Agent Tools
-# ---------------------------------------------------------------------------
-def make_complete_quest_tool(runtime: JobRuntime):
-    """Factory tạo tool `complete_quest` gắn với đúng JobRuntime của phòng hiện tại."""
-
-    @llm.function_tool(
-        description=(
-            "Gọi hàm này NGAY LẬP TỨC khi câu nói của trẻ thể hiện đúng ý định hoàn thành Quest hiện tại. "
-            "Không cần câu trả lời hoàn hảo — nếu trẻ nói đúng ý cơ bản thì gọi ngay. "
-            "Ví dụ: Quest 'Báo cáo đã rửa tay xong' -> trẻ nói 'con xong rồi', 'dạ xong rồi ạ' -> GỌI NGAY. "
-            "Quest 'Xin chào' -> trẻ nói 'chào chú', 'xin chào', 'hi' -> GỌI NGAY."
-        )
-    )
-    async def complete_quest() -> str:
-        """Xác nhận trẻ hoàn thành Quest và gửi tín hiệu QUEST_MATCHED về VR và Web."""
-        if not runtime.quest_state.active:
-            logger.warning("[TOOL] complete_quest() được gọi nhưng chưa có Quest nào kích hoạt.")
-            return "Hiện tại chưa có Quest nào được kích hoạt."
-
-        quest_name = runtime.quest_state.name
-        logger.info("[TOOL] 🎉 GEMINI XÁC NHẬN: Trẻ hoàn thành Quest '%s'!", quest_name)
-        runtime.quest_state.reset()
-
-        await send_rtc_event(runtime, "QUEST_MATCHED")
-        await send_rtc_event(
-            runtime, "QUEST_STATUS", {"quest_name": quest_name, "status": "matched"}
-        )
-        return f"Đã đánh dấu hoàn thành Quest '{quest_name}' thành công."
-
-    return complete_quest
+        logger.error("[SESSION] Error clearing chat history: %s", err)
 
 
 # ---------------------------------------------------------------------------
 # Agent Definition
 # ---------------------------------------------------------------------------
 class TeacherAgent(Agent):
-    """Giáo viên AI."""
+    """Voice AI teacher agent evaluated against quest targets."""
 
     def __init__(self, runtime: JobRuntime) -> None:
-        super().__init__(
-            instructions=WAITING_INSTRUCTIONS,
-            tools=[make_complete_quest_tool(runtime)],
-        )
+        super().__init__(instructions=WAITING_INSTRUCTIONS)
+        self._runtime = runtime
 
     async def on_enter(self) -> None:
-        """Agent vào phòng - giữ im lặng chờ VoiceQuest từ VR kích hoạt."""
-        logger.info("[AGENT] TeacherAgent đã sẵn sàng trong phòng (chế độ chờ VoiceQuest).")
+        logger.info("[AGENT] TeacherAgent ready in room (standby mode)")
+
+    @function_tool()
+    async def complete_quest(self, context: RunContext) -> str:
+        """Call immediately when child speech matches active quest intent."""
+        runtime = self._runtime
+        if not runtime.quest_state.active:
+            logger.warning("[TOOL] complete_quest invoked with no active quest")
+            return "No active quest registered"
+
+        quest_name = runtime.quest_state.name
+        logger.info("[TOOL] Quest completed: %s", quest_name)
+        runtime.quest_state.reset()
+
+        await send_rtc_event(runtime, "QUEST_MATCHED")
+        await send_rtc_event(
+            runtime, "QUEST_STATUS", {"quest_name": quest_name, "status": "matched"}
+        )
+        return f"Quest '{quest_name}' marked completed"
 
 
 # ---------------------------------------------------------------------------
-# Prewarm: load heavy models once per worker process
+# Prewarm
 # ---------------------------------------------------------------------------
 def prewarm(proc: JobProcess) -> None:
-    """Tải Silero VAD một lần khi worker process khởi động, dùng lại cho mọi job."""
+    """Preload Silero VAD once per worker process."""
     proc.userdata["vad"] = silero.VAD.load()
 
 
@@ -254,31 +230,27 @@ def prewarm(proc: JobProcess) -> None:
 async def entrypoint(ctx: JobContext) -> None:
     runtime = JobRuntime(ctx)
 
-    # 1. Kết nối LiveKit Room
+    # 1. Connect to LiveKit Room
     await ctx.connect(auto_subscribe=AutoSubscribe.SUBSCRIBE_ALL)
-    logger.info("[LIVEKIT] 🟢 Đã kết nối vào phòng: %s", ctx.room.name)
+    logger.info("[LIVEKIT] Connected to room: %s", ctx.room.name)
 
-    # 2. Kiểm tra biến môi trường
+    # 2. Validate environment credentials
     gemini_key = os.getenv("GOOGLE_API_KEY")
     gcloud_creds = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
     if not gemini_key:
-        logger.error("[ENV] ❌ Thiếu GOOGLE_API_KEY trong file .env!")
+        logger.error("[ENV] Missing GOOGLE_API_KEY")
         await send_rtc_event(runtime, "AGENT_INIT_FAILED", {"reason": "missing_gemini_key"})
         await ctx.room.disconnect()
         return
 
     if not gcloud_creds or not os.path.exists(gcloud_creds):
-        logger.error(
-            "[ENV] ❌ File Service Account JSON không tồn tại tại: %s. "
-            "Vui lòng kiểm tra lại đường dẫn GOOGLE_APPLICATION_CREDENTIALS!",
-            gcloud_creds,
-        )
+        logger.error("[ENV] Service account JSON not found: %s", gcloud_creds)
         await send_rtc_event(runtime, "AGENT_INIT_FAILED", {"reason": "missing_gcloud_credentials"})
         await ctx.room.disconnect()
         return
 
-    # 3. Khởi tạo Pipeline Audio Session
+    # 3. Initialize Audio Pipeline & Agent
     vad = ctx.proc.userdata.get("vad") or silero.VAD.load(
         min_silence_duration=0.5,
     )
@@ -298,36 +270,35 @@ async def entrypoint(ctx: JobContext) -> None:
             use_streaming=True,
         ),
         vad=vad,
-        preemptive_generation=True,    
+        preemptive_generation=True,
     )
 
     agent = TeacherAgent(runtime)
+    agent_ready = asyncio.Event()
 
-    # 4. Bắt đầu phiên làm việc TRƯỚC khi lắng nghe DataPacket từ Unity VR / Web Dashboard
-    logger.info("[AGENT] 🤖 Đang khởi động phiên làm việc...")
-    await session.start(room=ctx.room, agent=agent)
-
+    # 4. Register DataPacket handler BEFORE session.start to prevent packet loss race condition
     def on_data_received(data_packet: rtc.DataPacket) -> None:
-        try:
-            raw_text = data_packet.data.decode("utf-8")
-            data = json.loads(raw_text)
-            event_type = data.get("event")
+        async def _process_packet():
+            # Wait for session initialization if packet arrives during handshake
+            await agent_ready.wait()
+            try:
+                raw_text = data_packet.data.decode("utf-8")
+                data = json.loads(raw_text)
+                event_type = data.get("event")
 
-            if event_type == "SET_ACTIVE_QUEST":
-                quest_name = data.get("quest_name", "")
-                phrases = data.get("default_phrases", [])
+                if event_type == "SET_ACTIVE_QUEST":
+                    quest_name = data.get("quest_name", "")
+                    phrases = data.get("default_phrases", [])
 
-                runtime.quest_state.set_active_quest(quest_name, phrases)
-                logger.info(
-                    "[UNITY] 🎯 KÍCH HOẠT QUEST: '%s' | %d gợi ý: %s",
-                    quest_name,
-                    len(phrases),
-                    phrases,
-                )
+                    runtime.quest_state.set_active_quest(quest_name, phrases)
+                    logger.info(
+                        "[QUEST] Activated: '%s' | %d sample phrases: %s",
+                        quest_name,
+                        len(phrases),
+                        phrases,
+                    )
 
-                # Broadcast QUEST_STATUS sang Web Dashboard
-                runtime.spawn(
-                    send_rtc_event(
+                    await send_rtc_event(
                         runtime,
                         "QUEST_STATUS",
                         {
@@ -336,35 +307,40 @@ async def entrypoint(ctx: JobContext) -> None:
                             "phrases_cached": True,
                         },
                     )
-                )
+                    await _handle_quest_activation(agent, session, runtime, quest_name, phrases)
 
-                # Chạy ngầm việc cập nhật ngữ cảnh và mở lời
-                runtime.spawn(_handle_quest_activation(agent, session, quest_name, phrases))
+                elif event_type in ("VERBAL_HINT", "ON_REMINDER"):
+                    logger.info("[HINT] Received event: %s", event_type)
+                    await _handle_hint_reminder(session, runtime, event_type)
 
-            elif event_type in ("VERBAL_HINT", "ON_REMINDER"):
-                logger.info("[DATA] 💡 Nhận sự kiện %s từ hệ thống", event_type)
-                runtime.spawn(_handle_hint_reminder(session, runtime, event_type))
+                elif event_type == "SPEAK_SCRIPT":
+                    text = data.get("text", "").strip()
+                    if text:
+                        logger.info("[SCRIPT] Received SPEAK_SCRIPT text: %r", text)
+                        await _handle_speak_script(session, text)
 
-            elif event_type == "SPEAK_SCRIPT":
-                text = data.get("text", "").strip()
-                if text:
-                    logger.info("[DATA] 💬 Nhận lệnh SPEAK_SCRIPT từ Web: %r", text)
-                    runtime.spawn(_handle_speak_script(session, text))
+            except Exception as err:
+                logger.error("[DATA] Error processing DataPacket: %s", err)
 
-        except Exception as err:
-            logger.error("[DATA] Lỗi xử lý DataPacket: %s", err)
+        runtime.spawn(_process_packet())
 
     ctx.room.on("data_received", on_data_received)
-    logger.info("[AGENT] 🤖 Agent đứng chờ lệnh từ Unity VR và Web Dashboard...")
+
+    # 5. Start AgentSession
+    logger.info("[SESSION] Starting AgentSession...")
+    await session.start(room=ctx.room, agent=agent)
+    agent_ready.set()
+    logger.info("[AGENT] Agent pipeline active and ready for packets")
 
 
 async def _handle_quest_activation(
     agent: Agent,
     session: AgentSession,
+    runtime: JobRuntime,
     quest_name: str,
     phrases: List[str],
 ) -> None:
-    """Update context and speak the opening phrase with pre-synthesized audio."""
+    """Update system prompt and speak opening phrase with cached audio."""
     try:
         opening = (
             random.choice(phrases)
@@ -375,11 +351,11 @@ async def _handle_quest_activation(
         new_instructions = build_quest_instructions(quest_name, phrases)
         await asyncio.gather(
             clear_agent_chat_history(agent),
-            _synthesize_phrases(session.tts, phrases),
+            _synthesize_phrases(session.tts, phrases, runtime.tts_cache),
         )
         await agent.update_instructions(new_instructions)
 
-        cached_frames = _tts_cache.get(opening)
+        cached_frames = runtime.tts_cache.get(opening)
         audio_arg = _frames_to_async_gen(cached_frames) if cached_frames else None
         logger.info(
             '[AGENT] Opening phrase (cached=%s): "%s"',
@@ -391,9 +367,8 @@ async def _handle_quest_activation(
             audio=audio_arg,
             allow_interruptions=True,
         )
-
     except Exception as err:
-        logger.error("[AGENT] Lỗi khi kích hoạt Quest context: %s", err)
+        logger.error("[AGENT] Error activating quest context: %s", err)
 
 
 async def _handle_hint_reminder(
@@ -401,14 +376,14 @@ async def _handle_hint_reminder(
     runtime: JobRuntime,
     event_name: str,
 ) -> None:
-    """Play a random cached phrase for the active quest on VERBAL_HINT or ON_REMINDER."""
+    """Play cached phrase on VERBAL_HINT or ON_REMINDER."""
     try:
         if not runtime.quest_state.active or not runtime.quest_state.phrases:
-            logger.warning("[HINT] %s received but no active quest or phrases.", event_name)
+            logger.warning("[HINT] %s received with no active quest or phrases", event_name)
             return
 
         phrase = random.choice(runtime.quest_state.phrases)
-        cached_frames = _tts_cache.get(phrase)
+        cached_frames = runtime.tts_cache.get(phrase)
         audio_arg = _frames_to_async_gen(cached_frames) if cached_frames else None
         logger.info(
             "[HINT] %s playing phrase (cached=%s): %r",

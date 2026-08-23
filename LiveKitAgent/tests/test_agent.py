@@ -18,9 +18,7 @@ from agent import (
     TeacherAgent,
     _handle_hint_reminder,
     _handle_speak_script,
-    _tts_cache,
     build_quest_instructions,
-    make_complete_quest_tool,
     send_rtc_event,
 )
 
@@ -72,8 +70,9 @@ async def test_complete_quest_tool_resets_and_notifies() -> None:
     runtime = JobRuntime(mock_job_ctx)
     runtime.quest_state.set_active_quest("Quest1", ["Phrase1"])
 
-    complete_quest = make_complete_quest_tool(runtime)
-    result = await complete_quest()
+    agent = TeacherAgent(runtime)
+    mock_context = MagicMock()  # RunContext mock — tool accesses self._runtime directly
+    result = await agent.complete_quest(mock_context)
 
     assert runtime.quest_state.active is False
     assert "Quest1" in result
@@ -92,8 +91,9 @@ async def test_complete_quest_when_not_active() -> None:
     mock_job_ctx = MagicMock()
     runtime = JobRuntime(mock_job_ctx)
 
-    complete_quest = make_complete_quest_tool(runtime)
-    result = await complete_quest()
+    agent = TeacherAgent(runtime)
+    mock_context = MagicMock()
+    result = await agent.complete_quest(mock_context)
 
     assert "chưa có Quest nào được kích hoạt" in result
 
@@ -105,9 +105,9 @@ async def test_handle_hint_reminder_with_cached_audio() -> None:
     runtime = JobRuntime(mock_job_ctx)
     runtime.quest_state.set_active_quest("Quest1", ["CachedPhrase1"])
 
-    # Populate TTS cache with a dummy AudioFrame
+    # Populate per-runtime TTS cache with a dummy AudioFrame
     mock_frame = MagicMock(spec=rtc.AudioFrame)
-    _tts_cache["CachedPhrase1"] = [mock_frame]
+    runtime.tts_cache["CachedPhrase1"] = [mock_frame]
 
     mock_session = MagicMock()
     mock_session.say = AsyncMock()

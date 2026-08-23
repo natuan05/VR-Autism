@@ -1,0 +1,59 @@
+<mxfile host="65bd71144e">
+    <diagram id="vr_functional_modules_minimal" name="Phân Hệ Chức Năng VR">
+        <mxGraphModel dx="1200" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="450" background="#FFFFFF" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+
+                <!-- Khối Gốc (Root) -->
+                <mxCell id="root_node" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;CÁC PHÂN HỆ CHỨC NĂNG CỦA ỨNG DỤNG VR&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.5;fontColor=#0F172A;align=center;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="30" width="400" height="45" as="geometry"/>
+                </mxCell>
+
+                <!-- 5 Nhánh Chức Năng (5 Functional Blocks) -->
+                <!-- Nhóm 1 -->
+                <mxCell id="mod1" value="&lt;b style=&quot;font-size: 13px; color: #1E40AF;&quot;&gt;Kho Bài Học Trực Quan&lt;/b&gt;&lt;hr size=&quot;1&quot; style=&quot;border-color: #93C5FD;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 12px; line-height: 1.5;&quot;&gt;• Khám phá môi trường&lt;br&gt;• Đố vui nhận biết&lt;br&gt;• Chuỗi bài thực hành&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.5;align=center;valign=top;spacingTop=6;spacingBottom=6;spacingLeft=6;spacingRight=6;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="140" width="220" height="130" as="geometry"/>
+                </mxCell>
+
+                <!-- Nhóm 2 -->
+                <mxCell id="mod2" value="&lt;b style=&quot;font-size: 13px; color: #6D28D9;&quot;&gt;Hỗ Trợ Đa Giác Quan&lt;/b&gt;&lt;hr size=&quot;1&quot; style=&quot;border-color: #C4B5FD;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 12px; line-height: 1.5;&quot;&gt;• Bạn ảo AI đồng hành&lt;br&gt;• Chỉ dẫn phát sáng&lt;br&gt;• Nhắc nhở bằng lời&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;strokeWidth=1.5;align=center;valign=top;spacingTop=6;spacingBottom=6;spacingLeft=6;spacingRight=6;" parent="1" vertex="1">
+                    <mxGeometry x="290" y="140" width="220" height="130" as="geometry"/>
+                </mxCell>
+
+                <!-- Nhóm 3 -->
+                <mxCell id="mod3" value="&lt;b style=&quot;font-size: 13px; color: #0F766E;&quot;&gt;Giám Sát &amp; Kết Nối&lt;/b&gt;&lt;hr size=&quot;1&quot; style=&quot;border-color: #5EEAD4;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 12px; line-height: 1.5;&quot;&gt;• Ghép đôi mã bảo mật&lt;br&gt;• Truyền hình trực tiếp&lt;br&gt;• Đo lường hành vi&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FDFA;strokeColor=#0D9488;strokeWidth=1.5;align=center;valign=top;spacingTop=6;spacingBottom=6;spacingLeft=6;spacingRight=6;" parent="1" vertex="1">
+                    <mxGeometry x="540" y="140" width="220" height="130" as="geometry"/>
+                </mxCell>
+
+                <!-- Nhóm 4 -->
+                <mxCell id="mod4" value="&lt;b style=&quot;font-size: 13px; color: #C2410C;&quot;&gt;Quản Trị Phiên Học&lt;/b&gt;&lt;hr size=&quot;1&quot; style=&quot;border-color: #FDBA74;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 12px; line-height: 1.5;&quot;&gt;• Cá nhân hóa bài học&lt;br&gt;• Tự động thu thập&lt;br&gt;• Đồng bộ kết quả&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#EA580C;strokeWidth=1.5;align=center;valign=top;spacingTop=6;spacingBottom=6;spacingLeft=6;spacingRight=6;" parent="1" vertex="1">
+                    <mxGeometry x="790" y="140" width="220" height="130" as="geometry"/>
+                </mxCell>
+
+                <!-- Nhóm 5 -->
+                <mxCell id="mod5" value="&lt;b style=&quot;font-size: 13px; color: #15803D;&quot;&gt;An Toàn &amp; Thân Thiện&lt;/b&gt;&lt;hr size=&quot;1&quot; style=&quot;border-color: #86EFAC;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 12px; line-height: 1.5;&quot;&gt;• Giới hạn âm thanh&lt;br&gt;• Âm lượng bảo vệ&lt;br&gt;• Không gian an toàn&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FDF4;strokeColor=#16A34A;strokeWidth=1.5;align=center;valign=top;spacingTop=6;spacingBottom=6;spacingLeft=6;spacingRight=6;" parent="1" vertex="1">
+                    <mxGeometry x="1040" y="140" width="220" height="130" as="geometry"/>
+                </mxCell>
+
+                <!-- Đường Nối Từ Gốc Sang 5 Nhóm (Clean Orthogonal Connectors) -->
+                <mxCell id="edge1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#64748B;strokeWidth=1.2;" parent="1" source="root_node" target="mod1" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#64748B;strokeWidth=1.2;" parent="1" source="root_node" target="mod2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#64748B;strokeWidth=1.2;" parent="1" source="root_node" target="mod3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#64748B;strokeWidth=1.2;" parent="1" source="root_node" target="mod4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#64748B;strokeWidth=1.2;" parent="1" source="root_node" target="mod5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

@@ -1,0 +1,210 @@
+<mxfile host="65bd71144e">
+    <diagram id="vr_activity_lesson" name="Activity Diagram - Bài Học Tương Tác">
+        <mxGraphModel dx="1200" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1300" background="#FFFFFF" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+
+                <!-- Header Title Banner -->
+                <mxCell id="title_node" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;SƠ ĐỒ HOẠT ĐỘNG (ACTIVITY DIAGRAM) — TRẢI NGHIỆM BÀI HỌC TƯƠNG TÁC&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.5;fontColor=#0F172A;align=center;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="30" width="700" height="40" as="geometry"/>
+                </mxCell>
+
+                <!-- Initial Node (Start) -->
+                <mxCell id="start_node" value="" style="ellipse;fillColor=#000000;strokeColor=#000000;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="435" y="100" width="30" height="30" as="geometry"/>
+                </mxCell>
+
+                <!-- Action 1: Vào bài học -->
+                <mxCell id="act1" value="Trẻ đeo kính và vào bài học" style="rounded=1;whiteSpace=wrap;html=1;arcSize=25;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontSize=13;fontStyle=0;" parent="1" vertex="1">
+                    <mxGeometry x="340" y="160" width="220" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- Action 2: Áp dụng cấu hình -->
+                <mxCell id="act2" value="Tự động áp dụng cấu hình âm lượng &amp;amp; bài học chỉ định" style="rounded=1;whiteSpace=wrap;html=1;arcSize=25;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontSize=13;fontStyle=0;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="240" width="260" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- Action 3: Kích hoạt nhiệm vụ -->
+                <mxCell id="act3" value="Kích hoạt nhiệm vụ học tập (Quest)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=25;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontSize=13;fontStyle=0;" parent="1" vertex="1">
+                    <mxGeometry x="340" y="320" width="220" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- Decision 1: Phân loại Quest -->
+                <mxCell id="dec1" value="&lt;span style=&quot;font-size: 12px;&quot;&gt;Loại nhiệm vụ?&lt;/span&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="400" width="140" height="70" as="geometry"/>
+                </mxCell>
+
+                <!-- Action 4a: Thao tác tay -->
+                <mxCell id="act4a" value="Hiển thị đối tượng 3D &amp;amp;&lt;br&gt;chờ thao tác chạm / giữ" style="rounded=1;whiteSpace=wrap;html=1;arcSize=25;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="180" y="500" width="200" height="60" as="geometry"/>
+                </mxCell>
+
+                <!-- Action 4b: Giao tiếp AI -->
+                <mxCell id="act4b" value="Bạn ảo đặt câu hỏi gợi mở &amp;amp;&lt;br&gt;mở micro lắng nghe trẻ" style="rounded=1;whiteSpace=wrap;html=1;arcSize=25;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontSize=12;" parent="1" vertex="1">
+                    <mxGeometry x="520" y="500" width="200" height="60" as="geometry"/>
+                </mxCell>
+
+                <!-- Action: Theo dõi hành vi -->
+                <mxCell id="act_monitor" value="Hệ thống theo dõi hành vi &amp;amp; đo lường thời gian" style="rounded=1;whiteSpace=wrap;html=1;arcSize=25;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontSize=13;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="600" width="260" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- Decision 2: Kiểm tra hoàn thành -->
+                <mxCell id="dec2" value="&lt;span style=&quot;font-size: 12px;&quot;&gt;Trẻ hoàn thành&lt;br&gt;nhiệm vụ?&lt;/span&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;" parent="1" vertex="1">
+                    <mxGeometry x="370" y="680" width="160" height="80" as="geometry"/>
+                </mxCell>
+
+                <!-- Action 5: Kích hoạt hỗ trợ (Trợ giúp) -->
+                <mxCell id="act_help" value="Kích hoạt hỗ trợ:&lt;br&gt;Bật viền sáng &amp;amp; phát câu gợi ý" style="rounded=1;whiteSpace=wrap;html=1;arcSize=25;fillColor=#FFFFFF;strokeColor=#DC2626;strokeWidth=1.5;fontSize=12;fontColor=#DC2626;" parent="1" vertex="1">
+                    <mxGeometry x="660" y="692.5" width="180" height="55" as="geometry"/>
+                </mxCell>
+
+                <!-- Action 6: Ghi nhận nhật ký -->
+                <mxCell id="act6" value="Ghi nhận nhật ký nhiệm vụ (thời gian, gợi ý)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=25;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontSize=13;" parent="1" vertex="1">
+                    <mxGeometry x="320" y="800" width="260" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- Decision 3: Còn nhiệm vụ không? -->
+                <mxCell id="dec3" value="&lt;span style=&quot;font-size: 12px;&quot;&gt;Còn nhiệm vụ&lt;br&gt;tiếp theo?&lt;/span&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;" parent="1" vertex="1">
+                    <mxGeometry x="370" y="880" width="160" height="80" as="geometry"/>
+                </mxCell>
+
+                <!-- Action 7: Tổng kết bài học -->
+                <mxCell id="act7" value="Bạn ảo chúc mừng &amp;amp; tổng kết bài học" style="rounded=1;whiteSpace=wrap;html=1;arcSize=25;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontSize=13;" parent="1" vertex="1">
+                    <mxGeometry x="330" y="990" width="240" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- Action 8: Đồng bộ Cloud -->
+                <mxCell id="act8" value="Đồng bộ toàn bộ dữ liệu phiên học lên hệ thống" style="rounded=1;whiteSpace=wrap;html=1;arcSize=25;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontSize=13;" parent="1" vertex="1">
+                    <mxGeometry x="310" y="1070" width="280" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- Final Node (End Bullseye) -->
+                <mxCell id="end_outer" value="" style="ellipse;fillColor=none;strokeColor=#DC2626;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="435" y="1150" width="30" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="end_inner" value="" style="ellipse;fillColor=#000000;strokeColor=#000000;" parent="1" vertex="1">
+                    <mxGeometry x="442" y="1157" width="16" height="16" as="geometry"/>
+                </mxCell>
+
+                <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                <!-- CÁC ĐƯỜNG LUỒNG MŨI TÊN (CONNECTORS & GUARDS) -->
+                <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+                <!-- Start -> Act1 -->
+                <mxCell id="e_start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;" parent="1" source="start_node" target="act1" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- Act1 -> Act2 -->
+                <mxCell id="e_1_2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;" parent="1" source="act1" target="act2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- Act2 -> Act3 -->
+                <mxCell id="e_2_3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;" parent="1" source="act2" target="act3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- Act3 -> Dec1 -->
+                <mxCell id="e_3_d1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;" parent="1" source="act3" target="dec1" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- Dec1 -> Act4a (Thao tác tay) -->
+                <mxCell id="e_d1_4a" value="[Thao tác tay]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=11;labelBackgroundColor=#FFFFFF;" parent="1" source="dec1" target="act4a" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="280" y="435"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <!-- Dec1 -> Act4b (Giao tiếp) -->
+                <mxCell id="e_d1_4b" value="[Giao tiếp]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=11;labelBackgroundColor=#FFFFFF;" parent="1" source="dec1" target="act4b" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="620" y="435"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <!-- Act4a -> Monitor -->
+                <mxCell id="e_4a_mon" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;" parent="1" source="act4a" target="act_monitor" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="280" y="580"/>
+                            <mxPoint x="450" y="580"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <!-- Act4b -> Monitor -->
+                <mxCell id="e_4b_mon" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;" parent="1" source="act4b" target="act_monitor" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="620" y="580"/>
+                            <mxPoint x="450" y="580"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <!-- Monitor -> Dec2 -->
+                <mxCell id="e_mon_d2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;" parent="1" source="act_monitor" target="dec2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- Dec2 -> ActHelp (Cần hỗ trợ) -->
+                <mxCell id="e_d2_help" value="[Lúng túng / Cần hỗ trợ]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#DC2626;strokeWidth=1.5;fontColor=#DC2626;fontSize=11;labelBackgroundColor=#FFFFFF;" parent="1" source="dec2" target="act_help" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- ActHelp -> Loop back to Monitor (Thử lại) -->
+                <mxCell id="e_help_loop" value="Thử lại" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#DC2626;strokeWidth=1.5;fontColor=#DC2626;fontSize=11;labelBackgroundColor=#FFFFFF;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="act_help" target="act_monitor" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="750" y="625"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <!-- Dec2 -> Act6 (Đạt yêu cầu) -->
+                <mxCell id="e_d2_6" value="[Đạt yêu cầu]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=11;labelBackgroundColor=#FFFFFF;" parent="1" source="dec2" target="act6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- Act6 -> Dec3 -->
+                <mxCell id="e_6_d3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;" parent="1" source="act6" target="dec3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- Dec3 -> Act3 (Loop back nếu Còn nhiệm vụ) -->
+                <mxCell id="e_d3_loop" value="[Còn nhiệm vụ]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=11;labelBackgroundColor=#FFFFFF;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="dec3" target="act3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="120" y="920"/>
+                            <mxPoint x="120" y="345"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <!-- Dec3 -> Act7 (Hết nhiệm vụ) -->
+                <mxCell id="e_d3_7" value="[Hết nhiệm vụ]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=11;labelBackgroundColor=#FFFFFF;" parent="1" source="dec3" target="act7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- Act7 -> Act8 -->
+                <mxCell id="e_7_8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;" parent="1" source="act7" target="act8" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- Act8 -> End -->
+                <mxCell id="e_8_end" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#000000;strokeWidth=1.2;" parent="1" source="act8" target="end_outer" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

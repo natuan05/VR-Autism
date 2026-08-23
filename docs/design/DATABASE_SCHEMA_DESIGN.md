@@ -64,7 +64,7 @@ erDiagram
         string center_id FK "Dùng cho Firestore isolation rules"
         string display_name "Bé Nam"
         int age
-        float height_cm "Căn chỉnh Camera Rig VR"
+        float height_cm "Chiều cao của trẻ (cm)"
         int sound_sensitivity "1-5"
         int attention_span_min
         array anxiety_triggers
@@ -113,7 +113,7 @@ erDiagram
         float response_time_since_last_hint "Thời gian từ gợi ý gần nhất đến khi xong quest (Giây). -1 nếu không có gợi ý."
         string completion_status "success | skipped | assisted"
         int hints_verbal "Nhắc bằng lời (audio qua tai nghe)"
-        int hints_visual "Visual cue: mũi tên / highlight trong VR"
+        int hints_visual "Visual cue: highlight viền sáng trong VR"
         int hints_physical "Cầm tay chỉ việc (ghi tay bởi chuyên gia)"
     }
 

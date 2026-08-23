@@ -2,7 +2,7 @@
 
 > **Multi-Platform Architecture**: Unity C# (`Assets/Project/Scripts`), Python LiveKit Voice Agent (`LiveKitAgent/src`), and Next.js Web Dashboard (`src`).
 
-- **Graph Stats**: 859 symbols/nodes, 1497 relations/edges across 3 subsystems.
+- **Graph Stats**: 859 symbols/nodes, 1506 relations/edges across 3 subsystems.
 - **Subsystem Counts**: Unity: 820, Python: 24, Web: 0, Contracts: 15.
 
 ## Cross-Stack Communication Bridges
@@ -11,16 +11,16 @@ Cross-boundary coordination contracts linking Unity C# clients, Python Voice Age
 
 | Contract | Type | Publishers / Writers | Subscribers / Listeners | Connections |
 | :--- | :--- | :--- | :--- | :---: |
-| `QUEST_STATUS` | Livekit Event | `LiveKitService`, `OnDataReceived`, `make_complete_quest_tool` | `LiveKitService`, `OnDataReceived`, `entrypoint` | 10 |
+| `QUEST_STATUS` | Livekit Event | `LiveKitService`, `OnDataReceived`, `TeacherAgent` | `LiveKitService`, `OnDataReceived`, `entrypoint` | 12 |
 | `live_sessions` | Rtdb Path | `LiveSessionReporter`, `SendLiveSessionHandshake`, `UpdateCurrentActivity` | *None* | 7 |
-| `QUEST_MATCHED` | Livekit Event | `LiveKitService`, `OnDataReceived`, `make_complete_quest_tool` | `LiveKitService`, `OnDataReceived` | 6 |
+| `QUEST_MATCHED` | Livekit Event | `LiveKitService`, `OnDataReceived`, `TeacherAgent` | `LiveKitService`, `OnDataReceived` | 6 |
+| `SET_ACTIVE_QUEST` | Livekit Event | `entrypoint`, `on_data_received`, `_process_packet` | `entrypoint`, `on_data_received`, `_process_packet` | 6 |
+| `VERBAL_HINT` | Livekit Event | `entrypoint`, `on_data_received`, `_process_packet` | `entrypoint`, `on_data_received`, `_process_packet` | 6 |
+| `ON_REMINDER` | Livekit Event | `entrypoint`, `on_data_received`, `_process_packet` | `entrypoint`, `on_data_received`, `_process_packet` | 6 |
+| `SPEAK_SCRIPT` | Livekit Event | `entrypoint`, `on_data_received`, `_process_packet` | `entrypoint`, `on_data_received`, `_process_packet` | 6 |
 | `AGENT_INIT_FAILED` | Livekit Event | `LiveKitService`, `OnDataReceived`, `entrypoint` | `LiveKitService`, `OnDataReceived` | 5 |
 | `pairing_codes` | Rtdb Path | `PairingManager`, `GenerateAndPushPIN`, `CleanupOnQuit` | *None* | 5 |
 | `sessions` | Rtdb Path | `FirebaseManager`, `SaveSession`, `FirebasePaths` | *None* | 4 |
-| `SET_ACTIVE_QUEST` | Livekit Event | `entrypoint`, `on_data_received` | `entrypoint`, `on_data_received` | 4 |
-| `ON_REMINDER` | Livekit Event | `entrypoint`, `on_data_received` | `entrypoint`, `on_data_received` | 4 |
-| `VERBAL_HINT` | Livekit Event | `entrypoint`, `on_data_received` | `entrypoint`, `on_data_received` | 4 |
-| `SPEAK_SCRIPT` | Livekit Event | `entrypoint`, `on_data_received` | `entrypoint`, `on_data_received` | 4 |
 | `lessons` | Rtdb Path | `FirebasePaths`, `SceneMenuController`, `LoadRemoteLesson` | *None* | 3 |
 | `behavior_snapshots` | Rtdb Path | `TelemetryUploader`, `PushAggregatedSnapshot`, `try` | *None* | 3 |
 | `quest_list` | Rtdb Path | `FirebasePaths` | *None* | 1 |
@@ -45,8 +45,8 @@ Top architectural hubs and high-centrality symbols ranked by PageRank importance
 - **`SetAction`** (method) [`Assets/Project/Scripts/Entities/NPC/NPC.cs:15`] (PR: 0.0063)
 - **`NPC`** (class) [`Assets/Project/Scripts/Entities/NPC/NPC.cs:3`] (PR: 0.0055)
 - **`SensorHarvester`** (class) [`Assets/Project/Scripts/Core/Telemetry/SensorHarvester.cs:8`] (PR: 0.0050) — *Thu thập dữ liệu cảm biến và hành vi của trẻ trong môi trường VR. Ghi mẫu liê...*
-- **`TelemetryStreamer`** (class) [`Assets/Project/Scripts/Core/Telemetry/TelemetryStreamer.cs:8`] (PR: 0.0049) — *File điều phối vòng lặp thu thập dữ liệu (Tuyến giữa SensorHarvester và Telem...*
-- **`QuizController`** (class) [`Assets/Project/Scripts/Gameplay/Quizzes/Controllers/QuizController.cs:10`] (PR: 0.0048) — *Orchestrates quiz lesson flow. Subscribes to UIController events — has zero d...*
+- **`TelemetryStreamer`** (class) [`Assets/Project/Scripts/Core/Telemetry/TelemetryStreamer.cs:8`] (PR: 0.0050) — *File điều phối vòng lặp thu thập dữ liệu (Tuyến giữa SensorHarvester và Telem...*
+- **`QuizController`** (class) [`Assets/Project/Scripts/Gameplay/Quizzes/Controllers/QuizController.cs:10`] (PR: 0.0049) — *Orchestrates quiz lesson flow. Subscribes to UIController events — has zero d...*
 - **`SoundManager`** (class) [`Assets/Project/Scripts/Core/Manager/SoundManager.cs:5`] (PR: 0.0047)
 - **`QuestController`** (class) [`Assets/Project/Scripts/Gameplay/Actions/Controllers/QuestController.cs:9`] (PR: 0.0044) — *Pure Sequencer — chỉ lo điều phối thứ tự Quest và phát telemetry events. Khôn...*
 - **`PairingManager`** (class) [`Assets/Project/Scripts/Cloud/RTDB/PairingManager.cs:10`] (PR: 0.0043) — *Quản lý vòng đời kết nối Pairing giữa Kính VR và Web Dashboard. Thiết kế theo...*
@@ -97,7 +97,7 @@ Top architectural hubs and high-centrality symbols ranked by PageRank importance
 - **`StopLoopingSound`** (method) [`Assets/Project/Scripts/Core/Manager/SoundManager.cs:98`] (PR: 0.0021)
 - **`StartStreaming`** (method) [`Assets/Project/Scripts/Core/Telemetry/TelemetryStreamer.cs:35`] (PR: 0.0021)
 - **`Initialize`** (method) [`Assets/Project/Scripts/Core/BaseMono.cs:14`] (PR: 0.0021)
-- **`TelemetryUploader`** (class) [`Assets/Project/Scripts/Cloud/RTDB/TelemetryUploader.cs:7`] (PR: 0.0020) — *Đẩy BehaviorSnapshot lên nhánh behavior_snapshots/ của RTDB. Đứng giữa Teleme...*
+- **`TelemetryUploader`** (class) [`Assets/Project/Scripts/Cloud/RTDB/TelemetryUploader.cs:7`] (PR: 0.0021) — *Đẩy BehaviorSnapshot lên nhánh behavior_snapshots/ của RTDB. Đứng giữa Teleme...*
 - **`IQuestHasVisual`** (interface) [`Assets/Project/Scripts/Gameplay/Actions/Models/IQuestHasVisual.cs:4`] (PR: 0.0020)
 - **`GetFilePath`** (method) [`Assets/Project/Scripts/Core/DataLocal.cs:53`] (PR: 0.0020)
 - **`PlaySound`** (method) [`Assets/Project/Scripts/Core/Manager/SoundManager.cs:56`] (PR: 0.0020)
@@ -114,8 +114,8 @@ Top architectural hubs and high-centrality symbols ranked by PageRank importance
 - **`TriggerVisualHint`** (method) [`Assets/Project/Scripts/Cloud/RTDB/RemoteCommandListener.cs:234`] (PR: 0.0019)
 - **`SetStretchAnchorToSide`** (method) [`Assets/Project/Scripts/Core/TransformLib.cs:30`] (PR: 0.0019)
 - **`SetStretchAnchorToFarSide`** (method) [`Assets/Project/Scripts/Core/TransformLib.cs:40`] (PR: 0.0019)
-- **`SetCurrentTarget`** (method) [`Assets/Project/Scripts/Core/Telemetry/SensorHarvester.cs:118`] (PR: 0.0018)
-- **`SampleToBuffer`** (method) [`Assets/Project/Scripts/Core/Telemetry/SensorHarvester.cs:245`] (PR: 0.0018)
+- **`SetCurrentTarget`** (method) [`Assets/Project/Scripts/Core/Telemetry/SensorHarvester.cs:118`] (PR: 0.0019)
+- **`SampleToBuffer`** (method) [`Assets/Project/Scripts/Core/Telemetry/SensorHarvester.cs:245`] (PR: 0.0019)
 - **`StopStream`** (method) [`Assets/Project/Scripts/Cloud/RTDB/WebRTCManager.cs:43`] (PR: 0.0018)
 - **`GetCurQuest`** (method) [`Assets/Project/Scripts/Gameplay/Actions/Controllers/QuestController.cs:209`] (PR: 0.0018)
 - **`LookAtPlayerForDuration`** (method) [`Assets/Project/Scripts/Entities/NPC/NPCLookAtPlayer.cs:19`] (PR: 0.0018)
@@ -238,4 +238,3 @@ Top architectural hubs and high-centrality symbols ranked by PageRank importance
 - **`OnVerbalHint`** (method) [`Assets/Project/Scripts/Gameplay/Actions/Models/Quest.cs:61`] (PR: 0.0012) — *Xử lý gợi ý lời nói — mỗi loại Quest tự quyết cách kích hoạt.*
 - **`ActionParams`** (property) [`Assets/Project/Scripts/Core/Models/LessonParameters.cs:24`] (PR: 0.0012)
 - **`QuizParams`** (property) [`Assets/Project/Scripts/Core/Models/LessonParameters.cs:65`] (PR: 0.0012)
-- **`ExplorationParams`** (property) [`Assets/Project/Scripts/Core/Models/LessonParameters.cs:90`] (PR: 0.0012)

@@ -1,0 +1,83 @@
+<mxfile host="65bd71144e">
+    <diagram id="vr_overall_workflow_minimal" name="Luồng Hoạt Động VR">
+        <mxGraphModel dx="1200" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="500" background="#FFFFFF" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+
+                <!-- Header Title Banner -->
+                <mxCell id="title_node" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;LUỒNG TƯƠNG TÁC TỔNG THỂ CỦA ỨNG DỤNG VR&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=1.5;fontColor=#0F172A;align=center;" parent="1" vertex="1">
+                    <mxGeometry x="350" y="30" width="400" height="40" as="geometry"/>
+                </mxCell>
+
+                <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                <!-- HÀNG 1: BƯỚC 1 -> 2 -> 3 -->
+                <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+                <!-- Bước 1 -->
+                <mxCell id="step1" value="&lt;b style=&quot;font-size: 13px; color: #1E40AF;&quot;&gt;1. KẾT NỐI&lt;/b&gt;&lt;br&gt;&lt;b style=&quot;font-size: 11px; color: #64748B;&quot;&gt;[Kính VR]&lt;/b&gt;&lt;hr size=&quot;1&quot; style=&quot;border-color: #93C5FD;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 11px; line-height: 1.4;&quot;&gt;• Phát sinh mã PIN 6 số&lt;br&gt;• Ghép nối an toàn qua Web&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.5;align=center;valign=top;spacingTop=6;spacingBottom=6;spacingLeft=6;spacingRight=6;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="110" width="260" height="110" as="geometry"/>
+                </mxCell>
+
+                <!-- Bước 2 -->
+                <mxCell id="step2" value="&lt;b style=&quot;font-size: 13px; color: #0F766E;&quot;&gt;2. NẠP HỒ SƠ&lt;/b&gt;&lt;br&gt;&lt;b style=&quot;font-size: 11px; color: #64748B;&quot;&gt;[Hệ Thống Đám Mây]&lt;/b&gt;&lt;hr size=&quot;1&quot; style=&quot;border-color: #5EEAD4;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 11px; line-height: 1.4;&quot;&gt;• Gửi cấu hình giới hạn âm lượng&lt;br&gt;• Nạp bài học chỉ định của bé&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FDFA;strokeColor=#0D9488;strokeWidth=1.5;align=center;valign=top;spacingTop=6;spacingBottom=6;spacingLeft=6;spacingRight=6;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="110" width="260" height="110" as="geometry"/>
+                </mxCell>
+
+                <!-- Bước 3 -->
+                <mxCell id="step3" value="&lt;b style=&quot;font-size: 13px; color: #1E40AF;&quot;&gt;3. THỰC HÀNH TƯƠNG TÁC&lt;/b&gt;&lt;br&gt;&lt;b style=&quot;font-size: 11px; color: #64748B;&quot;&gt;[Trẻ Em]&lt;/b&gt;&lt;hr size=&quot;1&quot; style=&quot;border-color: #93C5FD;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 11px; line-height: 1.4;&quot;&gt;• Thao tác chạm / giữ đồ vật 3D&lt;br&gt;• Cất tiếng nói vào micro kính&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=1.5;align=center;valign=top;spacingTop=6;spacingBottom=6;spacingLeft=6;spacingRight=6;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="110" width="260" height="110" as="geometry"/>
+                </mxCell>
+
+                <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                <!-- HÀNG 2: BƯỚC 4 -> 5 -> 6 (ĐI NGƯỢC VỀ TRÁI) -->
+                <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+                <!-- Bước 4 -->
+                <mxCell id="step4" value="&lt;b style=&quot;font-size: 13px; color: #6D28D9;&quot;&gt;4. XỬ LÝ THÔNG MINH&lt;/b&gt;&lt;br&gt;&lt;b style=&quot;font-size: 11px; color: #64748B;&quot;&gt;[Trí Tuệ Nhân Tạo]&lt;/b&gt;&lt;hr size=&quot;1&quot; style=&quot;border-color: #C4B5FD;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 11px; line-height: 1.4;&quot;&gt;• Phân tích giọng nói nhẹ nhàng&lt;br&gt;• Bạn ảo mấp máy môi phản hồi&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;strokeWidth=1.5;align=center;valign=top;spacingTop=6;spacingBottom=6;spacingLeft=6;spacingRight=6;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="290" width="260" height="110" as="geometry"/>
+                </mxCell>
+
+                <!-- Bước 5 -->
+                <mxCell id="step5" value="&lt;b style=&quot;font-size: 13px; color: #C2410C;&quot;&gt;5. CAN THIỆP TỪ XA&lt;/b&gt;&lt;br&gt;&lt;b style=&quot;font-size: 11px; color: #64748B;&quot;&gt;[Người Hướng Dẫn]&lt;/b&gt;&lt;hr size=&quot;1&quot; style=&quot;border-color: #FDBA74;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 11px; line-height: 1.4;&quot;&gt;• Quan sát góc nhìn trực tiếp POV&lt;br&gt;• Hỗ trợ viền sáng / gợi ý kịp thời&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#EA580C;strokeWidth=1.5;align=center;valign=top;spacingTop=6;spacingBottom=6;spacingLeft=6;spacingRight=6;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="290" width="260" height="110" as="geometry"/>
+                </mxCell>
+
+                <!-- Bước 6 -->
+                <mxCell id="step6" value="&lt;b style=&quot;font-size: 13px; color: #15803D;&quot;&gt;6. LƯU HỒ SƠ&lt;/b&gt;&lt;br&gt;&lt;b style=&quot;font-size: 11px; color: #64748B;&quot;&gt;[Hồ Sơ Tiến Bộ]&lt;/b&gt;&lt;hr size=&quot;1&quot; style=&quot;border-color: #86EFAC;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 11px; line-height: 1.4;&quot;&gt;• Lưu biểu đồ &amp; đánh giá chi tiết&lt;br&gt;• Đồng bộ dữ liệu lên Firestore&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FDF4;strokeColor=#16A34A;strokeWidth=1.5;align=center;valign=top;spacingTop=6;spacingBottom=6;spacingLeft=6;spacingRight=6;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="290" width="260" height="110" as="geometry"/>
+                </mxCell>
+
+                <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+                <!-- CÁC MŨI TÊN KẾT NỐI TUẦN TỰ (1 -> 2 -> 3 -> 4 -> 5 -> 6) -->
+                <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+                <!-- 1 -> 2 -->
+                <mxCell id="flow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=2;" parent="1" source="step1" target="step2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- 2 -> 3 -->
+                <mxCell id="flow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=2;" parent="1" source="step2" target="step3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- 3 -> 4 (Xuống hàng 2) -->
+                <mxCell id="flow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=2;" parent="1" source="step3" target="step4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- 4 -> 5 -->
+                <mxCell id="flow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=2;" parent="1" source="step4" target="step5" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- 5 -> 6 -->
+                <mxCell id="flow5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#475569;strokeWidth=2;" parent="1" source="step5" target="step6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
