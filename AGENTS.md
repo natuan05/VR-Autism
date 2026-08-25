@@ -1,32 +1,54 @@
-﻿# AGENTS.md — VR-Autism Platform Engineering & Agent Rules
+# AGENTS.md — VR-Autism Platform Engineering & Agent Rules
 
 > **System Topology**: Multi-platform autism therapy platform comprising Unity C# VR Client (`Assets/Project/Scripts`), Python Voice Agent (`LiveKitAgent/src`), and Next.js Web Dashboard (`d:/Lab/VRA-web/src`).
 
 ---
 
-## 1. Context & Knowledge Graph Tools (MANDATORY)
+<!-- gitnexus:start -->
+# GitNexus — Code Intelligence
 
-The project maintains a physical Cross-Stack Code Knowledge Graph (`repomap.json`) and compressed repository map (`REPOMAP.md`). All AI agents working in this repository MUST adhere to the following command workflow:
+This project is indexed by GitNexus as **VR-Autism** (25489 symbols, 41111 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
-1. **Blast Radius Analysis Before Modifications**:
-   Before modifying any class, interface, method, or network contract, run:
-   ```bash
-   python scripts/jit_context.py --impact "<SymbolOrContract>"
-   ```
-   *(Example: `python scripts/jit_context.py --impact "VoiceQuest"` or `python scripts/jit_context.py --impact "SET_ACTIVE_QUEST"`)*
-   Review the reported upstream/downstream dependencies across Unity, Python, and Web before editing code.
+> Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 
-2. **JIT Context Extraction**:
-   When implementing a feature, retrieve only relevant code slices within token budget:
-   ```bash
-   python scripts/jit_context.py --query "<TopicOrFeature>" --budget 2000
-   ```
+## Always Do
 
-3. **RepoMap Synchronization**:
-   After creating, renaming, or refactoring classes, methods, or contracts, refresh the architecture map:
-   ```bash
-   python scripts/repomap_generator.py
-   ```
+- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `impact({target: "symbolName", direction: "upstream"})` (or CLI `gitnexus impact <symbolName>`) and report the blast radius (direct callers, affected processes, risk level) to the user.
+- **MUST run `detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows. For regression review, compare against the default branch: `detect_changes({scope: "compare", base_ref: "main"})`.
+- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
+- When exploring unfamiliar code, use `query({search_query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
+- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `context({name: "symbolName"})`.
+- For security review, `explain({target: "fileOrSymbol"})` lists taint findings (source→sink flows; needs `analyze --pdg`).
+
+## Never Do
+
+- NEVER edit a function, class, or method without first running `impact` on it.
+- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
+- NEVER rename symbols with find-and-replace — use `rename` which understands the call graph.
+- NEVER commit changes without running `detect_changes()` to check affected scope.
+
+## Resources & Multi-Repo Group
+
+| Resource | Use for |
+|----------|---------|
+| `gitnexus://repo/VR-Autism/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/VR-Autism/clusters` | All functional areas |
+| `gitnexus://repo/VR-Autism/processes` | All execution flows |
+| `gitnexus://repo/VR-Autism/process/{name}` | Step-by-step execution trace |
+| `gitnexus group impact vr-platform <Symbol>` | Cross-repo impact between Unity VR Client & Next.js Web Dashboard |
+
+## Skills & CLI Reference
+
+| Task | Antigravity Skill | Claude Code Skill |
+|------|-------------------|-------------------|
+| Understand architecture / "How does X work?" | `~/.gemini/config/skills/gitnexus-exploring/SKILL.md` | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `~/.gemini/config/skills/gitnexus-impact-analysis/SKILL.md` | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `~/.gemini/config/skills/gitnexus-debugging/SKILL.md` | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
+| Rename / extract / split / refactor | `~/.gemini/config/skills/gitnexus-refactoring/SKILL.md` | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
+| Tools, resources, schema reference | `~/.gemini/config/skills/gitnexus-guide/SKILL.md` | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
+| Index, status, clean, group CLI commands | `~/.gemini/config/skills/gitnexus-cli/SKILL.md` | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+
+<!-- gitnexus:end -->
 
 ---
 
@@ -39,10 +61,10 @@ Agents must respect strict filesystem boundaries across all three subsystems:
 | **Unity VR Client** | `Assets/Project/Scripts/`, `Assets/Project/Scenes/` | `Library/`, `Temp/`, `obj/`, `Packages/`, `Assets/Plugins/`, `Assets/ReadyPlayerMe/`, `Assets/Samples/` |
 | **Python Voice Agent** | `LiveKitAgent/src/`, `LiveKitAgent/tests/` | `LiveKitAgent/.venv/`, `__pycache__/`, `.ruff_cache/` |
 | **Web Dashboard** | `d:/Lab/VRA-web/src/` | `d:/Lab/VRA-web/.next/`, `d:/Lab/VRA-web/node_modules/` |
-| **Tooling & Scripts** | `scripts/`, `repomap.config.json` | Generated cache files in `scripts/__pycache__/` |
+| **GitNexus Database** | `.gitnexus/` | Managed automatically by GitNexus CLI |
 
 - **No Third-Party Pollution**: Never edit vendor SDKs (`UniGLTF`, `ReadyPlayerMe`, `uLipSync`). Custom logic belongs solely in `Assets/Project/Scripts/`.
-- **Targeted Output**: Never write temporary scripts to Desktop or system temp folders; keep tooling scripts strictly in `scripts/`.
+- **Targeted Output**: Never write temporary scripts to Desktop or system temp folders.
 
 ---
 
@@ -70,9 +92,7 @@ Every agent must preserve the following architectural non-negotiables:
 ## 4. Workflow Automation & Quality Gates
 
 1. **Automated Verification**:
-   - Run the E2E verification suite before finalizing cross-stack refactoring:
-     ```bash
-     python scripts/tests/test_repomap.py
-     ```
+   - Run `detect_changes()` / `gitnexus detect-changes` before finalizing changes to confirm blast radius and impacted flows.
+   - Refresh GitNexus index via `gitnexus analyze` after creating or restructuring major files.
 2. **Git Commit Standards**:
-   - Follow Conventional Commits: `feat(...)`, `fix(...)`, `refactor(...)`, `tools(...)`, `test(...)`, `docs(...)`.
+   - Follow Conventional Commits: `feat(...)`, `fix(...)`, `refactor(...)`, `test(...)`, `docs(...)`.
