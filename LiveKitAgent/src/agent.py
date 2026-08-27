@@ -203,7 +203,7 @@ class TeacherAgent(Agent):
         runtime = self._runtime
         if not runtime.quest_state.active:
             logger.warning("[TOOL] complete_quest invoked with no active quest")
-            return "No active quest registered"
+            return "Hiện tại chưa có Quest nào được kích hoạt."
 
         quest_name = runtime.quest_state.name
         logger.info("[TOOL] Quest completed: %s", quest_name)

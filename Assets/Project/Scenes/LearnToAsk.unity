@@ -541,7 +541,6 @@ GameObject:
   - component: {fileID: 107818164}
   - component: {fileID: 107818163}
   - component: {fileID: 107818162}
-  - component: {fileID: 107818161}
   m_Layer: 0
   m_Name: Teacher
   m_TagString: Untagged
@@ -549,27 +548,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &107818161
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 107818160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b0b97b38f2f1fd24185315141a6c6a56, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  skinnedMeshRenderer: {fileID: 3424105841472324745}
-  visemeToBlendTargets: 000000000100000002000000030000000400000005000000060000000700000008000000090000000a0000000b0000000c0000000d0000000e000000
-  enableVisemeTestKeys: 0
-  visemeTestKeys: 600000000900000071000000770000006500000072000000740000007900000075000000690000006f000000700000005b0000005d0000005c000000
-  laughterKey: 301
-  laughterBlendTarget: 15
-  laughterThreshold: 0.5
-  laughterMultiplier: 1.5
-  smoothAmount: 70
 --- !u!114 &107818162
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2044,6 +2022,7 @@ GameObject:
   m_Component:
   - component: {fileID: 405125984}
   - component: {fileID: 405125983}
+  - component: {fileID: 405125985}
   m_Layer: 0
   m_Name: Timeline
   m_TagString: Untagged
@@ -2073,7 +2052,7 @@ PlayableDirector:
   - key: {fileID: 1092105491239603582, guid: 35d3f1085c2008f4a82f6baaecd7ce1c, type: 2}
     value: {fileID: 1481352070}
   - key: {fileID: 8168407241095284270, guid: 35d3f1085c2008f4a82f6baaecd7ce1c, type: 2}
-    value: {fileID: 1417027146}
+    value: {fileID: 405125985}
   m_ExposedReferences:
     m_References: []
 --- !u!4 &405125984
@@ -2091,6 +2070,36 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &405125985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 405125982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e52de21a22b6dd44c9cc19f810c65059, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Timeline::UnityEngine.Timeline.SignalReceiver
+  m_Events:
+    m_Signals:
+    - {fileID: 11400000, guid: 366064912c7e7cb4589e30f1f1758cb1, type: 2}
+    m_Events:
+    - m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 11400000, guid: 66ffbc00f69200041864a29423affd50, type: 2}
+          m_TargetAssemblyTypeName: VRAutism.Core.BooleanVariable, Assembly-CSharp
+          m_MethodName: set_Value
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 1
+          m_CallState: 2
 --- !u!1 &424497681
 GameObject:
   m_ObjectHideFlags: 0
@@ -2495,18 +2504,6 @@ MonoBehaviour:
     onStart:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1417027144}
-          m_TargetAssemblyTypeName: Dajunctic.Scripts.NPC.NPCController, Assembly-CSharp
-          m_MethodName: SetNpc
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
         - m_Target: {fileID: 11400000, guid: 66ffbc00f69200041864a29423affd50, type: 2}
           m_TargetAssemblyTypeName: Dajunctic.Scripts.Events.BooleanVariable, Assembly-CSharp
           m_MethodName: set_Value
@@ -2555,18 +2552,6 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-        - m_Target: {fileID: 0}
-          m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_MethodName: SetActive
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
         - m_Target: {fileID: 2047998751}
           m_TargetAssemblyTypeName: Dajunctic.Scripts.Manager.TimeManager, Assembly-CSharp
           m_MethodName: StartLessonTime
@@ -2579,10 +2564,42 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
-        - m_Target: {fileID: 11400000, guid: 71a3d7d0fca1d1847a300509cd3a4754, type: 2}
-          m_TargetAssemblyTypeName: Dajunctic.Scripts.Events.BooleanVariable, Assembly-CSharp
+    onFinished:
+      m_PersistentCalls:
+        m_Calls: []
+    isConditionMet: {fileID: 0}
+  - name: "Gi\xE1o vi\xEAn gi\u1EDBi thi\u1EC7u"
+    on: 1
+    duration: 10
+    onStart:
+      m_PersistentCalls:
+        m_Calls: []
+    onFinished:
+      m_PersistentCalls:
+        m_Calls: []
+    isConditionMet: {fileID: 0}
+  - name: "B\u1EA1n Nam gi\u1EDBi thi\u1EC7u"
+    on: 1
+    duration: 0
+    onStart:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 11400000, guid: 66ffbc00f69200041864a29423affd50, type: 2}
+          m_TargetAssemblyTypeName: VRAutism.Core.BooleanVariable, Assembly-CSharp
           m_MethodName: set_Value
           m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 3
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 405125983}
+          m_TargetAssemblyTypeName: UnityEngine.Playables.PlayableDirector, UnityEngine
+          m_MethodName: Play
+          m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
             m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -2594,7 +2611,7 @@ MonoBehaviour:
     onFinished:
       m_PersistentCalls:
         m_Calls: []
-    isConditionMet: {fileID: 0}
+    isConditionMet: {fileID: 11400000, guid: 66ffbc00f69200041864a29423affd50, type: 2}
   - name: "Di chuy\u1EC3n t\u1EDBi v\u1ECB tr\xED \u0111\u1EE9ng"
     on: 1
     duration: 0
@@ -2665,113 +2682,15 @@ MonoBehaviour:
             m_BoolArgument: 0
           m_CallState: 2
     isConditionMet: {fileID: 11400000, guid: 15707155b79bdaa4ebc209d7a4c849b9, type: 2}
-  - name: "Gi\xE1o vi\xEAn gi\u1EDBi thi\u1EC7u"
-    on: 1
-    duration: 10
-    onStart:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1417027144}
-          m_TargetAssemblyTypeName: Dajunctic.Scripts.NPC.NPCController, Assembly-CSharp
-          m_MethodName: SaySomething
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: "H\xE3y n\xF3i y h\u1EC7t t\xF4i nh\u01B0 sau: \"Xin
-              ch\xE0o c\xE1c em, c\xF4 t\xEAn l\xE0 Thanh. H\xF4m nay ch\xFAng ta
-              h\xE3y gi\u1EDBi thi\u1EC7u v\xE0 l\xE0m quen nhau nh\xE9. B\xE2y gi\u1EDD
-              c\xE1c b\u1EA1n h\xE3y \u0111\u1EE9ng l\xEAn b\u1EE5c v\xE0 gi\u1EDBi
-              thi\u1EC7u v\u1EC1 t\xEAn, tu\u1ED5i v\xE0 s\u1EDF th\xEDch c\u1EE7a
-              b\u1EA3n th\xE2n nh\xE9. \u0110\u1EA7u ti\xEAn, c\xF4 m\u1EDDi b\u1EA1n
-              Nam\"."
-            m_BoolArgument: 0
-          m_CallState: 2
-    onFinished:
-      m_PersistentCalls:
-        m_Calls: []
-    isConditionMet: {fileID: 0}
-  - name: "B\u1EA1n Nam gi\u1EDBi thi\u1EC7u"
-    on: 1
-    duration: 0
-    onStart:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 405125983}
-          m_TargetAssemblyTypeName: UnityEngine.Playables.PlayableDirector, UnityEngine
-          m_MethodName: Play
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 1417027144}
-          m_TargetAssemblyTypeName: Dajunctic.Scripts.NPC.NPCController, Assembly-CSharp
-          m_MethodName: SaySomething
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 3
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-    onFinished:
-      m_PersistentCalls:
-        m_Calls: []
-    isConditionMet: {fileID: 11400000, guid: 66ffbc00f69200041864a29423affd50, type: 2}
   - name: "K\u1EBFt th\xFAc"
     on: 1
     duration: 5
     onStart:
       m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1417027144}
-          m_TargetAssemblyTypeName: Dajunctic.Scripts.NPC.NPCController, Assembly-CSharp
-          m_MethodName: SaySomething
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 2
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 0}
-          m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_MethodName: SetActive
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 2
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
+        m_Calls: []
     onFinished:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 0}
-          m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_MethodName: SetActive
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
         - m_Target: {fileID: 2047998751}
           m_TargetAssemblyTypeName: Dajunctic.Scripts.Manager.TimeManager, Assembly-CSharp
           m_MethodName: SaveLessonTimeData
@@ -36972,99 +36891,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1416635620}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1417027143
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1417027145}
-  - component: {fileID: 1417027144}
-  - component: {fileID: 1417027146}
-  m_Layer: 0
-  m_Name: NPCController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1417027144
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1417027143}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb3beba1e910f0044a27662389581e35, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  voicePlayer: {fileID: 0}
-  bubblePresenter: {fileID: 0}
-  lookAtPlayer: {fileID: 0}
---- !u!4 &1417027145
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1417027143}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 8.325333, y: 1.0626848, z: -1.2299467}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1417027146
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1417027143}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e52de21a22b6dd44c9cc19f810c65059, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Events:
-    m_Signals:
-    - {fileID: 11400000, guid: 23533f97693e4474dae6484a6e2d429e, type: 2}
-    - {fileID: 11400000, guid: 366064912c7e7cb4589e30f1f1758cb1, type: 2}
-    m_Events:
-    - m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 1417027144}
-          m_TargetAssemblyTypeName: Dajunctic.Scripts.NPC.NPCController, Assembly-CSharp
-          m_MethodName: SaySomething
-          m_Mode: 3
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 1
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-    - m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 11400000, guid: 66ffbc00f69200041864a29423affd50, type: 2}
-          m_TargetAssemblyTypeName: Dajunctic.Scripts.Events.BooleanVariable, Assembly-CSharp
-          m_MethodName: set_Value
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 1
-          m_CallState: 2
 --- !u!1001 &1433717152
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -38626,6 +38452,50 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1682648219}
   m_Mesh: {fileID: 3040904436197568297, guid: 68ed229a1578d6a438d82a545f652616, type: 3}
+--- !u!1 &1698731308
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1698731310}
+  - component: {fileID: 1698731309}
+  m_Layer: 0
+  m_Name: RemoteCommandListener
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1698731309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1698731308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10f7b6ac3cb9e63478cc29a758e0ae5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Cloud.RTDB.RemoteCommandListener
+--- !u!4 &1698731310
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1698731308}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1711043983
 GameObject:
   m_ObjectHideFlags: 0
@@ -39449,6 +39319,51 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1844458067}
   m_Mesh: {fileID: 840350535253268479, guid: 68ed229a1578d6a438d82a545f652616, type: 3}
+--- !u!1 &1846814342
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1846814343}
+  - component: {fileID: 1846814344}
+  m_Layer: 0
+  m_Name: QuestRemoteBridge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1846814343
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1846814342}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.99975, y: 0.34612, z: -0.17417}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1883205729}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1846814344
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1846814342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efb3fc817af71f44c9d06ec3083c9e15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.QuestRemoteBridge
+  questController: {fileID: 1883205728}
 --- !u!1 &1848224359
 GameObject:
   m_ObjectHideFlags: 0
@@ -39749,6 +39664,7 @@ Transform:
   - {fileID: 180992145}
   - {fileID: 760028425}
   - {fileID: 354501294}
+  - {fileID: 1846814343}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1885920099
@@ -107713,7 +107629,7 @@ SceneRoots:
   - {fileID: 252710530}
   - {fileID: 2047998752}
   - {fileID: 1883205729}
-  - {fileID: 1417027145}
   - {fileID: 405125984}
   - {fileID: 640600587}
   - {fileID: 107818165}
+  - {fileID: 1698731310}

@@ -63,6 +63,12 @@ namespace VRAutism.Cloud.RTDB
 
                 Debug.Log($"[LiveSessionReporter] ✅ Handshake gửi thành công → live_sessions/{sessionId}/vr_state (scene: {sceneName})");
 
+                // Đảm bảo RemoteCommandListener bắt đầu lắng nghe lệnh điều khiển RTDB
+                if (RemoteCommandListener.Instance != null)
+                {
+                    RemoteCommandListener.Instance.StartListening(sessionId);
+                }
+
                 // Khởi động LiveKit POV Video Stream nếu camera chính có sẵn
                 if (LiveKitService.Instance != null)
                 {

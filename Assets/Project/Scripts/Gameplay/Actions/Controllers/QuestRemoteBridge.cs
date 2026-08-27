@@ -10,7 +10,7 @@ namespace VRAutism.Gameplay.Actions
         private void Awake()
         {
             if (questController == null)
-                questController = GetComponent<QuestController>();
+                questController = GetComponent<QuestController>() ?? QuestController.Instance ?? FindObjectOfType<QuestController>();
         }
 
         private void Start()
@@ -27,8 +27,33 @@ namespace VRAutism.Gameplay.Actions
             RemoteCommandListener.OnTriggerVisualHint  -= HandleVisualHint;
         }
 
-        private void HandleSkip()        => questController.TriggerSkip();
-        private void HandleVerbalHint()  => questController.TriggerVerbalHint();
-        private void HandleVisualHint()  => questController.TriggerVisualHint();
+        private void HandleSkip()
+        {
+            if (questController == null)
+                questController = QuestController.Instance ?? FindObjectOfType<QuestController>();
+
+            if (questController != null)
+                questController.TriggerSkip();
+            else
+                Debug.LogWarning("[QuestRemoteBridge] Không tìm thấy QuestController để Skip Quest.");
+        }
+
+        private void HandleVerbalHint()
+        {
+            if (questController == null)
+                questController = QuestController.Instance ?? FindObjectOfType<QuestController>();
+
+            if (questController != null)
+                questController.TriggerVerbalHint();
+        }
+
+        private void HandleVisualHint()
+        {
+            if (questController == null)
+                questController = QuestController.Instance ?? FindObjectOfType<QuestController>();
+
+            if (questController != null)
+                questController.TriggerVisualHint();
+        }
     }
 }

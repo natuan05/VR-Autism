@@ -1,7 +1,7 @@
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **VR-Autism** (25489 symbols, 41111 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **VR-Autism** (25055 symbols, 40071 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 
@@ -29,6 +29,10 @@ This project is indexed by GitNexus as **VR-Autism** (25489 symbols, 41111 relat
 | `gitnexus://repo/VR-Autism/clusters` | All functional areas |
 | `gitnexus://repo/VR-Autism/processes` | All execution flows |
 | `gitnexus://repo/VR-Autism/process/{name}` | Step-by-step execution trace |
+
+## Cross-Repo Groups
+
+This repository is listed under GitNexus **group(s): vr-platform** (see `~/.gitnexus/groups/`). For cross-repo analysis, use MCP tools `impact`, `query`, and `context` with `repo` set to `@<groupName>` or `@<groupName>/<memberPath>` (paths match keys in that group’s `group.yaml`). Use `group_list` / `group_sync` for membership and sync. From the project root: `node .gitnexus/run.cjs group list`, `node .gitnexus/run.cjs group sync <name>`, `node .gitnexus/run.cjs group impact <name> --target <symbol> --repo <group-path>` (the `.gitnexus/run.cjs` path is repo-root-relative).
 
 ## CLI
 

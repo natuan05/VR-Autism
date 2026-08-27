@@ -9,14 +9,9 @@ description = "Simple voice AI assistant built with LiveKit Agents for Python"
 requires-python = ">=3.10, <3.15"
 
 dependencies = [
-<<<<<<< HEAD
-    "livekit-agents>=1.6.1",
+    "livekit-agents>=1.6.9",
     "livekit-plugins-google>=1.0",
     "livekit-plugins-silero>=1.0",
-=======
-    "livekit-agents>=1.6.9",
-    "livekit-plugins-ai-coustics~=0.2",
->>>>>>> ddc18eb8519cbfdb17d56c679f363a6507f600ec
     "python-dotenv",
 ]
 
@@ -39,6 +34,7 @@ where = ["src"]
 "" = "src"
 
 [tool.pytest.ini_options]
+pythonpath = ["src"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 

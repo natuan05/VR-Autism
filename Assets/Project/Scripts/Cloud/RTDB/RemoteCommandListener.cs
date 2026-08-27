@@ -280,6 +280,16 @@ namespace VRAutism.Cloud.RTDB
             if (Input.GetKeyDown(KeyCode.R)) TriggerResumeLesson();
 #endif
 
+            // Tự động kích hoạt lắng nghe nếu SessionContext nạp trễ
+            if (!_isListening)
+            {
+                var ctx = Core.SessionContext.Instance;
+                if (ctx != null && !string.IsNullOrEmpty(ctx.SessionId) && RTDBConnection.Instance?.RootRef != null)
+                {
+                    StartListening(ctx.SessionId);
+                }
+            }
+
             // Xử lý các lệnh từ background thread truyền về
             while (_mainThreadQueue.TryDequeue(out var action))
             {
