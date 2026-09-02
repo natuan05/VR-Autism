@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Bathroom
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Data.LessonGraph
   _schemaVersion: 1
-  _entryNodeId: 
+  _entryNodeId: 0
   _nodes: []
   _edges: []
   references:
