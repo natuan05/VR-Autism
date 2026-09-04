@@ -49,6 +49,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
             var normalizedId = bindingId ?? string.Empty;
             if (!_sources.TryGetValue(normalizedId, out var source))
             {
+                Debug.LogWarning($"[LessonGraphV2] Resolve FAILED: missing binding='{normalizedId}'", this);
                 return QuestBindingResolution.Failure(new QuestBindingValidationIssue(
                     QuestBindingFailureCodes.MissingBinding,
                     normalizedId,
@@ -57,18 +58,22 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
 
             if (source == null || !source.IsAvailable)
             {
+                Debug.LogWarning($"[LessonGraphV2] Resolve FAILED: unavailable binding='{normalizedId}'", this);
                 return QuestBindingResolution.Failure(new QuestBindingValidationIssue(
                     QuestBindingFailureCodes.BindingUnavailable,
                     normalizedId,
                     $"Quest source for binding '{normalizedId}' is disabled, destroyed, active, or terminal."));
             }
 
+            Debug.Log($"[LessonGraphV2] Resolve OK: binding='{normalizedId}' source='{source.BindingId}'", this);
             return QuestBindingResolution.Success(source);
         }
 
         public bool IsReady(LessonGraph graph, out string reason)
         {
-            var issues = new List<QuestBindingValidationIssue>(_validationIssues);
+            var issues = new List<QuestBindingValidationIssue>(
+                _validationIssues.Where(issue =>
+                    issue.Code != QuestBindingFailureCodes.BindingUnavailable));
             if (graph == null)
             {
                 issues.Add(new QuestBindingValidationIssue(
@@ -174,6 +179,15 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
             }
 
             _validationIssues = issues.ToArray();
+            if (_validationIssues.Length > 0)
+            {
+                foreach (var issue in _validationIssues)
+                    Debug.LogWarning($"[LessonGraphV2] Binding issue: {issue.Code} binding='{issue.BindingId}' — {issue.Message}", this);
+            }
+            else
+            {
+                Debug.Log($"[LessonGraphV2] Bindings registry OK: {_sources.Count} sources registered", this);
+            }
             _lastPreflightIssues = Array.Empty<QuestBindingValidationIssue>();
         }
 

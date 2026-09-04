@@ -29,7 +29,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
 
         public bool TryActivate(QuestSourceActivation activation)
         {
-            if (!IsMainThread() || activation == null || !IsAvailable) return false;
+            if (!IsMainThread() || activation == null || !IsAvailable)
+            {
+                Debug.LogWarning($"[LessonGraphV2] Source activation REJECTED binding='{BindingId}' available={IsAvailable} mainThread={IsMainThread()}", this);
+                return false;
+            }
 
             _activation = activation;
             SetState(QuestSourceState.Activating);
@@ -50,13 +54,15 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
 
             if (State == QuestSourceState.Activating)
                 SetState(QuestSourceState.Active);
+            
+            Debug.Log($"[LessonGraphV2] Source ACTIVATED binding='{BindingId}' activation={activation.ActivationId}", this);
             return true;
         }
 
         public bool TryCancel(QuestSourceCancellation cancellation)
         {
             if (!IsMainThread() || cancellation == null) return false;
-            return Terminate(
+            bool result = Terminate(
                 cancellation.ActivationId,
                 QuestSourceTerminalStatus.Cancelled,
                 QuestSourceState.Cancelled,
@@ -65,6 +71,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
                 cancellation.Reason,
                 DateTimeOffset.UtcNow,
                 Time.realtimeSinceStartupAsDouble);
+
+            if (result)
+            {
+                Debug.Log($"[LessonGraphV2] Source CANCELLED binding='{BindingId}' activation={cancellation.ActivationId} reason={cancellation.Reason}", this);
+            }
+            return result;
         }
 
         protected bool TryComplete(string activationId, string completionChannel)
@@ -85,7 +97,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
             if (!CanAcceptSignal(activationId, allowCompleting: false)) return false;
 
             SetState(QuestSourceState.Completing);
-            return Terminate(
+            bool result = Terminate(
                 activationId,
                 QuestSourceTerminalStatus.Completed,
                 QuestSourceState.Completed,
@@ -94,6 +106,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
                 string.Empty,
                 completedAtUtc,
                 completedAtMonotonicSeconds);
+                
+            if (result)
+            {
+                Debug.Log($"[LessonGraphV2] Source COMPLETED binding='{BindingId}' channel={completionChannel} activation={activationId}", this);
+            }
+            return result;
         }
 
         protected bool TryFail(string activationId, string failureCode)
@@ -111,7 +129,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
             DateTimeOffset completedAtUtc,
             double completedAtMonotonicSeconds)
         {
-            return Terminate(
+            bool result = Terminate(
                 activationId,
                 QuestSourceTerminalStatus.Failed,
                 QuestSourceState.Failed,
@@ -120,6 +138,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
                 string.Empty,
                 completedAtUtc,
                 completedAtMonotonicSeconds);
+                
+            if (result)
+            {
+                Debug.LogWarning($"[LessonGraphV2] Source FAILED binding='{BindingId}' code={failureCode} activation={activationId}", this);
+            }
+            return result;
         }
 
         protected virtual void OnSourceActivated(QuestSourceActivation activation) { }
@@ -135,7 +159,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
             DateTimeOffset completedAtUtc,
             double completedAtMonotonicSeconds)
         {
-            if (!CanAcceptSignal(activationId, allowCompleting: true)) return false;
+            if (!CanAcceptSignal(activationId, allowCompleting: true))
+            {
+                Debug.LogWarning($"[LessonGraphV2] Source signal REJECTED (stale/wrong state) binding='{BindingId}' attemptedActivation={activationId} currentState={State}", this);
+                return false;
+            }
 
             var result = new QuestSourceResult(
                 activationId,
@@ -189,6 +217,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
                 State != QuestSourceState.Completing)
                 return;
 
+            Debug.LogWarning($"[LessonGraphV2] Source UNAVAILABLE (disable/destroy) binding='{BindingId}' state={State}", this);
             TryFail(
                 CurrentActivationId,
                 QuestSourceFailureCodes.BindingUnavailable,

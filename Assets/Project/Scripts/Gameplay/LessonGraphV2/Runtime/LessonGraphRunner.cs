@@ -46,7 +46,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         {
             lock (_gate)
             {
-                if (_activeTask != null && !_activeTask.IsCompleted) return _activeTask;
+                if (_activeTask != null && !_activeTask.IsCompleted)
+                {
+                    Debug.LogWarning($"[LessonGraphV2] StartLesson ignored — lesson already running", this);
+                    return _activeTask;
+                }
                 if (!CanStart()) return Task.FromResult(LessonResult.Failed(Guid.NewGuid().ToString("N"), LessonFailureReason.InvalidGraph));
 
                 if (_usesDefaultClock) _clock = new MonotonicClock();
@@ -65,11 +69,42 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         {
             try
             {
-                if (_graph == null || _registry == null || !LessonGraphValidator.Validate(_graph).IsValid) return false;
-                if (_preflight != null && !_preflight.IsReady(_graph, out _)) return false;
-                return _graph.Nodes.All(node => node != null && _registry.TryGet(node.NodeType, out var executor) && executor != null);
+                if (_graph == null)
+                {
+                    Debug.LogWarning($"[LessonGraphV2] CanStart failed: graph is null (did Installer configure runner?)", this);
+                    return false;
+                }
+                if (_registry == null)
+                {
+                    Debug.LogWarning($"[LessonGraphV2] CanStart failed: registry is null", this);
+                    return false;
+                }
+                var validation = LessonGraphValidator.Validate(_graph);
+                if (!validation.IsValid)
+                {
+                    var errorDetails = string.Join("; ", validation.Errors);
+                    Debug.LogWarning($"[LessonGraphV2] CanStart failed: graph validation failed: {errorDetails}", this);
+                    return false;
+                }
+                if (_preflight != null && !_preflight.IsReady(_graph, out var reason))
+                {
+                    Debug.LogWarning($"[LessonGraphV2] CanStart failed: preflight not ready. Reason: {reason}", this);
+                    return false;
+                }
+                if (!_graph.Nodes.All(node => node != null && _registry.TryGet(node.NodeType, out var executor) && executor != null))
+                {
+                    var missing = _graph.Nodes.Where(node => node == null || !_registry.TryGet(node.NodeType, out var exec) || exec == null)
+                                              .Select(node => node?.Id ?? "null_node");
+                    Debug.LogWarning($"[LessonGraphV2] CanStart failed: missing executor for nodes: {string.Join(", ", missing)}", this);
+                    return false;
+                }
+                return true;
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[LessonGraphV2] CanStart exception: {ex}", this);
+                return false;
+            }
         }
 
         private async Task<LessonResult> RunAsync(string runId, CancellationToken cancellationToken)
@@ -78,6 +113,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             {
                 var nodes = _graph.Nodes.ToDictionary(node => node.Id);
                 var node = nodes[_graph.EntryNodeId];
+                Debug.Log($"[LessonGraphV2] LESSON START graph={_graph.name} entry={node.Id} runId={runId}", this);
                 while (true)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -101,7 +137,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                                 if (await Task.WhenAny(executionTask, abort.Task) != executionTask)
                                 {
                                     ObserveFault(executionTask);
-                                    return LessonResult.Failed(runId, LessonFailureReason.Aborted, _clock.ElapsedSeconds);
+                                    var abortResult = LessonResult.Failed(runId, LessonFailureReason.Aborted, _clock.ElapsedSeconds);
+                                    Emit(LessonCompleted, new LessonCompletedEvent(abortResult));
+                                    return abortResult;
                                 }
                             }
                             result = await executionTask;
@@ -109,20 +147,31 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     }
                     catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                     {
-                        return LessonResult.Failed(runId, LessonFailureReason.Aborted, _clock.ElapsedSeconds);
+                        var abortResult = LessonResult.Failed(runId, LessonFailureReason.Aborted, _clock.ElapsedSeconds);
+                        Emit(LessonCompleted, new LessonCompletedEvent(abortResult));
+                        return abortResult;
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Debug.LogError($"[LessonGraphV2] Executor exception node={node.Id}: {ex}", this);
                         result = NodeResult.Completed(node.Id, activationId, NodeStatus.Failed, _clock.ElapsedSeconds, "exception");
                     }
 
                     if (cancellationToken.IsCancellationRequested || !IsCurrentActivation(runId, activationId))
-                        return LessonResult.Failed(runId, LessonFailureReason.Aborted, _clock.ElapsedSeconds);
+                    {
+                        var abortResult = LessonResult.Failed(runId, LessonFailureReason.Aborted, _clock.ElapsedSeconds);
+                        Emit(LessonCompleted, new LessonCompletedEvent(abortResult));
+                        return abortResult;
+                    }
                     if (result == null || result.ActivationId != activationId || result.NodeId != node.Id)
+                    {
+                        Debug.LogWarning($"[LessonGraphV2] Invalid/null result for node={node.Id}, treating as failed", this);
                         result = NodeResult.Completed(node.Id, activationId, NodeStatus.Failed, _clock.ElapsedSeconds, "invalid_result");
+                    }
 
                     Emit(NodeCompleted, new NodeCompletedEvent(result));
                     var next = SelectEdge(node.Id, result.Status);
+                    Debug.Log($"[LessonGraphV2] EDGE node={node.Id} status={result.Status} → next={next?.ToNodeId ?? "TERMINAL"}", this);
                     if (next == null)
                     {
                         var completed = LessonResult.Completed(runId, result, _clock.ElapsedSeconds);
@@ -134,7 +183,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                return LessonResult.Failed(runId, LessonFailureReason.Aborted, _clock.ElapsedSeconds);
+                var abortResult = LessonResult.Failed(runId, LessonFailureReason.Aborted, _clock.ElapsedSeconds);
+                Emit(LessonCompleted, new LessonCompletedEvent(abortResult));
+                return abortResult;
             }
             finally
             {
@@ -190,7 +241,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
 
         private static void ObserveFault(Task task)
         {
-            task.ContinueWith(completed => { var ignored = completed.Exception; },
+            task.ContinueWith(completed => {
+                if (completed.Exception != null)
+                    Debug.LogError($"[LessonGraphV2] Executor task faulted: {completed.Exception}");
+            },
                 TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
         }
 

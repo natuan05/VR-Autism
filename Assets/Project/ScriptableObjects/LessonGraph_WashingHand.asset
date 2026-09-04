@@ -1,0 +1,144 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2ea9d271e026d444bffb1f9bc0512dc, type: 3}
+  m_Name: LessonGraph_WashingHand
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Data.LessonGraph
+  _schemaVersion: 1
+  _entryNodeId: wash-turn-on-water
+  _nodes:
+  - _id: wash-turn-on-water
+    _nodeType: 0
+    _position: {x: 0, y: 0}
+    _config: {rid: 1001}
+  - _id: wash-wet-hands
+    _nodeType: 0
+    _position: {x: 240, y: 0}
+    _config: {rid: 1002}
+  - _id: wash-dispense-soap
+    _nodeType: 0
+    _position: {x: 480, y: 0}
+    _config: {rid: 1003}
+  - _id: wash-rub-hands
+    _nodeType: 0
+    _position: {x: 720, y: 0}
+    _config: {rid: 1004}
+  - _id: wash-turn-off-water
+    _nodeType: 0
+    _position: {x: 960, y: 0}
+    _config: {rid: 1005}
+  - _id: wash-dry-hands
+    _nodeType: 0
+    _position: {x: 1200, y: 0}
+    _config: {rid: 1006}
+  - _id: wash-complete
+    _nodeType: 3
+    _position: {x: 1440, y: 0}
+    _config: {rid: 1007}
+  _edges:
+  - _fromNodeId: wash-turn-on-water
+    _toNodeId: wash-wet-hands
+    _priority: 0
+    _condition: {rid: 2001}
+  - _fromNodeId: wash-wet-hands
+    _toNodeId: wash-dispense-soap
+    _priority: 0
+    _condition: {rid: 2002}
+  - _fromNodeId: wash-dispense-soap
+    _toNodeId: wash-rub-hands
+    _priority: 0
+    _condition: {rid: 2003}
+  - _fromNodeId: wash-rub-hands
+    _toNodeId: wash-turn-off-water
+    _priority: 0
+    _condition: {rid: 2004}
+  - _fromNodeId: wash-turn-off-water
+    _toNodeId: wash-dry-hands
+    _priority: 0
+    _condition: {rid: 2005}
+  - _fromNodeId: wash-dry-hands
+    _toNodeId: wash-complete
+    _priority: 0
+    _condition: {rid: 2006}
+  references:
+    version: 2
+    RefIds:
+    - rid: 1001
+      type: {class: QuestNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs, asm: Assembly-CSharp}
+      data:
+        _completionBindingIds:
+        - washing-hand.turn-on-water
+        _timeoutSeconds: 30
+        _voicePrompt: Turn on the water.
+    - rid: 1002
+      type: {class: QuestNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs, asm: Assembly-CSharp}
+      data:
+        _completionBindingIds:
+        - washing-hand.wet-hands
+        _timeoutSeconds: 30
+        _voicePrompt: Wet your hands under the water.
+    - rid: 1003
+      type: {class: QuestNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs, asm: Assembly-CSharp}
+      data:
+        _completionBindingIds:
+        - washing-hand.dispense-soap
+        _timeoutSeconds: 30
+        _voicePrompt: Dispense soap and spread it over your hands.
+    - rid: 1004
+      type: {class: QuestNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs, asm: Assembly-CSharp}
+      data:
+        _completionBindingIds:
+        - washing-hand.rub-hands
+        _timeoutSeconds: 30
+        _voicePrompt: Rub your hands together to wash them.
+    - rid: 1005
+      type: {class: QuestNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs, asm: Assembly-CSharp}
+      data:
+        _completionBindingIds:
+        - washing-hand.turn-off-water
+        _timeoutSeconds: 30
+        _voicePrompt: Turn off the water.
+    - rid: 1006
+      type: {class: QuestNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs, asm: Assembly-CSharp}
+      data:
+        _completionBindingIds:
+        - washing-hand.dry-hands
+        _timeoutSeconds: 30
+        _voicePrompt: Dry your hands with the towel.
+    - rid: 1007
+      type: {class: CheckpointNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs, asm: Assembly-CSharp}
+      data:
+        _checkpointId: washing-hand.complete
+        _emitTelemetry: 1
+    - rid: 2001
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions, asm: Assembly-CSharp}
+      data:
+        _requiredStatus: success
+    - rid: 2002
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions, asm: Assembly-CSharp}
+      data:
+        _requiredStatus: success
+    - rid: 2003
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions, asm: Assembly-CSharp}
+      data:
+        _requiredStatus: success
+    - rid: 2004
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions, asm: Assembly-CSharp}
+      data:
+        _requiredStatus: success
+    - rid: 2005
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions, asm: Assembly-CSharp}
+      data:
+        _requiredStatus: success
+    - rid: 2006
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions, asm: Assembly-CSharp}
+      data:
+        _requiredStatus: success
