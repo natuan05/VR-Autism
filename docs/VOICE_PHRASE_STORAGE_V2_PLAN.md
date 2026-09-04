@@ -1,7 +1,7 @@
 # Voice Phrase Storage V2 Plan
 
-**Status:** Normative implementation contract - approved  
-**Date:** 2026-09-04  
+**Status:** Normative implementation contract - approved
+**Date:** 2026-09-04
 **Scope:** Voice phrase storage and resolution for the LessonGraph V2 path
 
 ## 1. Purpose
