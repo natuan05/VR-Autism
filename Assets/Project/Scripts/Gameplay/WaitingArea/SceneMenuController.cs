@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using Firebase.Firestore;
 using Firebase.Extensions;
 using VRAutism.Core.Models;
+using VRAutism.Gameplay.LessonGraphV2.Phrases;
 
 namespace VRAutism.Gameplay.WaitingArea{
     /// <summary>
@@ -44,6 +45,11 @@ namespace VRAutism.Gameplay.WaitingArea{
             }
 
             Debug.Log($"[SceneMenuController] Nhận lệnh Session. Bé: {childId}, Bài: {lessonId}, Scene: {sceneName}, Buổi: {sessionId}");
+
+            // Overlap scene asset loading with Firestore reads. Activation remains gated
+            // until the selected V2 lesson has an immutable phrase snapshot.
+            var pendingScene = SceneManager.LoadSceneAsync(sceneName);
+            if (pendingScene != null) pendingScene.allowSceneActivation = false;
             
             // Lưu context cơ bản trước
             var ctx = VRAutism.Core.SessionContext.Instance;
@@ -63,6 +69,9 @@ namespace VRAutism.Gameplay.WaitingArea{
             var childTask  = string.IsNullOrEmpty(childId)
                 ? System.Threading.Tasks.Task.FromResult<DocumentSnapshot>(null)
                 : db.Collection("child_profiles").Document(childId).GetSnapshotAsync();
+            var childPhraseTask = string.IsNullOrEmpty(childId)
+                ? System.Threading.Tasks.Task.FromResult<DocumentSnapshot>(null)
+                : db.Collection(Cloud.FirebasePaths.ChildPhraseSets).Document($"{childId}__{lessonId}").GetSnapshotAsync();
 
             // ── Fetch lesson metadata ──────────────────────────────────────
             DocumentSnapshot doc = null;
@@ -98,6 +107,61 @@ namespace VRAutism.Gameplay.WaitingArea{
             {
                 if (ctx != null) ctx.LessonName = sceneName; // Fallback
                 Debug.LogError($"[SceneMenuController] Lỗi fetch Firestore (có thể mất mạng/alt-tab): {ex.Message}. Vẫn sẽ tiếp tục chuyển Scene.");
+            }
+
+            bool isV2Lesson = doc != null && doc.Exists && doc.ContainsField("voice_schema_version") &&
+                              System.Convert.ToInt32(doc.GetValue<object>("voice_schema_version")) >= 2;
+            bool v2SnapshotReady = !isV2Lesson;
+            if (isV2Lesson)
+            {
+                try
+                {
+                    var lessonQuests = new System.Collections.Generic.List<VoiceQuestPhraseV2>();
+                    var rawQuests = doc.GetValue<object>("quests") as System.Collections.IList;
+                    if (rawQuests == null) throw new System.Exception("V2 lesson quests missing");
+                    foreach (var rawQuest in rawQuests)
+                    {
+                        if (!(rawQuest is System.Collections.IDictionary map)) throw new System.Exception("V2 quest is not a map");
+                        lessonQuests.Add(new VoiceQuestPhraseV2
+                        {
+                            binding_id = map["binding_id"]?.ToString(),
+                            goal = map["goal"]?.ToString() ?? string.Empty,
+                            default_phrases = ToStringList(map["default_phrases"])
+                        });
+                    }
+
+                    var additions = new System.Collections.Generic.List<VoiceQuestPhraseAdditionV2>();
+                    DocumentSnapshot phraseDoc = null;
+                    try { phraseDoc = await childPhraseTask; }
+                    catch (System.Exception phraseError)
+                    {
+                        Debug.LogWarning($"[LessonGraphV2] Child phrase additions unavailable; using defaults: {phraseError.Message}");
+                    }
+                    if (phraseDoc != null && phraseDoc.Exists && phraseDoc.ContainsField("quest_additions"))
+                    {
+                        if (phraseDoc.GetValue<object>("quest_additions") is System.Collections.IList rawAdditions)
+                        {
+                            foreach (var rawAddition in rawAdditions)
+                            {
+                                if (!(rawAddition is System.Collections.IDictionary map)) continue;
+                                additions.Add(new VoiceQuestPhraseAdditionV2
+                                {
+                                    binding_id = map["binding_id"]?.ToString(),
+                                    phrases = ToStringList(map["phrases"])
+                                });
+                            }
+                        }
+                    }
+
+                    new FirestoreVoicePhraseLoaderV2().ResolveSessionSnapshot(lessonQuests, additions);
+                    v2SnapshotReady = true;
+                    Debug.Log($"[LessonGraphV2] Phrase snapshot ready lesson='{lessonId}' child='{childId}' bindings={lessonQuests.Count}");
+                }
+                catch (System.Exception exV2)
+                {
+                    Debug.LogError($"[LessonGraphV2] Phrase snapshot failed; scene activation remains gated: {exV2.Message}");
+                    v2SnapshotReady = false;
+                }
             }
 
             // ── Fetch child profile → đồng bộ default_lesson_params ────────────
@@ -257,8 +321,26 @@ namespace VRAutism.Gameplay.WaitingArea{
             
             // ⚠️ Luôn chuyển Scene khi đã nhận lệnh của Web để đồng bộ trạng thái,
             // kể cả khi rớt mạng không lấy được thông tin metadata bài học từ Firestore.
+            if (pendingScene == null)
+            {
+                if (v2SnapshotReady) SceneManager.LoadScene(sceneName);
+                return;
+            }
+            if (!v2SnapshotReady)
+            {
+                Debug.LogError($"[LessonGraphV2] Scene activation blocked for lesson='{lessonId}'. Retry the session command.");
+                return;
+            }
             Debug.Log($"[SceneMenuController] Chuyển tới Scene: {sceneName}");
-            SceneManager.LoadScene(sceneName);
+            pendingScene.allowSceneActivation = true;
+        }
+
+        private static System.Collections.Generic.List<string> ToStringList(object raw)
+        {
+            var values = new System.Collections.Generic.List<string>();
+            if (!(raw is System.Collections.IList list)) return values;
+            foreach (var item in list) if (item != null) values.Add(item.ToString());
+            return values;
         }
 
         private void OnDestroy()

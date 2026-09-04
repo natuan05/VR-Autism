@@ -1,5 +1,24 @@
 # 🌲 Cấu trúc Chi Tiết Cây Dữ Liệu Cloud Firestore (Deep Schema Snapshot)
 
+## LessonGraph V2 voice phrase contract
+
+The V2 path adds top-level collection `child_phrase_sets`. Document IDs are
+`{childId}__{lessonId}` for lesson additions and `{childId}__general` for
+general shortcuts. Defaults remain in `lessons/{lessonId}` and are never
+copied into child documents.
+
+| Document | Required fields | Ownership |
+|---|---|---|
+| `lessons/{lessonId}` | `voice_schema_version: 2`, `voice_revision`, quest `binding_id`, `goal`, `default_phrases` | lesson author |
+| `child_phrase_sets/{childId}__{lessonId}` | `schema_version: 2`, `scope: lesson`, `child_id`, `lesson_id`, `revision`, `quest_additions[]` | authorized specialist |
+| `child_phrase_sets/{childId}__general` | `schema_version: 2`, `scope: general`, `child_id`, `revision`, `phrases[]` | authorized specialist |
+
+Child writes validate binding IDs and increment `revision` transactionally.
+Effective phrases are resolved once per session as normalized defaults followed
+by additions. Missing child documents fall back to defaults; malformed lesson
+data blocks V2 scene activation. Legacy `child_profiles.quick_phrases` remains
+unchanged during rollout.
+
 > Quét tự động từ Project: `vra-project-96d9c` vào lúc: 23:23:01 2/9/2026
 
 ## 📌 Kiến trúc Tổng Quan
@@ -1172,4 +1191,3 @@
 ```
 
 ---
-

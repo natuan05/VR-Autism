@@ -9,9 +9,10 @@ import json
 import logging
 import os
 import random
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from dotenv import load_dotenv
+from google.cloud import texttospeech as gcp_tts
 from livekit import rtc
 from livekit.agents import (
     AutoSubscribe,
@@ -26,7 +27,17 @@ from livekit.agents import (
 from livekit.agents import tts as agents_tts
 from livekit.agents.voice import Agent, AgentSession
 from livekit.plugins import google, silero
-from google.cloud import texttospeech as gcp_tts
+
+from voice_contract_v2 import (
+    VOICE_TOPIC,
+    CancelActiveQuest,
+    PacketValidationError,
+    SetActiveQuest,
+    parse_unity_packet,
+    quest_matched_packet,
+    quest_status_packet,
+)
+from voice_quest_runtime_v2 import ActivationDisposition, VoiceQuestRuntime
 
 # ---------------------------------------------------------------------------
 # Setup & Logging Configuration
@@ -62,7 +73,7 @@ WAITING_INSTRUCTIONS = (
 )
 
 
-def build_quest_instructions(quest_name: str, phrases: List[str]) -> str:
+def build_quest_instructions(quest_name: str, phrases: list[str]) -> str:
     """Build dynamic system prompt for active quest from Unity VR."""
     return (
         BASE_INSTRUCTIONS + "\n\n"
@@ -82,8 +93,8 @@ def build_quest_instructions(quest_name: str, phrases: List[str]) -> str:
 # ---------------------------------------------------------------------------
 async def _synthesize_phrases(
     tts: agents_tts.TTS,
-    phrases: List[str],
-    cache: Dict[str, List[rtc.AudioFrame]],
+    phrases: list[str],
+    cache: dict[str, list[rtc.AudioFrame]],
 ) -> None:
     """Pre-synthesize phrases concurrently into per-job cache."""
     to_synthesize = [p for p in phrases if p not in cache]
@@ -91,7 +102,7 @@ async def _synthesize_phrases(
         return
 
     async def _synth_one(text: str) -> None:
-        frames: List[rtc.AudioFrame] = []
+        frames: list[rtc.AudioFrame] = []
         try:
             async with tts.synthesize(text) as stream:
                 async for event in stream:
@@ -105,7 +116,7 @@ async def _synthesize_phrases(
     await asyncio.gather(*[_synth_one(p) for p in to_synthesize])
 
 
-async def _frames_to_async_gen(frames: List[rtc.AudioFrame]):
+async def _frames_to_async_gen(frames: list[rtc.AudioFrame]):
     """Convert AudioFrame list to async generator for session.say."""
     for frame in frames:
         yield frame
@@ -120,9 +131,9 @@ class QuestState:
     def __init__(self) -> None:
         self.active: bool = False
         self.name: str = ""
-        self.phrases: List[str] = []
+        self.phrases: list[str] = []
 
-    def set_active_quest(self, name: str, phrases: List[str]) -> None:
+    def set_active_quest(self, name: str, phrases: list[str]) -> None:
         self.active = True
         self.name = name
         self.phrases = phrases
@@ -139,8 +150,9 @@ class JobRuntime:
     def __init__(self, job_ctx: JobContext) -> None:
         self.job_ctx = job_ctx
         self.quest_state = QuestState()
+        self.voice_runtime = VoiceQuestRuntime()
         self.background_tasks: set[asyncio.Task[Any]] = set()
-        self.tts_cache: Dict[str, List[rtc.AudioFrame]] = {}
+        self.tts_cache: dict[str, list[rtc.AudioFrame]] = {}
 
     def spawn(self, coro: Any) -> None:
         """Spawn background task with auto-cleanup on completion."""
@@ -153,7 +165,7 @@ class JobRuntime:
 # Helper Utilities
 # ---------------------------------------------------------------------------
 async def send_rtc_event(
-    runtime: JobRuntime, event_name: str, extra_data: Optional[Dict[str, Any]] = None
+    runtime: JobRuntime, event_name: str, extra_data: Optional[dict[str, Any]] = None
 ) -> bool:
     """Broadcast JSON DataPacket to Unity VR and Web Dashboard."""
     if not runtime.job_ctx or not runtime.job_ctx.room:
@@ -161,16 +173,37 @@ async def send_rtc_event(
         return False
 
     try:
-        payload_dict: Dict[str, Any] = {"event": event_name}
+        payload_dict: dict[str, Any] = {"event": event_name}
         if extra_data:
             payload_dict.update(extra_data)
 
         payload_bytes = json.dumps(payload_dict).encode("utf-8")
-        await runtime.job_ctx.room.local_participant.publish_data(payload_bytes, reliable=True)
+        await runtime.job_ctx.room.local_participant.publish_data(
+            payload_bytes, reliable=True
+        )
         logger.info("[RTC] Sent event: %s | payload: %s", event_name, payload_dict)
         return True
     except Exception as err:
         logger.error("[RTC] Error sending event '%s': %s", event_name, err)
+        return False
+
+
+async def send_v2_packet(runtime: JobRuntime, packet: dict[str, Any]) -> bool:
+    """Publish a correlated V2 quest packet on the dedicated reliable topic."""
+    if not runtime.job_ctx or not runtime.job_ctx.room:
+        logger.warning("[RTC] Cannot send V2 packet: room not connected")
+        return False
+
+    try:
+        await runtime.job_ctx.room.local_participant.publish_data(
+            json.dumps(packet).encode("utf-8"),
+            reliable=True,
+            topic=VOICE_TOPIC,
+        )
+        logger.info("[RTC] Sent V2 packet: %s", packet)
+        return True
+    except Exception as err:
+        logger.error("[RTC] Error sending V2 packet: %s", err)
         return False
 
 
@@ -193,6 +226,7 @@ class TeacherAgent(Agent):
     def __init__(self, runtime: JobRuntime) -> None:
         super().__init__(instructions=WAITING_INSTRUCTIONS)
         self._runtime = runtime
+        self._evaluation_activation_id: str | None = None
 
     async def on_enter(self) -> None:
         logger.info("[AGENT] TeacherAgent ready in room (standby mode)")
@@ -201,19 +235,22 @@ class TeacherAgent(Agent):
     async def complete_quest(self, context: RunContext) -> str:
         """Call immediately when child speech matches active quest intent."""
         runtime = self._runtime
-        if not runtime.quest_state.active:
+        activation_id = self._evaluation_activation_id
+        if not activation_id or not runtime.voice_runtime.mark_matched(activation_id):
             logger.warning("[TOOL] complete_quest invoked with no active quest")
             return "Hiện tại chưa có Quest nào được kích hoạt."
 
-        quest_name = runtime.quest_state.name
+        quest_name = runtime.voice_runtime.active_goal or ""
         logger.info("[TOOL] Quest completed: %s", quest_name)
         runtime.quest_state.reset()
 
-        await send_rtc_event(runtime, "QUEST_MATCHED")
-        await send_rtc_event(
-            runtime, "QUEST_STATUS", {"quest_name": quest_name, "status": "matched"}
-        )
+        await send_v2_packet(runtime, quest_matched_packet(activation_id))
+        await send_v2_packet(runtime, quest_status_packet(activation_id, "MATCHED"))
         return f"Quest '{quest_name}' marked completed"
+
+    def bind_evaluation_activation(self, activation_id: str) -> None:
+        """Bind LLM tool calls to the activation whose prompt was installed."""
+        self._evaluation_activation_id = activation_id
 
 
 # ---------------------------------------------------------------------------
@@ -240,13 +277,17 @@ async def entrypoint(ctx: JobContext) -> None:
 
     if not gemini_key:
         logger.error("[ENV] Missing GOOGLE_API_KEY")
-        await send_rtc_event(runtime, "AGENT_INIT_FAILED", {"reason": "missing_gemini_key"})
+        await send_rtc_event(
+            runtime, "AGENT_INIT_FAILED", {"reason": "missing_gemini_key"}
+        )
         await ctx.room.disconnect()
         return
 
     if not gcloud_creds or not os.path.exists(gcloud_creds):
         logger.error("[ENV] Service account JSON not found: %s", gcloud_creds)
-        await send_rtc_event(runtime, "AGENT_INIT_FAILED", {"reason": "missing_gcloud_credentials"})
+        await send_rtc_event(
+            runtime, "AGENT_INIT_FAILED", {"reason": "missing_gcloud_credentials"}
+        )
         await ctx.room.disconnect()
         return
 
@@ -283,41 +324,20 @@ async def entrypoint(ctx: JobContext) -> None:
             await agent_ready.wait()
             try:
                 raw_text = data_packet.data.decode("utf-8")
+                if data_packet.topic == VOICE_TOPIC:
+                    await _process_v2_packet(agent, session, runtime, raw_text)
+                    return
+
                 data = json.loads(raw_text)
                 event_type = data.get("event")
-
-                if event_type == "SET_ACTIVE_QUEST":
-                    quest_name = data.get("quest_name", "")
-                    phrases = data.get("default_phrases", [])
-
-                    runtime.quest_state.set_active_quest(quest_name, phrases)
-                    logger.info(
-                        "[QUEST] Activated: '%s' | %d sample phrases: %s",
-                        quest_name,
-                        len(phrases),
-                        phrases,
-                    )
-
-                    await send_rtc_event(
-                        runtime,
-                        "QUEST_STATUS",
-                        {
-                            "quest_name": quest_name,
-                            "status": "active",
-                            "phrases_cached": True,
-                        },
-                    )
-                    await _handle_quest_activation(agent, session, runtime, quest_name, phrases)
-
-                elif event_type in ("VERBAL_HINT", "ON_REMINDER"):
-                    logger.info("[HINT] Received event: %s", event_type)
-                    await _handle_hint_reminder(session, runtime, event_type)
-
-                elif event_type == "SPEAK_SCRIPT":
+                if event_type == "SPEAK_SCRIPT":
                     text = data.get("text", "").strip()
                     if text:
                         logger.info("[SCRIPT] Received SPEAK_SCRIPT text: %r", text)
                         await _handle_speak_script(session, text)
+                elif event_type in ("VERBAL_HINT", "ON_REMINDER"):
+                    logger.info("[HINT] Received event: %s", event_type)
+                    await _handle_hint_reminder(session, runtime, event_type)
 
             except Exception as err:
                 logger.error("[DATA] Error processing DataPacket: %s", err)
@@ -333,15 +353,64 @@ async def entrypoint(ctx: JobContext) -> None:
     logger.info("[AGENT] Agent pipeline active and ready for packets")
 
 
-async def _handle_quest_activation(
-    agent: Agent,
+async def _process_v2_packet(
+    agent: TeacherAgent,
     session: AgentSession,
     runtime: JobRuntime,
+    payload: bytes | str,
+) -> None:
+    """Apply a strict V2 request without allowing old callbacks to win."""
+    try:
+        packet = parse_unity_packet(payload)
+    except PacketValidationError as exc:
+        logger.warning("[V2] Ignoring malformed V2 packet: %s", exc)
+        return
+
+    if isinstance(packet, SetActiveQuest):
+        disposition = runtime.voice_runtime.activate(packet)
+        if not runtime.voice_runtime.can_continue(packet.activation_id):
+            logger.info("[V2] Ignoring terminal replay: %s", packet.activation_id)
+            return
+
+        await send_v2_packet(
+            runtime, quest_status_packet(packet.activation_id, "ACTIVE")
+        )
+        if disposition is ActivationDisposition.REPLAY:
+            logger.info(
+                "[V2] Replayed activation acknowledged: %s", packet.activation_id
+            )
+            return
+
+        runtime.quest_state.set_active_quest(packet.quest_goal, list(packet.phrases))
+        if runtime.voice_runtime.claim_opening(packet.activation_id):
+            logger.info("[V2] Activated quest: %s", packet.activation_id)
+            await _handle_quest_activation(
+                agent,
+                session,
+                runtime,
+                packet.activation_id,
+                packet.quest_goal,
+                list(packet.phrases),
+            )
+        return
+
+    if isinstance(packet, CancelActiveQuest) and runtime.voice_runtime.cancel(packet):
+        runtime.quest_state.reset()
+        logger.info("[V2] Cancelled activation: %s", packet.activation_id)
+
+
+async def _handle_quest_activation(
+    agent: TeacherAgent,
+    session: AgentSession,
+    runtime: JobRuntime,
+    activation_id: str,
     quest_name: str,
-    phrases: List[str],
+    phrases: list[str],
 ) -> None:
     """Update system prompt and speak opening phrase with cached audio."""
     try:
+        if not runtime.voice_runtime.can_continue(activation_id):
+            return
         opening = (
             random.choice(phrases)
             if phrases
@@ -353,7 +422,12 @@ async def _handle_quest_activation(
             clear_agent_chat_history(agent),
             _synthesize_phrases(session.tts, phrases, runtime.tts_cache),
         )
+        if not runtime.voice_runtime.can_continue(activation_id):
+            return
+        agent.bind_evaluation_activation(activation_id)
         await agent.update_instructions(new_instructions)
+        if not runtime.voice_runtime.can_continue(activation_id):
+            return
 
         cached_frames = runtime.tts_cache.get(opening)
         audio_arg = _frames_to_async_gen(cached_frames) if cached_frames else None
@@ -378,11 +452,18 @@ async def _handle_hint_reminder(
 ) -> None:
     """Play cached phrase on VERBAL_HINT or ON_REMINDER."""
     try:
-        if not runtime.quest_state.active or not runtime.quest_state.phrases:
-            logger.warning("[HINT] %s received with no active quest or phrases", event_name)
+        activation_id = runtime.voice_runtime.active_activation_id
+        phrases = runtime.voice_runtime.active_phrases
+        if not activation_id or not runtime.voice_runtime.can_continue(activation_id):
+            logger.warning("[HINT] %s received with no active activation", event_name)
+            return
+        if not phrases:
+            logger.warning(
+                "[HINT] %s received with no active quest or phrases", event_name
+            )
             return
 
-        phrase = random.choice(runtime.quest_state.phrases)
+        phrase = random.choice(phrases)
         cached_frames = runtime.tts_cache.get(phrase)
         audio_arg = _frames_to_async_gen(cached_frames) if cached_frames else None
         logger.info(

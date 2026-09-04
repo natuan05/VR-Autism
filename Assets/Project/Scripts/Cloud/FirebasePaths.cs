@@ -4,6 +4,7 @@
     {
         public const string Sessions = "sessions";
         public const string Lessons = "lessons";
+        public const string ChildPhraseSets = "child_phrase_sets";
         public const string QuestList = "quest_list";
         public const string Skills = "skills";
         

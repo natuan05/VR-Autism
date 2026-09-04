@@ -7,7 +7,7 @@ using LiveKit.Proto;
 
 namespace VRAutism.Cloud.LiveKit
 {
-    public class LiveKitService : MonoBehaviour, ILiveKitRoomClient
+    public class LiveKitService : MonoBehaviour, ILiveKitRoomClient, ILiveKitDataPacketClientV2
     {
         private static LiveKitService _instance;
         public static LiveKitService Instance
@@ -32,6 +32,9 @@ namespace VRAutism.Cloud.LiveKit
         public event Action OnSpeechMatched;
         public event Action<string> OnAgentError;
         public event Action<string, string> OnQuestStatusUpdate;
+        public event Action<byte[], string> DataReceivedV2;
+        public event Action ReconnectedV2;
+        public bool IsConnectedV2 => room != null && room.IsConnected;
 
         [Header("Test Mode (Auto Connect trong Unity Inspector)")]
         [SerializeField] private bool autoConnectOnStart = false;
@@ -103,6 +106,7 @@ namespace VRAutism.Cloud.LiveKit
             {
                 await room.Connect(roomUrl, token, new global::LiveKit.RoomOptions());
                 Debug.Log($"[LiveKitService] ✅ KẾT NỐI PHÒNG THÀNH CÔNG! Room Name: {room.Name} | Participant SID: {room.LocalParticipant?.Sid}");
+                ReconnectedV2?.Invoke();
             }
             catch (Exception ex)
             {
@@ -317,6 +321,12 @@ namespace VRAutism.Cloud.LiveKit
 
         #region DataPackets
 
+        public void PublishDataV2(byte[] data, string topic, bool reliable)
+        {
+            if (data == null || room == null || !room.IsConnected || room.LocalParticipant == null) return;
+            room.LocalParticipant.PublishData(data, null, reliable, topic);
+        }
+
         public void SendActiveQuest(string questName, string[] defaultPhrases)
         {
             if (room == null || !room.IsConnected)
@@ -366,6 +376,7 @@ namespace VRAutism.Cloud.LiveKit
 
         private void OnDataReceived(byte[] data, Participant participant, DataPacketKind kind, string topic)
         {
+            DataReceivedV2?.Invoke(data, topic);
             string json = System.Text.Encoding.UTF8.GetString(data);
             Debug.Log($"[LiveKitService] 📥 NHẬN GÓI TIN TỪ ({participant?.Identity}): {json}");
 

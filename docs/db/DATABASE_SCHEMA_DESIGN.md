@@ -1,5 +1,18 @@
 ﻿# 🗄️ Kiến trúc Database & Hệ thống dữ liệu (VR-Autism Platform)
 
+## LessonGraph V2 voice phrase storage
+
+Lesson defaults are canonical in `lessons/{lessonId}.quests[].default_phrases`.
+Each V2 lesson exposes `voice_schema_version: 2`; each quest uses stable
+`binding_id` and `goal`. Specialists may only add child phrases.
+
+Child additions live in top-level `child_phrase_sets` documents:
+`{childId}__{lessonId}` stores `scope: lesson`, `lesson_id`, integer
+`revision`, and `quest_additions[]`; `{childId}__general` stores general
+shortcut phrases. The resolver computes normalized, case-insensitive,
+defaults-first phrases once per session and keeps that snapshot immutable.
+Legacy `child_profiles.quick_phrases` remains for legacy scenes only.
+
 > **Mô hình Hybrid Storage**:
 > 1. **Cloud Firestore**: Lưu trữ bền vững, cấu trúc tài liệu Flat Top-Level kết hợp Embedded JSON (Maps & Arrays) cho dữ liệu lâm sàng, hồ sơ người dùng, bài học, nhật ký buổi học và phân tích AI.
 > 2. **Firebase Realtime Database (RTDB)**: Kênh truyền siêu tốc cho dữ liệu trạng thái tạm thời: Ghép nối mã PIN kính VR (`pairing_codes`), đồng bộ trạng thái buổi học trực tiếp (`live_sessions`).
