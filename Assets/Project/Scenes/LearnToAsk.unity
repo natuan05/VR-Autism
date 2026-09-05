@@ -1101,9 +1101,7 @@ MonoBehaviour:
   questName: "Ch\xE0o c\xE1c b\u1EA1n"
   duration: 0
   reminderCycle: 10
-  defaultPhrases:
-  - "Con h\xE3y ch\xE0o c\xE1c b\u1EA1n \u0111i"
-  - "Con ch\xE0o c\u1EA3 l\u1EDBp tr\u01B0\u1EDBc nh\xE9"
+  defaultPhrases: []
   npcAudioSource: {fileID: 107818164}
   onQuestReminder:
     m_PersistentCalls:
@@ -1748,9 +1746,7 @@ MonoBehaviour:
   questName: "Gi\u1EDBi thi\u1EC7u tu\u1ED5i"
   duration: 0
   reminderCycle: 0
-  defaultPhrases:
-  - "Con n\u0103m nay bao tu\u1ED5i r\u1ED3i"
-  - "C\xF2n tu\u1ED5i c\u1EE7a con th\xEC sao nh\u1EC9"
+  defaultPhrases: []
   npcAudioSource: {fileID: 107818164}
   onQuestReminder:
     m_PersistentCalls:
@@ -2569,7 +2565,7 @@ MonoBehaviour:
         m_Calls: []
     isConditionMet: {fileID: 0}
   - name: "Gi\xE1o vi\xEAn gi\u1EDBi thi\u1EC7u"
-    on: 1
+    on: 0
     duration: 10
     onStart:
       m_PersistentCalls:
@@ -2579,7 +2575,7 @@ MonoBehaviour:
         m_Calls: []
     isConditionMet: {fileID: 0}
   - name: "B\u1EA1n Nam gi\u1EDBi thi\u1EC7u"
-    on: 1
+    on: 0
     duration: 0
     onStart:
       m_PersistentCalls:
@@ -3737,10 +3733,7 @@ MonoBehaviour:
   questName: "Gi\u1EDBi thi\u1EC7u t\xEAn c\u1EE7a m\xECnh"
   duration: 0
   reminderCycle: 0
-  defaultPhrases:
-  - "Con t\xEAn l\xE0 g\xEC nh\u1EC9"
-  - "H\xE3y gi\u1EDBi thi\u1EC7u t\xEAn c\u1EE7a m\xECnh \u0111i con"
-  - "Con c\xF3 th\u1EC3 cho c\xF4 bi\u1EBFt t\xEAn \u0111\u01B0\u1EE3c kh\xF4ng"
+  defaultPhrases: []
   npcAudioSource: {fileID: 107818164}
   onQuestReminder:
     m_PersistentCalls:

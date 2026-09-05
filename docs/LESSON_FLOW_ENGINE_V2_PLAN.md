@@ -432,6 +432,16 @@ Assets/Project/Scripts/Gameplay/LessonGraph/
 
 ### Python Agent Changes
 
+#### Story 1.5 Agent Isolation Decision (2026-09-04)
+
+Story 1.5 voice features use a dedicated `LiveKitAgent/src/agent_v2.py`
+entrypoint, initially copied from the current `agent.py` baseline. The
+legacy `agent.py` entrypoint and its existing room/quest flow remain
+unchanged. V2 activation-correlated packet handling, cancellation, stale
+filtering, reconnect behavior, and future voice features belong to
+`agent_v2.py` and V2-specific modules. Deployment switches to the V2
+entrypoint only after V2 validation is complete.
+
 ```
 LiveKitAgent/src/agent.py — additions:
 ├── Handle CANCEL_ACTIVE_QUEST: Reset quest_state, revert to WAITING_INSTRUCTIONS

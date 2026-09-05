@@ -261,7 +261,7 @@ async def entrypoint(ctx: JobContext) -> None:
             location="us",
             spoken_punctuation=False,
         ),
-        llm=google.LLM(model="gemini-3.5-flash-lite", api_key=gemini_key),
+        llm=google.LLM(model="gemini-3.1-flash-lite", api_key=gemini_key),
         tts=google.TTS(
             language="vi-VN",
             voice_name="vi-VN-Chirp3-HD-Aoede",
