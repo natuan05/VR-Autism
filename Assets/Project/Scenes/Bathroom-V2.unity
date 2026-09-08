@@ -338,6 +338,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1025430716}
   - {fileID: 652237926}
   - {fileID: 1111842967}
   - {fileID: 1586549351}
@@ -1033,7 +1034,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c283ee4e51640f1a3790c9d8a83216e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.HoldTouchQuestSourceV2
-  _bindingId: washing-hand.rub-hands
+  _bindingId: washing-hand.rub-hands.hold
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -1426,7 +1427,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b7a81de2e9b4f079cd6ef1ae0e4d9a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.TouchQuestSourceV2
-  _bindingId: washing-hand.turn-on-water
+  _bindingId: washing-hand.turn-on-water.touch
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -7320,6 +7321,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 295052170}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1025430715
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1025430716}
+  - component: {fileID: 1025430717}
+  m_Layer: 0
+  m_Name: VoiceQuest1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1025430716
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025430715}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 125198165}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1025430717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025430715}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 041822a2bc04f7e4a80d3096a0567b4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.Sources.VoiceQuestSourceV2
+  _bindingId: washing-hand.turn-on-water
+  _transport: {fileID: 0}
 --- !u!1 &1061493299
 GameObject:
   m_ObjectHideFlags: 0
@@ -7589,7 +7636,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c283ee4e51640f1a3790c9d8a83216e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.HoldTouchQuestSourceV2
-  _bindingId: washing-hand.wet-hands
+  _bindingId: washing-hand.wet-hands.hold
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -7746,6 +7793,7 @@ GameObject:
   - component: {fileID: 1130038377}
   - component: {fileID: 1130038379}
   - component: {fileID: 1130038380}
+  - component: {fileID: 1900500010}
   m_Layer: 0
   m_Name: LesssonGraphRuntime
   m_TagString: Untagged
@@ -7782,16 +7830,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.LessonGraphBindings
   _entries:
   - _bindingId: washing-hand.turn-on-water
+    _source: {fileID: 1025430717}
+  - _bindingId: washing-hand.turn-on-water.touch
     _source: {fileID: 652237928}
-  - _bindingId: washing-hand.wet-hands
+  - _bindingId: washing-hand.wet-hands.hold
     _source: {fileID: 1111842969}
-  - _bindingId: washing-hand.dispense-soap
+  - _bindingId: washing-hand.dispense-soap.touch
     _source: {fileID: 1586549352}
-  - _bindingId: washing-hand.rub-hands
+  - _bindingId: washing-hand.rub-hands.hold
     _source: {fileID: 522769745}
-  - _bindingId: washing-hand.turn-off-water
+  - _bindingId: washing-hand.turn-off-water.touch
     _source: {fileID: 1654197283}
-  - _bindingId: washing-hand.dry-hands
+  - _bindingId: washing-hand.dry-hands.hold
     _source: {fileID: 1674571972}
 --- !u!114 &1130038378
 MonoBehaviour:
@@ -7817,7 +7867,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56d5eea2f17f4f388d9b8b4b8ed4b93e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Runtime.LessonGraphRunnerInstaller
-  _lessonGraph: {fileID: 11400000, guid: 7d2d564c88c8400b9df2c2a1c9b2a61f, type: 2}
+  _lessonGraph: {fileID: 11400000, guid: 3b4eb3ed1f7d49899b2545c71bd3b5f7, type: 2}
   _runner: {fileID: 1130038378}
   _bindings: {fileID: 1130038377}
   _startOnStart: 1
@@ -8871,7 +8921,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b7a81de2e9b4f079cd6ef1ae0e4d9a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.TouchQuestSourceV2
-  _bindingId: washing-hand.dispense-soap
+  _bindingId: washing-hand.dispense-soap.touch
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -13918,7 +13968,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b7a81de2e9b4f079cd6ef1ae0e4d9a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.TouchQuestSourceV2
-  _bindingId: washing-hand.turn-off-water
+  _bindingId: washing-hand.turn-off-water.touch
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -14064,7 +14114,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c283ee4e51640f1a3790c9d8a83216e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.HoldTouchQuestSourceV2
-  _bindingId: washing-hand.dry-hands
+  _bindingId: washing-hand.dry-hands.hold
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -14802,6 +14852,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1798347469}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1900500010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1130038375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5d4a8a6c293afb48a66dddaf5a13f3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.Voice.LiveKitVoiceQuestTransportV2
 --- !u!1 &1910456863
 GameObject:
   m_ObjectHideFlags: 0

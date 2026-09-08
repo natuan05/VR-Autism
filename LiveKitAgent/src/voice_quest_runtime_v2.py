@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import OrderedDict
 from dataclasses import dataclass
 from enum import Enum
 
@@ -17,6 +18,7 @@ class ActivationStatus(Enum):
     ACTIVE = "active"
     CANCELLED = "cancelled"
     MATCHED = "matched"
+    FAILED = "failed"
 
 
 @dataclass
@@ -26,6 +28,7 @@ class ActiveActivation:
     phrases: tuple[str, ...]
     status: ActivationStatus = ActivationStatus.ACTIVE
     opening_claimed: bool = False
+    cancellation_reason: str = ""
 
 
 class VoiceQuestRuntime:
@@ -33,6 +36,7 @@ class VoiceQuestRuntime:
 
     def __init__(self) -> None:
         self._active: ActiveActivation | None = None
+        self._tombstones: OrderedDict[str, ActiveActivation] = OrderedDict()
 
     @property
     def active_activation_id(self) -> str | None:
@@ -49,7 +53,20 @@ class VoiceQuestRuntime:
     def activate(self, request: SetActiveQuest) -> ActivationDisposition:
         """Install a request atomically, or identify a reconnect replay."""
         if self._active and self._active.activation_id == request.activation_id:
+            if (self._active.goal, self._active.phrases) != (
+                request.quest_goal,
+                request.phrases,
+            ):
+                raise ValueError("activation payload changed")
             return ActivationDisposition.REPLAY
+        if request.activation_id in self._tombstones:
+            raise ValueError("activation is tombstoned")
+        if self._active:
+            if self._active.status is ActivationStatus.ACTIVE:
+                self._active.status = ActivationStatus.CANCELLED
+            self._tombstones[self._active.activation_id] = self._active
+            while len(self._tombstones) > 64:
+                self._tombstones.popitem(last=False)
         self._active = ActiveActivation(
             activation_id=request.activation_id,
             goal=request.quest_goal,
@@ -69,6 +86,7 @@ class VoiceQuestRuntime:
         if not self._is_active(request.activation_id):
             return False
         self._active.status = ActivationStatus.CANCELLED
+        self._active.cancellation_reason = request.reason
         return True
 
     def mark_matched(self, activation_id: str) -> bool:
@@ -88,3 +106,29 @@ class VoiceQuestRuntime:
             and self._active.activation_id == activation_id
             and self._active.status is ActivationStatus.ACTIVE
         )
+
+    @property
+    def tombstone_count(self) -> int:
+        return len(self._tombstones)
+
+    def status(self, activation_id: str) -> ActivationStatus | None:
+        activation = (
+            self._active
+            if self.active_activation_id == activation_id
+            else self._tombstones.get(activation_id)
+        )
+        return activation.status if activation else None
+
+    def reason(self, activation_id: str) -> str | None:
+        activation = (
+            self._active
+            if self.active_activation_id == activation_id
+            else self._tombstones.get(activation_id)
+        )
+        return activation.cancellation_reason if activation else None
+
+    def mark_failed(self, activation_id: str) -> bool:
+        if not self._is_active(activation_id):
+            return False
+        self._active.status = ActivationStatus.FAILED
+        return True

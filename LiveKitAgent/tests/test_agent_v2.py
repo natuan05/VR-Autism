@@ -19,7 +19,7 @@ def _runtime_with_room() -> JobRuntime:
 async def test_same_activation_replay_acknowledges_without_repeating_opening() -> None:
     """A reconnect SET packet publishes ACTIVE but calls the opening flow only once."""
     runtime = _runtime_with_room()
-    agent = MagicMock()
+    agent = MagicMock(spec=TeacherAgent)
     session = MagicMock()
     payload = (
         '{"event":"SET_ACTIVE_QUEST","contract_version":2,'

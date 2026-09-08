@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from voice_contract_v2 import (
@@ -46,3 +48,16 @@ def test_parse_cancel_requires_a_non_empty_reason_and_activation() -> None:
             '{"event":"CANCEL_ACTIVE_QUEST","contract_version":2,'
             '"activation_id":"","reason":"lost_race"}'
         )
+
+
+def test_parse_set_active_quest_rejects_excessive_phrase_count() -> None:
+    payload = {
+        "event": "SET_ACTIVE_QUEST",
+        "contract_version": 2,
+        "activation_id": "activation-1",
+        "quest_goal": "Ask for water",
+        "phrases": [f"phrase-{index}" for index in range(51)],
+    }
+
+    with pytest.raises(PacketValidationError, match="phrases"):
+        parse_unity_packet(json.dumps(payload))

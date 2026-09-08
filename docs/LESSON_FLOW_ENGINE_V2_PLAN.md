@@ -679,6 +679,10 @@ Inactive -> Activating -> Active -> Completing -> Completed
 - `QuestNodeExecutor` tạo activation ID, activate sources, first completion thắng, cancel/cleanup sources khác, và emit exactly one `NodeResult`.
 - Source disabled/destroyed khi active emit `Failed(binding_unavailable)`; runner cancel active node trước scene unload.
  
+### Cross-epic phrase foundation
+
+Story 1.5 implements the Firebase/Firestore phrases V2 schema, immutable session snapshot, and activation-correlated cross-stack contract. Epic 2 and Epic 3 consume the [Voice Phrases V2 Cross-Epic Handoff](VOICE_PHRASES_V2_CROSS_EPIC_HANDOFF.md); they do not recreate legacy quick_phrases storage or resolution.
+
 ### Voice transport
  
 `VoiceQuestSourceV2` chỉ phụ thuộc `IVoiceQuestTransport`:
@@ -689,8 +693,8 @@ void Activate(VoiceQuestRequest request);
 void Cancel(string activationId, QuestCancellationReason reason);
 ```
  
-- `VoiceQuestRequest` chứa activation ID, quest name, phrases, NPC `AudioSource`.
-- `LiveKitVoiceQuestTransport` owns packet DTO, audio binding, publish/subscribe/cancel, stale packet filter, Unity main-thread dispatch.
+- VoiceQuestRequest contains activation ID, quest name, phrases, and stable NPC audio-route identity (npc_binding_id or equivalent); it never contains a Unity AudioSource reference.
+- LiveKitVoiceQuestTransport owns packet DTO, publish/subscribe/cancel, stale packet filtering, and Unity main-thread dispatch; LiveKitService owns remote-track audio binding, route lookup, rebind, and teardown.
 - `SET_ACTIVE_QUEST`, `CANCEL_ACTIVE_QUEST`, `QUEST_MATCHED`, `QUEST_STATUS` bắt buộc `activation_id`. Agent echo ID; Unity bỏ packet thiếu/stale.
 - Executor owns quest timeout; transport chỉ trả matched/status/error signal.
  

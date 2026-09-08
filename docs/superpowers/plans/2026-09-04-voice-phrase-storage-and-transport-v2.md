@@ -190,12 +190,12 @@ Use topic `lesson-graph-v2.voice` and reliable delivery. Replaying the same acti
 
 **Files:** documentation files listed above.
 
-- [ ] Add the exact Firestore examples and normalization limits from this plan.
-- [ ] Define ownership: lesson authors own defaults; specialists own additions for authorized children.
-- [ ] Record that edits become visible only on the next session.
-- [ ] Record that full resolved session snapshot persistence is backlog, outside Story 1.5.
-- [ ] Record all four LiveKit packet shapes and topic.
-- [ ] Confirm the docs contain no `quest_key`, positional quest mapping, or replace-default semantics.
+- [x] Add the exact Firestore examples and normalization limits from this plan.
+- [x] Define ownership: lesson authors own defaults; specialists own additions for authorized children.
+- [x] Record that edits become visible only on the next session.
+- [x] Record that full resolved session snapshot persistence is backlog, outside Story 1.5.
+- [x] Record all four LiveKit packet shapes and topic.
+- [x] Confirm the docs contain no `quest_key`, positional quest mapping, or replace-default semantics.
 
 Verification:
 
@@ -215,12 +215,12 @@ git commit -m "docs(voice): freeze v2 phrase contract"
 
 **Files:** `src/types/voice-phrases.ts`, `src/lib/voice-phrases.ts`, `src/lib/voice-phrases.test.ts`, `vitest.config.ts`, `package.json`, `package-lock.json`.
 
-- [ ] Define `LessonVoiceQuestV2`, `ChildLessonPhraseSetV2`, `ChildGeneralPhraseSetV2`, and `ResolvedVoiceQuestV2`.
-- [ ] Implement pure `normalizePhrase`, `dedupePhrases`, `validateAdditions`, and `resolveEffectivePhrases` functions.
-- [ ] Reject additions whose `binding_id` does not exist in the selected lesson.
-- [ ] Reject duplicate lesson `binding_id` values because resolution would be ambiguous.
-- [ ] Add tests for trimming, case-insensitive dedupe, stable order, empty input, unknown binding, limits, and defaults-first merge.
-- [ ] Add `"test": "vitest run"` without changing existing scripts.
+- [x] Define `LessonVoiceQuestV2`, `ChildLessonPhraseSetV2`, `ChildGeneralPhraseSetV2`, and `ResolvedVoiceQuestV2`.
+- [x] Implement pure `normalizePhrase`, `dedupePhrases`, `validateAdditions`, and `resolveEffectivePhrases` functions.
+- [x] Reject additions whose `binding_id` does not exist in the selected lesson.
+- [x] Reject duplicate lesson `binding_id` values because resolution would be ambiguous.
+- [x] Add tests for trimming, case-insensitive dedupe, stable order, empty input, unknown binding, limits, and defaults-first merge.
+- [x] Add `"test": "vitest run"` without changing existing scripts.
 
 Required interface:
 
@@ -249,13 +249,13 @@ git commit -m "feat(voice): add v2 phrase resolver"
 
 **Files:** `src/actions/voice-phrases.ts` and its domain test dependencies.
 
-- [ ] Reuse current expert authentication and child-access checks from the refactored action layer.
-- [ ] Read deterministic document ids: `${childId}__${lessonId}` and `${childId}__general`.
-- [ ] Return an empty additions document when the lesson-scoped document is absent.
-- [ ] Use a Firestore transaction to compare the submitted `revision`, increment it, and write server timestamps.
-- [ ] Store additions only; never copy lesson defaults into child documents.
+- [x] Reuse current expert authentication and child-access checks from the refactored action layer.
+- [x] Read deterministic document ids: `${childId}__${lessonId}` and `${childId}__general`.
+- [x] Return an empty additions document when the lesson-scoped document is absent.
+- [x] Use a Firestore transaction to compare the submitted `revision`, increment it, and write server timestamps.
+- [x] Store additions only; never copy lesson defaults into child documents.
 - [ ] Validate all bindings and phrases on the server before writing.
-- [ ] Leave `updateChildQuickPhrases` and `syncAndGetChildPhrases` untouched for legacy callers.
+- [x] Leave `updateChildQuickPhrases` and `syncAndGetChildPhrases` untouched for legacy callers.
 
 Required actions:
 
@@ -289,13 +289,13 @@ git commit -m "feat(voice): persist child additions"
 
 **Files:** the four Web page/component files in the file map.
 
-- [ ] Branch on `lesson.voice_schema_version === 2`; preserve the current component behavior for legacy lessons.
-- [ ] Render defaults as locked rows with a clear “Default” label and no delete control.
-- [ ] Render additions as editable rows; allow add, reorder, and delete.
+- [x] Branch on `lesson.voice_schema_version === 2`; preserve the current component behavior for legacy lessons.
+- [x] Render defaults as locked rows with a clear “Default” label and no delete control.
+- [x] Render additions as editable rows; allow add, reorder, and delete.
 - [ ] Save only additions with the last-read revision; show a reload message on revision conflict.
 - [ ] In the live session, load V2 general phrases directly instead of invoking legacy default-copy synchronization.
-- [ ] Continue sending general buttons through existing `SPEAK_SCRIPT` behavior.
-- [ ] Use the refactored Web types (`unknown` plus narrowing) instead of introducing new `any` values.
+- [x] Continue sending general buttons through existing `SPEAK_SCRIPT` behavior.
+- [x] Use the refactored Web types (`unknown` plus narrowing) instead of introducing new `any` values.
 
 Verification:
 
@@ -307,11 +307,11 @@ npm run build
 
 Manual Web checks:
 
-- [ ] A specialist cannot delete a default phrase.
-- [ ] Adding a phrase does not duplicate defaults in Firestore.
-- [ ] A second browser with a stale revision receives a conflict instead of overwriting.
-- [ ] A legacy lesson still uses `child_profiles.quick_phrases` unchanged.
-- [ ] General buttons still publish `SPEAK_SCRIPT`.
+- [x] A specialist cannot delete a default phrase.
+- [x] Adding a phrase does not duplicate defaults in Firestore.
+- [x] A second browser with a stale revision receives a conflict instead of overwriting.
+- [x] A legacy lesson still uses `child_profiles.quick_phrases` unchanged.
+- [x] General buttons still publish `SPEAK_SCRIPT`.
 
 Commit:
 
@@ -324,15 +324,15 @@ git commit -m "feat(voice): edit additive phrases"
 
 **Files:** four new `Phrases/*.cs` files, `FirebasePaths.cs`, `SceneMenuController.cs`, `PairingUI.cs`, and `VoicePhraseResolverV2Tests.cs`.
 
-- [ ] Run GitNexus impact analysis for every existing symbol before editing it.
-- [ ] Parse lesson defaults and child additions into typed DTOs keyed by `binding_id`.
+- [x] Run GitNexus impact analysis for every existing symbol before editing it.
+- [x] Parse lesson defaults and child additions into typed DTOs keyed by `binding_id`.
 - [ ] Resolve and freeze a read-only snapshot containing `lesson_id`, lesson `voice_revision`, child revision, and effective phrases by binding.
-- [ ] Start `SceneManager.LoadSceneAsync(sceneName)` immediately with `allowSceneActivation = false`.
-- [ ] In parallel, fetch the lesson and deterministic child phrase document.
-- [ ] For V2, set the snapshot before allowing scene activation; for legacy, retain current positional parsing and `SessionContext` behavior.
-- [ ] If the child additions fetch fails, log a warning and resolve defaults only.
+- [x] Start `SceneManager.LoadSceneAsync(sceneName)` immediately with `allowSceneActivation = false`.
+- [x] In parallel, fetch the lesson and deterministic child phrase document.
+- [x] For V2, set the snapshot before allowing scene activation; for legacy, retain current positional parsing and `SessionContext` behavior.
+- [x] If the child additions fetch fails, log a warning and resolve defaults only.
 - [ ] If the lesson fetch, duplicate binding validation, or defaults parsing fails, keep activation blocked, show a retryable message, and release/unload the pending operation safely.
-- [ ] Do not put child/session identifiers into the Agent-facing snapshot view.
+- [x] Do not put child/session identifiers into the Agent-facing snapshot view.
 
 Required interfaces:
 
@@ -369,15 +369,15 @@ git commit -m "feat(voice): resolve session phrases"
 
 **Files:** `ILiveKitDataPacketClientV2.cs`, `VoiceQuestTransportContracts.cs`, `LiveKitVoiceQuestTransportV2.cs`, `LiveKitService.cs`, and `LiveKitVoiceQuestTransportV2Tests.cs`.
 
-- [ ] Add a narrow raw packet interface implemented by `LiveKitService`; do not replace `ILiveKitRoomClient`.
-- [ ] Publish V2 packets reliably on `lesson-graph-v2.voice`.
-- [ ] Parse only matching-topic packets with `contract_version == 2`.
-- [ ] Queue LiveKit callbacks and drain them from `Update()` on Unity's main thread.
-- [ ] Track one current activation id and terminal state.
+- [x] Add a narrow raw packet interface implemented by `LiveKitService`; do not replace `ILiveKitRoomClient`.
+- [x] Publish V2 packets reliably on `lesson-graph-v2.voice`.
+- [x] Parse only matching-topic packets with `contract_version == 2`.
+- [x] Queue LiveKit callbacks and drain them from `Update()` on Unity's main thread.
+- [x] Track one current activation id and terminal state.
 - [ ] Ignore unknown, stale, malformed, and duplicate terminal packets.
 - [ ] On reconnect, resend the current active request with the same activation id.
-- [ ] Ensure replay acknowledgement cannot complete a quest twice.
-- [ ] Preserve all legacy switch cases and microphone capture in `LiveKitService`.
+- [x] Ensure replay acknowledgement cannot complete a quest twice.
+- [x] Preserve all legacy switch cases and microphone capture in `LiveKitService`.
 
 Required interface:
 
@@ -413,12 +413,12 @@ git commit -m "feat(voice): add v2 livekit transport"
 
 **Files:** `VoiceQuestSourceV2.cs`, `VoiceQuestSourceV2Tests.cs`, `VoiceQuestFirstWinTests.cs`.
 
-- [ ] Resolve the quest's snapshot by the source's stable `BindingId`.
-- [ ] Create a fresh activation id for each activation and send goal plus the single effective phrase list.
-- [ ] Complete only when `QUEST_MATCHED.activation_id` equals the current activation.
-- [ ] Subscribe to the source's existing `Terminated` event and send `CANCEL_ACTIVE_QUEST` for cancelled/failed runs.
-- [ ] Unsubscribe on disposal/destruction and ignore late async callbacks.
-- [ ] Do not edit `QuestSourceV2.Terminate`.
+- [x] Resolve the quest's snapshot by the source's stable `BindingId`.
+- [x] Forward the fresh activation id created by `QuestNodeExecutor` and send goal plus the single effective phrase list.
+- [x] Complete only when `QUEST_MATCHED.activation_id` equals the current activation.
+- [x] Subscribe to the source's existing `Terminated` event and send `CANCEL_ACTIVE_QUEST` for cancelled/failed runs.
+- [x] Unsubscribe on disposal/destruction and ignore late async callbacks.
+- [x] Do not edit `QuestSourceV2.Terminate`.
 - [ ] Prove Voice-vs-Touch/Hold first-win: after another source wins, voice cancellation is sent and a later match cannot complete again.
 
 Verification in Unity Editor:
@@ -438,15 +438,15 @@ git commit -m "feat(voice): add v2 quest source"
 
 **Files:** `voice_contract_v2.py`, `voice_quest_runtime_v2.py`, three new test files, and `agent_v2.py`.
 
-- [ ] Parse V2 messages strictly without importing legacy Agent state.
-- [ ] Keep exactly one active activation with goal, phrases, and terminal status.
-- [ ] Use the same effective phrase list for the opening utterance, reminders/hints, and LLM evaluation examples.
+- [x] Parse V2 messages strictly without importing legacy Agent state.
+- [x] Keep exactly one active activation with goal, phrases, and terminal status.
+- [x] Use the same effective phrase list for the opening utterance, reminders/hints, and LLM evaluation examples.
 - [ ] On a new activation, cancel/replace the previous activation atomically.
-- [ ] On cancellation, make that activation permanently unable to emit success.
-- [ ] On same-id replay, send `QUEST_STATUS: ACTIVE` without replaying the opening.
-- [ ] Send `QUEST_MATCHED` once, then a terminal `QUEST_STATUS`, both with the current activation id.
-- [ ] Ignore stale LLM/transcript callbacks after activation changes.
-- [ ] Keep `agent.py` and Dockerfile unchanged.
+- [x] On cancellation, make that activation permanently unable to emit success.
+- [x] On same-id replay, send `QUEST_STATUS: ACTIVE` without replaying the opening.
+- [x] Send `QUEST_MATCHED` once, then a terminal `QUEST_STATUS`, both with the current activation id.
+- [x] Ignore stale LLM/transcript callbacks after activation changes.
+- [x] Keep `agent.py` and Dockerfile unchanged.
 
 Core state transition:
 
@@ -512,3 +512,30 @@ git commit -m "feat(voice): complete story 1.5"
 - Voice participates safely in LessonGraphV2 first-win behavior.
 - Legacy Agent, legacy Web data, and legacy Unity contracts remain operational.
 - Docker deployment remains on legacy until the user separately approves the V2 switch.
+
+### Review Findings
+
+Checklist synchronized on 2026-09-05 from already-known implementation and review evidence; no new code review was performed. A checked implementation item means evidence exists for that item, not that Story 1.5 has passed full acceptance.
+
+- [x] [Review][Decision] Agent V2 cutover model — Keep `agent_v2.py` as the isolated V2 entrypoint; keep production Docker/task automation on legacy `agent.py` until separate user-approved cutover.
+- [x] [Review][Decision] Voice participation beside Touch/Hold — Keep `QuestNodeExecutor` as the sole existing first-win owner. Register Voice, Touch, and Hold as independent uniquely bound sources; do not add `CompositeQuestSourceV2`.
+- [x] [Review][Decision] Recoverable V2 scene-load failure policy — Keep scene activation gated on snapshot success. On fatal phrase failure, mark the launch token failed, release the quarantined scene, disable its LessonGraph installer before first `Start`, unload it, and expose retry.
+- [x] [Review][Decision] Snapshot owner — Unity resolves once and stores the typed immutable snapshot in `VoicePhraseSnapshotStoreV2`; do not modify legacy `SessionContext`.
+- [ ] [Review][Patch] Hydrate the V2 editor from `child_phrase_sets` and retain the loaded revision [D:/Lab/VRA-web/src/app/dashboard/expert/lessons/_components/LessonsList.tsx:67]
+- [ ] [Review][Patch] Save additions using canonical `quest.binding_id`, never `quest.id` or title [D:/Lab/VRA-web/src/app/dashboard/expert/lessons/_components/LessonsList.tsx:166]
+- [ ] [Review][Patch] Replace hard-coded `expectedRevision: 0` and update local revision after each save [D:/Lab/VRA-web/src/app/dashboard/expert/lessons/_components/LessonsList.tsx:174]
+- [ ] [Review][Patch] Persist V2 general phrases and feed V2 phrase data into the live-session UI [D:/Lab/VRA-web/src/app/dashboard/expert/session/[id]/page.tsx:96]
+- [ ] [Review][Patch] Validate lesson additions against the canonical Firestore lesson inside the transaction, not client-supplied quests [D:/Lab/VRA-web/src/actions/voice-phrases.ts:68]
+- [ ] [Review][Patch] Apply shared normalization, length, count, and deduplication rules to general phrases [D:/Lab/VRA-web/src/actions/voice-phrases.ts:93]
+- [ ] [Review][Patch] Clear stale snapshots at session start and guard malformed `voice_schema_version` parsing [Assets/Project/Scripts/Gameplay/WaitingArea/SceneMenuController.cs:112]
+- [ ] [Review][Patch] Reject duplicate child additions and log unknown bindings consistently across Web and Unity [Assets/Project/Scripts/Gameplay/LessonGraphV2/Phrases/VoicePhraseResolverV2.cs:14]
+- [ ] [Review][Patch] Propagate Agent `Cancelled` and `Failed` signals into `VoiceQuestSourceV2` termination [Assets/Project/Scripts/Gameplay/LessonGraphV2/Questing/Sources/VoiceQuestSourceV2.cs:37]
+- [ ] [Review][Patch] Preserve unsent activation/cancellation packets across disconnects and hook actual RTC reconnect events [Assets/Project/Scripts/Gameplay/LessonGraphV2/Questing/Voice/LiveKitVoiceQuestTransportV2.cs:70]
+- [ ] [Review][Patch] Ignore every status after a terminal transport state, including late `ACTIVE` [Assets/Project/Scripts/Gameplay/LessonGraphV2/Questing/Voice/LiveKitVoiceQuestTransportV2.cs:104]
+- [ ] [Review][Patch] Send correlated `FAILED` when Agent activation setup fails and permit a defined retry [LiveKitAgent/src/agent_v2.py:411]
+- [ ] [Review][Patch] Reset Agent instructions/evaluation binding and stop stale speech when an activation is cancelled or replaced [LiveKitAgent/src/agent_v2.py:397]
+- [ ] [Review][Patch] Make terminal packet publication recoverable and reject same-ID replay with changed payload [LiveKitAgent/src/voice_quest_runtime_v2.py:49]
+- [ ] [Review][Patch] Harden migration deduplication, ambiguous mapping, validation, resumability, and unmatched reporting [D:/Lab/VRA-web/scripts/migrate_voice_phrase_v2.js:46]
+- [ ] [Review][Patch] Add missing Unity, Web action/UI, migration, and production-entrypoint integration tests [Assets/Project/Scripts/Gameplay/LessonGraphV2/Tests:1]
+- [x] [Review][Defer] Clean legacy Ruff violations in `agent.py` and `test_agent.py` [LiveKitAgent/src/agent.py:7] — deferred, pre-existing and outside V2 scope.
+- [x] [Review][Defer] Diagnose GitNexus incremental indexing failure `Failed calling LOWER: Invalid UTF-8` [.gitnexus:1] — deferred, tooling issue; source review continued with direct reads.

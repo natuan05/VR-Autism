@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using VRAutism.Gameplay.LessonGraphV2.Phrases;
 using VRAutism.Gameplay.LessonGraphV2.Questing.Voice;
@@ -30,14 +31,29 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Sources
             var request = new VoiceQuestActivation(activation.ActivationId, phrase.Goal, phrase.Phrases);
             _transport.ActivateAsync(request, CancellationToken.None).ContinueWith(task =>
             {
-                if (task.IsFaulted) Debug.LogException(task.Exception, this);
+                if (task.IsFaulted)
+                {
+                    Debug.LogException(task.Exception, this);
+                    TryFail(activation.ActivationId, "voice_transport_failed");
+                }
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void OnSignal(VoiceQuestSignal signal)
         {
-            if (signal == null || signal.Type != VoiceQuestSignalType.Matched) return;
-            TryComplete(signal.ActivationId, "voice");
+            if (signal == null) return;
+            switch (signal.Type)
+            {
+                case VoiceQuestSignalType.Matched:
+                    TryComplete(signal.ActivationId, "voice");
+                    break;
+                case VoiceQuestSignalType.Cancelled:
+                    TryCancel(new QuestSourceCancellation(signal.ActivationId, signal.Reason));
+                    break;
+                case VoiceQuestSignalType.Failed:
+                    TryFail(signal.ActivationId, string.IsNullOrWhiteSpace(signal.Reason) ? "voice_agent_failed" : signal.Reason);
+                    break;
+            }
         }
 
         private void OnTerminated(QuestSourceResult result)

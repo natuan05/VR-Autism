@@ -22,11 +22,28 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             public string status;
         }
 
+        [Serializable] private sealed class ActivatePacket
+        {
+            public int contract_version = 2;
+            public string @event = "SET_ACTIVE_QUEST";
+            public string activation_id;
+            public string quest_goal;
+            public string[] phrases;
+        }
+        [Serializable] private sealed class CancelPacket
+        {
+            public int contract_version = 2;
+            public string @event = "CANCEL_ACTIVE_QUEST";
+            public string activation_id;
+            public string reason;
+        }
+
         private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
         private ILiveKitDataPacketClientV2 _client;
         private VoiceQuestActivation _current;
         private bool _terminal;
-        private int _mainThreadId;
+        private Packet _desired;
+        private VoiceQuestSignalType? _terminalSignal;
 
         public event Action<VoiceQuestSignal> SignalReceived;
         public string CurrentActivationId => _current?.activation_id ?? string.Empty;
@@ -48,7 +65,6 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
 
         private void Awake()
         {
-            _mainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
             Configure(LiveKitService.Instance);
         }
         private void Update()
@@ -61,9 +77,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             if (request == null || string.IsNullOrWhiteSpace(request.activation_id))
                 throw new ArgumentException("Activation must have an id.", nameof(request));
             cancellationToken.ThrowIfCancellationRequested();
-            _current = request;
+            _current = new VoiceQuestActivation(request.activation_id, request.quest_goal, request.phrases);
             _terminal = false;
-            Publish(new Packet { @event = "SET_ACTIVE_QUEST", contract_version = 2, activation_id = request.activation_id, quest_goal = request.quest_goal, phrases = request.phrases.ToArray() });
+            _terminalSignal = null;
+            _desired = new Packet { @event = "SET_ACTIVE_QUEST", contract_version = 2, activation_id = _current.activation_id, quest_goal = _current.quest_goal, phrases = _current.phrases.ToArray() };
+            Publish(_desired);
             return Task.CompletedTask;
         }
 
@@ -73,20 +91,23 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             if (_current == null || !string.Equals(_current.activation_id, activationId, StringComparison.Ordinal)) return Task.CompletedTask;
             if (_terminal) return Task.CompletedTask;
             _terminal = true;
-            Publish(new Packet { @event = "CANCEL_ACTIVE_QUEST", contract_version = 2, activation_id = activationId, reason = string.IsNullOrWhiteSpace(reason) ? "cancelled" : reason });
+            _desired = new Packet { @event = "CANCEL_ACTIVE_QUEST", contract_version = 2, activation_id = activationId, reason = string.IsNullOrWhiteSpace(reason) ? "cancelled" : reason };
+            Publish(_desired);
             return Task.CompletedTask;
         }
 
         private void Publish(Packet packet)
         {
             if (_client == null || !_client.IsConnectedV2) return;
-            _client.PublishDataV2(Encoding.UTF8.GetBytes(JsonUtility.ToJson(packet)), VoiceQuestTransportV2Constants.Topic, true);
+            object envelope = packet.@event == "SET_ACTIVE_QUEST"
+                ? (object)new ActivatePacket { activation_id = packet.activation_id, quest_goal = packet.quest_goal, phrases = packet.phrases }
+                : new CancelPacket { activation_id = packet.activation_id, reason = packet.reason };
+            _client.PublishDataV2(Encoding.UTF8.GetBytes(JsonUtility.ToJson(envelope)), VoiceQuestTransportV2Constants.Topic, true);
         }
 
         private void OnReconnected()
         {
-            if (_current == null || _terminal) return;
-            Publish(new Packet { @event = "SET_ACTIVE_QUEST", contract_version = 2, activation_id = _current.activation_id, quest_goal = _current.quest_goal, phrases = _current.phrases.ToArray() });
+            _mainThreadQueue.Enqueue(() => { if (_desired != null) Publish(_desired); });
         }
 
         private void OnDataReceived(byte[] data, string topic)
@@ -102,27 +123,34 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
         private void HandlePacket(Packet packet)
         {
             if (_current == null || !string.Equals(_current.activation_id, packet.activation_id, StringComparison.Ordinal)) return;
-            if (_terminal && packet.@event != "QUEST_STATUS") return;
+            // Local cancellation blocks late success immediately; its acknowledgement is still delivered.
+            if (_terminal)
+            {
+                if (_terminalSignal == null && packet.@event == "QUEST_STATUS" &&
+                    packet.status == "CANCELLED" && _desired?.@event == "CANCEL_ACTIVE_QUEST")
+                {
+                    _terminalSignal = VoiceQuestSignalType.Cancelled;
+                    SignalReceived?.Invoke(new VoiceQuestSignal(packet.activation_id, VoiceQuestSignalType.Cancelled, packet.reason));
+                }
+                return;
+            }
             if (packet.@event == "QUEST_MATCHED")
             {
-                if (_terminal) return;
                 _terminal = true;
+                _terminalSignal = VoiceQuestSignalType.Matched;
                 SignalReceived?.Invoke(new VoiceQuestSignal(packet.activation_id, VoiceQuestSignalType.Matched));
                 return;
             }
             if (packet.@event != "QUEST_STATUS") return;
-            if (string.Equals(packet.status, "ACTIVE", StringComparison.OrdinalIgnoreCase))
+            if (packet.status == "ACTIVE")
                 SignalReceived?.Invoke(new VoiceQuestSignal(packet.activation_id, VoiceQuestSignalType.Active));
-            else if (string.Equals(packet.status, "cancelled", StringComparison.OrdinalIgnoreCase))
+            else if (packet.status == "CANCELLED" || packet.status == "FAILED")
             {
                 _terminal = true;
-                SignalReceived?.Invoke(new VoiceQuestSignal(packet.activation_id, VoiceQuestSignalType.Cancelled, packet.reason));
+                _terminalSignal = packet.status == "CANCELLED" ? VoiceQuestSignalType.Cancelled : VoiceQuestSignalType.Failed;
+                SignalReceived?.Invoke(new VoiceQuestSignal(packet.activation_id, _terminalSignal.Value, packet.reason));
             }
-            else if (string.Equals(packet.status, "failed", StringComparison.OrdinalIgnoreCase))
-            {
-                _terminal = true;
-                SignalReceived?.Invoke(new VoiceQuestSignal(packet.activation_id, VoiceQuestSignalType.Failed, packet.reason));
-            }
+            // MATCHED status confirms the QUEST_MATCHED event; it never awards success by itself.
         }
 
         private void OnDestroy() => Configure(null);

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import TypeAlias
 
 CONTRACT_VERSION = 2
+MAX_PHRASES_PER_QUEST = 50
 VOICE_TOPIC = "lesson-graph-v2.voice"
 
 
@@ -40,7 +41,10 @@ def parse_unity_packet(payload: bytes | str) -> UnityPacket:
 
     if not isinstance(data, dict):
         raise PacketValidationError("packet must be a JSON object")
-    if data.get("contract_version") != CONTRACT_VERSION:
+    if (
+        type(data.get("contract_version")) is not int
+        or data["contract_version"] != CONTRACT_VERSION
+    ):
         raise PacketValidationError("unsupported contract_version")
 
     event = data.get("event")
@@ -71,10 +75,16 @@ def quest_matched_packet(activation_id: str) -> dict[str, object]:
     return _outbound_packet("QUEST_MATCHED", activation_id)
 
 
-def quest_status_packet(activation_id: str, status: str) -> dict[str, object]:
+def quest_status_packet(
+    activation_id: str, status: str, reason: str | None = None
+) -> dict[str, object]:
     """Build a correlated status acknowledgement or terminal status packet."""
+    if status not in {"ACTIVE", "MATCHED", "CANCELLED", "FAILED"}:
+        raise PacketValidationError("unsupported activation status")
     packet = _outbound_packet("QUEST_STATUS", activation_id)
     packet["status"] = status
+    if reason:
+        packet["reason"] = reason
     return packet
 
 
@@ -102,8 +112,9 @@ def _required_text(data: dict[str, object], field: str) -> str:
 
 def _required_phrases(data: dict[str, object]) -> tuple[str, ...]:
     phrases = data.get("phrases")
-    if not isinstance(phrases, list) or not all(
-        isinstance(phrase, str) and phrase.strip() for phrase in phrases
+    if not isinstance(phrases, list) or len(phrases) > MAX_PHRASES_PER_QUEST or not all(
+        isinstance(phrase, str) and phrase.strip() and len(phrase) <= 240
+        for phrase in phrases
     ):
         raise PacketValidationError("phrases must be an array of non-empty text")
     return tuple(phrases)

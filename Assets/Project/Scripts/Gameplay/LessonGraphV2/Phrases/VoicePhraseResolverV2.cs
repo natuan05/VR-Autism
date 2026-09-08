@@ -13,7 +13,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Phrases
             var additionMap = new Dictionary<string, List<string>>(StringComparer.Ordinal);
             foreach (var addition in additions ?? Array.Empty<VoiceQuestPhraseAdditionV2>())
             {
-                if (addition == null || string.IsNullOrWhiteSpace(addition.binding_id) || additionMap.ContainsKey(addition.binding_id)) continue;
+                if (addition == null || string.IsNullOrWhiteSpace(addition.binding_id)) continue;
+                if (additionMap.ContainsKey(addition.binding_id)) throw new ArgumentException("Duplicate child phrase binding_id.");
                 additionMap.Add(addition.binding_id, addition.phrases ?? new List<string>());
             }
 

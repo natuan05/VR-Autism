@@ -151,6 +151,10 @@ class JobRuntime:
         self.job_ctx = job_ctx
         self.quest_state = QuestState()
         self.voice_runtime = VoiceQuestRuntime()
+        self.packet_lock = asyncio.Lock()
+        self.publication_lock = asyncio.Lock()
+        self.activation_task: asyncio.Task[Any] | None = None
+        self.matched_sent: set[str] = set()
         self.background_tasks: set[asyncio.Task[Any]] = set()
         self.tts_cache: dict[str, list[rtc.AudioFrame]] = {}
 
@@ -231,24 +235,31 @@ class TeacherAgent(Agent):
     async def on_enter(self) -> None:
         logger.info("[AGENT] TeacherAgent ready in room (standby mode)")
 
-    @function_tool()
     async def complete_quest(self, context: RunContext) -> str:
         """Call immediately when child speech matches active quest intent."""
+        return await self._complete_activation(self._evaluation_activation_id)
+
+    async def _complete_activation(self, activation_id: str | None) -> str:
         runtime = self._runtime
-        activation_id = self._evaluation_activation_id
-        if not activation_id or not runtime.voice_runtime.mark_matched(activation_id):
-            logger.warning("[TOOL] complete_quest invoked with no active quest")
-            return "Hiện tại chưa có Quest nào được kích hoạt."
+        async with runtime.packet_lock:
+            if not activation_id or not runtime.voice_runtime.mark_matched(
+                activation_id
+            ):
+                return "No active quest"
+            runtime.quest_state.reset()
+        await _publish_activation_status(runtime, activation_id)
+        return "Quest marked completed"
 
-        quest_name = runtime.voice_runtime.active_goal or ""
-        logger.info("[TOOL] Quest completed: %s", quest_name)
-        runtime.quest_state.reset()
+    async def install_evaluation_tool(self, activation_id: str) -> None:
+        # Old LLM generations retain their original callable and immutable ID.
+        @function_tool(name="complete_quest")
+        async def complete_activation(context: RunContext) -> str:
+            """Call immediately when child speech matches active quest intent."""
+            return await self._complete_activation(activation_id)
 
-        await send_v2_packet(runtime, quest_matched_packet(activation_id))
-        await send_v2_packet(runtime, quest_status_packet(activation_id, "MATCHED"))
-        return f"Quest '{quest_name}' marked completed"
+        await self.update_tools([complete_activation])
 
-    def bind_evaluation_activation(self, activation_id: str) -> None:
+    def bind_evaluation_activation(self, activation_id: str | None) -> None:
         """Bind LLM tool calls to the activation whose prompt was installed."""
         self._evaluation_activation_id = activation_id
 
@@ -366,37 +377,88 @@ async def _process_v2_packet(
         logger.warning("[V2] Ignoring malformed V2 packet: %s", exc)
         return
 
-    if isinstance(packet, SetActiveQuest):
-        disposition = runtime.voice_runtime.activate(packet)
-        if not runtime.voice_runtime.can_continue(packet.activation_id):
-            logger.info("[V2] Ignoring terminal replay: %s", packet.activation_id)
-            return
+    async with runtime.packet_lock:
+        if isinstance(packet, SetActiveQuest):
+            previous = runtime.voice_runtime.active_activation_id
+            try:
+                disposition = runtime.voice_runtime.activate(packet)
+            except ValueError as exc:
+                logger.warning(
+                    "[V2] Rejected activation %s: %s", packet.activation_id, exc
+                )
+                return
+            if disposition is ActivationDisposition.NEW:
+                try:
+                    await _reset_activation(agent, session, runtime)
+                except Exception:
+                    runtime.voice_runtime.mark_failed(packet.activation_id)
+                    logger.exception(
+                        "[V2] Failed to reset activation %s", packet.activation_id
+                    )
+                    await _publish_activation_status(runtime, packet.activation_id)
+                    return
+                runtime.matched_sent.intersection_update(
+                    key
+                    for key in tuple(runtime.matched_sent)
+                    if runtime.voice_runtime.status(key) is not None
+                )
+                runtime.quest_state.set_active_quest(
+                    packet.quest_goal, list(packet.phrases)
+                )
+                if previous:
+                    await _publish_activation_status(runtime, previous)
+                if runtime.voice_runtime.claim_opening(packet.activation_id):
+                    runtime.activation_task = asyncio.create_task(
+                        _handle_quest_activation(
+                            agent,
+                            session,
+                            runtime,
+                            packet.activation_id,
+                            packet.quest_goal,
+                            list(packet.phrases),
+                        )
+                    )
+            await _publish_activation_status(runtime, packet.activation_id)
+        elif isinstance(packet, CancelActiveQuest):
+            if runtime.voice_runtime.cancel(packet):
+                await _reset_activation(agent, session, runtime)
+            await _publish_activation_status(runtime, packet.activation_id)
+    await asyncio.sleep(0)
 
+
+async def _reset_activation(
+    agent: TeacherAgent, session: AgentSession, runtime: JobRuntime
+) -> None:
+    task = runtime.activation_task
+    runtime.activation_task = None
+    if task and not task.done():
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+    runtime.quest_state.reset()
+    runtime.tts_cache.clear()
+    agent.bind_evaluation_activation(None)
+    session.interrupt()
+    session.clear_user_turn()
+    await agent.update_tools([])
+    await clear_agent_chat_history(agent)
+    await agent.update_instructions(WAITING_INSTRUCTIONS)
+
+
+async def _publish_activation_status(runtime: JobRuntime, activation_id: str) -> None:
+    async with runtime.publication_lock:
+        status = runtime.voice_runtime.status(activation_id)
+        if status is None:
+            return
+        if status.name == "MATCHED" and activation_id not in runtime.matched_sent:
+            if not await send_v2_packet(runtime, quest_matched_packet(activation_id)):
+                return
+            runtime.matched_sent.add(activation_id)
         await send_v2_packet(
-            runtime, quest_status_packet(packet.activation_id, "ACTIVE")
+            runtime,
+            quest_status_packet(
+                activation_id, status.name, runtime.voice_runtime.reason(activation_id)
+            ),
         )
-        if disposition is ActivationDisposition.REPLAY:
-            logger.info(
-                "[V2] Replayed activation acknowledged: %s", packet.activation_id
-            )
-            return
-
-        runtime.quest_state.set_active_quest(packet.quest_goal, list(packet.phrases))
-        if runtime.voice_runtime.claim_opening(packet.activation_id):
-            logger.info("[V2] Activated quest: %s", packet.activation_id)
-            await _handle_quest_activation(
-                agent,
-                session,
-                runtime,
-                packet.activation_id,
-                packet.quest_goal,
-                list(packet.phrases),
-            )
-        return
-
-    if isinstance(packet, CancelActiveQuest) and runtime.voice_runtime.cancel(packet):
-        runtime.quest_state.reset()
-        logger.info("[V2] Cancelled activation: %s", packet.activation_id)
 
 
 async def _handle_quest_activation(
@@ -425,6 +487,7 @@ async def _handle_quest_activation(
         if not runtime.voice_runtime.can_continue(activation_id):
             return
         agent.bind_evaluation_activation(activation_id)
+        await agent.install_evaluation_tool(activation_id)
         await agent.update_instructions(new_instructions)
         if not runtime.voice_runtime.can_continue(activation_id):
             return
@@ -443,6 +506,17 @@ async def _handle_quest_activation(
         )
     except Exception as err:
         logger.error("[AGENT] Error activating quest context: %s", err)
+        async with runtime.packet_lock:
+            if runtime.voice_runtime.mark_failed(activation_id):
+                runtime.quest_state.reset()
+                agent.bind_evaluation_activation(None)
+                session.interrupt()
+                session.clear_user_turn()
+                runtime.tts_cache.clear()
+                await agent.update_tools([])
+                await clear_agent_chat_history(agent)
+                await agent.update_instructions(WAITING_INSTRUCTIONS)
+                await _publish_activation_status(runtime, activation_id)
 
 
 async def _handle_hint_reminder(

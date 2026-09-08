@@ -99,6 +99,7 @@ namespace VRAutism.Cloud.LiveKit
             Debug.Log($"[LiveKitService] 🌐 Đang bắt đầu kết nối tới LiveKit Server: {roomUrl}...");
             room = new Room();
             room.DataReceived += OnDataReceived;
+            room.Reconnected += OnRoomReconnectedV2;
             room.TrackSubscribed += OnTrackSubscribed;
             room.TrackUnsubscribed += OnTrackUnsubscribed;
 
@@ -112,6 +113,11 @@ namespace VRAutism.Cloud.LiveKit
             {
                 Debug.LogError($"[LiveKitService] ❌ LỖI KẾT NỐI LIVEKIT: {ex.Message}");
             }
+        }
+
+        private void OnRoomReconnectedV2(Room reconnectedRoom)
+        {
+            if (ReferenceEquals(room, reconnectedRoom)) ReconnectedV2?.Invoke();
         }
 
         public void Disconnect()
@@ -150,6 +156,7 @@ namespace VRAutism.Cloud.LiveKit
             if (room != null)
             {
                 room.DataReceived -= OnDataReceived;
+                room.Reconnected -= OnRoomReconnectedV2;
                 room.TrackSubscribed -= OnTrackSubscribed;
                 room.TrackUnsubscribed -= OnTrackUnsubscribed;
                 room.Disconnect();
@@ -376,7 +383,11 @@ namespace VRAutism.Cloud.LiveKit
 
         private void OnDataReceived(byte[] data, Participant participant, DataPacketKind kind, string topic)
         {
-            DataReceivedV2?.Invoke(data, topic);
+            if (string.Equals(topic, "lesson-graph-v2.voice", StringComparison.Ordinal))
+            {
+                DataReceivedV2?.Invoke(data, topic);
+                return;
+            }
             string json = System.Text.Encoding.UTF8.GetString(data);
             Debug.Log($"[LiveKitService] 📥 NHẬN GÓI TIN TỪ ({participant?.Identity}): {json}");
 

@@ -12,5 +12,17 @@ namespace VRAutism.Gameplay.LessonGraphV2.Phrases
             VoicePhraseSnapshotStoreV2.Replace(snapshot);
             return snapshot;
         }
+
+        public VoicePhraseSessionSnapshotV2 ResolveSessionSnapshot(
+            string launchToken, string lessonId, int lessonVoiceRevision, int childPhraseRevision,
+            IReadOnlyList<VoiceQuestPhraseV2> lessonQuests,
+            IReadOnlyList<VoiceQuestPhraseAdditionV2> childAdditions)
+        {
+            var resolved = VoicePhraseResolverV2.Resolve(lessonQuests, childAdditions);
+            var snapshot = new VoicePhraseSessionSnapshotV2(launchToken, lessonId, lessonVoiceRevision,
+                childPhraseRevision, resolved);
+            VoicePhraseSnapshotStoreV2.Replace(snapshot);
+            return snapshot;
+        }
     }
 }

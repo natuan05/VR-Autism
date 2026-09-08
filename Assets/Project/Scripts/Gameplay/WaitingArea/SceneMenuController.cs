@@ -45,9 +45,11 @@ namespace VRAutism.Gameplay.WaitingArea{
             }
 
             Debug.Log($"[SceneMenuController] Nhận lệnh Session. Bé: {childId}, Bài: {lessonId}, Scene: {sceneName}, Buổi: {sessionId}");
+            VoicePhraseSnapshotStoreV2.Clear();
 
             // Overlap scene asset loading with Firestore reads. Activation remains gated
             // until the selected V2 lesson has an immutable phrase snapshot.
+            var launchToken = System.Guid.NewGuid().ToString("N");
             var pendingScene = SceneManager.LoadSceneAsync(sceneName);
             if (pendingScene != null) pendingScene.allowSceneActivation = false;
             
@@ -153,7 +155,9 @@ namespace VRAutism.Gameplay.WaitingArea{
                         }
                     }
 
-                    new FirestoreVoicePhraseLoaderV2().ResolveSessionSnapshot(lessonQuests, additions);
+                    var lessonRevision = doc.ContainsField("voice_revision") ? System.Convert.ToInt32(doc.GetValue<object>("voice_revision")) : 0;
+                    var childRevision = (phraseDoc != null && phraseDoc.Exists && phraseDoc.ContainsField("revision")) ? System.Convert.ToInt32(phraseDoc.GetValue<object>("revision")) : 0;
+                    new FirestoreVoicePhraseLoaderV2().ResolveSessionSnapshot(launchToken, lessonId, lessonRevision, childRevision, lessonQuests, additions);
                     v2SnapshotReady = true;
                     Debug.Log($"[LessonGraphV2] Phrase snapshot ready lesson='{lessonId}' child='{childId}' bindings={lessonQuests.Count}");
                 }

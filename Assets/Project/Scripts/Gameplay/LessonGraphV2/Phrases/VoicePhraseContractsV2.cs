@@ -28,7 +28,31 @@ namespace VRAutism.Gameplay.LessonGraphV2.Phrases
         {
             BindingId = bindingId ?? string.Empty;
             Goal = goal ?? string.Empty;
-            Phrases = phrases ?? Array.Empty<string>();
+            Phrases = new List<string>(phrases ?? Array.Empty<string>()).AsReadOnly();
+        }
+    }
+
+    [Serializable]
+    public sealed class VoicePhraseSessionSnapshotV2
+    {
+        public const int ContractVersion = 2;
+        public int contract_version = ContractVersion;
+        public string launch_token;
+        public string lesson_id;
+        public int voice_schema_version = 2;
+        public int lesson_voice_revision;
+        public int child_phrase_revision;
+        public IReadOnlyDictionary<string, VoiceQuestPhraseSnapshotV2> quests;
+
+        public VoicePhraseSessionSnapshotV2(string launchToken, string lessonId, int lessonRevision,
+            int childRevision, IReadOnlyDictionary<string, VoiceQuestPhraseSnapshotV2> resolved)
+        {
+            launch_token = launchToken ?? string.Empty;
+            lesson_id = lessonId ?? string.Empty;
+            lesson_voice_revision = lessonRevision;
+            child_phrase_revision = childRevision;
+            quests = new Dictionary<string, VoiceQuestPhraseSnapshotV2>(resolved ??
+                new Dictionary<string, VoiceQuestPhraseSnapshotV2>(), StringComparer.Ordinal);
         }
     }
 }
