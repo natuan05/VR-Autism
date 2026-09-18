@@ -368,65 +368,89 @@ Error behavior:
 
 ## 10. Testing Strategy
 
-### 10.1 Characterization Tests
+Verification is intentionally split between a minimal automated suite owned by the implementation agent and final Real Room acceptance owned by the user. Automated tests cover deterministic concurrency and compatibility cases that are difficult to reproduce manually. They do not attempt to automate the full production workflow.
 
-Before extraction, lock down:
+### 10.1 Agent-Owned Test Runner Gate
 
-- exact legacy packet bytes, V2 topic, and reliability;
-- initial-connect `ReconnectedV2` behavior;
-- POV wait bound;
-- microphone enable/mute semantics;
-- V2 route registration, swapping, isolation, pending-track drain, and active-route switching;
-- legacy audio fallback;
-- duplicate SID replacement and teardown order.
+The project uses Unity `6000.3.13f1`. Before production refactoring, the agent must run one existing EditMode fixture to prove that Unity Test Runner, licensing, project locking, result-file generation, and command-line exit handling work in the current environment.
 
-### 10.2 SDK Adapter and Deterministic Fakes
+The most recent recorded batch run exited with code 1 without a useful test result. Therefore, a missing or unreadable result file is a failed gate, not a passing test. If Unity is already holding the project, licensing fails, or the runner cannot emit results, the agent must report the exact blocker and must not claim that tests passed.
 
-Introduce a narrow internal adapter or factory around the SDK room operations. A fake implementation must be able to:
+### 10.2 Minimal New Automated Suite
 
-- pause and complete connect or track publication using controlled tasks;
-- trigger SDK callbacks explicitly;
-- record publish, unpublish, disconnect, and subscription order;
-- simulate failures without network access.
+The agent creates no more test surface than required to protect these eight behaviors:
 
-The adapter is an infrastructure seam, not a second lifecycle owner.
+1. `ConnectAThenConnectB_LatestGenerationWins`;
+2. `DisconnectDuringConnect_InvalidatesOldContinuation`;
+3. `StaleRoomCallback_DoesNotEmitEvents`;
+4. `MainThreadExecutor_PreservesOrderAndDropsStaleCommands`;
+5. `DisconnectRepeatedly_IsIdempotentAndKeepsTeardownOrder`;
+6. `MediaPublishCompletesAfterDisconnect_RollsBackResources`, split into microphone and POV cases only if Unity Test Framework cannot parameterize the coroutine safely;
+7. `V2Packet_PreservesBytesTopicAndReliability`;
+8. `LegacyPacket_PreservesCurrentPayloadAndEventBehavior`.
 
-### 10.3 Concurrency Matrix
+These tests use a narrow SDK adapter/factory and deterministic fakes. The fake may pause and complete connect or publication tasks, trigger callbacks, and record operation order. It is a test seam, not a second lifecycle owner.
 
-Deterministically test:
+Unity-frame or task-completion tests use bounded `[UnityTest] IEnumerator` helpers. Every `TaskCompletionSource` is completed on all branches, and every timeout fails explicitly rather than waiting indefinitely.
 
-- connect A awaiting, followed by connect B;
-- disconnect during connect;
-- disconnect during microphone publication;
-- destroy during POV publication;
-- room-A callback after room B becomes current;
-- subscribe, route swap, and unsubscribe interleavings;
-- queued subscribe followed by unsubscribe;
-- repeated reconnect callbacks;
-- packet delivery after generation rollover.
+### 10.3 Existing Regression Fixtures
 
-Assertions must prove:
+The agent retains and runs the existing fixtures affected by this refactor:
 
-- stale generations emit no public event;
-- only the latest generation becomes connected;
-- no track, stream, coroutine, camera, or texture leaks;
-- no double-unpublish or double-dispose;
-- teardown order is stable;
-- public callbacks run on the Unity main thread.
+- `NpcAudioRouteBindingV2Tests`;
+- `VoiceQuestTransportV2Tests`;
+- `LiveKitDialogueTransportV2Tests`.
 
-### 10.4 Verification Layers
+The agent does not duplicate their assertions in new fixtures.
 
-- **Unit:** lifecycle state machine, executor, packet adapter, and audio router.
-- **EditMode:** façade/interface compatibility and Unity object ownership.
-- **PlayMode:** `Awake`, `Update`, `OnDestroy`, coroutine, and resource cleanup behavior.
-- **Device smoke:** Meta Quest and HTC Vive microphone permission/exclusivity, reconnect, NPC routing, and POV 720p at 30 FPS.
-- **LiveKit integration smoke:** real join/leave, audio/video publish/unpublish, and DataPacket round trip.
+### 10.4 Per-Slice Agent Verification
+
+After each extraction slice, the agent runs only:
+
+1. Unity compile/import;
+2. the new fixture directly related to that slice;
+3. the three existing regression fixtures above when their paths are affected;
+4. `git diff --check`;
+5. GitNexus `detect_changes`.
+
+The agent does not automate or claim completion for a real LiveKit room, web dashboard, Python agent, physical microphone permission, Meta Quest, or HTC Vive workflow. Python and web test suites are outside this refactor unless a cross-stack contract changes unexpectedly.
+
+### 10.5 User-Owned Real Room Acceptance
+
+The user performs the final production-like workflow:
+
+1. Create a live session and server-issued room token through the production web/backend path.
+2. Pair the VR client and join the intended room.
+3. Start the Python voice agent and verify that it joins the same room.
+4. Verify web POV reception with exactly one video track at the configured 720p/30 FPS behavior.
+5. Start a Voice Quest and verify exactly one microphone track with no competing capture.
+6. Send `SET_ACTIVE_QUEST` and verify activation, phrases, and NPC binding at the agent.
+7. Complete the phrase and verify that `QUEST_MATCHED` completes the quest exactly once.
+8. Exercise `VERBAL_HINT` and `ON_REMINDER`.
+9. Exercise `SPEAK_SCRIPT` and verify playback from the intended NPC `AudioSource`.
+10. Switch between two NPC routes and verify that audio neither bleeds nor plays twice.
+11. Interrupt and restore the network; verify that POV, microphone, and DataPacket behavior recover without duplicate tracks.
+12. Change quest or dialogue during reconnect and verify that a stale response cannot complete the new activity.
+13. End the session and verify track cleanup plus correct web/RTDB end state.
+14. Start a second session in the same application run and verify that the first session left no callback or resource behind.
+
+Immediate manual failure conditions are:
+
+- duplicate microphone, video, or audio tracks;
+- audio on the wrong NPC or duplicate playback;
+- an old quest completing a newer quest;
+- `MissingReferenceException`, `ObjectDisposedException`, or an unobserved task exception;
+- reconnect adding streams instead of replacing the previous streams;
+- the second session receiving callbacks from the first;
+- microphone capture remaining allocated after session shutdown.
+
+The user records pass/fail for each step and provides the Unity, agent, or web log around any failed step. Generation, track SID, activation ID, and sequence ID are the primary correlation fields.
 
 ## 11. Incremental Migration Plan
 
 The refactor must not be a big-bang rewrite.
 
-1. Add characterization tests and establish the current dirty working tree as the behavioral baseline.
+1. Prove the Unity test runner gate, add the approved minimal automated suite, and establish the current dirty working tree as the behavioral baseline.
 2. Add SDK adapter/factory seams and deterministic fakes without moving production behavior.
 3. Extract `LiveKitNpcAudioRouter`; preserve façade delegation and all current routing tests.
 4. Extract `LiveKitDataPacketTransport` and `LegacyVoicePacketAdapter`.
@@ -435,13 +459,12 @@ The refactor must not be a big-bang rewrite.
 7. Add `RoomConnectionHandle`, `LiveKitMainThreadExecutor`, and `LiveKitRoomConnection`.
 8. Move lifecycle orchestration into `LiveKitLifecycleCoordinator`.
 9. Reduce `LiveKitService` to its approved façade and lifecycle-host responsibilities.
-10. Run full regression, GitNexus change detection, and device/integration smoke tests.
+10. Run the approved targeted regression set and GitNexus change detection, then hand the build to the user for Real Room acceptance.
 
 After every slice:
 
 - compile the Unity project;
-- run targeted tests;
-- run the complete relevant EditMode suite;
+- run the approved targeted tests and affected existing fixtures;
 - inspect GitNexus `detect_changes` output;
 - stop if the affected flows exceed the expected slice.
 
@@ -451,15 +474,15 @@ The refactor is complete only when:
 
 - existing scenes, prefabs, and consumers require no migration;
 - public APIs, interfaces, events, and wire contracts remain unchanged;
-- all existing and new tests pass;
+- the eight approved automated behaviors and the three affected existing fixtures pass;
 - every Unity operation is main-thread confined;
 - there are no unobserved task exceptions;
 - stale generations cannot emit events or mutate current state;
 - repeated connect/disconnect leaves no owned resource behind;
 - microphone capture remains exclusive;
 - GitNexus reports only expected affected flows;
-- Meta Quest/HTC Vive device smoke tests pass;
-- LiveKit integration smoke tests pass.
+- the user completes and approves the Real Room checklist;
+- any device-specific Meta Quest or HTC Vive checks required by the target release pass under the user's Real Room workflow.
 
 ## 13. Explicit Non-Goals
 
