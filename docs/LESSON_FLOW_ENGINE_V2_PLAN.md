@@ -694,7 +694,8 @@ void Cancel(string activationId, QuestCancellationReason reason);
 ```
  
 - VoiceQuestRequest contains activation ID, quest name, phrases, and stable NPC audio-route identity (npc_binding_id or equivalent); it never contains a Unity AudioSource reference.
-- LiveKitVoiceQuestTransport owns packet DTO, publish/subscribe/cancel, stale packet filtering, and Unity main-thread dispatch; LiveKitService owns remote-track audio binding, route lookup, rebind, and teardown.
+- Single LiveKit Agent serves the room, switching TTS Voice Profiles per npc_binding_id (falling back to default voice with log warning if unknown).
+- LiveKitVoiceQuestTransport owns packet DTO, publish/subscribe/cancel, stale packet filtering, and Unity main-thread dispatch; LiveKitService owns remote-track audio binding, dynamic AudioSource route lookup/swap, rebind, and teardown.
 - `SET_ACTIVE_QUEST`, `CANCEL_ACTIVE_QUEST`, `QUEST_MATCHED`, `QUEST_STATUS` bắt buộc `activation_id`. Agent echo ID; Unity bỏ packet thiếu/stale.
 - Executor owns quest timeout; transport chỉ trả matched/status/error signal.
  

@@ -10,7 +10,16 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Sources
     [DisallowMultipleComponent]
     public sealed class VoiceQuestSourceV2 : QuestSourceV2
     {
+        [Tooltip("NPC audio route identity for voice opening prompt, verbal hints, and reminders.")]
+        [SerializeField] private string _npcBindingId = "teacher-npc";
         [SerializeField] private LiveKitVoiceQuestTransportV2 _transport;
+
+        public string NpcBindingId => _npcBindingId;
+
+        public void ConfigureNpcBindingId(string npcBindingId)
+        {
+            _npcBindingId = npcBindingId;
+        }
 
         protected override void Awake()
         {
@@ -28,7 +37,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Sources
                 return;
             }
 
-            var request = new VoiceQuestActivation(activation.ActivationId, phrase.Goal, phrase.Phrases);
+            var request = new VoiceQuestActivation(activation.ActivationId, phrase.Goal, phrase.Phrases, _npcBindingId);
             _transport.ActivateAsync(request, CancellationToken.None).ContinueWith(task =>
             {
                 if (task.IsFaulted)

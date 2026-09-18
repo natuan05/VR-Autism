@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using VRAutism.Gameplay.LessonGraphV2.Data;
 using VRAutism.Gameplay.LessonGraphV2.Questing;
+using VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue;
 using VRAutism.Gameplay.LessonGraphV2.Runtime.Executors;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Runtime
@@ -17,7 +18,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         public LessonGraphExecutorRegistry(
             IQuestBindingResolver questBindingResolver,
             INodeClock clock,
-            ICheckpointTelemetry checkpointTelemetry = null)
+            ICheckpointTelemetry checkpointTelemetry = null,
+            IDialogueTransportV2 dialogueTransport = null)
         {
             if (questBindingResolver == null) throw new ArgumentNullException(nameof(questBindingResolver));
             if (clock == null) throw new ArgumentNullException(nameof(clock));
@@ -27,6 +29,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 { NodeType.Wait, new WaitNodeExecutor(clock) },
                 { NodeType.Checkpoint, new CheckpointNodeExecutor(checkpointTelemetry) },
                 { NodeType.Quest, new QuestNodeExecutor(questBindingResolver, clock) },
+                { NodeType.Dialogue, new DialogueNodeExecutor(dialogueTransport, clock) },
             };
         }
 

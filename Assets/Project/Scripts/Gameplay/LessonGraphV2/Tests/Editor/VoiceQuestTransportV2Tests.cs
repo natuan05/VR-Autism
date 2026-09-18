@@ -27,6 +27,23 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             public void Reconnect() => ReconnectedV2?.Invoke();
             public void Receive(string packet) => DataReceivedV2?.Invoke(Encoding.UTF8.GetBytes(packet), VoiceQuestTransportV2Constants.Topic);
         }
+        private sealed class Router : INpcAudioRouterV2
+        {
+            public string ActiveNpcBindingId { get; private set; }
+            public void RegisterNpcAudioRoute(string npcBindingId, AudioSource source) { }
+            public void UnregisterNpcAudioRoute(string npcBindingId) { }
+            public bool TryGetNpcAudioRoute(string npcBindingId, out AudioSource source)
+            {
+                source = null;
+                return false;
+            }
+            public bool SetActiveNpcRoute(string npcBindingId)
+            {
+                ActiveNpcBindingId = npcBindingId;
+                return true;
+            }
+        }
+
         private static void Pump(LiveKitVoiceQuestTransportV2 transport) => typeof(LiveKitVoiceQuestTransportV2)
             .GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(transport, null);
 
@@ -79,6 +96,25 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 Pump(transport);
                 Assert.AreEqual(1, signals.Count);
                 Assert.AreEqual(VoiceQuestSignalType.Matched, signals[0].Type);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void ActivateAsync_SetsActiveNpcRouteAndSerializesNpcBindingId()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                var router = new Router();
+                transport.Configure(client, router);
+                transport.ActivateAsync(new VoiceQuestActivation("a", "goal", new[] { "phrase" }, "teacher-npc"), CancellationToken.None).GetAwaiter().GetResult();
+                Assert.AreEqual("teacher-npc", router.ActiveNpcBindingId);
+                Assert.AreEqual(1, client.Sent.Count);
+                StringAssert.Contains("\"npc_binding_id\":\"teacher-npc\"", client.Sent[0]);
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }

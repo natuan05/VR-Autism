@@ -82,3 +82,35 @@ async def test_completion_publishes_one_correlated_match_and_terminal_status() -
             "status": "MATCHED",
         },
     ]
+
+
+@pytest.mark.asyncio
+async def test_quest_activation_applies_npc_voice_profile() -> None:
+    """Activating a quest with npc_binding_id updates TTS options before phrase synthesis."""
+    runtime = _runtime_with_room()
+    runtime.voice_runtime.activate(
+        SetActiveQuest("activation-1", "Ask for water", ("Water, please",), npc_binding_id="peer-npc")
+    )
+    agent = MagicMock(spec=TeacherAgent)
+    session = MagicMock()
+    session.tts = MagicMock()
+    session.tts.update_options = MagicMock()
+    session.say = AsyncMock()
+
+    with patch("agent_v2._synthesize_phrases", new=AsyncMock()) as mock_synth:
+        from agent_v2 import _handle_quest_activation
+        await _handle_quest_activation(
+            agent,
+            session,
+            runtime,
+            "activation-1",
+            "Ask for water",
+            ["Water, please"],
+            npc_binding_id="peer-npc",
+        )
+
+    session.tts.update_options.assert_called_once_with(
+        voice_name="vi-VN-Chirp3-HD-Puck",
+        speaking_rate=1.0,
+    )
+    assert mock_synth.await_count == 1

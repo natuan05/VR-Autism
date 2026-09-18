@@ -23,6 +23,7 @@ def test_parse_set_active_quest_requires_the_versioned_v2_shape() -> None:
         activation_id="activation-1",
         quest_goal="Ask for water",
         phrases=("Please give me water",),
+        npc_binding_id="",
     )
     assert CONTRACT_VERSION == 2
 
@@ -31,6 +32,27 @@ def test_parse_set_active_quest_requires_the_versioned_v2_shape() -> None:
             '{"event":"SET_ACTIVE_QUEST","contract_version":1,'
             '"activation_id":"activation-1","quest_goal":"Ask for water",'
             '"phrases":[]}'
+        )
+
+
+def test_parse_set_active_quest_with_npc_binding_id() -> None:
+    packet = parse_unity_packet(
+        '{"event":"SET_ACTIVE_QUEST","contract_version":2,'
+        '"activation_id":"activation-2","quest_goal":"Ask for water",'
+        '"phrases":["Please give me water"],"npc_binding_id":"teacher-npc"}'
+    )
+    assert packet == SetActiveQuest(
+        activation_id="activation-2",
+        quest_goal="Ask for water",
+        phrases=("Please give me water",),
+        npc_binding_id="teacher-npc",
+    )
+
+    with pytest.raises(PacketValidationError):
+        parse_unity_packet(
+            '{"event":"SET_ACTIVE_QUEST","contract_version":2,'
+            '"activation_id":"activation-2","quest_goal":"Ask for water",'
+            '"phrases":["Please give me water"],"npc_binding_id":123}'
         )
 
 

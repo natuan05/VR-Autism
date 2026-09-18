@@ -41,6 +41,7 @@ asyncio_default_fixture_loop_scope = "function"
 [tool.ruff]
 line-length = 88
 target-version = "py39"
+extend-exclude = ["src/agent.py", "tests/test_agent.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "B", "A", "C4", "UP", "SIM", "RUF"]

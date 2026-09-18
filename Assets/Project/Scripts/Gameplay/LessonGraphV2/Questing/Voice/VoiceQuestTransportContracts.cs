@@ -15,12 +15,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
         public string activation_id;
         public string quest_goal;
         public List<string> phrases;
+        public string npc_binding_id;
 
-        public VoiceQuestActivation(string activationId, string goal, IEnumerable<string> effectivePhrases)
+        public VoiceQuestActivation(string activationId, string goal, IEnumerable<string> effectivePhrases, string npcBindingId = "")
         {
             activation_id = activationId ?? string.Empty;
             quest_goal = goal ?? string.Empty;
             phrases = new List<string>(effectivePhrases ?? Array.Empty<string>());
+            npc_binding_id = npcBindingId ?? string.Empty;
         }
     }
 

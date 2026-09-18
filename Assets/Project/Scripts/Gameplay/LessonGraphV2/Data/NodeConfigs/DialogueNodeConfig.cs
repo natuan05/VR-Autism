@@ -16,6 +16,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs
         [Tooltip("Text sent to the voice agent via SPEAK_SCRIPT DataPacket.")]
         [SerializeField] private string _text = string.Empty;
 
+        [Tooltip("Stable NPC route identifier mapping to a scene AudioSource and agent participant identity.")]
+        [SerializeField] private string _npcBindingId = string.Empty;
+
         [Tooltip("When true, node waits for SPEAK_SCRIPT_DONE before completing.")]
         [SerializeField] private bool _blocking = true;
 
@@ -24,15 +27,22 @@ namespace VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs
 
         public string SequenceId => _sequenceId;
         public string Text => _text;
+        public string NpcBindingId => _npcBindingId;
         public bool Blocking => _blocking;
         public float TimeoutSeconds => _timeoutSeconds;
 
-        public DialogueNodeConfig(string sequenceId, string text, bool blocking = true, float timeoutSeconds = 30f)
+        public DialogueNodeConfig(string sequenceId, string text, bool blocking = true, float timeoutSeconds = 30f, string npcBindingId = "")
         {
             _sequenceId = sequenceId ?? string.Empty;
             _text = text ?? string.Empty;
             _blocking = blocking;
             _timeoutSeconds = timeoutSeconds;
+            _npcBindingId = npcBindingId ?? string.Empty;
+        }
+
+        public DialogueNodeConfig(string sequenceId, string text, string npcBindingId, bool blocking = true, float timeoutSeconds = 30f)
+            : this(sequenceId, text, blocking, timeoutSeconds, npcBindingId)
+        {
         }
 
         public DialogueNodeConfig() { }

@@ -5,10 +5,12 @@ SDK: LiveKit Agents 1.6+
 """
 
 import asyncio
+import contextlib
 import json
 import logging
 import os
 import random
+from dataclasses import dataclass
 from typing import Any, Optional
 
 from dotenv import load_dotenv
@@ -28,14 +30,21 @@ from livekit.agents import tts as agents_tts
 from livekit.agents.voice import Agent, AgentSession
 from livekit.plugins import google, silero
 
+from voice_command_runtime_v2 import (
+    CommandDisposition,
+    CommandStatus,
+    VoiceCommandRuntime,
+)
 from voice_contract_v2 import (
     VOICE_TOPIC,
     CancelActiveQuest,
     PacketValidationError,
     SetActiveQuest,
+    SpeakScriptV2,
     parse_unity_packet,
     quest_matched_packet,
     quest_status_packet,
+    speak_script_done_packet,
 )
 from voice_quest_runtime_v2 import ActivationDisposition, VoiceQuestRuntime
 
@@ -123,6 +132,79 @@ async def _frames_to_async_gen(frames: list[rtc.AudioFrame]):
 
 
 # ---------------------------------------------------------------------------
+# Voice Profile Registry (Single Agent Dynamic TTS Switching)
+# ---------------------------------------------------------------------------
+@dataclass(frozen=True)
+class VoiceProfile:
+    """TTS voice configuration for an NPC voice profile."""
+
+    voice_name: str
+    speaking_rate: float = 1.0
+    gender: str = "NEUTRAL"
+    pitch: float = 0.0
+
+
+DEFAULT_VOICE_PROFILE = VoiceProfile(
+    voice_name="vi-VN-Chirp3-HD-Aoede",
+    speaking_rate=1.0,
+    gender="FEMALE",
+)
+
+DEFAULT_VOICE_PROFILES: dict[str, VoiceProfile] = {
+    "teacher-npc": VoiceProfile(
+        voice_name="vi-VN-Chirp3-HD-Aoede",
+        speaking_rate=1.0,
+        gender="FEMALE",
+    ),
+    "peer-npc": VoiceProfile(
+        voice_name="vi-VN-Chirp3-HD-Puck",
+        speaking_rate=1.0,
+        gender="MALE",
+    ),
+}
+
+
+class VoiceProfileRegistry:
+    """Registry mapping npc_binding_id to TTS VoiceProfile configurations."""
+
+    def __init__(
+        self,
+        profiles: dict[str, VoiceProfile] | None = None,
+        default_profile: VoiceProfile = DEFAULT_VOICE_PROFILE,
+    ) -> None:
+        self._profiles: dict[str, VoiceProfile] = dict(
+            profiles if profiles is not None else DEFAULT_VOICE_PROFILES
+        )
+        self._default_profile = default_profile
+
+    def register(self, npc_binding_id: str, profile: VoiceProfile) -> None:
+        self._profiles[npc_binding_id] = profile
+
+    def get(self, npc_binding_id: str | None) -> tuple[VoiceProfile, bool]:
+        """Return (VoiceProfile, is_fallback).
+
+        If npc_binding_id is unknown or empty, returns (default_profile, True).
+        """
+        if not npc_binding_id or npc_binding_id not in self._profiles:
+            return self._default_profile, True
+        return self._profiles[npc_binding_id], False
+
+
+def _apply_voice_profile(session: AgentSession, profile: VoiceProfile) -> None:
+    """Apply voice profile options to TTS if supported."""
+    tts = getattr(session, "tts", None)
+    if tts is not None and hasattr(tts, "update_options"):
+        try:
+            tts.update_options(
+                voice_name=profile.voice_name,
+                speaking_rate=profile.speaking_rate,
+            )
+            logger.debug("[TTS] Updated TTS options for voice: %s", profile.voice_name)
+        except Exception as exc:
+            logger.warning("[TTS] Failed to update TTS options: %s", exc)
+
+
+# ---------------------------------------------------------------------------
 # Runtime & State Management
 # ---------------------------------------------------------------------------
 class QuestState:
@@ -151,9 +233,13 @@ class JobRuntime:
         self.job_ctx = job_ctx
         self.quest_state = QuestState()
         self.voice_runtime = VoiceQuestRuntime()
+        self.command_runtime = VoiceCommandRuntime()
+        self.voice_registry = VoiceProfileRegistry()
         self.packet_lock = asyncio.Lock()
+        self.command_lock = asyncio.Lock()
         self.publication_lock = asyncio.Lock()
         self.activation_task: asyncio.Task[Any] | None = None
+        self.active_speech_handle: Any = None
         self.matched_sent: set[str] = set()
         self.background_tasks: set[asyncio.Task[Any]] = set()
         self.tts_cache: dict[str, list[rtc.AudioFrame]] = {}
@@ -341,12 +427,7 @@ async def entrypoint(ctx: JobContext) -> None:
 
                 data = json.loads(raw_text)
                 event_type = data.get("event")
-                if event_type == "SPEAK_SCRIPT":
-                    text = data.get("text", "").strip()
-                    if text:
-                        logger.info("[SCRIPT] Received SPEAK_SCRIPT text: %r", text)
-                        await _handle_speak_script(session, text)
-                elif event_type in ("VERBAL_HINT", "ON_REMINDER"):
+                if event_type in ("VERBAL_HINT", "ON_REMINDER"):
                     logger.info("[HINT] Received event: %s", event_type)
                     await _handle_hint_reminder(session, runtime, event_type)
 
@@ -375,6 +456,10 @@ async def _process_v2_packet(
         packet = parse_unity_packet(payload)
     except PacketValidationError as exc:
         logger.warning("[V2] Ignoring malformed V2 packet: %s", exc)
+        return
+
+    if isinstance(packet, SpeakScriptV2):
+        await _handle_speak_script_v2(session, runtime, packet)
         return
 
     async with runtime.packet_lock:
@@ -416,6 +501,7 @@ async def _process_v2_packet(
                             packet.activation_id,
                             packet.quest_goal,
                             list(packet.phrases),
+                            packet.npc_binding_id,
                         )
                     )
             await _publish_activation_status(runtime, packet.activation_id)
@@ -434,6 +520,30 @@ async def _reset_activation(
     if task and not task.done():
         task.cancel()
         await asyncio.gather(task, return_exceptions=True)
+    if runtime.active_speech_handle and not runtime.active_speech_handle.done():
+        with contextlib.suppress(Exception):
+            runtime.active_speech_handle.interrupt()
+        runtime.active_speech_handle = None
+    active_cmd = runtime.command_runtime.active_command
+    if active_cmd:
+        act_id = active_cmd.activation_id
+        seq_id = active_cmd.sequence_id
+        npc_id = active_cmd.npc_binding_id
+        runtime.command_runtime.cancel_active(reason="activation_reset")
+        runtime.spawn(
+            send_v2_packet(
+                runtime,
+                speak_script_done_packet(
+                    act_id,
+                    seq_id,
+                    npc_id,
+                    status="CANCELLED",
+                    reason="activation_reset",
+                ),
+            )
+        )
+    else:
+        runtime.command_runtime.cancel_active(reason="activation_reset")
     runtime.quest_state.reset()
     runtime.tts_cache.clear()
     agent.bind_evaluation_activation(None)
@@ -468,11 +578,23 @@ async def _handle_quest_activation(
     activation_id: str,
     quest_name: str,
     phrases: list[str],
+    npc_binding_id: str = "",
 ) -> None:
     """Update system prompt and speak opening phrase with cached audio."""
     try:
         if not runtime.voice_runtime.can_continue(activation_id):
             return
+
+        profile, is_fallback = runtime.voice_registry.get(npc_binding_id)
+        if is_fallback and npc_binding_id:
+            logger.warning(
+                "[V2] Unknown npc_binding_id %r for quest activation %s. Falling back to default voice %r.",
+                npc_binding_id,
+                activation_id,
+                profile.voice_name,
+            )
+        _apply_voice_profile(session, profile)
+
         opening = (
             random.choice(phrases)
             if phrases
@@ -555,19 +677,172 @@ async def _handle_hint_reminder(
         logger.error("[HINT] Error handling %s: %s", event_name, err)
 
 
-async def _handle_speak_script(
+async def _handle_speak_script_v2(
     session: AgentSession,
-    text: str,
+    runtime: JobRuntime,
+    packet: SpeakScriptV2,
 ) -> None:
-    """Speak custom text from Web dashboard via live TTS."""
+    """Execute a correlated V2 dialogue node through LiveKit, awaiting playout."""
+    profile, is_fallback = runtime.voice_registry.get(packet.npc_binding_id)
+    if is_fallback:
+        logger.warning(
+            "[V2] Unknown npc_binding_id %r not found in VoiceProfileRegistry. Falling back to default voice %r.",
+            packet.npc_binding_id,
+            profile.voice_name,
+        )
+    _apply_voice_profile(session, profile)
+
+    async with runtime.command_lock:
+        disposition = runtime.command_runtime.submit(packet)
+        if disposition is CommandDisposition.REPLAY:
+            status = runtime.command_runtime.status(
+                packet.activation_id, packet.sequence_id
+            )
+            if status in (
+                CommandStatus.COMPLETED,
+                CommandStatus.CANCELLED,
+                CommandStatus.FAILED,
+            ):
+                mapped_status = (
+                    "SUCCESS" if status == CommandStatus.COMPLETED else status.name
+                )
+                await send_v2_packet(
+                    runtime,
+                    speak_script_done_packet(
+                        packet.activation_id,
+                        packet.sequence_id,
+                        packet.npc_binding_id,
+                        status=mapped_status,
+                        reason=runtime.command_runtime.reason(
+                            packet.activation_id, packet.sequence_id
+                        ),
+                    ),
+                )
+            return
+
+        if disposition is CommandDisposition.REJECTED:
+            logger.warning(
+                "[V2] Rejected duplicate/conflicting SPEAK_SCRIPT %s/%s",
+                packet.activation_id,
+                packet.sequence_id,
+            )
+            return
+
+        if runtime.active_speech_handle and not runtime.active_speech_handle.done():
+            with contextlib.suppress(Exception):
+                runtime.active_speech_handle.interrupt()
+            runtime.active_speech_handle = None
+
+        runtime.command_runtime.start(packet.activation_id, packet.sequence_id)
+
+    handle = None
     try:
-        logger.info("[SCRIPT] Speaking teacher custom text: %r", text)
-        await session.say(
-            text,
+        logger.info(
+            "[V2] Speaking scripted text for NPC %r: %r",
+            packet.npc_binding_id,
+            packet.text,
+        )
+        handle = await session.say(
+            packet.text,
             allow_interruptions=True,
         )
-    except Exception as err:
-        logger.error("[SCRIPT] Error handling SPEAK_SCRIPT: %s", err)
+        if handle is None:
+            logger.warning("[V2] session.say returned None for %s/%s", packet.activation_id, packet.sequence_id)
+            if runtime.command_runtime.mark_failed(packet.activation_id, packet.sequence_id, reason="say_returned_none"):
+                await send_v2_packet(
+                    runtime,
+                    speak_script_done_packet(
+                        packet.activation_id,
+                        packet.sequence_id,
+                        packet.npc_binding_id,
+                        status="FAILED",
+                        reason="say_returned_none",
+                    ),
+                )
+            return
+
+        runtime.active_speech_handle = handle
+
+        # Await playout completion
+        if hasattr(handle, "wait_for_playout"):
+            await handle.wait_for_playout()
+        elif asyncio.iscoroutine(handle):
+            await handle
+
+        is_interrupted = getattr(handle, "interrupted", False)
+        if is_interrupted:
+            logger.warning(
+                "[V2] Dialogue playback interrupted for %s/%s",
+                packet.activation_id,
+                packet.sequence_id,
+            )
+            marked = runtime.command_runtime.mark_completed(
+                packet.activation_id,
+                packet.sequence_id,
+                status="CANCELLED",
+                reason="interrupted",
+            )
+            if marked:
+                await send_v2_packet(
+                    runtime,
+                    speak_script_done_packet(
+                        packet.activation_id,
+                        packet.sequence_id,
+                        packet.npc_binding_id,
+                        status="CANCELLED",
+                        reason="interrupted",
+                    ),
+                )
+        else:
+            logger.info(
+                "[V2] Dialogue playout completed for %s/%s",
+                packet.activation_id,
+                packet.sequence_id,
+            )
+            marked = runtime.command_runtime.mark_completed(
+                packet.activation_id,
+                packet.sequence_id,
+                status="SUCCESS",
+            )
+            if marked:
+                await send_v2_packet(
+                    runtime,
+                    speak_script_done_packet(
+                        packet.activation_id,
+                        packet.sequence_id,
+                        packet.npc_binding_id,
+                        status="SUCCESS",
+                    ),
+                )
+    except (Exception, asyncio.CancelledError) as err:
+        logger.error(
+            "[V2] Exception during dialogue playout %s/%s: %s",
+            packet.activation_id,
+            packet.sequence_id,
+            err,
+        )
+        status = "CANCELLED" if isinstance(err, asyncio.CancelledError) else "FAILED"
+        if runtime.command_runtime.mark_completed(
+            packet.activation_id,
+            packet.sequence_id,
+            status=status,
+            reason=str(err),
+        ):
+            await send_v2_packet(
+                runtime,
+                speak_script_done_packet(
+                    packet.activation_id,
+                    packet.sequence_id,
+                    packet.npc_binding_id,
+                    status=status,
+                    reason=str(err),
+                ),
+            )
+        if isinstance(err, asyncio.CancelledError):
+            raise
+    finally:
+        if runtime.active_speech_handle is handle:
+            runtime.active_speech_handle = None
 
 
 if __name__ == "__main__":

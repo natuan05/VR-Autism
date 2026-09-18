@@ -20,42 +20,52 @@ MonoBehaviour:
     _position: {x: 0, y: 0}
     _config:
       rid: 1001
+  - _id: wash-prompt-wet-hands
+    _nodeType: 1
+    _position: {x: 1600, y: 0}
+    _config:
+      rid: 4156067349906587749
   - _id: wash-wet-hands
     _nodeType: 0
-    _position: {x: 240, y: 0}
+    _position: {x: 400, y: 0}
     _config:
       rid: 1002
   - _id: wash-dispense-soap
     _nodeType: 0
-    _position: {x: 480, y: 0}
+    _position: {x: 640, y: 0}
     _config:
       rid: 1003
   - _id: wash-rub-hands
     _nodeType: 0
-    _position: {x: 720, y: 0}
+    _position: {x: 880, y: 0}
     _config:
       rid: 1004
   - _id: wash-turn-off-water
     _nodeType: 0
-    _position: {x: 960, y: 0}
+    _position: {x: 1120, y: 0}
     _config:
       rid: 1005
   - _id: wash-dry-hands
     _nodeType: 0
-    _position: {x: 1200, y: 0}
+    _position: {x: 1360, y: 0}
     _config:
       rid: 1006
   - _id: wash-complete
     _nodeType: 3
-    _position: {x: 1440, y: 0}
+    _position: {x: 1600, y: 0}
     _config:
       rid: 1007
   _edges:
   - _fromNodeId: wash-turn-on-water
-    _toNodeId: wash-wet-hands
+    _toNodeId: wash-prompt-wet-hands
     _priority: 0
     _condition:
       rid: 2001
+  - _fromNodeId: wash-prompt-wet-hands
+    _toNodeId: wash-wet-hands
+    _priority: 0
+    _condition:
+      rid: 2007
   - _fromNodeId: wash-wet-hands
     _toNodeId: wash-dispense-soap
     _priority: 0
@@ -90,7 +100,6 @@ MonoBehaviour:
       data:
         _completionBindingIds:
         - washing-hand.turn-on-water.touch
-        - washing-hand.turn-on-water
         _timeoutSeconds: 300
         _voicePrompt: Turn on the water.
     - rid: 1002
@@ -99,6 +108,7 @@ MonoBehaviour:
       data:
         _completionBindingIds:
         - washing-hand.wet-hands.hold
+        - washing-hand.wet-hands
         _timeoutSeconds: 300
         _voicePrompt: Wet your hands under the water.
     - rid: 1003
@@ -169,3 +179,18 @@ MonoBehaviour:
         asm: Assembly-CSharp}
       data:
         _requiredStatus: success
+    - rid: 2007
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: success
+    - rid: 4156067349906587749
+      type: {class: DialogueNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs,
+        asm: Assembly-CSharp}
+      data:
+        _sequenceId: wash-prompt-wet-hands
+        _text: "Gi\u1EDD con \u0111\u01B0a tay d\u01B0\u1EDBi v\xF2i n\u01B0\u1EDBc
+          l\xE0m \u01B0\u1EDBt nh\xE9e"
+        _npcBindingId: teacher-npc
+        _blocking: 1
+        _timeoutSeconds: 30

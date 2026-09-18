@@ -18,6 +18,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             public string activation_id;
             public string quest_goal;
             public string[] phrases;
+            public string npc_binding_id;
             public string reason;
             public string status;
         }
@@ -29,6 +30,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             public string activation_id;
             public string quest_goal;
             public string[] phrases;
+            public string npc_binding_id;
         }
         [Serializable] private sealed class CancelPacket
         {
@@ -40,6 +42,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
 
         private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
         private ILiveKitDataPacketClientV2 _client;
+        private INpcAudioRouterV2 _router;
         private VoiceQuestActivation _current;
         private bool _terminal;
         private Packet _desired;
@@ -48,7 +51,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
         public event Action<VoiceQuestSignal> SignalReceived;
         public string CurrentActivationId => _current?.activation_id ?? string.Empty;
 
-        public void Configure(ILiveKitDataPacketClientV2 client)
+        public void Configure(ILiveKitDataPacketClientV2 client, INpcAudioRouterV2 router = null)
         {
             if (_client != null)
             {
@@ -56,6 +59,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
                 _client.ReconnectedV2 -= OnReconnected;
             }
             _client = client;
+            _router = router ?? (client as INpcAudioRouterV2);
             if (_client != null)
             {
                 _client.DataReceivedV2 += OnDataReceived;
@@ -65,7 +69,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
 
         private void Awake()
         {
-            Configure(LiveKitService.Instance);
+            Configure(LiveKitService.Instance, LiveKitService.Instance);
         }
         private void Update()
         {
@@ -77,10 +81,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             if (request == null || string.IsNullOrWhiteSpace(request.activation_id))
                 throw new ArgumentException("Activation must have an id.", nameof(request));
             cancellationToken.ThrowIfCancellationRequested();
-            _current = new VoiceQuestActivation(request.activation_id, request.quest_goal, request.phrases);
+            _current = new VoiceQuestActivation(request.activation_id, request.quest_goal, request.phrases, request.npc_binding_id);
             _terminal = false;
             _terminalSignal = null;
-            _desired = new Packet { @event = "SET_ACTIVE_QUEST", contract_version = 2, activation_id = _current.activation_id, quest_goal = _current.quest_goal, phrases = _current.phrases.ToArray() };
+            if (!string.IsNullOrWhiteSpace(_current.npc_binding_id))
+            {
+                _router?.SetActiveNpcRoute(_current.npc_binding_id);
+            }
+            _desired = new Packet { @event = "SET_ACTIVE_QUEST", contract_version = 2, activation_id = _current.activation_id, quest_goal = _current.quest_goal, phrases = _current.phrases.ToArray(), npc_binding_id = _current.npc_binding_id };
             Publish(_desired);
             return Task.CompletedTask;
         }
@@ -100,7 +108,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
         {
             if (_client == null || !_client.IsConnectedV2) return;
             object envelope = packet.@event == "SET_ACTIVE_QUEST"
-                ? (object)new ActivatePacket { activation_id = packet.activation_id, quest_goal = packet.quest_goal, phrases = packet.phrases }
+                ? (object)new ActivatePacket { activation_id = packet.activation_id, quest_goal = packet.quest_goal, phrases = packet.phrases, npc_binding_id = packet.npc_binding_id }
                 : new CancelPacket { activation_id = packet.activation_id, reason = packet.reason };
             _client.PublishDataV2(Encoding.UTF8.GetBytes(JsonUtility.ToJson(envelope)), VoiceQuestTransportV2Constants.Topic, true);
         }

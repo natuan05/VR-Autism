@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using VRAutism.Gameplay.LessonGraphV2.Data;
 using VRAutism.Gameplay.LessonGraphV2.Questing;
+using VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Runtime
 {
@@ -14,6 +15,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         [SerializeField] private LessonGraph _lessonGraph;
         [SerializeField] private LessonGraphRunner _runner;
         [SerializeField] private LessonGraphBindings _bindings;
+        [SerializeField] private LiveKitDialogueTransportV2 _dialogueTransport;
         [SerializeField] private bool _startOnStart;
 
         private INodeClock _clock;
@@ -21,11 +23,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         public LessonGraph LessonGraph => _lessonGraph;
         public LessonGraphRunner Runner => _runner;
         public LessonGraphBindings Bindings => _bindings;
+        public LiveKitDialogueTransportV2 DialogueTransport => _dialogueTransport;
 
         private void Awake()
         {
             if (_runner == null) _runner = GetComponent<LessonGraphRunner>();
             if (_bindings == null) _bindings = GetComponent<LessonGraphBindings>();
+            if (_dialogueTransport == null) _dialogueTransport = GetComponent<LiveKitDialogueTransportV2>() ?? FindObjectOfType<LiveKitDialogueTransportV2>();
             Configure();
         }
 
@@ -56,7 +60,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             _clock = new MonotonicClock();
             _runner.Configure(
                 _lessonGraph,
-                new LessonGraphExecutorRegistry(_bindings, _clock),
+                new LessonGraphExecutorRegistry(_bindings, _clock, dialogueTransport: _dialogueTransport),
                 _bindings,
                 _clock);
             Debug.Log($"[LessonGraphV2] Installer configured: graph='{_lessonGraph.name}' runner={_runner.name} bindings={_bindings.name}", this);

@@ -628,6 +628,7 @@ GameObject:
   m_Component:
   - component: {fileID: 393176434}
   - component: {fileID: 393176435}
+  - component: {fileID: 393176436}
   m_Layer: 0
   m_Name: 'NPCSupporter '
   m_TagString: Untagged
@@ -749,6 +750,20 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &393176436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 393176433}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78d8d042039d6054394649786acc3a88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Integration.NpcAudioRouteBindingV2
+  _npcBindingId: teacher-npc
+  _audioSource: {fileID: 393176435}
 --- !u!1 &393708113
 GameObject:
   m_ObjectHideFlags: 0
@@ -7365,8 +7380,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 041822a2bc04f7e4a80d3096a0567b4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.Sources.VoiceQuestSourceV2
-  _bindingId: washing-hand.turn-on-water
-  _transport: {fileID: 0}
+  _bindingId: washing-hand.wet-hands
+  _npcBindingId: teacher-npc
+  _transport: {fileID: 1900500010}
 --- !u!1 &1061493299
 GameObject:
   m_ObjectHideFlags: 0
@@ -7794,6 +7810,7 @@ GameObject:
   - component: {fileID: 1130038379}
   - component: {fileID: 1130038380}
   - component: {fileID: 1900500010}
+  - component: {fileID: 1900500020}
   m_Layer: 0
   m_Name: LesssonGraphRuntime
   m_TagString: Untagged
@@ -7829,10 +7846,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.LessonGraphBindings
   _entries:
-  - _bindingId: washing-hand.turn-on-water
-    _source: {fileID: 1025430717}
   - _bindingId: washing-hand.turn-on-water.touch
     _source: {fileID: 652237928}
+  - _bindingId: washing-hand.wet-hands
+    _source: {fileID: 1025430717}
   - _bindingId: washing-hand.wet-hands.hold
     _source: {fileID: 1111842969}
   - _bindingId: washing-hand.dispense-soap.touch
@@ -7870,6 +7887,7 @@ MonoBehaviour:
   _lessonGraph: {fileID: 11400000, guid: 3b4eb3ed1f7d49899b2545c71bd3b5f7, type: 2}
   _runner: {fileID: 1130038378}
   _bindings: {fileID: 1130038377}
+  _dialogueTransport: {fileID: 1900500020}
   _startOnStart: 1
 --- !u!114 &1130038380
 MonoBehaviour:
@@ -14507,32 +14525,32 @@ PrefabInstance:
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.8450833
+      value: 0.8547215
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.047693644
+      value: -0.0024234282
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.53132075
+      value: -0.519066
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.03546679
+      value: 0.0039905454
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 6.794
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -64.285
+      value: -62.54
       objectReference: {fileID: 0}
     - target: {fileID: 407060287837268088, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
@@ -14864,6 +14882,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d4a8a6c293afb48a66dddaf5a13f3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.Voice.LiveKitVoiceQuestTransportV2
+--- !u!114 &1900500020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1130038375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa53660c58a028a4d94e0dd33d7cc373, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue.LiveKitDialogueTransportV2
 --- !u!1 &1910456863
 GameObject:
   m_ObjectHideFlags: 0

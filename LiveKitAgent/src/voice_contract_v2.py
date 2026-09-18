@@ -20,6 +20,7 @@ class SetActiveQuest:
     activation_id: str
     quest_goal: str
     phrases: tuple[str, ...]
+    npc_binding_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -28,7 +29,24 @@ class CancelActiveQuest:
     reason: str
 
 
-UnityPacket: TypeAlias = SetActiveQuest | CancelActiveQuest
+@dataclass(frozen=True)
+class SpeakScriptV2:
+    activation_id: str
+    sequence_id: str
+    npc_binding_id: str
+    text: str
+
+
+@dataclass(frozen=True)
+class SpeakScriptDoneV2:
+    activation_id: str
+    sequence_id: str
+    npc_binding_id: str
+    status: str = "SUCCESS"
+    reason: str = ""
+
+
+UnityPacket: TypeAlias = SetActiveQuest | CancelActiveQuest | SpeakScriptV2
 
 
 def parse_unity_packet(payload: bytes | str) -> UnityPacket:
@@ -49,14 +67,18 @@ def parse_unity_packet(payload: bytes | str) -> UnityPacket:
 
     event = data.get("event")
     if event == "SET_ACTIVE_QUEST":
-        _require_exact_keys(
-            data,
-            {"event", "contract_version", "activation_id", "quest_goal", "phrases"},
-        )
+        keys = set(data)
+        base_keys = {"event", "contract_version", "activation_id", "quest_goal", "phrases"}
+        if keys not in (base_keys, base_keys | {"npc_binding_id"}):
+            raise PacketValidationError("packet fields do not match its V2 event shape")
+        npc_binding_id = data.get("npc_binding_id", "")
+        if not isinstance(npc_binding_id, str):
+            raise PacketValidationError("npc_binding_id must be text")
         return SetActiveQuest(
             activation_id=_required_text(data, "activation_id"),
             quest_goal=_required_text(data, "quest_goal"),
             phrases=_required_phrases(data),
+            npc_binding_id=npc_binding_id.strip(),
         )
     if event == "CANCEL_ACTIVE_QUEST":
         _require_exact_keys(
@@ -66,6 +88,24 @@ def parse_unity_packet(payload: bytes | str) -> UnityPacket:
         return CancelActiveQuest(
             activation_id=_required_text(data, "activation_id"),
             reason=_required_text(data, "reason"),
+        )
+    if event == "SPEAK_SCRIPT":
+        _require_exact_keys(
+            data,
+            {
+                "event",
+                "contract_version",
+                "activation_id",
+                "sequence_id",
+                "npc_binding_id",
+                "text",
+            },
+        )
+        return SpeakScriptV2(
+            activation_id=_required_text(data, "activation_id"),
+            sequence_id=_required_text(data, "sequence_id"),
+            npc_binding_id=_required_text(data, "npc_binding_id"),
+            text=_required_text(data, "text"),
         )
     raise PacketValidationError("unsupported V2 event")
 
@@ -83,6 +123,30 @@ def quest_status_packet(
         raise PacketValidationError("unsupported activation status")
     packet = _outbound_packet("QUEST_STATUS", activation_id)
     packet["status"] = status
+    if reason:
+        packet["reason"] = reason
+    return packet
+
+
+def speak_script_done_packet(
+    activation_id: str,
+    sequence_id: str,
+    npc_binding_id: str,
+    status: str = "SUCCESS",
+    reason: str | None = None,
+) -> dict[str, object]:
+    """Build the correlated dialogue completion packet for Unity V2."""
+    norm_status = status.upper() if isinstance(status, str) else ""
+    if norm_status not in {"SUCCESS", "CANCELLED", "FAILED"}:
+        raise PacketValidationError("unsupported dialogue completion status")
+    if not isinstance(sequence_id, str) or not sequence_id.strip():
+        raise PacketValidationError("sequence_id must be non-empty")
+    if not isinstance(npc_binding_id, str) or not npc_binding_id.strip():
+        raise PacketValidationError("npc_binding_id must be non-empty")
+    packet = _outbound_packet("SPEAK_SCRIPT_DONE", activation_id)
+    packet["sequence_id"] = sequence_id
+    packet["npc_binding_id"] = npc_binding_id
+    packet["status"] = norm_status
     if reason:
         packet["reason"] = reason
     return packet

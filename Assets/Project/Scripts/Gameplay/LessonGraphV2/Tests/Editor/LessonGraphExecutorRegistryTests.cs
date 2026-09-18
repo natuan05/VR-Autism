@@ -19,6 +19,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.IsInstanceOf<CheckpointNodeExecutor>(checkpoint);
             Assert.IsTrue(registry.TryGet(NodeType.Quest, out var quest));
             Assert.IsInstanceOf<QuestNodeExecutor>(quest);
+            Assert.IsTrue(registry.TryGet(NodeType.Dialogue, out var dialogue));
+            Assert.IsInstanceOf<DialogueNodeExecutor>(dialogue);
         }
 
         [Test]

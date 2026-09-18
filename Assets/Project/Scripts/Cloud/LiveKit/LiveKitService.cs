@@ -7,7 +7,7 @@ using LiveKit.Proto;
 
 namespace VRAutism.Cloud.LiveKit
 {
-    public class LiveKitService : MonoBehaviour, ILiveKitRoomClient, ILiveKitDataPacketClientV2
+    public class LiveKitService : MonoBehaviour, ILiveKitRoomClient, ILiveKitDataPacketClientV2, INpcAudioRouterV2
     {
         private static LiveKitService _instance;
         public static LiveKitService Instance
@@ -55,6 +55,99 @@ namespace VRAutism.Cloud.LiveKit
         private readonly Dictionary<string, (AudioStream stream, GameObject go)> remoteAudioStreams = new();
         private AudioSource npcAudioSource;
         private RemoteAudioTrack pendingAudioTrack;
+
+        // V2 Audio Routing
+        private sealed class PendingTrackEntry
+        {
+            public RemoteAudioTrack Track { get; }
+            public string ParticipantIdentity { get; }
+
+            public PendingTrackEntry(RemoteAudioTrack track, string participantIdentity)
+            {
+                Track = track;
+                ParticipantIdentity = participantIdentity;
+            }
+        }
+
+        private sealed class ActiveTrackEntry
+        {
+            public RemoteAudioTrack Track { get; set; }
+            public IDisposable Stream { get; set; }
+            public AudioSource Source { get; set; }
+            public string NpcBindingId { get; set; }
+        }
+
+        private readonly Dictionary<string, AudioSource> _npcAudioRoutes = new Dictionary<string, AudioSource>(StringComparer.Ordinal);
+        private readonly Dictionary<string, PendingTrackEntry> _pendingAudioTracks = new Dictionary<string, PendingTrackEntry>(StringComparer.Ordinal);
+        private readonly Dictionary<string, ActiveTrackEntry> _activeAudioStreams = new Dictionary<string, ActiveTrackEntry>(StringComparer.Ordinal);
+        private readonly object _audioRoutingLock = new object();
+
+        public Func<RemoteAudioTrack, AudioSource, IDisposable> StreamFactory { get; set; }
+        public int ActiveV2StreamCount
+        {
+            get { lock (_audioRoutingLock) return _activeAudioStreams.Count; }
+        }
+        public int PendingV2TrackCount
+        {
+            get { lock (_audioRoutingLock) return _pendingAudioTracks.Count; }
+        }
+        public bool IsV2TrackActive(string trackSid)
+        {
+            lock (_audioRoutingLock) return _activeAudioStreams.ContainsKey(trackSid);
+        }
+        public bool IsV2TrackPending(string trackSid)
+        {
+            lock (_audioRoutingLock) return _pendingAudioTracks.ContainsKey(trackSid);
+        }
+        private string _activeNpcBindingId = string.Empty;
+        public string ActiveNpcBindingId
+        {
+            get
+            {
+                lock (_audioRoutingLock)
+                {
+                    return _activeNpcBindingId;
+                }
+            }
+        }
+
+        public void SimulatePendingAudioTrack(string trackSid, string participantIdentity)
+        {
+            lock (_audioRoutingLock)
+            {
+                _pendingAudioTracks[trackSid] = new PendingTrackEntry(null, participantIdentity);
+            }
+        }
+
+        public void SimulateActiveAudioStream(string trackSid, AudioSource source, string npcBindingId)
+        {
+            lock (_audioRoutingLock)
+            {
+                _activeAudioStreams[trackSid] = new ActiveTrackEntry
+                {
+                    Track = null,
+                    Stream = null,
+                    Source = source,
+                    NpcBindingId = npcBindingId
+                };
+            }
+        }
+
+        public AudioSource GetActiveStreamSource(string trackSid)
+        {
+            lock (_audioRoutingLock)
+            {
+                return _activeAudioStreams.TryGetValue(trackSid, out var entry) ? entry.Source : null;
+            }
+        }
+
+        public string GetActiveStreamRoute(string trackSid)
+        {
+            lock (_audioRoutingLock)
+            {
+                return _activeAudioStreams.TryGetValue(trackSid, out var entry) ? entry.NpcBindingId : null;
+            }
+        }
 
         // POV Video
         private LocalVideoTrack localVideoTrack;
@@ -152,6 +245,13 @@ namespace VRAutism.Cloud.LiveKit
                 }
             }
             remoteAudioStreams.Clear();
+
+            foreach (var entry in _activeAudioStreams.Values)
+            {
+                try { entry.Stream?.Dispose(); } catch { }
+            }
+            _activeAudioStreams.Clear();
+            _pendingAudioTracks.Clear();
 
             if (room != null)
             {
@@ -497,6 +597,228 @@ namespace VRAutism.Cloud.LiveKit
             }
         }
 
+        private IDisposable CreateAudioStream(RemoteAudioTrack track, AudioSource targetSource)
+        {
+            if (StreamFactory != null)
+            {
+                return StreamFactory(track, targetSource);
+            }
+            return track != null && targetSource != null ? new AudioStream(track, targetSource) : null;
+        }
+
+        public void RegisterNpcAudioRoute(string npcBindingId, AudioSource source)
+        {
+            if (string.IsNullOrWhiteSpace(npcBindingId))
+            {
+                Debug.LogWarning("[LiveKitService] RegisterNpcAudioRoute: npcBindingId must not be empty or whitespace.");
+                return;
+            }
+
+            if (source == null)
+            {
+                Debug.LogWarning($"[LiveKitService] RegisterNpcAudioRoute: source cannot be null for route '{npcBindingId}'.");
+                return;
+            }
+
+            lock (_audioRoutingLock)
+            {
+                if (_npcAudioRoutes.TryGetValue(npcBindingId, out var existingSource))
+                {
+                    if (existingSource != source)
+                    {
+                        // Route source swap / rebind
+                        _npcAudioRoutes[npcBindingId] = source;
+                        Debug.Log($"[LiveKitService] 🔄 Swapping AudioSource for route '{npcBindingId}' to '{source.gameObject.name}'");
+
+                        foreach (var entry in _activeAudioStreams.Values)
+                        {
+                            if (string.Equals(entry.NpcBindingId, npcBindingId, StringComparison.Ordinal))
+                            {
+                                try { entry.Stream?.Dispose(); } catch { }
+                                entry.Source = source;
+                                entry.Stream = CreateAudioStream(entry.Track, source);
+                                Debug.Log($"[LiveKitService] 🔄 Rebound active stream for track '{entry.Track?.Sid}' to new AudioSource '{source.gameObject.name}'");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    _npcAudioRoutes[npcBindingId] = source;
+                    Debug.Log($"[LiveKitService] 🔊 Registered NPC audio route '{npcBindingId}' -> '{source.gameObject.name}'");
+                }
+
+                // If this is currently the active route, re-target active streams to it
+                if (string.Equals(_activeNpcBindingId, npcBindingId, StringComparison.Ordinal))
+                {
+                    foreach (var entry in _activeAudioStreams.Values)
+                    {
+                        if (entry.Source != source)
+                        {
+                            try { entry.Stream?.Dispose(); } catch { }
+                            entry.Source = source;
+                            entry.NpcBindingId = npcBindingId;
+                            entry.Stream = CreateAudioStream(entry.Track, source);
+                            Debug.Log($"[LiveKitService] 🔄 Re-targeted active stream '{entry.Track?.Sid}' to newly registered active route '{npcBindingId}'");
+                        }
+                    }
+                }
+
+                // Drain any pending tracks matching this route (handles both new routes and route swaps)
+                var matchingPendingSids = new List<string>();
+                foreach (var kvp in _pendingAudioTracks)
+                {
+                    if (string.Equals(kvp.Value.ParticipantIdentity, npcBindingId, StringComparison.Ordinal) ||
+                        string.Equals(_activeNpcBindingId, npcBindingId, StringComparison.Ordinal))
+                    {
+                        matchingPendingSids.Add(kvp.Key);
+                    }
+                }
+
+                foreach (var sid in matchingPendingSids)
+                {
+                    if (_pendingAudioTracks.TryGetValue(sid, out var pending))
+                    {
+                        _pendingAudioTracks.Remove(sid);
+                        Debug.Log($"[LiveKitService] 🔗 Binding deferred pending audio track '{sid}' to route '{npcBindingId}'");
+                        BindV2AudioTrack(pending.Track, source, npcBindingId, sid);
+                    }
+                }
+            }
+        }
+
+        public void UnregisterNpcAudioRoute(string npcBindingId)
+        {
+            if (string.IsNullOrWhiteSpace(npcBindingId)) return;
+
+            lock (_audioRoutingLock)
+            {
+                if (string.Equals(_activeNpcBindingId, npcBindingId, StringComparison.Ordinal))
+                {
+                    _activeNpcBindingId = string.Empty;
+                }
+
+                if (_npcAudioRoutes.Remove(npcBindingId))
+                {
+                    Debug.Log($"[LiveKitService] 🔇 Unregistered NPC audio route '{npcBindingId}'");
+                }
+
+                // Cleanup active streams for this route and preserve tracks in pending so re-registering rebinds them
+                var activeToRemove = new List<string>();
+                foreach (var kvp in _activeAudioStreams)
+                {
+                    if (string.Equals(kvp.Value.NpcBindingId, npcBindingId, StringComparison.Ordinal))
+                    {
+                        try { kvp.Value.Stream?.Dispose(); } catch { }
+                        if (kvp.Value.Track != null)
+                        {
+                            _pendingAudioTracks[kvp.Key] = new PendingTrackEntry(kvp.Value.Track, npcBindingId);
+                        }
+                        activeToRemove.Add(kvp.Key);
+                    }
+                }
+                foreach (var sid in activeToRemove)
+                {
+                    _activeAudioStreams.Remove(sid);
+                }
+            }
+        }
+
+        public bool SetActiveNpcRoute(string npcBindingId)
+        {
+            if (string.IsNullOrWhiteSpace(npcBindingId))
+            {
+                Debug.LogWarning("[LiveKitService] SetActiveNpcRoute: npcBindingId must not be empty or whitespace.");
+                return false;
+            }
+
+            lock (_audioRoutingLock)
+            {
+                _activeNpcBindingId = npcBindingId;
+
+                if (_npcAudioRoutes.TryGetValue(npcBindingId, out var targetSource) && targetSource != null)
+                {
+                    foreach (var entry in _activeAudioStreams.Values)
+                    {
+                        if (entry.Source != targetSource)
+                        {
+                            try { entry.Stream?.Dispose(); } catch { }
+                            entry.Source = targetSource;
+                            entry.NpcBindingId = npcBindingId;
+                            entry.Stream = CreateAudioStream(entry.Track, targetSource);
+                            Debug.Log($"[LiveKitService] 🔄 Dynamically re-routed active stream '{entry.Track?.Sid}' to NPC '{npcBindingId}' ({targetSource.gameObject.name})");
+                        }
+                    }
+
+                    var drainedSids = new List<string>(_pendingAudioTracks.Keys);
+                    foreach (var sid in drainedSids)
+                    {
+                        var pending = _pendingAudioTracks[sid];
+                        _pendingAudioTracks.Remove(sid);
+                        Debug.Log($"[LiveKitService] 🔗 Binding deferred pending audio track '{sid}' to active route '{npcBindingId}'");
+                        BindV2AudioTrack(pending.Track, targetSource, npcBindingId, sid);
+                    }
+                    return true;
+                }
+                else
+                {
+                    if (_npcAudioRoutes.Count == 0)
+                    {
+                        if (npcAudioSource != null)
+                        {
+                            Debug.LogWarning($"[LiveKitService] No V2 routes registered; active route '{npcBindingId}' will fallback to primary scene AudioSource.");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[LiveKitService] Route '{npcBindingId}' not yet registered. Audio tracks will remain pending.");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[LiveKitService] Route '{npcBindingId}' not yet registered. Active stream deferred until route registration.");
+                    }
+                    return false;
+                }
+            }
+        }
+
+        public bool TryGetNpcAudioRoute(string npcBindingId, out AudioSource source)
+        {
+            if (string.IsNullOrWhiteSpace(npcBindingId))
+            {
+                source = null;
+                return false;
+            }
+            lock (_audioRoutingLock)
+            {
+                return _npcAudioRoutes.TryGetValue(npcBindingId, out source) && source != null;
+            }
+        }
+
+        private void BindV2AudioTrack(RemoteAudioTrack audioTrack, AudioSource targetSource, string npcBindingId, string trackSid = null)
+        {
+            string sid = audioTrack?.Sid ?? trackSid;
+            if (string.IsNullOrWhiteSpace(sid) || targetSource == null) return;
+
+            if (_activeAudioStreams.TryGetValue(sid, out var existingEntry))
+            {
+                try { existingEntry.Stream?.Dispose(); } catch { }
+                _activeAudioStreams.Remove(sid);
+                Debug.Log($"[LiveKitService] 🧹 Disposed duplicate V2 AudioStream for track '{sid}'");
+            }
+
+            var stream = CreateAudioStream(audioTrack, targetSource);
+            _activeAudioStreams[sid] = new ActiveTrackEntry
+            {
+                Track = audioTrack,
+                Stream = stream,
+                Source = targetSource,
+                NpcBindingId = npcBindingId
+            };
+
+            Debug.Log($"[LiveKitService] 🔊 Bound V2 audio track '{sid}' to NPC AudioSource '{targetSource.gameObject.name}' (route '{npcBindingId}')");
+        }
+
         public void SetAudioSource(AudioSource source)
         {
             npcAudioSource = source;
@@ -508,6 +830,10 @@ namespace VRAutism.Cloud.LiveKit
                 if (pendingAudioTrack != null)
                 {
                     Debug.Log($"[LiveKitService] 🔗 Tự động kết nối luồng tiếng AI đang chờ vào AudioSource của '{source.gameObject.name}'!");
+                    lock (_audioRoutingLock)
+                    {
+                        _pendingAudioTracks.Remove(pendingAudioTrack.Sid);
+                    }
                     BindAudioTrack(pendingAudioTrack, source);
                     pendingAudioTrack = null;
                 }
@@ -518,16 +844,57 @@ namespace VRAutism.Cloud.LiveKit
         {
             if (track is RemoteAudioTrack audioTrack)
             {
-                Debug.Log($"[LiveKitService] 🔊 AI AGENT VỪA ĐĂNG KÝ LUỒNG ÂM THANH! (Participant: {participant.Identity} | Track: {audioTrack.Sid})");
+                string identity = participant?.Identity;
+                Debug.Log($"[LiveKitService] 🔊 Remote audio track subscribed: Participant={identity} | Track={audioTrack.Sid}");
 
-                if (npcAudioSource == null)
+                if (string.IsNullOrWhiteSpace(identity))
                 {
-                    Debug.Log("[LiveKitService] ⏳ Chưa có NPC AudioSource tại thời điểm đăng ký. Đang lưu luồng âm thanh vào hàng chờ (Pending)...");
-                    pendingAudioTrack = audioTrack;
+                    Debug.LogWarning($"[LiveKitService] ❌ Rejected remote audio track '{audioTrack.Sid}': participant identity is null or empty.");
                     return;
                 }
 
-                BindAudioTrack(audioTrack, npcAudioSource);
+                lock (_audioRoutingLock)
+                {
+                    string targetRouteId = !string.IsNullOrEmpty(_activeNpcBindingId) && _npcAudioRoutes.ContainsKey(_activeNpcBindingId)
+                        ? _activeNpcBindingId
+                        : identity;
+
+                    // Check V2 routes
+                    if (_npcAudioRoutes.TryGetValue(targetRouteId, out var targetSource))
+                    {
+                        if (targetSource != null)
+                        {
+                            BindV2AudioTrack(audioTrack, targetSource, targetRouteId);
+                            return;
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[LiveKitService] ⏳ AudioSource for route '{targetRouteId}' is destroyed or null. Storing track '{audioTrack.Sid}' as pending.");
+                            _pendingAudioTracks[audioTrack.Sid] = new PendingTrackEntry(audioTrack, targetRouteId);
+                            return;
+                        }
+                    }
+
+                    // If V2 routes are registered in the scene, DO NOT fallback to legacy global npcAudioSource.
+                    // Queue the track as pending for this target route.
+                    if (_npcAudioRoutes.Count > 0)
+                    {
+                        Debug.Log($"[LiveKitService] ⏳ Unknown or pending V2 route '{targetRouteId}'. Storing track '{audioTrack.Sid}' in pending routes queue.");
+                        _pendingAudioTracks[audioTrack.Sid] = new PendingTrackEntry(audioTrack, targetRouteId);
+                        return;
+                    }
+
+                    // Legacy fallback: only if no V2 routes are registered
+                    if (npcAudioSource == null)
+                    {
+                        Debug.Log("[LiveKitService] ⏳ Chưa có NPC AudioSource tại thời điểm đăng ký. Đang lưu luồng âm thanh vào hàng chờ (Pending)...");
+                        pendingAudioTrack = audioTrack;
+                        _pendingAudioTracks[audioTrack.Sid] = new PendingTrackEntry(audioTrack, identity);
+                        return;
+                    }
+
+                    BindAudioTrack(audioTrack, npcAudioSource);
+                }
             }
         }
 
@@ -553,6 +920,18 @@ namespace VRAutism.Cloud.LiveKit
         {
             if (track is RemoteAudioTrack audioTrack)
             {
+                lock (_audioRoutingLock)
+                {
+                    if (_activeAudioStreams.TryGetValue(audioTrack.Sid, out var activeEntry))
+                    {
+                        try { activeEntry.Stream?.Dispose(); } catch { }
+                        _activeAudioStreams.Remove(audioTrack.Sid);
+                        Debug.Log($"[LiveKitService] 🔇 Cleaned up active V2 AudioStream for unsubscribed track '{audioTrack.Sid}' (route '{activeEntry.NpcBindingId}')");
+                    }
+
+                    _pendingAudioTracks.Remove(audioTrack.Sid);
+                }
+
                 if (remoteAudioStreams.TryGetValue(audioTrack.Sid, out var entry))
                 {
                     try { entry.stream.Dispose(); } catch { }

@@ -60,6 +60,15 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.AreEqual(QuestSourceState.Failed, source.State);
         }
 
+        [Test]
+        public void NpcBindingId_DefaultsToTeacherNpc_AndCanBeConfigured()
+        {
+            var source = SourceWithoutSnapshot();
+            Assert.AreEqual("teacher-npc", source.NpcBindingId);
+            source.ConfigureNpcBindingId("peer-npc");
+            Assert.AreEqual("peer-npc", source.NpcBindingId);
+        }
+
         private VoiceQuestSourceV2 SourceWithSnapshot()
         {
             VoicePhraseSnapshotStoreV2.Replace(new Dictionary<string, VoiceQuestPhraseSnapshotV2>
