@@ -398,10 +398,11 @@ Unity-frame or task-completion tests use bounded `[UnityTest] IEnumerator` helpe
 The agent retains and runs the existing fixtures affected by this refactor:
 
 - `NpcAudioRouteBindingV2Tests`;
-- `VoiceQuestTransportV2Tests`;
-- `LiveKitDialogueTransportV2Tests`.
+- `VoiceQuestTransportV2Tests`.
 
 The agent does not duplicate their assertions in new fixtures.
+
+`LiveKitDialogueTransportV2Tests` is not a completion gate until Dialogue V2 has passed its own Real Room readiness acceptance.
 
 ### 10.4 Per-Slice Agent Verification
 
@@ -409,7 +410,7 @@ After each extraction slice, the agent runs only:
 
 1. Unity compile/import;
 2. the new fixture directly related to that slice;
-3. the three existing regression fixtures above when their paths are affected;
+3. the two existing regression fixtures above when their paths are affected;
 4. `git diff --check`;
 5. GitNexus `detect_changes`.
 
@@ -423,28 +424,29 @@ The user performs the final production-like workflow:
 2. Pair the VR client and join the intended room.
 3. Start the Python voice agent and verify that it joins the same room.
 4. Verify web POV reception with exactly one video track at the configured 720p/30 FPS behavior.
-5. Start a Voice Quest and verify exactly one microphone track with no competing capture.
-6. Send `SET_ACTIVE_QUEST` and verify activation, phrases, and NPC binding at the agent.
-7. Complete the phrase and verify that `QUEST_MATCHED` completes the quest exactly once.
-8. Exercise `VERBAL_HINT` and `ON_REMINDER`.
-9. Exercise `SPEAK_SCRIPT` and verify playback from the intended NPC `AudioSource`.
-10. Switch between two NPC routes and verify that audio neither bleeds nor plays twice.
-11. Interrupt and restore the network; verify that POV, microphone, and DataPacket behavior recover without duplicate tracks.
-12. Change quest or dialogue during reconnect and verify that a stale response cannot complete the new activity.
-13. End the session and verify track cleanup plus correct web/RTDB end state.
-14. Start a second session in the same application run and verify that the first session left no callback or resource behind.
+5. Interrupt and restore the network; verify that the room connection and POV recover without duplicate participants or video tracks.
+6. End the session and verify POV/connection cleanup plus the correct web/RTDB end state.
+7. Start a second session in the same application run and verify that the first session left no callback, connection, or POV resource behind.
 
 Immediate manual failure conditions are:
 
-- duplicate microphone, video, or audio tracks;
-- audio on the wrong NPC or duplicate playback;
-- an old quest completing a newer quest;
+- duplicate participants or video tracks;
 - `MissingReferenceException`, `ObjectDisposedException`, or an unobserved task exception;
-- reconnect adding streams instead of replacing the previous streams;
+- reconnect adding a second POV publication instead of restoring or replacing the previous publication;
 - the second session receiving callbacks from the first;
-- microphone capture remaining allocated after session shutdown.
+- the first session retaining a room connection, camera, coroutine, video source, or render texture after shutdown.
 
-The user records pass/fail for each step and provides the Unity, agent, or web log around any failed step. Generation, track SID, activation ID, and sequence ID are the primary correlation fields.
+The user records pass/fail for each step and provides the Unity, agent, or web log around any failed step. Connection generation, participant identity, and video track SID are the primary correlation fields.
+
+### 10.6 Deferred Feature Prerequisites
+
+The following are known pre-existing V2 readiness gaps and are not acceptance gates for this behavior-preserving refactor:
+
+- **Voice Quest V2 microphone lifecycle:** `VoiceQuestSourceV2` sends activation through the V2 transport but does not acquire microphone capture on activation or release it on every terminal/cleanup path. Therefore, physical microphone publication and end-to-end `QUEST_MATCHED` are deferred to a separate story.
+- **V2 verbal hint/reminder:** `VERBAL_HINT` and `ON_REMINDER` do not yet have an accepted V2 workflow.
+- **Dialogue V2 Real Room readiness:** `SPEAK_SCRIPT` code and tests may exist, but production-like NPC playback is not a gate until that feature has completed its own Real Room acceptance.
+
+`SET_ACTIVE_QUEST` packet compatibility remains protected by the automated transport tests. Microphone publisher lifecycle and rollback remain protected by isolated deterministic tests. Neither automated result is presented as proof that the current Voice Quest V2 workflow works end to end on physical hardware.
 
 ## 11. Incremental Migration Plan
 
@@ -474,15 +476,15 @@ The refactor is complete only when:
 
 - existing scenes, prefabs, and consumers require no migration;
 - public APIs, interfaces, events, and wire contracts remain unchanged;
-- the eight approved automated behaviors and the three affected existing fixtures pass;
+- the eight approved automated behaviors and the two required existing fixtures pass;
 - every Unity operation is main-thread confined;
 - there are no unobserved task exceptions;
 - stale generations cannot emit events or mutate current state;
 - repeated connect/disconnect leaves no owned resource behind;
-- microphone capture remains exclusive;
+- the implementation preserves a single microphone-capture owner; physical V2 microphone behavior remains deferred as documented in section 10.6;
 - GitNexus reports only expected affected flows;
 - the user completes and approves the Real Room checklist;
-- any device-specific Meta Quest or HTC Vive checks required by the target release pass under the user's Real Room workflow.
+- the scoped POV/connection checks required by the target device release pass under the user's Real Room workflow.
 
 ## 13. Explicit Non-Goals
 
@@ -493,5 +495,7 @@ This refactor does not:
 - replace legacy packet JSON construction;
 - remove legacy `ILiveKitRoomClient` or `SetAudioSource` behavior;
 - redesign gameplay voice/dialogue transports;
+- add the missing Voice Quest V2 microphone lifecycle;
+- complete V2 verbal hint/reminder or Dialogue V2 Real Room readiness;
 - introduce a global event bus or global main-thread dispatcher;
 - add sibling `MonoBehaviour` components to scenes.
