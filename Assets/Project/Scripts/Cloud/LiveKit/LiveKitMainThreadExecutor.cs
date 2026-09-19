@@ -33,18 +33,20 @@ namespace VRAutism.Cloud.LiveKit
 
         internal void AdvanceGeneration(long generation)
         {
+            EnsureOwnerThread(nameof(AdvanceGeneration));
+
             lock (_gate)
             {
-                _generation = generation;
+                if (generation > _generation)
+                {
+                    _generation = generation;
+                }
             }
         }
 
         internal void Drain()
         {
-            if (!IsOwnerThread)
-            {
-                throw new InvalidOperationException("LiveKitMainThreadExecutor.Drain must run on its owner thread.");
-            }
+            EnsureOwnerThread(nameof(Drain));
 
             while (true)
             {
@@ -66,6 +68,14 @@ namespace VRAutism.Cloud.LiveKit
             {
                 _closed = true;
                 _queue.Clear();
+            }
+        }
+
+        private void EnsureOwnerThread(string operation)
+        {
+            if (!IsOwnerThread)
+            {
+                throw new InvalidOperationException($"LiveKitMainThreadExecutor.{operation} must run on its owner thread.");
             }
         }
 
