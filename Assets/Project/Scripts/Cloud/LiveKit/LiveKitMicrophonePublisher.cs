@@ -25,6 +25,7 @@ namespace VRAutism.Cloud.LiveKit
         private readonly Transform _parent;
         private ILiveKitMicrophonePublication _activePublication;
         private RoomConnectionHandle _activeHandle;
+        private PendingPublication _pendingPublication;
 
         internal LiveKitMicrophonePublisher(
             ILiveKitMicrophonePublicationFactory factory,
@@ -52,6 +53,9 @@ namespace VRAutism.Cloud.LiveKit
                 return;
             }
 
+            if (_pendingPublication != null)
+                return;
+
             if (handle == null || !handle.IsConnected)
                 return;
 
@@ -59,14 +63,19 @@ namespace VRAutism.Cloud.LiveKit
                 return;
 
             var capturedHandle = handle;
-            var capturedGeneration = capturedHandle.Generation;
+            var pending = new PendingPublication(candidate, capturedHandle);
+            _pendingPublication = pending;
             try
             {
                 await candidate.PublishAsync(capturedHandle);
 
-                if (isGenerationCurrent == null || !isGenerationCurrent(capturedGeneration))
+                if (!ReferenceEquals(_pendingPublication, pending) || pending.Cleaned)
+                    return;
+
+                if (isGenerationCurrent == null || !isGenerationCurrent(capturedHandle.Generation))
                 {
-                    Rollback(candidate, capturedHandle);
+                    Cleanup(pending);
+                    _pendingPublication = null;
                     return;
                 }
 
@@ -74,10 +83,15 @@ namespace VRAutism.Cloud.LiveKit
                 candidate.SetMuted(false);
                 _activePublication = candidate;
                 _activeHandle = capturedHandle;
+                _pendingPublication = null;
             }
             catch (Exception exception)
             {
-                Rollback(candidate, capturedHandle);
+                if (pending.Cleaned || !ReferenceEquals(_pendingPublication, pending))
+                    return;
+
+                Cleanup(pending);
+                _pendingPublication = null;
                 Debug.LogError($"[LiveKitService] ❌ Lỗi xử lý Mic: {exception.Message}");
             }
         }
@@ -89,10 +103,40 @@ namespace VRAutism.Cloud.LiveKit
             _activePublication = null;
             _activeHandle = null;
 
+            var pending = _pendingPublication;
+            _pendingPublication = null;
+
+            if (pending != null)
+                Cleanup(pending);
+
             if (publication == null)
                 return;
 
             Rollback(publication, handle);
+        }
+
+        private sealed class PendingPublication
+        {
+            internal readonly ILiveKitMicrophonePublication Publication;
+            internal readonly RoomConnectionHandle Handle;
+            internal bool Cleaned;
+
+            internal PendingPublication(
+                ILiveKitMicrophonePublication publication,
+                RoomConnectionHandle handle)
+            {
+                Publication = publication;
+                Handle = handle;
+            }
+        }
+
+        private static void Cleanup(PendingPublication pending)
+        {
+            if (pending.Cleaned)
+                return;
+
+            pending.Cleaned = true;
+            Rollback(pending.Publication, pending.Handle);
         }
 
         private static void Rollback(

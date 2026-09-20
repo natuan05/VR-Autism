@@ -100,12 +100,14 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
 
             var task = publisher.SetEnabledAsync(true, handle, value => value == generation);
             generation = 8;
+            publisher.Stop();
             publication.CompletePublish();
             yield return CompleteWithinFrames(task, 60);
 
             Assert.IsTrue(publication.Unpublished);
             Assert.IsTrue(publication.Disposed);
             Assert.IsFalse(publication.Started);
+            Assert.AreSame(handle, publication.UnpublishedHandle);
         }
 
         private static IEnumerator CompleteWithinFrames(Task task, int frameCount)
@@ -176,6 +178,7 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             public bool Started { get; private set; }
             public bool Unpublished { get; private set; }
             public bool Disposed { get; private set; }
+            public RoomConnectionHandle UnpublishedHandle { get; private set; }
 
             public Task PublishAsync(RoomConnectionHandle handle) => _publish.Task;
 
@@ -185,7 +188,11 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
 
             public void SetMuted(bool muted) { }
 
-            public void Unpublish(RoomConnectionHandle handle) => Unpublished = true;
+            public void Unpublish(RoomConnectionHandle handle)
+            {
+                Unpublished = true;
+                UnpublishedHandle = handle;
+            }
 
             public void Dispose() => Disposed = true;
         }
