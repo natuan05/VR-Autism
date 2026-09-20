@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 using LiveKit;
 using LiveKit.Proto;
 using System.Threading;
@@ -146,8 +147,21 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
                 () => { },
                 () => { },
                 () => { });
-            var connectedSignals = 0;
-            coordinator.ConnectedOrReconnected += () => connectedSignals++;
+            var serviceObject = new GameObject("LiveKitService.DecompositionTest");
+            var service = serviceObject.AddComponent<LiveKitService>();
+            var privateFields = BindingFlags.Instance | BindingFlags.NonPublic;
+            typeof(LiveKitService).GetField("_mainThreadExecutor", privateFields).SetValue(service, executor);
+            typeof(LiveKitService).GetField("_roomConnection", privateFields).SetValue(service, roomConnection);
+            typeof(LiveKitService).GetField("_lifecycleCoordinator", privateFields).SetValue(service, coordinator);
+            var lifecycleConnected = typeof(LiveKitService).GetMethod("OnLifecycleConnected", privateFields);
+            coordinator.ConnectedOrReconnected += () => lifecycleConnected.Invoke(service, null);
+            var publicConnectedSignals = 0;
+            var ownerThreadId = Thread.CurrentThread.ManagedThreadId;
+            service.ReconnectedV2 += () =>
+            {
+                publicConnectedSignals++;
+                Assert.AreEqual(ownerThreadId, Thread.CurrentThread.ManagedThreadId);
+            };
 
             var connectA = coordinator.ConnectAsync("room-a", "token-a");
             yield return null;
@@ -157,12 +171,14 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             yield return CompleteWithinFrames(connectA, 60);
             adapterB.CompleteConnect();
             yield return CompleteWithinFrames(connectB, 60);
+            executor.Drain();
 
             Assert.AreSame(adapterB, coordinator.CurrentHandle.Adapter);
-            Assert.AreEqual(1, connectedSignals);
+            Assert.AreEqual(1, publicConnectedSignals);
+            Assert.IsTrue(service.IsConnectedV2);
             Assert.AreEqual(LiveKitLifecycleState.Connected, coordinator.State);
 
-            coordinator.Destroy();
+            UnityEngine.Object.DestroyImmediate(serviceObject);
         }
 
         [UnityTest]
@@ -206,22 +222,44 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
                 () => { },
                 () => { },
                 () => { });
+            var serviceObject = new GameObject("LiveKitService.StaleCallbackTest");
+            var service = serviceObject.AddComponent<LiveKitService>();
+            var privateFields = BindingFlags.Instance | BindingFlags.NonPublic;
+            typeof(LiveKitService).GetField("_mainThreadExecutor", privateFields).SetValue(service, executor);
+            typeof(LiveKitService).GetField("_roomConnection", privateFields).SetValue(service, roomConnection);
+            typeof(LiveKitService).GetField("_lifecycleCoordinator", privateFields).SetValue(service, coordinator);
             var callbackCount = 0;
+            service.DataReceivedV2 += (_, __) => callbackCount++;
+            var transport = new LiveKitDataPacketTransport(() => coordinator.CurrentHandle);
+            var relay = typeof(LiveKitService).GetMethod("RelayDataReceivedV2", privateFields);
+            transport.DataReceivedV2 += (data, topic) => relay.Invoke(service, new object[] { data, topic });
+            var onDataReceived = typeof(LiveKitService).GetMethod("OnDataReceived", privateFields);
             roomConnection.DataReceived += (handle, data, participant, kind, topic) =>
-                executor.Post(handle.Generation, () => callbackCount++);
+                onDataReceived.Invoke(service, new object[] { handle, data, participant, kind, topic });
+            typeof(LiveKitService).GetField("_dataPacketTransport", privateFields).SetValue(service, transport);
 
             var connectA = coordinator.ConnectAsync("room-a", "token-a");
             adapterA.CompleteConnect();
             yield return CompleteWithinFrames(connectA, 60);
+            var handleA = roomConnection.CurrentHandle;
+            adapterA.RaiseData(new byte[] { 0 }, "lesson-graph-v2.voice");
+            executor.Drain();
+            Assert.AreEqual(1, callbackCount);
 
             var connectB = coordinator.ConnectAsync("room-b", "token-b");
-            adapterA.RaiseData(new byte[] { 1 }, "stale.topic");
+            adapterA.RaiseData(new byte[] { 1 }, "lesson-graph-v2.voice");
             executor.Drain();
-            Assert.AreEqual(0, callbackCount);
+            Assert.AreEqual(1, callbackCount);
+
+            Assert.AreNotEqual(handleA.Generation, coordinator.CurrentGeneration);
 
             adapterB.CompleteConnect();
             yield return CompleteWithinFrames(connectB, 60);
-            coordinator.Destroy();
+            adapterB.RaiseData(new byte[] { 2 }, "lesson-graph-v2.voice");
+            executor.Drain();
+            Assert.AreEqual(2, callbackCount);
+            Assert.IsTrue(service.IsConnectedV2);
+            UnityEngine.Object.DestroyImmediate(serviceObject);
         }
 
         [UnityTest]
@@ -231,7 +269,6 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             var roomConnection = new LiveKitRoomConnection(new FakeRoomAdapterFactory(adapter));
             var executor = new LiveKitMainThreadExecutor();
             var teardown = new List<string>();
-            adapter.OnDisconnect = () => teardown.Add("room");
             adapter.OnDisconnect = () => teardown.Add("room");
             var coordinator = new LiveKitLifecycleCoordinator(
                 roomConnection,

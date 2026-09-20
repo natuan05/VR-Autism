@@ -84,23 +84,43 @@ namespace VRAutism.Cloud.LiveKit
             Registration registration;
             lock (_gate)
             {
-                if (!_registrations.TryGetValue(handle, out registration) || registration.Detached)
+                if (!_registrations.TryGetValue(handle, out registration))
                     return;
 
-                registration.Detached = true;
-                _registrations.Remove(handle);
                 if (ReferenceEquals(_currentHandle, handle))
                     _currentHandle = null;
             }
 
-            registration.Detach();
-            try
+            registration.DetachAndDisconnect();
+
+            lock (_gate)
             {
-                registration.Handle.Adapter.Disconnect();
+                if (registration.CleanupComplete)
+                    _registrations.Remove(handle);
             }
-            catch (Exception exception)
+        }
+
+        internal bool IsCleanupComplete(RoomConnectionHandle handle)
+        {
+            if (handle == null)
+                return true;
+
+            lock (_gate)
+                return !_registrations.ContainsKey(handle);
+        }
+
+        internal RoomConnectionHandle[] GetPendingCleanupHandles()
+        {
+            lock (_gate)
             {
-                UnityEngine.Debug.LogWarning($"[LiveKitService] Room disconnect cleanup notice: {exception.Message}");
+                var handles = new List<RoomConnectionHandle>();
+                foreach (var registration in _registrations.Values)
+                {
+                    if (registration.Detached)
+                        handles.Add(registration.Handle);
+                }
+
+                return handles.ToArray();
             }
         }
 
@@ -114,9 +134,13 @@ namespace VRAutism.Cloud.LiveKit
         {
             var adapter = registration.Handle.Adapter;
             adapter.DataReceived += registration.DataReceived;
+            registration.MarkDataReceivedAttached();
             adapter.Reconnected += registration.Reconnected;
+            registration.MarkReconnectedAttached();
             adapter.TrackSubscribed += registration.TrackSubscribed;
+            registration.MarkTrackSubscribedAttached();
             adapter.TrackUnsubscribed += registration.TrackUnsubscribed;
+            registration.MarkTrackUnsubscribedAttached();
         }
 
         private sealed class Registration
@@ -127,7 +151,21 @@ namespace VRAutism.Cloud.LiveKit
             internal readonly Action<Room> Reconnected;
             internal readonly Action<IRemoteTrack, RemoteTrackPublication, RemoteParticipant> TrackSubscribed;
             internal readonly Action<IRemoteTrack, RemoteTrackPublication, RemoteParticipant> TrackUnsubscribed;
-            internal bool Detached;
+            private readonly object _cleanupGate = new object();
+            private bool _dataReceivedAttached;
+            private bool _reconnectedAttached;
+            private bool _trackSubscribedAttached;
+            private bool _trackUnsubscribedAttached;
+            private bool _disconnectComplete;
+            internal bool Detached { get; private set; }
+
+            internal void MarkDataReceivedAttached() => _dataReceivedAttached = true;
+
+            internal void MarkReconnectedAttached() => _reconnectedAttached = true;
+
+            internal void MarkTrackSubscribedAttached() => _trackSubscribedAttached = true;
+
+            internal void MarkTrackUnsubscribedAttached() => _trackUnsubscribedAttached = true;
 
             internal Registration(LiveKitRoomConnection owner, RoomConnectionHandle handle)
             {
@@ -155,13 +193,75 @@ namespace VRAutism.Cloud.LiveKit
                 };
             }
 
-            internal void Detach()
+            internal bool CleanupComplete
             {
-                var adapter = Handle.Adapter;
-                adapter.DataReceived -= DataReceived;
-                adapter.Reconnected -= Reconnected;
-                adapter.TrackSubscribed -= TrackSubscribed;
-                adapter.TrackUnsubscribed -= TrackUnsubscribed;
+                get
+                {
+                    lock (_cleanupGate)
+                    {
+                        return !_dataReceivedAttached && !_reconnectedAttached &&
+                               !_trackSubscribedAttached && !_trackUnsubscribedAttached &&
+                               _disconnectComplete;
+                    }
+                }
+            }
+
+            internal void DetachAndDisconnect()
+            {
+                lock (_cleanupGate)
+                {
+                    // Suppress callbacks before touching the SDK. Each unsubscribe is
+                    // independently retryable if an adapter throws.
+                    Detached = true;
+                    TryDetach(
+                        ref _dataReceivedAttached,
+                        () => Handle.Adapter.DataReceived -= DataReceived,
+                        "data");
+                    TryDetach(
+                        ref _reconnectedAttached,
+                        () => Handle.Adapter.Reconnected -= Reconnected,
+                        "reconnect");
+                    TryDetach(
+                        ref _trackSubscribedAttached,
+                        () => Handle.Adapter.TrackSubscribed -= TrackSubscribed,
+                        "track subscribed");
+                    TryDetach(
+                        ref _trackUnsubscribedAttached,
+                        () => Handle.Adapter.TrackUnsubscribed -= TrackUnsubscribed,
+                        "track unsubscribed");
+
+                    // Disconnect is deliberately independent from delegate detachment.
+                    if (!_disconnectComplete)
+                    {
+                        try
+                        {
+                            Handle.Adapter.Disconnect();
+                            _disconnectComplete = true;
+                        }
+                        catch (Exception exception)
+                        {
+                            UnityEngine.Debug.LogWarning(
+                                $"[LiveKitService] Room disconnect cleanup notice: {exception.Message}");
+                        }
+                    }
+                }
+            }
+
+            private static void TryDetach(ref bool attached, Action detach, string delegateName)
+            {
+                if (!attached)
+                    return;
+
+                try
+                {
+                    detach();
+                    attached = false;
+                }
+                catch (Exception exception)
+                {
+                    UnityEngine.Debug.LogWarning(
+                        $"[LiveKitService] Room {delegateName} detach cleanup notice: {exception.Message}");
+                }
             }
 
         }

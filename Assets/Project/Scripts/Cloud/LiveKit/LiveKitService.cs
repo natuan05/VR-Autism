@@ -11,12 +11,25 @@ namespace VRAutism.Cloud.LiveKit
     public class LiveKitService : MonoBehaviour, ILiveKitRoomClient, ILiveKitDataPacketClientV2, INpcAudioRouterV2, ILiveKitCoroutineHost
     {
         private static LiveKitService _instance;
+        private static int _unityMainThreadId = -1;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void CaptureUnityMainThread()
+        {
+            Interlocked.CompareExchange(
+                ref _unityMainThreadId,
+                Thread.CurrentThread.ManagedThreadId,
+                -1);
+        }
         public static LiveKitService Instance
         {
             get
             {
                 if (_instance == null)
                 {
+                    if (!IsUnityMainThread())
+                        return null;
+
                     _instance = FindObjectOfType<LiveKitService>();
                     if (_instance == null)
                     {
@@ -88,6 +101,8 @@ namespace VRAutism.Cloud.LiveKit
             EnsureMainThread(nameof(GetActiveStreamRoute)) ? _audioRouter.GetActiveStreamRoute(trackSid) : null;
         private void Awake()
         {
+            _unityMainThreadId = Thread.CurrentThread.ManagedThreadId;
+
             if (_instance != null && _instance != this)
             {
                 Destroy(this.gameObject);
@@ -143,9 +158,9 @@ namespace VRAutism.Cloud.LiveKit
 
         public void Connect(string roomUrl, string token)
         {
+            if (!EnsureMainThread(nameof(Connect))) return;
             Debug.Log($"[LiveKitService] 🌐 Đang bắt đầu kết nối tới LiveKit Server: {roomUrl}...");
-            if (EnsureMainThread(nameof(Connect)))
-                Observe(_lifecycleCoordinator.ConnectAsync(roomUrl, token), nameof(Connect));
+            Observe(_lifecycleCoordinator.ConnectAsync(roomUrl, token), nameof(Connect));
 
 #if false
             try
@@ -214,8 +229,8 @@ namespace VRAutism.Cloud.LiveKit
         }
 
  #endif
-            if (EnsureMainThread(nameof(Disconnect)))
-                Observe(_lifecycleCoordinator.DisconnectAsync(), nameof(Disconnect));
+            if (!EnsureMainThread(nameof(Disconnect))) return;
+            Observe(_lifecycleCoordinator.DisconnectAsync(), nameof(Disconnect));
         }
 
         #region Video POV Stream (720p @ 30 FPS)
@@ -423,19 +438,37 @@ namespace VRAutism.Cloud.LiveKit
             });
         }
 
-        Coroutine ILiveKitCoroutineHost.StartLiveKitCoroutine(IEnumerator routine) => StartCoroutine(routine);
+        Coroutine ILiveKitCoroutineHost.StartLiveKitCoroutine(IEnumerator routine)
+        {
+            if (!EnsureMainThread(nameof(ILiveKitCoroutineHost.StartLiveKitCoroutine)))
+                return null;
+            return StartCoroutine(routine);
+        }
 
-        void ILiveKitCoroutineHost.StopLiveKitCoroutine(Coroutine coroutine) => StopCoroutine(coroutine);
+        void ILiveKitCoroutineHost.StopLiveKitCoroutine(Coroutine coroutine)
+        {
+            if (EnsureMainThread(nameof(ILiveKitCoroutineHost.StopLiveKitCoroutine)))
+                StopCoroutine(coroutine);
+        }
         #endregion
 
         private bool EnsureMainThread(string operation)
         {
-            if (_mainThreadExecutor == null || _mainThreadExecutor.IsOwnerThread)
+            if ((_mainThreadExecutor != null && _mainThreadExecutor.IsOwnerThread) ||
+                (_mainThreadExecutor == null && IsUnityMainThread()))
                 return true;
 
             Debug.LogError($"[LiveKitService] {operation} must be called on Unity's main thread.");
             return false;
         }
+
+        private static bool IsUnityMainThread() =>
+            (Volatile.Read(ref _unityMainThreadId) != -1 &&
+             Thread.CurrentThread.ManagedThreadId == Volatile.Read(ref _unityMainThreadId)) ||
+            string.Equals(
+                SynchronizationContext.Current?.GetType().FullName,
+                "UnityEngine.UnitySynchronizationContext",
+                StringComparison.Ordinal);
 
         private bool IsCurrentHandle(RoomConnectionHandle handle) =>
             handle != null && _lifecycleCoordinator != null &&
