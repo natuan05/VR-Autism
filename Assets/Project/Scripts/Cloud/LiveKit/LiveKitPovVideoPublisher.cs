@@ -35,6 +35,8 @@ namespace VRAutism.Cloud.LiveKit
         private ILiveKitPovPublication _activePublication;
         private RoomConnectionHandle _activeHandle;
         private PendingPublication _pendingPublication;
+        private CancellationTokenSource _enableCancellation;
+        private long _operationEpoch;
 
         internal LiveKitPovVideoPublisher(
             ILiveKitPovPublicationFactory factory,
@@ -56,6 +58,23 @@ namespace VRAutism.Cloud.LiveKit
             Func<long, bool> isGenerationCurrent,
             CancellationToken cancellationToken)
         {
+            var operation = BeginOperation(cancellationToken);
+            try
+            {
+                await EnableCoreAsync(camera, currentHandleProvider, isGenerationCurrent, operation);
+            }
+            finally
+            {
+                EndOperation(operation);
+            }
+        }
+
+        private async Task EnableCoreAsync(
+            Camera camera,
+            Func<RoomConnectionHandle> currentHandleProvider,
+            Func<long, bool> isGenerationCurrent,
+            Operation operation)
+        {
             if (camera == null)
                 camera = Camera.main ?? UnityEngine.Object.FindObjectOfType<Camera>();
 
@@ -68,12 +87,18 @@ namespace VRAutism.Cloud.LiveKit
             if (currentHandleProvider == null)
                 return;
 
+            if (!IsOperationCurrent(operation))
+                return;
+
             var currentHandle = currentHandleProvider();
             var waitCount = 0;
             while ((currentHandle == null || !currentHandle.IsConnected) && waitCount < ConnectionWaitAttempts)
             {
                 var observedGeneration = currentHandle?.Generation;
-                await Task.Delay(ConnectionWaitMilliseconds, cancellationToken);
+                await Task.Delay(ConnectionWaitMilliseconds, operation.Token);
+
+                if (!IsOperationCurrent(operation))
+                    return;
 
                 if (observedGeneration.HasValue &&
                     isGenerationCurrent != null &&
@@ -90,7 +115,8 @@ namespace VRAutism.Cloud.LiveKit
                 return;
             }
 
-            if (isGenerationCurrent != null && !isGenerationCurrent(currentHandle.Generation))
+            if (!IsOperationCurrent(operation) ||
+                (isGenerationCurrent != null && !isGenerationCurrent(currentHandle.Generation)))
                 return;
 
             if (_activePublication != null || _pendingPublication != null)
@@ -117,7 +143,8 @@ namespace VRAutism.Cloud.LiveKit
                 if (!ReferenceEquals(_pendingPublication, pending) || pending.Cleaned)
                     return;
 
-                if (isGenerationCurrent != null && !isGenerationCurrent(capturedHandle.Generation))
+                if (!IsOperationCurrent(operation) ||
+                    (isGenerationCurrent != null && !isGenerationCurrent(capturedHandle.Generation)))
                 {
                     Cleanup(pending);
                     _pendingPublication = null;
@@ -137,7 +164,7 @@ namespace VRAutism.Cloud.LiveKit
                     Cleanup(pending);
                     _pendingPublication = null;
                 }
-                throw;
+                return;
             }
             catch (Exception exception)
             {
@@ -151,8 +178,37 @@ namespace VRAutism.Cloud.LiveKit
             }
         }
 
+        private Operation BeginOperation(CancellationToken cancellationToken)
+        {
+            _enableCancellation?.Cancel();
+            _enableCancellation?.Dispose();
+
+            var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var operation = new Operation(++_operationEpoch, linkedCancellation);
+            _enableCancellation = linkedCancellation;
+            return operation;
+        }
+
+        private bool IsOperationCurrent(Operation operation) =>
+            ReferenceEquals(_enableCancellation, operation.Cancellation) &&
+            _operationEpoch == operation.Epoch &&
+            !operation.Token.IsCancellationRequested;
+
+        private void EndOperation(Operation operation)
+        {
+            if (ReferenceEquals(_enableCancellation, operation.Cancellation))
+                _enableCancellation = null;
+
+            operation.Cancellation.Dispose();
+        }
+
         internal void Disable()
         {
+            _operationEpoch++;
+            _enableCancellation?.Cancel();
+            _enableCancellation?.Dispose();
+            _enableCancellation = null;
+
             var pending = _pendingPublication;
             _pendingPublication = null;
             var hadPublication = pending != null || _activePublication != null;
@@ -180,6 +236,19 @@ namespace VRAutism.Cloud.LiveKit
             {
                 Publication = publication;
                 Handle = handle;
+            }
+        }
+
+        private sealed class Operation
+        {
+            internal readonly long Epoch;
+            internal readonly CancellationTokenSource Cancellation;
+            internal CancellationToken Token => Cancellation.Token;
+
+            internal Operation(long epoch, CancellationTokenSource cancellation)
+            {
+                Epoch = epoch;
+                Cancellation = cancellation;
             }
         }
 
@@ -230,9 +299,10 @@ namespace VRAutism.Cloud.LiveKit
     internal sealed class LiveKitPovPublication : ILiveKitPovPublication
     {
         private readonly ILiveKitCoroutineHost _coroutineHost;
-        private readonly Camera _captureCamera;
-        private readonly RenderTexture _renderTexture;
-        private readonly TextureVideoSource _videoSource;
+        private Camera _captureCamera;
+        private GameObject _captureObject;
+        private RenderTexture _renderTexture;
+        private TextureVideoSource _videoSource;
         private readonly int _frameRate;
         private LocalVideoTrack _localVideoTrack;
         private Coroutine _videoSourceCoroutine;
@@ -252,41 +322,49 @@ namespace VRAutism.Cloud.LiveKit
                 throw new ArgumentNullException(nameof(sourceCamera));
             _frameRate = frameRate;
 
-            var captureObject = new GameObject("LiveKit_POVCaptureCamera");
-            captureObject.transform.SetParent(sourceCamera.transform, false);
-            captureObject.transform.localPosition = Vector3.zero;
-            captureObject.transform.localRotation = Quaternion.identity;
-
-            _captureCamera = captureObject.AddComponent<Camera>();
-            _captureCamera.CopyFrom(sourceCamera);
-            _captureCamera.cullingMask = sourceCamera.cullingMask;
-            _captureCamera.clearFlags = sourceCamera.clearFlags;
-            _captureCamera.backgroundColor = sourceCamera.backgroundColor;
-            _captureCamera.fieldOfView = sourceCamera.fieldOfView;
-            _captureCamera.nearClipPlane = sourceCamera.nearClipPlane;
-            _captureCamera.farClipPlane = sourceCamera.farClipPlane;
-            _captureCamera.depth = sourceCamera.depth - 1;
-            _captureCamera.allowHDR = false;
-            _captureCamera.allowMSAA = false;
-
-            _renderTexture = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32)
+            try
             {
-                name = "LiveKit_POV_Texture"
-            };
-            _renderTexture.Create();
+                _captureObject = new GameObject("LiveKit_POVCaptureCamera");
+                _captureObject.transform.SetParent(sourceCamera.transform, false);
+                _captureObject.transform.localPosition = Vector3.zero;
+                _captureObject.transform.localRotation = Quaternion.identity;
 
-            _captureCamera.targetTexture = _renderTexture;
-            _captureCamera.enabled = true;
+                _captureCamera = _captureObject.AddComponent<Camera>();
+                _captureCamera.CopyFrom(sourceCamera);
+                _captureCamera.cullingMask = sourceCamera.cullingMask;
+                _captureCamera.clearFlags = sourceCamera.clearFlags;
+                _captureCamera.backgroundColor = sourceCamera.backgroundColor;
+                _captureCamera.fieldOfView = sourceCamera.fieldOfView;
+                _captureCamera.nearClipPlane = sourceCamera.nearClipPlane;
+                _captureCamera.farClipPlane = sourceCamera.farClipPlane;
+                _captureCamera.depth = sourceCamera.depth - 1;
+                _captureCamera.allowHDR = false;
+                _captureCamera.allowMSAA = false;
 
-            var additionalData = captureObject.GetComponent<UniversalAdditionalCameraData>() ??
-                                  captureObject.AddComponent<UniversalAdditionalCameraData>();
-            if (additionalData != null)
-            {
-                additionalData.renderShadows = false;
-                additionalData.renderPostProcessing = false;
+                _renderTexture = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32)
+                {
+                    name = "LiveKit_POV_Texture"
+                };
+                _renderTexture.Create();
+
+                _captureCamera.targetTexture = _renderTexture;
+                _captureCamera.enabled = true;
+
+                var additionalData = _captureObject.GetComponent<UniversalAdditionalCameraData>() ??
+                                      _captureObject.AddComponent<UniversalAdditionalCameraData>();
+                if (additionalData != null)
+                {
+                    additionalData.renderShadows = false;
+                    additionalData.renderPostProcessing = false;
+                }
+
+                _videoSource = new TextureVideoSource(_renderTexture, VideoBufferType.Rgba);
             }
-
-            _videoSource = new TextureVideoSource(_renderTexture, VideoBufferType.Rgba);
+            catch
+            {
+                Dispose();
+                throw;
+            }
         }
 
         public async Task PublishAsync(RoomConnectionHandle handle)
@@ -320,10 +398,24 @@ namespace VRAutism.Cloud.LiveKit
             _unpublished = true;
             if (_videoSourceCoroutine != null)
             {
-                _coroutineHost.StopLiveKitCoroutine(_videoSourceCoroutine);
+                try
+                {
+                    _coroutineHost.StopLiveKitCoroutine(_videoSourceCoroutine);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[LiveKitService] POV coroutine cleanup notice: {exception.Message}");
+                }
                 _videoSourceCoroutine = null;
             }
-            handle.Adapter.UnpublishVideoTrack(_localVideoTrack);
+            try
+            {
+                handle.Adapter.UnpublishVideoTrack(_localVideoTrack);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"[LiveKitService] POV unpublish cleanup notice: {exception.Message}");
+            }
         }
 
         public void Dispose()
@@ -334,34 +426,106 @@ namespace VRAutism.Cloud.LiveKit
 
             if (_videoSourceCoroutine != null)
             {
-                _coroutineHost.StopLiveKitCoroutine(_videoSourceCoroutine);
+                try
+                {
+                    _coroutineHost.StopLiveKitCoroutine(_videoSourceCoroutine);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[LiveKitService] POV coroutine cleanup notice: {exception.Message}");
+                }
                 _videoSourceCoroutine = null;
             }
 
             if (!_unpublished && _localVideoTrack != null && _publishedHandle != null)
                 Unpublish(_publishedHandle);
 
-            try
+            if (_videoSource != null)
             {
-                _videoSource.Stop();
-                AsyncGPUReadback.WaitAllRequests();
-                _videoSource.Dispose();
-            }
-            catch (Exception exception)
-            {
-                Debug.LogWarning($"[LiveKitService] VideoSource cleanup notice: {exception.Message}");
+                try
+                {
+                    _videoSource.Stop();
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[LiveKitService] VideoSource stop cleanup notice: {exception.Message}");
+                }
+
+                try
+                {
+                    AsyncGPUReadback.WaitAllRequests();
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[LiveKitService] GPU readback cleanup notice: {exception.Message}");
+                }
+
+                try
+                {
+                    _videoSource.Dispose();
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[LiveKitService] VideoSource dispose cleanup notice: {exception.Message}");
+                }
+                _videoSource = null;
             }
 
             if (_captureCamera != null)
             {
-                _captureCamera.targetTexture = null;
-                UnityEngine.Object.Destroy(_captureCamera.gameObject);
+                try
+                {
+                    _captureCamera.targetTexture = null;
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[LiveKitService] POV camera detach cleanup notice: {exception.Message}");
+                }
+
+                try
+                {
+                    UnityEngine.Object.Destroy(_captureCamera.gameObject);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[LiveKitService] POV camera destroy cleanup notice: {exception.Message}");
+                }
+                _captureCamera = null;
+                _captureObject = null;
+            }
+            else if (_captureObject != null)
+            {
+                try
+                {
+                    UnityEngine.Object.Destroy(_captureObject);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[LiveKitService] POV camera destroy cleanup notice: {exception.Message}");
+                }
+                _captureObject = null;
             }
 
             if (_renderTexture != null)
             {
-                _renderTexture.Release();
-                UnityEngine.Object.Destroy(_renderTexture);
+                try
+                {
+                    _renderTexture.Release();
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[LiveKitService] POV texture release cleanup notice: {exception.Message}");
+                }
+
+                try
+                {
+                    UnityEngine.Object.Destroy(_renderTexture);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[LiveKitService] POV texture destroy cleanup notice: {exception.Message}");
+                }
+                _renderTexture = null;
             }
 
             _localVideoTrack = null;

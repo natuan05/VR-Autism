@@ -178,9 +178,7 @@ namespace VRAutism.Cloud.LiveKit
                     vrCamera,
                     () => _packetConnectionHandle,
                     generation => _packetConnectionHandle != null &&
-                                  _packetConnectionHandle.Generation == generation &&
-                                  room != null &&
-                                  room.IsConnected,
+                                  _packetConnectionHandle.Generation == generation,
                     CancellationToken.None),
                 "EnablePOVCamera");
         }
