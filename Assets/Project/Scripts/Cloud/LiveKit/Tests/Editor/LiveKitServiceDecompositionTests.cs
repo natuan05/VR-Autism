@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -6,6 +7,8 @@ using LiveKit;
 using LiveKit.Proto;
 using System.Threading;
 using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
 
 namespace VRAutism.Cloud.LiveKit.Tests.Editor
 {
@@ -87,6 +90,36 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             Assert.AreEqual(1, matched);
         }
 
+        [UnityTest]
+        public IEnumerator MediaPublishCompletesAfterDisconnect_RollsBackResources_Microphone()
+        {
+            var publication = new FakeMicrophonePublication();
+            var publisher = new LiveKitMicrophonePublisher(new FakeMicrophoneFactory(publication), null);
+            var generation = 7L;
+            var handle = new RoomConnectionHandle(7, new FakeRoomAdapter { Connected = true });
+
+            var task = publisher.SetEnabledAsync(true, handle, value => value == generation);
+            generation = 8;
+            publication.CompletePublish();
+            yield return CompleteWithinFrames(task, 60);
+
+            Assert.IsTrue(publication.Unpublished);
+            Assert.IsTrue(publication.Disposed);
+            Assert.IsFalse(publication.Started);
+        }
+
+        private static IEnumerator CompleteWithinFrames(Task task, int frameCount)
+        {
+            for (var frame = 0; frame < frameCount && !task.IsCompleted; frame++)
+                yield return null;
+
+            if (task.IsFaulted)
+                throw task.Exception.InnerException ?? task.Exception;
+
+            if (!task.IsCompleted)
+                Assert.Fail($"Task did not complete within {frameCount} frames.");
+        }
+
         private sealed class FakeRoomAdapter : ILiveKitRoomAdapter
         {
             public bool Connected { get; set; }
@@ -118,6 +151,43 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             public void UnpublishAudioTrack(LocalAudioTrack track) { }
             public void UnpublishVideoTrack(LocalVideoTrack track) { }
             public void Disconnect() { }
+        }
+
+        private sealed class FakeMicrophoneFactory : ILiveKitMicrophonePublicationFactory
+        {
+            private readonly ILiveKitMicrophonePublication _publication;
+
+            public FakeMicrophoneFactory(ILiveKitMicrophonePublication publication)
+            {
+                _publication = publication;
+            }
+
+            public bool TryCreate(Transform parent, out ILiveKitMicrophonePublication publication)
+            {
+                publication = _publication;
+                return true;
+            }
+        }
+
+        private sealed class FakeMicrophonePublication : ILiveKitMicrophonePublication
+        {
+            private readonly TaskCompletionSource<bool> _publish = new TaskCompletionSource<bool>();
+
+            public bool Started { get; private set; }
+            public bool Unpublished { get; private set; }
+            public bool Disposed { get; private set; }
+
+            public Task PublishAsync(RoomConnectionHandle handle) => _publish.Task;
+
+            public void CompletePublish() => _publish.TrySetResult(true);
+
+            public void Start() => Started = true;
+
+            public void SetMuted(bool muted) { }
+
+            public void Unpublish(RoomConnectionHandle handle) => Unpublished = true;
+
+            public void Dispose() => Disposed = true;
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using LiveKit;
 using LiveKit.Proto;
@@ -49,9 +50,7 @@ namespace VRAutism.Cloud.LiveKit
         private Room room;
         
         // Microphone & Audio
-        private LocalAudioTrack localAudioTrack;
-        private GameObject micGameObject;
-        private MicrophoneSource micSource;
+        private LiveKitMicrophonePublisher _microphonePublisher;
         private readonly LiveKitNpcAudioRouter _audioRouter = new LiveKitNpcAudioRouter();
         private LiveKitDataPacketTransport _dataPacketTransport;
         private LegacyVoicePacketAdapter _legacyVoicePacketAdapter;
@@ -93,6 +92,9 @@ namespace VRAutism.Cloud.LiveKit
             DontDestroyOnLoad(gameObject);
 
             _dataPacketTransport = new LiveKitDataPacketTransport(() => _packetConnectionHandle);
+            _microphonePublisher = new LiveKitMicrophonePublisher(
+                new LiveKitMicrophonePublicationFactory(),
+                transform);
             _legacyVoicePacketAdapter = new LegacyVoicePacketAdapter(_dataPacketTransport);
             _dataPacketTransport.DataReceivedV2 += RelayDataReceivedV2;
             _dataPacketTransport.LegacyDataReceived += _legacyVoicePacketAdapter.HandleIncoming;
@@ -142,24 +144,7 @@ namespace VRAutism.Cloud.LiveKit
         {
             DisablePOVCamera();
 
-            if (localAudioTrack != null)
-            {
-                if (room != null && room.LocalParticipant != null)
-                {
-                    room.LocalParticipant.UnpublishTrack(localAudioTrack, false);
-                }
-                localAudioTrack = null;
-            }
-            if (micSource != null)
-            {
-                micSource.Dispose();
-                micSource = null;
-            }
-            if (micGameObject != null)
-            {
-                Destroy(micGameObject);
-                micGameObject = null;
-            }
+            _microphonePublisher?.Stop();
 
             _audioRouter.Reset();
 
@@ -410,7 +395,7 @@ namespace VRAutism.Cloud.LiveKit
 
         #region Audio & Microphone
 
-        public async void EnableMicrophone(bool enable)
+        public void EnableMicrophone(bool enable)
         {
             if (room == null || !room.IsConnected)
             {
@@ -418,56 +403,27 @@ namespace VRAutism.Cloud.LiveKit
                 return;
             }
 
+            var handle = _packetConnectionHandle;
+            Observe(
+                _microphonePublisher.SetEnabledAsync(
+                    enable,
+                    handle,
+                    generation => _packetConnectionHandle != null &&
+                                  _packetConnectionHandle.Generation == generation &&
+                                  room != null &&
+                                  room.IsConnected),
+                "EnableMicrophone");
+        }
+
+        private async void Observe(Task task, string operation)
+        {
             try
             {
-                if (enable)
-                {
-                    if (localAudioTrack == null)
-                    {
-                        if (Microphone.devices != null && Microphone.devices.Length > 0)
-                        {
-                            string microphoneDevice = Microphone.devices[0];
-                            Debug.Log($"[LiveKitService] 🎙️ Tìm thấy Mic phần cứng: '{microphoneDevice}'. Đang khởi tạo luồng...");
-
-                            micGameObject = new GameObject($"LiveKitMic_{microphoneDevice}");
-                            micGameObject.transform.SetParent(transform);
-
-                            micSource = new MicrophoneSource(microphoneDevice, micGameObject);
-                            localAudioTrack = LocalAudioTrack.CreateAudioTrack("microphone", micSource, room);
-
-                            var options = new TrackPublishOptions
-                            {
-                                AudioEncoding = new AudioEncoding { MaxBitrate = 64000 },
-                                Source = TrackSource.SourceMicrophone
-                            };
-
-                            await room.LocalParticipant.PublishTrack(localAudioTrack, options);
-                            micSource.Start();
-                            Debug.Log("[LiveKitService] 🎙️ Đã Publish luồng Microphone lên LiveKit Server thành công!");
-                        }
-                        else
-                        {
-                            Debug.LogError("[LiveKitService] ❌ Không tìm thấy thiết bị Microphone nào trên máy!");
-                        }
-                    }
-                    if (localAudioTrack != null)
-                    {
-                        ((ILocalTrack)localAudioTrack).SetMute(false);
-                        Debug.Log("[LiveKitService] 🎙️ MICROPHONE ĐANG BẬT & UNMUTE (Đang thu âm)");
-                    }
-                }
-                else
-                {
-                    if (localAudioTrack != null)
-                    {
-                        ((ILocalTrack)localAudioTrack).SetMute(true);
-                        Debug.Log("[LiveKitService] 🎙️ MICROPHONE ĐÃ TẮT & MUTE");
-                    }
-                }
+                await task;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Debug.LogError($"[LiveKitService] ❌ Lỗi xử lý Mic: {ex.Message}");
+                Debug.LogError($"[LiveKitService] {operation} failed: {exception.Message}");
             }
         }
 
