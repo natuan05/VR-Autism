@@ -132,6 +132,130 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             Assert.AreSame(handle, publication.UnpublishedHandle);
         }
 
+        [UnityTest]
+        public IEnumerator ConnectAThenConnectB_LatestGenerationWins()
+        {
+            var adapterA = new FakeRoomAdapter();
+            var adapterB = new FakeRoomAdapter();
+            var factory = new FakeRoomAdapterFactory(adapterA, adapterB);
+            var executor = new LiveKitMainThreadExecutor();
+            var roomConnection = new LiveKitRoomConnection(factory);
+            var coordinator = new LiveKitLifecycleCoordinator(
+                roomConnection,
+                executor,
+                () => { },
+                () => { },
+                () => { });
+            var connectedSignals = 0;
+            coordinator.ConnectedOrReconnected += () => connectedSignals++;
+
+            var connectA = coordinator.ConnectAsync("room-a", "token-a");
+            yield return null;
+            var connectB = coordinator.ConnectAsync("room-b", "token-b");
+
+            adapterA.CompleteConnect();
+            yield return CompleteWithinFrames(connectA, 60);
+            adapterB.CompleteConnect();
+            yield return CompleteWithinFrames(connectB, 60);
+
+            Assert.AreSame(adapterB, coordinator.CurrentHandle.Adapter);
+            Assert.AreEqual(1, connectedSignals);
+            Assert.AreEqual(LiveKitLifecycleState.Connected, coordinator.State);
+
+            coordinator.Destroy();
+        }
+
+        [UnityTest]
+        public IEnumerator DisconnectDuringConnect_InvalidatesOldContinuation()
+        {
+            var adapter = new FakeRoomAdapter();
+            var roomConnection = new LiveKitRoomConnection(new FakeRoomAdapterFactory(adapter));
+            var coordinator = new LiveKitLifecycleCoordinator(
+                roomConnection,
+                new LiveKitMainThreadExecutor(),
+                () => { },
+                () => { },
+                () => { });
+
+            var connect = coordinator.ConnectAsync("room-a", "token-a");
+            yield return null;
+            var disconnect = coordinator.DisconnectAsync();
+            adapter.CompleteConnect();
+
+            yield return CompleteWithinFrames(connect, 60);
+            yield return CompleteWithinFrames(disconnect, 60);
+
+            Assert.AreEqual(1, adapter.DisconnectCalls);
+            Assert.IsNull(coordinator.CurrentHandle);
+            Assert.IsFalse(coordinator.IsConnected);
+            Assert.AreEqual(LiveKitLifecycleState.Disconnected, coordinator.State);
+
+            coordinator.Destroy();
+        }
+
+        [UnityTest]
+        public IEnumerator StaleRoomCallback_DoesNotEmitEvents()
+        {
+            var adapterA = new FakeRoomAdapter();
+            var adapterB = new FakeRoomAdapter();
+            var roomConnection = new LiveKitRoomConnection(new FakeRoomAdapterFactory(adapterA, adapterB));
+            var executor = new LiveKitMainThreadExecutor();
+            var coordinator = new LiveKitLifecycleCoordinator(
+                roomConnection,
+                executor,
+                () => { },
+                () => { },
+                () => { });
+            var callbackCount = 0;
+            roomConnection.DataReceived += (handle, data, participant, kind, topic) =>
+                executor.Post(handle.Generation, () => callbackCount++);
+
+            var connectA = coordinator.ConnectAsync("room-a", "token-a");
+            adapterA.CompleteConnect();
+            yield return CompleteWithinFrames(connectA, 60);
+
+            var connectB = coordinator.ConnectAsync("room-b", "token-b");
+            adapterA.RaiseData(new byte[] { 1 }, "stale.topic");
+            executor.Drain();
+            Assert.AreEqual(0, callbackCount);
+
+            adapterB.CompleteConnect();
+            yield return CompleteWithinFrames(connectB, 60);
+            coordinator.Destroy();
+        }
+
+        [UnityTest]
+        public IEnumerator DisconnectRepeatedly_IsIdempotentAndKeepsTeardownOrder()
+        {
+            var adapter = new FakeRoomAdapter();
+            var roomConnection = new LiveKitRoomConnection(new FakeRoomAdapterFactory(adapter));
+            var executor = new LiveKitMainThreadExecutor();
+            var teardown = new List<string>();
+            adapter.OnDisconnect = () => teardown.Add("room");
+            adapter.OnDisconnect = () => teardown.Add("room");
+            var coordinator = new LiveKitLifecycleCoordinator(
+                roomConnection,
+                executor,
+                () => teardown.Add("pov"),
+                () => teardown.Add("microphone"),
+                () => teardown.Add("audio"));
+
+            var connect = coordinator.ConnectAsync("room-a", "token-a");
+            adapter.CompleteConnect();
+            yield return CompleteWithinFrames(connect, 60);
+
+            var firstDisconnect = coordinator.DisconnectAsync();
+            yield return CompleteWithinFrames(firstDisconnect, 60);
+            var secondDisconnect = coordinator.DisconnectAsync();
+            yield return CompleteWithinFrames(secondDisconnect, 60);
+
+            CollectionAssert.AreEqual(new[] { "pov", "microphone", "audio", "room" }, teardown);
+            Assert.AreEqual(1, adapter.DisconnectCalls);
+            Assert.AreEqual(LiveKitLifecycleState.Disconnected, coordinator.State);
+
+            coordinator.Destroy();
+        }
+
         private static IEnumerator CompleteWithinFrames(Task task, int frameCount)
         {
             for (var frame = 0; frame < frameCount && !task.IsCompleted; frame++)
@@ -146,7 +270,11 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
 
         private sealed class FakeRoomAdapter : ILiveKitRoomAdapter
         {
+            private readonly TaskCompletionSource<bool> _connect = new TaskCompletionSource<bool>();
+
             public bool Connected { get; set; }
+            public int DisconnectCalls { get; private set; }
+            public Action OnDisconnect { get; set; }
             public byte[] LastPublishedData { get; private set; }
             public string LastPublishedTopic { get; private set; }
             public bool LastPublishedReliable { get; private set; }
@@ -161,7 +289,15 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             public event Action<IRemoteTrack, RemoteTrackPublication, RemoteParticipant> TrackSubscribed;
             public event Action<IRemoteTrack, RemoteTrackPublication, RemoteParticipant> TrackUnsubscribed;
 
-            public Task ConnectAsync(string roomUrl, string token) => Task.CompletedTask;
+            public Task ConnectAsync(string roomUrl, string token) => _connect.Task;
+
+            public void CompleteConnect()
+            {
+                Connected = true;
+                _connect.TrySetResult(true);
+            }
+
+            public void RaiseData(byte[] data, string topic) => DataReceived?.Invoke(data, null, default(DataPacketKind), topic);
 
             public void PublishData(byte[] data, string topic, bool reliable)
             {
@@ -174,7 +310,24 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             public Task PublishVideoTrackAsync(LocalVideoTrack track, TrackPublishOptions options) => Task.CompletedTask;
             public void UnpublishAudioTrack(LocalAudioTrack track) { }
             public void UnpublishVideoTrack(LocalVideoTrack track) { }
-            public void Disconnect() { }
+            public void Disconnect()
+            {
+                DisconnectCalls++;
+                Connected = false;
+                OnDisconnect?.Invoke();
+            }
+        }
+
+        private sealed class FakeRoomAdapterFactory : ILiveKitRoomAdapterFactory
+        {
+            private readonly Queue<ILiveKitRoomAdapter> _adapters;
+
+            public FakeRoomAdapterFactory(params ILiveKitRoomAdapter[] adapters)
+            {
+                _adapters = new Queue<ILiveKitRoomAdapter>(adapters);
+            }
+
+            public ILiveKitRoomAdapter Create() => _adapters.Dequeue();
         }
 
         private sealed class FakeMicrophoneFactory : ILiveKitMicrophonePublicationFactory
