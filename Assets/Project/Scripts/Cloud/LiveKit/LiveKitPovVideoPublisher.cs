@@ -95,7 +95,14 @@ namespace VRAutism.Cloud.LiveKit
             while ((currentHandle == null || !currentHandle.IsConnected) && waitCount < ConnectionWaitAttempts)
             {
                 var observedGeneration = currentHandle?.Generation;
-                await Task.Delay(ConnectionWaitMilliseconds, operation.Token);
+                try
+                {
+                    await Task.Delay(ConnectionWaitMilliseconds, operation.Token);
+                }
+                catch (OperationCanceledException) when (operation.Token.IsCancellationRequested)
+                {
+                    return;
+                }
 
                 if (!IsOperationCurrent(operation))
                     return;
