@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using LiveKit;
@@ -8,7 +9,7 @@ using LiveKit.Proto;
 
 namespace VRAutism.Cloud.LiveKit
 {
-    public class LiveKitService : MonoBehaviour, ILiveKitRoomClient, ILiveKitDataPacketClientV2, INpcAudioRouterV2
+    public class LiveKitService : MonoBehaviour, ILiveKitRoomClient, ILiveKitDataPacketClientV2, INpcAudioRouterV2, ILiveKitCoroutineHost
     {
         private static LiveKitService _instance;
         public static LiveKitService Instance
@@ -57,6 +58,7 @@ namespace VRAutism.Cloud.LiveKit
         private ILiveKitRoomAdapter _packetRoomAdapter;
         private RoomConnectionHandle _packetConnectionHandle;
         private long _packetConnectionGeneration;
+        private LiveKitPovVideoPublisher _povPublisher;
 
         public Func<RemoteAudioTrack, AudioSource, IDisposable> StreamFactory
         {
@@ -73,14 +75,6 @@ namespace VRAutism.Cloud.LiveKit
         public void SimulateActiveAudioStream(string trackSid, AudioSource source, string npcBindingId) => _audioRouter.SimulateActiveAudioStream(trackSid, source, npcBindingId);
         public AudioSource GetActiveStreamSource(string trackSid) => _audioRouter.GetActiveStreamSource(trackSid);
         public string GetActiveStreamRoute(string trackSid) => _audioRouter.GetActiveStreamRoute(trackSid);
-        // POV Video
-        private LocalVideoTrack localVideoTrack;
-        private TextureVideoSource videoSource;
-        private RenderTexture povRenderTexture;
-        private Camera captureCamera;
-        private Coroutine videoSourceCoroutine;
-        private bool isStreamingPOV = false;
-
         private void Awake()
         {
             if (_instance != null && _instance != this)
@@ -95,6 +89,12 @@ namespace VRAutism.Cloud.LiveKit
             _microphonePublisher = new LiveKitMicrophonePublisher(
                 new LiveKitMicrophonePublicationFactory(),
                 transform);
+            _povPublisher = new LiveKitPovVideoPublisher(
+                new LiveKitPovPublicationFactory(this),
+                this,
+                videoWidth,
+                videoHeight,
+                videoFrameRate);
             _legacyVoicePacketAdapter = new LegacyVoicePacketAdapter(_dataPacketTransport);
             _dataPacketTransport.DataReceivedV2 += RelayDataReceivedV2;
             _dataPacketTransport.LegacyDataReceived += _legacyVoicePacketAdapter.HandleIncoming;
@@ -142,7 +142,7 @@ namespace VRAutism.Cloud.LiveKit
 
         public void Disconnect()
         {
-            DisablePOVCamera();
+            _povPublisher?.Disable();
 
             _microphonePublisher?.Stop();
 
@@ -171,161 +171,23 @@ namespace VRAutism.Cloud.LiveKit
 
         #region Video POV Stream (720p @ 30 FPS)
 
-        public async void EnablePOVCamera(Camera vrCamera)
+        public void EnablePOVCamera(Camera vrCamera)
         {
-            if (vrCamera == null)
-            {
-                vrCamera = Camera.main ?? FindObjectOfType<Camera>();
-            }
-
-            if (vrCamera == null)
-            {
-                Debug.LogWarning("[LiveKitService] EnablePOVCamera: vrCamera is null and no Camera found in scene!");
-                return;
-            }
-
-            // Chờ kết nối phòng nếu đang trong tiến trình Connect
-            int waitCount = 0;
-            while ((room == null || !room.IsConnected) && waitCount < 50)
-            {
-                await System.Threading.Tasks.Task.Delay(200);
-                waitCount++;
-            }
-
-            if (room == null || !room.IsConnected)
-            {
-                Debug.LogWarning("[LiveKitService] ⚠️ Không thể bật POV Camera: Room chưa kết nối!");
-                return;
-            }
-
-            if (isStreamingPOV)
-            {
-                Debug.Log("[LiveKitService] POV Camera is already streaming.");
-                return;
-            }
-
-            try
-            {
-                isStreamingPOV = true;
-                Debug.Log($"[LiveKitService] 📹 Khởi tạo POV Video Stream ({videoWidth}x{videoHeight} @ {videoFrameRate}fps)...");
-
-                // Tạo secondary camera bám theo góc nhìn của trẻ
-                GameObject captureCamObj = new GameObject("LiveKit_POVCaptureCamera");
-                captureCamObj.transform.SetParent(vrCamera.transform, false);
-                captureCamObj.transform.localPosition = Vector3.zero;
-                captureCamObj.transform.localRotation = Quaternion.identity;
-
-                captureCamera = captureCamObj.AddComponent<Camera>();
-                captureCamera.CopyFrom(vrCamera);
-                captureCamera.cullingMask = vrCamera.cullingMask;
-                captureCamera.clearFlags = vrCamera.clearFlags;
-                captureCamera.backgroundColor = vrCamera.backgroundColor;
-                captureCamera.fieldOfView = vrCamera.fieldOfView;
-                captureCamera.nearClipPlane = vrCamera.nearClipPlane;
-                captureCamera.farClipPlane = vrCamera.farClipPlane;
-                captureCamera.depth = vrCamera.depth - 1;
-                captureCamera.allowHDR = false;
-                captureCamera.allowMSAA = false;
-
-                // Tạo RenderTexture 720p
-                povRenderTexture = new RenderTexture(videoWidth, videoHeight, 24, RenderTextureFormat.ARGB32);
-                povRenderTexture.name = "LiveKit_POV_Texture";
-                povRenderTexture.Create();
-
-                captureCamera.targetTexture = povRenderTexture;
-                captureCamera.enabled = true; // Bật để Unity URP tự động render vào targetTexture mỗi frame
-
-                // Cấu hình URP Additional Camera Data nếu có
-                var additionalData = captureCamObj.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
-                if (additionalData == null)
-                {
-                    additionalData = captureCamObj.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
-                }
-                if (additionalData != null)
-                {
-                    additionalData.renderShadows = false; // Tối ưu GPU cho VR
-                    additionalData.renderPostProcessing = false;
-                }
-
-                // Khởi tạo TextureVideoSource từ LiveKit SDK
-                videoSource = new TextureVideoSource(povRenderTexture, VideoBufferType.Rgba);
-                videoSource.Start(); // Bật cờ _playing = true của RtcVideoSource
-                videoSourceCoroutine = StartCoroutine(videoSource.Update()); // Chạy vòng lặp AsyncGPUReadback và SendFrame
-
-                localVideoTrack = LocalVideoTrack.CreateVideoTrack("pov_camera", videoSource, room);
-
-                var options = new TrackPublishOptions
-                {
-                    Source = TrackSource.SourceCamera,
-                    VideoEncoding = new VideoEncoding
-                    {
-                        MaxBitrate = 1500000,
-                        MaxFramerate = (uint)videoFrameRate
-                    }
-                };
-
-                await room.LocalParticipant.PublishTrack(localVideoTrack, options);
-                Debug.Log("[LiveKitService] ✅ POV Video Track published thành công với luồng frame hoạt động!");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[LiveKitService] ❌ Lỗi khởi tạo POV Camera: {ex.Message}");
-                DisablePOVCamera();
-            }
+            Observe(
+                _povPublisher.EnableAsync(
+                    vrCamera,
+                    () => _packetConnectionHandle,
+                    generation => _packetConnectionHandle != null &&
+                                  _packetConnectionHandle.Generation == generation &&
+                                  room != null &&
+                                  room.IsConnected,
+                    CancellationToken.None),
+                "EnablePOVCamera");
         }
 
         public void DisablePOVCamera()
         {
-            if (!isStreamingPOV && captureCamera == null) return;
-
-            isStreamingPOV = false;
-
-            if (videoSourceCoroutine != null)
-            {
-                StopCoroutine(videoSourceCoroutine);
-                videoSourceCoroutine = null;
-            }
-
-            if (localVideoTrack != null)
-            {
-                if (room != null && room.LocalParticipant != null)
-                {
-                    try { room.LocalParticipant.UnpublishTrack(localVideoTrack, false); } catch { }
-                }
-                localVideoTrack = null;
-            }
-
-            if (videoSource != null)
-            {
-                try
-                {
-                    videoSource.Stop();
-                    // Chờ GPU AsyncReadback hoàn tất các frame dở dang trước khi huỷ NativeArray
-                    UnityEngine.Rendering.AsyncGPUReadback.WaitAllRequests();
-                    videoSource.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning($"[LiveKitService] VideoSource cleanup notice: {ex.Message}");
-                }
-                videoSource = null;
-            }
-
-            if (captureCamera != null)
-            {
-                captureCamera.targetTexture = null;
-                Destroy(captureCamera.gameObject);
-                captureCamera = null;
-            }
-
-            if (povRenderTexture != null)
-            {
-                povRenderTexture.Release();
-                Destroy(povRenderTexture);
-                povRenderTexture = null;
-            }
-
-            Debug.Log("[LiveKitService] 🛑 Đã tắt POV Video Stream");
+            _povPublisher?.Disable();
         }
 
         #endregion
@@ -447,6 +309,10 @@ namespace VRAutism.Cloud.LiveKit
 
         private void OnTrackUnsubscribed(IRemoteTrack track, RemoteTrackPublication publication, RemoteParticipant participant) =>
             _audioRouter.HandleTrackUnsubscribed(track, publication, participant);
+
+        Coroutine ILiveKitCoroutineHost.StartLiveKitCoroutine(IEnumerator routine) => StartCoroutine(routine);
+
+        void ILiveKitCoroutineHost.StopLiveKitCoroutine(Coroutine coroutine) => StopCoroutine(coroutine);
         #endregion
 
         private void OnDestroy()

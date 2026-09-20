@@ -110,6 +110,28 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             Assert.AreSame(handle, publication.UnpublishedHandle);
         }
 
+        [UnityTest]
+        public IEnumerator MediaPublishCompletesAfterDisconnect_RollsBackResources_Pov()
+        {
+            var publication = new FakePovPublication();
+            var publisher = new LiveKitPovVideoPublisher(
+                new FakePovFactory(publication),
+                new FakeCoroutineHost());
+            var generation = 7L;
+            var handle = new RoomConnectionHandle(7, new FakeRoomAdapter { Connected = true });
+
+            var task = publisher.EnableAsync(null, () => handle, value => value == generation, CancellationToken.None);
+            generation = 8;
+            publisher.Disable();
+            publication.CompletePublish();
+            yield return CompleteWithinFrames(task, 60);
+
+            Assert.IsTrue(publication.Unpublished);
+            Assert.IsTrue(publication.Disposed);
+            Assert.IsFalse(publication.FramesStarted);
+            Assert.AreSame(handle, publication.UnpublishedHandle);
+        }
+
         private static IEnumerator CompleteWithinFrames(Task task, int frameCount)
         {
             for (var frame = 0; frame < frameCount && !task.IsCompleted; frame++)
@@ -187,6 +209,49 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             public void Start() => Started = true;
 
             public void SetMuted(bool muted) { }
+
+            public void Unpublish(RoomConnectionHandle handle)
+            {
+                Unpublished = true;
+                UnpublishedHandle = handle;
+            }
+
+            public void Dispose() => Disposed = true;
+        }
+
+        private sealed class FakeCoroutineHost : ILiveKitCoroutineHost
+        {
+            public Coroutine StartLiveKitCoroutine(IEnumerator routine) => null;
+
+            public void StopLiveKitCoroutine(Coroutine coroutine) { }
+        }
+
+        private sealed class FakePovFactory : ILiveKitPovPublicationFactory
+        {
+            private readonly ILiveKitPovPublication _publication;
+
+            public FakePovFactory(ILiveKitPovPublication publication)
+            {
+                _publication = publication;
+            }
+
+            public ILiveKitPovPublication Create(Camera camera, int width, int height, int frameRate) => _publication;
+        }
+
+        private sealed class FakePovPublication : ILiveKitPovPublication
+        {
+            private readonly TaskCompletionSource<bool> _publish = new TaskCompletionSource<bool>();
+
+            public bool FramesStarted { get; private set; }
+            public bool Unpublished { get; private set; }
+            public bool Disposed { get; private set; }
+            public RoomConnectionHandle UnpublishedHandle { get; private set; }
+
+            public Task PublishAsync(RoomConnectionHandle handle) => _publish.Task;
+
+            public void CompletePublish() => _publish.TrySetResult(true);
+
+            public void BeginFrames() => FramesStarted = true;
 
             public void Unpublish(RoomConnectionHandle handle)
             {
