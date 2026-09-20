@@ -53,6 +53,11 @@ namespace VRAutism.Cloud.LiveKit
         private GameObject micGameObject;
         private MicrophoneSource micSource;
         private readonly LiveKitNpcAudioRouter _audioRouter = new LiveKitNpcAudioRouter();
+        private LiveKitDataPacketTransport _dataPacketTransport;
+        private LegacyVoicePacketAdapter _legacyVoicePacketAdapter;
+        private ILiveKitRoomAdapter _packetRoomAdapter;
+        private RoomConnectionHandle _packetConnectionHandle;
+        private long _packetConnectionGeneration;
 
         public Func<RemoteAudioTrack, AudioSource, IDisposable> StreamFactory
         {
@@ -77,16 +82,6 @@ namespace VRAutism.Cloud.LiveKit
         private Coroutine videoSourceCoroutine;
         private bool isStreamingPOV = false;
 
-        [Serializable]
-        private class DataPacketEvent
-        {
-            public string @event;
-            public string quest_name;
-            public string status;
-            public string reason;
-            public string text;
-        }
-
         private void Awake()
         {
             if (_instance != null && _instance != this)
@@ -96,6 +91,14 @@ namespace VRAutism.Cloud.LiveKit
             }
             _instance = this;
             DontDestroyOnLoad(gameObject);
+
+            _dataPacketTransport = new LiveKitDataPacketTransport(() => _packetConnectionHandle);
+            _legacyVoicePacketAdapter = new LegacyVoicePacketAdapter(_dataPacketTransport);
+            _dataPacketTransport.DataReceivedV2 += RelayDataReceivedV2;
+            _dataPacketTransport.LegacyDataReceived += _legacyVoicePacketAdapter.HandleIncoming;
+            _legacyVoicePacketAdapter.SpeechMatched += RelaySpeechMatched;
+            _legacyVoicePacketAdapter.AgentError += RelayAgentError;
+            _legacyVoicePacketAdapter.QuestStatusUpdated += RelayQuestStatusUpdated;
         }
 
         private void Start()
@@ -111,6 +114,8 @@ namespace VRAutism.Cloud.LiveKit
         {
             Debug.Log($"[LiveKitService] 🌐 Đang bắt đầu kết nối tới LiveKit Server: {roomUrl}...");
             room = new Room();
+            _packetRoomAdapter = new LiveKitRoomAdapter(room);
+            _packetConnectionHandle = new RoomConnectionHandle(++_packetConnectionGeneration, _packetRoomAdapter);
             room.DataReceived += OnDataReceived;
             room.Reconnected += OnRoomReconnectedV2;
             room.TrackSubscribed += OnTrackSubscribed;
@@ -164,7 +169,16 @@ namespace VRAutism.Cloud.LiveKit
                 room.Reconnected -= OnRoomReconnectedV2;
                 room.TrackSubscribed -= OnTrackSubscribed;
                 room.TrackUnsubscribed -= OnTrackUnsubscribed;
-                room.Disconnect();
+                if (_packetRoomAdapter != null)
+                {
+                    _packetRoomAdapter.Disconnect();
+                    _packetRoomAdapter = null;
+                }
+                else
+                {
+                    room.Disconnect();
+                }
+                _packetConnectionHandle = null;
                 room = null;
             }
             Debug.Log("[LiveKitService] Disconnected from LiveKit room");
@@ -336,7 +350,7 @@ namespace VRAutism.Cloud.LiveKit
         public void PublishDataV2(byte[] data, string topic, bool reliable)
         {
             if (data == null || room == null || !room.IsConnected || room.LocalParticipant == null) return;
-            room.LocalParticipant.PublishData(data, null, reliable, topic);
+            _dataPacketTransport.PublishDataV2(data, topic, reliable);
         }
 
         public void SendActiveQuest(string questName, string[] defaultPhrases)
@@ -347,15 +361,7 @@ namespace VRAutism.Cloud.LiveKit
                 return;
             }
 
-            string phrasesJson = defaultPhrases != null && defaultPhrases.Length > 0
-                ? "[\"" + string.Join("\",\"", defaultPhrases) + "\"]"
-                : "[]";
-
-            string jsonPayload = $"{{\"event\":\"SET_ACTIVE_QUEST\",\"quest_name\":\"{questName}\",\"default_phrases\":{phrasesJson}}}";
-
-            byte[] data = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
-            room.LocalParticipant.PublishData(data, reliable: true);
-            Debug.Log($"[LiveKitService] 📡 GỬI DỮ LIỆU QUEST LÊN SERVER: {jsonPayload}");
+            _legacyVoicePacketAdapter.SendActiveQuest(questName, defaultPhrases);
         }
 
         public void SendVerbalHint()
@@ -366,10 +372,7 @@ namespace VRAutism.Cloud.LiveKit
                 return;
             }
 
-            string jsonPayload = "{\"event\":\"VERBAL_HINT\"}";
-            byte[] data = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
-            room.LocalParticipant.PublishData(data, reliable: true);
-            Debug.Log($"[LiveKitService] 📡 GỬI VERBAL_HINT LÊN AGENT: {jsonPayload}");
+            _legacyVoicePacketAdapter.SendVerbalHint();
         }
 
         public void SendOnReminder()
@@ -380,61 +383,27 @@ namespace VRAutism.Cloud.LiveKit
                 return;
             }
 
-            string jsonPayload = "{\"event\":\"ON_REMINDER\"}";
-            byte[] data = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
-            room.LocalParticipant.PublishData(data, reliable: true);
-            Debug.Log($"[LiveKitService] 📡 GỬI ON_REMINDER LÊN AGENT: {jsonPayload}");
+            _legacyVoicePacketAdapter.SendOnReminder();
         }
 
         private void OnDataReceived(byte[] data, Participant participant, DataPacketKind kind, string topic)
         {
-            if (string.Equals(topic, "lesson-graph-v2.voice", StringComparison.Ordinal))
-            {
-                DataReceivedV2?.Invoke(data, topic);
-                return;
-            }
-            string json = System.Text.Encoding.UTF8.GetString(data);
-            Debug.Log($"[LiveKitService] 📥 NHẬN GÓI TIN TỪ ({participant?.Identity}): {json}");
+            _dataPacketTransport.HandleIncoming(data, participant, topic);
+        }
 
-            try
-            {
-                var packet = JsonUtility.FromJson<DataPacketEvent>(json);
-                if (packet == null || string.IsNullOrEmpty(packet.@event))
-                {
-                    // Fallback substring check
-                    if (json.Contains("QUEST_MATCHED"))
-                    {
-                        OnSpeechMatched?.Invoke();
-                    }
-                    return;
-                }
+        private void RelayDataReceivedV2(byte[] data, string topic) => DataReceivedV2?.Invoke(data, topic);
+        private void RelaySpeechMatched() => OnSpeechMatched?.Invoke();
+        private void RelayAgentError(string reason) => OnAgentError?.Invoke(reason);
+        private void RelayQuestStatusUpdated(string questName, string status) => OnQuestStatusUpdate?.Invoke(questName, status);
 
-                switch (packet.@event)
-                {
-                    case "QUEST_MATCHED":
-                        Debug.Log("[LiveKitService] 🎯 QUEST_MATCHED -> Kích hoạt OnSpeechMatched!");
-                        OnSpeechMatched?.Invoke();
-                        break;
-
-                    case "AGENT_INIT_FAILED":
-                        Debug.LogError($"[LiveKitService] ❌ AGENT_INIT_FAILED: {packet.reason}");
-                        OnAgentError?.Invoke(packet.reason);
-                        break;
-
-                    case "QUEST_STATUS":
-                        Debug.Log($"[LiveKitService] 📋 QUEST_STATUS: {packet.quest_name} -> {packet.status}");
-                        OnQuestStatusUpdate?.Invoke(packet.quest_name, packet.status);
-                        break;
-
-                    default:
-                        Debug.Log($"[LiveKitService] ℹ️ Unhandled packet event: {packet.@event}");
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[LiveKitService] ❌ Lỗi parse DataPacket: {ex.Message}");
-            }
+        private void UnwireServices()
+        {
+            if (_dataPacketTransport == null || _legacyVoicePacketAdapter == null) return;
+            _dataPacketTransport.DataReceivedV2 -= RelayDataReceivedV2;
+            _dataPacketTransport.LegacyDataReceived -= _legacyVoicePacketAdapter.HandleIncoming;
+            _legacyVoicePacketAdapter.SpeechMatched -= RelaySpeechMatched;
+            _legacyVoicePacketAdapter.AgentError -= RelayAgentError;
+            _legacyVoicePacketAdapter.QuestStatusUpdated -= RelayQuestStatusUpdated;
         }
 
         #endregion
@@ -526,6 +495,7 @@ namespace VRAutism.Cloud.LiveKit
 
         private void OnDestroy()
         {
+            UnwireServices();
             Disconnect();
         }
     }

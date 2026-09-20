@@ -1,5 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using LiveKit;
+using LiveKit.Proto;
 using System.Threading;
 using NUnit.Framework;
 
@@ -40,6 +44,80 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
 
             executor.Close();
             Assert.IsFalse(executor.Post(2, () => calls.Add("closed")));
+        }
+
+        [Test]
+        public void V2Packet_PreservesBytesTopicAndReliability()
+        {
+            var adapter = new FakeRoomAdapter { Connected = true };
+            var handle = new RoomConnectionHandle(3, adapter);
+            var transport = new LiveKitDataPacketTransport(() => handle);
+            var payload = new byte[] { 1, 2, 3 };
+            byte[] received = null;
+            string receivedTopic = null;
+            transport.DataReceivedV2 += (data, topic) => { received = data; receivedTopic = topic; };
+
+            transport.PublishDataV2(payload, "lesson-graph-v2.voice", true);
+            transport.HandleIncoming(payload, null, "lesson-graph-v2.voice");
+
+            CollectionAssert.AreEqual(payload, adapter.LastPublishedData);
+            Assert.AreEqual("lesson-graph-v2.voice", adapter.LastPublishedTopic);
+            Assert.IsTrue(adapter.LastPublishedReliable);
+            CollectionAssert.AreEqual(payload, received);
+            Assert.AreEqual("lesson-graph-v2.voice", receivedTopic);
+        }
+
+        [Test]
+        public void LegacyPacket_PreservesCurrentPayloadAndEventBehavior()
+        {
+            var adapter = new FakeRoomAdapter { Connected = true };
+            var transport = new LiveKitDataPacketTransport(() => new RoomConnectionHandle(4, adapter));
+            var legacy = new LegacyVoicePacketAdapter(transport);
+            var matched = 0;
+            legacy.SpeechMatched += () => matched++;
+
+            legacy.SendActiveQuest("Wash Hands", new[] { "soap", "rinse" });
+            Assert.AreEqual(
+                "{\"event\":\"SET_ACTIVE_QUEST\",\"quest_name\":\"Wash Hands\",\"default_phrases\":[\"soap\",\"rinse\"]}",
+                Encoding.UTF8.GetString(adapter.LastPublishedData));
+            Assert.IsNull(adapter.LastPublishedTopic);
+            Assert.IsTrue(adapter.LastPublishedReliable);
+
+            legacy.HandleIncoming(Encoding.UTF8.GetBytes("{\"event\":\"QUEST_MATCHED\"}"), null);
+            Assert.AreEqual(1, matched);
+        }
+
+        private sealed class FakeRoomAdapter : ILiveKitRoomAdapter
+        {
+            public bool Connected { get; set; }
+            public byte[] LastPublishedData { get; private set; }
+            public string LastPublishedTopic { get; private set; }
+            public bool LastPublishedReliable { get; private set; }
+
+            public Room SdkRoom => null;
+            public bool IsConnected => Connected;
+            public string RoomName => "test-room";
+            public string LocalParticipantSid => "test-participant";
+
+            public event Action<byte[], Participant, DataPacketKind, string> DataReceived;
+            public event Action<Room> Reconnected;
+            public event Action<IRemoteTrack, RemoteTrackPublication, RemoteParticipant> TrackSubscribed;
+            public event Action<IRemoteTrack, RemoteTrackPublication, RemoteParticipant> TrackUnsubscribed;
+
+            public Task ConnectAsync(string roomUrl, string token) => Task.CompletedTask;
+
+            public void PublishData(byte[] data, string topic, bool reliable)
+            {
+                LastPublishedData = data;
+                LastPublishedTopic = topic;
+                LastPublishedReliable = reliable;
+            }
+
+            public Task PublishAudioTrackAsync(LocalAudioTrack track, TrackPublishOptions options) => Task.CompletedTask;
+            public Task PublishVideoTrackAsync(LocalVideoTrack track, TrackPublishOptions options) => Task.CompletedTask;
+            public void UnpublishAudioTrack(LocalAudioTrack track) { }
+            public void UnpublishVideoTrack(LocalVideoTrack track) { }
+            public void Disconnect() { }
         }
     }
 }
