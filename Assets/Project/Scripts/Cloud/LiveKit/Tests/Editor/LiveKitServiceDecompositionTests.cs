@@ -73,6 +73,9 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             adapter.LocalParticipantSid = null;
             transport.PublishDataV2(new byte[] { 9 }, "lesson-graph-v2.voice", true);
             CollectionAssert.AreEqual(payload, adapter.LastPublishedData);
+
+            var realAdapter = new LiveKitRoomAdapter(new Room());
+            Assert.DoesNotThrow(() => realAdapter.PublishData(new byte[] { 9 }, "lesson-graph-v2.voice", true));
         }
 
         [Test]
@@ -156,6 +159,11 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             retryPublisher.Disable();
             Assert.AreEqual(2, retryPublication.UnpublishAttempts);
             Assert.IsTrue(retryPublication.Disposed);
+
+            var realAdapter = new LiveKitRoomAdapter(new Room());
+            var missingParticipantPublish = realAdapter.PublishVideoTrackAsync(null, new TrackPublishOptions());
+            Assert.IsTrue(missingParticipantPublish.IsFaulted);
+            Assert.IsInstanceOf<InvalidOperationException>(missingParticipantPublish.Exception.InnerException);
 
             publisher.Disable();
             UnityEngine.Object.DestroyImmediate(cameraObject);

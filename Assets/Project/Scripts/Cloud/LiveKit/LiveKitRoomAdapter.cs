@@ -66,7 +66,7 @@ namespace VRAutism.Cloud.LiveKit
         {
             var localParticipant = _room.LocalParticipant;
             if (localParticipant == null)
-                throw new InvalidOperationException("LiveKit local participant is unavailable.");
+                return;
 
             if (topic == null)
             {
@@ -90,7 +90,7 @@ namespace VRAutism.Cloud.LiveKit
         {
             var localParticipant = _room.LocalParticipant;
             if (localParticipant == null)
-                return;
+                throw new InvalidOperationException("LiveKit local participant is unavailable.");
 
             await localParticipant.PublishTrack(track, options);
         }
