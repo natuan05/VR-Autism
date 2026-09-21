@@ -46,7 +46,8 @@ namespace VRAutism.Cloud.LiveKit
             }
 
             var handle = _currentHandle();
-            if (handle == null || !handle.IsConnected || handle.Adapter == null)
+            if (handle == null || !handle.IsConnected || handle.Adapter == null ||
+                string.IsNullOrEmpty(handle.Adapter.LocalParticipantSid))
             {
                 return;
             }

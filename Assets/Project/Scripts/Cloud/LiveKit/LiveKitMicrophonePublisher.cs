@@ -177,11 +177,23 @@ namespace VRAutism.Cloud.LiveKit
             var microphoneDevice = Microphone.devices[0];
             Debug.Log($"[LiveKitService] 🎙️ Tìm thấy Mic phần cứng: '{microphoneDevice}'. Đang khởi tạo luồng...");
 
-            var micGameObject = new GameObject($"LiveKitMic_{microphoneDevice}");
-            micGameObject.transform.SetParent(parent);
-            var micSource = new MicrophoneSource(microphoneDevice, micGameObject);
-            publication = new LiveKitMicrophonePublication(micGameObject, micSource);
-            return true;
+            GameObject micGameObject = null;
+            try
+            {
+                micGameObject = new GameObject($"LiveKitMic_{microphoneDevice}");
+                micGameObject.transform.SetParent(parent);
+                var micSource = new MicrophoneSource(microphoneDevice, micGameObject);
+                publication = new LiveKitMicrophonePublication(micGameObject, micSource);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                if (micGameObject != null)
+                    UnityEngine.Object.Destroy(micGameObject);
+
+                Debug.LogError($"[LiveKitService] ❌ Lỗi khởi tạo Mic: {exception.Message}");
+                return false;
+            }
         }
     }
 
@@ -238,9 +250,27 @@ namespace VRAutism.Cloud.LiveKit
                 return;
             _disposed = true;
 
-            _micSource.Dispose();
+            try
+            {
+                _micSource.Dispose();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"[LiveKitService] Microphone source dispose cleanup notice: {exception.Message}");
+            }
+
             if (_micGameObject != null)
-                UnityEngine.Object.Destroy(_micGameObject);
+            {
+                try
+                {
+                    UnityEngine.Object.Destroy(_micGameObject);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[LiveKitService] Microphone object cleanup notice: {exception.Message}");
+                }
+            }
+
             _localAudioTrack = null;
         }
     }

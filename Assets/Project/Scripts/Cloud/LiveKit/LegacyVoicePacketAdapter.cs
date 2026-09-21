@@ -54,6 +54,9 @@ namespace VRAutism.Cloud.LiveKit
 
         internal void HandleIncoming(byte[] data, string topic)
         {
+            if (data == null)
+                return;
+
             string json = Encoding.UTF8.GetString(data);
             Debug.Log($"[LiveKitService] 📥 NHẬN GÓI TIN TỪ (legacy): {json}");
 

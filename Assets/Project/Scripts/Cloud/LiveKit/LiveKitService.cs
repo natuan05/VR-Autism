@@ -161,21 +161,6 @@ namespace VRAutism.Cloud.LiveKit
             if (!EnsureMainThread(nameof(Connect))) return;
             Debug.Log($"[LiveKitService] 🌐 Đang bắt đầu kết nối tới LiveKit Server: {roomUrl}...");
             Observe(_lifecycleCoordinator.ConnectAsync(roomUrl, token), nameof(Connect));
-
-#if false
-            try
-            {
-                await room.Connect(roomUrl, token, new global::LiveKit.RoomOptions());
-                Debug.Log($"[LiveKitService] ✅ KẾT NỐI PHÒNG THÀNH CÔNG! Room Name: {room.Name} | Participant SID: {room.LocalParticipant?.Sid}");
-                ReconnectedV2?.Invoke();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[LiveKitService] ❌ LỖI KẾT NỐI LIVEKIT: {ex.Message}");
-            }
-        }
-
- #endif
         }
 
         private void OnRoomReconnectedV2(RoomConnectionHandle handle)
@@ -200,35 +185,6 @@ namespace VRAutism.Cloud.LiveKit
 
         public void Disconnect()
         {
-#if false
-            _povPublisher?.Disable();
-
-            _microphonePublisher?.Stop();
-
-            _audioRouter.Reset();
-
-            if (room != null)
-            {
-                room.DataReceived -= OnDataReceived;
-                room.Reconnected -= OnRoomReconnectedV2;
-                room.TrackSubscribed -= OnTrackSubscribed;
-                room.TrackUnsubscribed -= OnTrackUnsubscribed;
-                if (_packetRoomAdapter != null)
-                {
-                    _packetRoomAdapter.Disconnect();
-                    _packetRoomAdapter = null;
-                }
-                else
-                {
-                    room.Disconnect();
-                }
-                _packetConnectionHandle = null;
-                room = null;
-            }
-            Debug.Log("[LiveKitService] Disconnected from LiveKit room");
-        }
-
- #endif
             if (!EnsureMainThread(nameof(Disconnect))) return;
             Observe(_lifecycleCoordinator.DisconnectAsync(), nameof(Disconnect));
         }

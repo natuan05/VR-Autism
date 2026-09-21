@@ -48,9 +48,9 @@ namespace VRAutism.Cloud.LiveKit
             lock (_gate)
                 _registrations.Add(handle, registration);
 
-            Attach(registration);
             try
             {
+                Attach(registration);
                 cancellationToken.ThrowIfCancellationRequested();
                 await adapter.ConnectAsync(roomUrl, token);
                 cancellationToken.ThrowIfCancellationRequested();
@@ -143,14 +143,14 @@ namespace VRAutism.Cloud.LiveKit
         private void Attach(Registration registration)
         {
             var adapter = registration.Handle.Adapter;
-            adapter.DataReceived += registration.DataReceived;
             registration.MarkDataReceivedAttached();
-            adapter.Reconnected += registration.Reconnected;
+            adapter.DataReceived += registration.DataReceived;
             registration.MarkReconnectedAttached();
-            adapter.TrackSubscribed += registration.TrackSubscribed;
+            adapter.Reconnected += registration.Reconnected;
             registration.MarkTrackSubscribedAttached();
-            adapter.TrackUnsubscribed += registration.TrackUnsubscribed;
+            adapter.TrackSubscribed += registration.TrackSubscribed;
             registration.MarkTrackUnsubscribedAttached();
+            adapter.TrackUnsubscribed += registration.TrackUnsubscribed;
         }
 
         private sealed class Registration

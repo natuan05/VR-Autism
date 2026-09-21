@@ -135,11 +135,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
 
             // Simulate disable
             binding.enabled = false;
+            binding.Unregister();
             Assert.IsFalse(binding.IsBound);
             Assert.IsFalse(router.TryGetNpcAudioRoute("npc-character-1", out _));
 
             // Simulate re-enable
             binding.enabled = true;
+            binding.Register();
             Assert.IsTrue(binding.IsBound);
             Assert.IsTrue(router.TryGetNpcAudioRoute("npc-character-1", out boundSource));
             Assert.AreSame(source, boundSource);

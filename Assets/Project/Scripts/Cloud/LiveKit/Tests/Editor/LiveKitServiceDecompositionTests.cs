@@ -69,6 +69,10 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             Assert.IsTrue(adapter.LastPublishedReliable);
             CollectionAssert.AreEqual(payload, received);
             Assert.AreEqual("lesson-graph-v2.voice", receivedTopic);
+
+            adapter.LocalParticipantSid = null;
+            transport.PublishDataV2(new byte[] { 9 }, "lesson-graph-v2.voice", true);
+            CollectionAssert.AreEqual(payload, adapter.LastPublishedData);
         }
 
         [Test]
@@ -119,11 +123,13 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
                 new FakePovFactory(publication),
                 new FakeCoroutineHost());
             var generation = 7L;
-            var handle = new RoomConnectionHandle(7, new FakeRoomAdapter { Connected = true });
+            var adapter = new FakeRoomAdapter { Connected = true };
+            var handle = new RoomConnectionHandle(7, adapter);
+            var cameraObject = new GameObject("LiveKitService.DecompositionTest.Camera");
+            var camera = cameraObject.AddComponent<Camera>();
 
-            var task = publisher.EnableAsync(null, () => handle, value => value == generation, CancellationToken.None);
-            generation = 8;
-            publisher.Disable();
+            var task = publisher.EnableAsync(camera, () => handle, value => value == generation, CancellationToken.None);
+            adapter.Connected = false;
             publication.CompletePublish();
             yield return CompleteWithinFrames(task, 60);
 
@@ -131,6 +137,28 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             Assert.IsTrue(publication.Disposed);
             Assert.IsFalse(publication.FramesStarted);
             Assert.AreSame(handle, publication.UnpublishedHandle);
+
+            var retryPublication = new FakePovPublication();
+            var retryPublisher = new LiveKitPovVideoPublisher(
+                new FakePovFactory(retryPublication),
+                new FakeCoroutineHost());
+            var retryAdapter = new FakeRoomAdapter { Connected = true };
+            var retryHandle = new RoomConnectionHandle(7, retryAdapter);
+            var retryTask = retryPublisher.EnableAsync(
+                camera,
+                () => retryHandle,
+                value => value == generation,
+                CancellationToken.None);
+            retryPublication.CompletePublish();
+            yield return CompleteWithinFrames(retryTask, 60);
+
+            retryPublication.ThrowOnFirstUnpublish = true;
+            retryPublisher.Disable();
+            Assert.AreEqual(2, retryPublication.UnpublishAttempts);
+            Assert.IsTrue(retryPublication.Disposed);
+
+            publisher.Disable();
+            UnityEngine.Object.DestroyImmediate(cameraObject);
         }
 
         [UnityTest]
@@ -334,7 +362,7 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             public Room SdkRoom => null;
             public bool IsConnected => Connected;
             public string RoomName => "test-room";
-            public string LocalParticipantSid => "test-participant";
+            public string LocalParticipantSid { get; set; } = "test-participant";
 
             public event Action<byte[], Participant, DataPacketKind, string> DataReceived;
             public event Action<Room> Reconnected;
@@ -455,6 +483,8 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             public bool Unpublished { get; private set; }
             public bool Disposed { get; private set; }
             public RoomConnectionHandle UnpublishedHandle { get; private set; }
+            public bool ThrowOnFirstUnpublish { get; set; }
+            public int UnpublishAttempts { get; private set; }
 
             public Task PublishAsync(RoomConnectionHandle handle) => _publish.Task;
 
@@ -462,10 +492,15 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
 
             public void BeginFrames() => FramesStarted = true;
 
-            public void Unpublish(RoomConnectionHandle handle)
+            public bool Unpublish(RoomConnectionHandle handle)
             {
+                UnpublishAttempts++;
+                if (ThrowOnFirstUnpublish && UnpublishAttempts == 1)
+                    throw new InvalidOperationException("simulated unpublish failure");
+
                 Unpublished = true;
                 UnpublishedHandle = handle;
+                return true;
             }
 
             public void Dispose() => Disposed = true;

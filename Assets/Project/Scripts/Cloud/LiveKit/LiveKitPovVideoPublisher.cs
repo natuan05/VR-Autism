@@ -14,7 +14,7 @@ namespace VRAutism.Cloud.LiveKit
     {
         Task PublishAsync(RoomConnectionHandle handle);
         void BeginFrames();
-        void Unpublish(RoomConnectionHandle handle);
+        bool Unpublish(RoomConnectionHandle handle);
     }
 
     internal interface ILiveKitPovPublicationFactory
@@ -151,7 +151,9 @@ namespace VRAutism.Cloud.LiveKit
                     return;
 
                 if (!IsOperationCurrent(operation) ||
-                    (isGenerationCurrent != null && !isGenerationCurrent(capturedHandle.Generation)))
+                    (isGenerationCurrent != null && !isGenerationCurrent(capturedHandle.Generation)) ||
+                    !ReferenceEquals(currentHandleProvider(), capturedHandle) ||
+                    !capturedHandle.IsConnected)
                 {
                     Cleanup(pending);
                     _pendingPublication = null;
@@ -270,13 +272,26 @@ namespace VRAutism.Cloud.LiveKit
 
         private static void Rollback(ILiveKitPovPublication publication, RoomConnectionHandle handle)
         {
+            var unpublished = false;
             try
             {
-                publication.Unpublish(handle);
+                unpublished = publication.Unpublish(handle);
             }
             catch (Exception exception)
             {
                 Debug.LogWarning($"[LiveKitService] POV unpublish cleanup notice: {exception.Message}");
+            }
+
+            if (!unpublished)
+            {
+                try
+                {
+                    publication.Unpublish(handle);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning($"[LiveKitService] POV unpublish retry notice: {exception.Message}");
+                }
             }
 
             try
@@ -397,12 +412,11 @@ namespace VRAutism.Cloud.LiveKit
             _videoSourceCoroutine = _coroutineHost.StartLiveKitCoroutine(_videoSource.Update());
         }
 
-        public void Unpublish(RoomConnectionHandle handle)
+        public bool Unpublish(RoomConnectionHandle handle)
         {
             if (_unpublished || _localVideoTrack == null || handle == null)
-                return;
+                return true;
 
-            _unpublished = true;
             if (_videoSourceCoroutine != null)
             {
                 try
@@ -418,10 +432,13 @@ namespace VRAutism.Cloud.LiveKit
             try
             {
                 handle.Adapter.UnpublishVideoTrack(_localVideoTrack);
+                _unpublished = true;
+                return true;
             }
             catch (Exception exception)
             {
                 Debug.LogWarning($"[LiveKitService] POV unpublish cleanup notice: {exception.Message}");
+                return false;
             }
         }
 

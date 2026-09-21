@@ -64,42 +64,67 @@ namespace VRAutism.Cloud.LiveKit
 
         public void PublishData(byte[] data, string topic, bool reliable)
         {
+            var localParticipant = _room.LocalParticipant;
+            if (localParticipant == null)
+                throw new InvalidOperationException("LiveKit local participant is unavailable.");
+
             if (topic == null)
             {
-                _room.LocalParticipant.PublishData(data, reliable: reliable);
+                localParticipant.PublishData(data, reliable: reliable);
                 return;
             }
 
-            _room.LocalParticipant.PublishData(data, null, reliable, topic);
+            localParticipant.PublishData(data, null, reliable, topic);
         }
 
         public async Task PublishAudioTrackAsync(LocalAudioTrack track, TrackPublishOptions options)
         {
-            await _room.LocalParticipant.PublishTrack(track, options);
+            var localParticipant = _room.LocalParticipant;
+            if (localParticipant == null)
+                throw new InvalidOperationException("LiveKit local participant is unavailable.");
+
+            await localParticipant.PublishTrack(track, options);
         }
 
         public async Task PublishVideoTrackAsync(LocalVideoTrack track, TrackPublishOptions options)
         {
-            await _room.LocalParticipant.PublishTrack(track, options);
+            var localParticipant = _room.LocalParticipant;
+            if (localParticipant == null)
+                return;
+
+            await localParticipant.PublishTrack(track, options);
         }
 
         public void UnpublishAudioTrack(LocalAudioTrack track)
         {
-            _room.LocalParticipant.UnpublishTrack(track, false);
+            _room.LocalParticipant?.UnpublishTrack(track, false);
         }
 
         public void UnpublishVideoTrack(LocalVideoTrack track)
         {
-            _room.LocalParticipant.UnpublishTrack(track, false);
+            _room.LocalParticipant?.UnpublishTrack(track, false);
         }
 
         public void Disconnect()
         {
-            _room.DataReceived -= HandleDataReceived;
-            _room.Reconnected -= HandleReconnected;
-            _room.TrackSubscribed -= HandleTrackSubscribed;
-            _room.TrackUnsubscribed -= HandleTrackUnsubscribed;
+            TryDetach(() => _room.DataReceived -= HandleDataReceived, "data");
+            TryDetach(() => _room.Reconnected -= HandleReconnected, "reconnect");
+            TryDetach(() => _room.TrackSubscribed -= HandleTrackSubscribed, "track subscribed");
+            TryDetach(() => _room.TrackUnsubscribed -= HandleTrackUnsubscribed, "track unsubscribed");
             _room.Disconnect();
+        }
+
+        private static void TryDetach(Action detach, string eventName)
+        {
+            try
+            {
+                detach();
+            }
+            catch (Exception exception)
+            {
+                UnityEngine.Debug.LogWarning(
+                    $"[LiveKitService] Room {eventName} detach cleanup notice: {exception.Message}");
+            }
         }
 
         private void HandleDataReceived(byte[] data, Participant participant, DataPacketKind kind, string topic)
