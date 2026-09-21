@@ -26,6 +26,8 @@ namespace VRAutism.Cloud.LiveKit
         private readonly object _stateGate = new object();
         private readonly HashSet<RoomConnectionHandle> _pendingTeardownHandles =
             new HashSet<RoomConnectionHandle>();
+        private readonly Dictionary<long, CancellationTokenSource> _generationCancellations =
+            new Dictionary<long, CancellationTokenSource>();
 
         private CancellationTokenSource _generationCancellation;
         private long _generation;
@@ -99,6 +101,7 @@ namespace VRAutism.Cloud.LiveKit
                 generationCancellation = CancellationTokenSource.CreateLinkedTokenSource(
                     _lifetimeCancellation.Token);
                 _generationCancellation = generationCancellation;
+                _generationCancellations[generation] = generationCancellation;
                 _activeOperations++;
                 _state = LiveKitLifecycleState.Connecting;
             }
@@ -109,10 +112,14 @@ namespace VRAutism.Cloud.LiveKit
             }
             catch
             {
-                CompleteOperation(generationCancellation);
+                CompleteOperation(generation);
                 throw;
             }
-            return ConnectCoreAsync(generation, generationCancellation, roomUrl, token);
+            var generationToken = generationCancellation.Token;
+            return _executor.PostAsync(
+                generation,
+                generationToken,
+                () => ConnectCoreAsync(generation, generationToken, roomUrl, token));
         }
 
         internal Task DisconnectAsync()
@@ -129,6 +136,7 @@ namespace VRAutism.Cloud.LiveKit
                 generationCancellation = CancellationTokenSource.CreateLinkedTokenSource(
                     _lifetimeCancellation.Token);
                 _generationCancellation = generationCancellation;
+                _generationCancellations[generation] = generationCancellation;
                 _activeOperations++;
                 _state = LiveKitLifecycleState.Disconnecting;
             }
@@ -139,10 +147,14 @@ namespace VRAutism.Cloud.LiveKit
             }
             catch
             {
-                CompleteOperation(generationCancellation);
+                CompleteOperation(generation);
                 throw;
             }
-            return DisconnectCoreAsync(generation, generationCancellation);
+            var generationToken = generationCancellation.Token;
+            return _executor.PostAsync(
+                generation,
+                generationToken,
+                () => DisconnectCoreAsync(generation, generationToken));
         }
 
         internal void Destroy()
@@ -161,7 +173,7 @@ namespace VRAutism.Cloud.LiveKit
                 handles = SnapshotPendingTeardownNoLock();
             }
 
-            foreach (var pendingHandle in _roomConnection.GetPendingCleanupHandles())
+            foreach (var pendingHandle in _roomConnection.GetAllHandles())
             {
                 lock (_stateGate)
                     QueueTeardownNoLock(pendingHandle);
@@ -173,12 +185,18 @@ namespace VRAutism.Cloud.LiveKit
             _executor.Close();
             foreach (var handle in handles)
                 Teardown(handle);
+
+            // Drain already-started continuations synchronously when Destroy is called
+            // on the owner thread. Later SDK completions use the executor's captured
+            // owner SynchronizationContext after Close.
+            if (_executor.IsOwnerThread)
+                _executor.Drain();
             MaybeDisposeResources();
         }
 
         private async Task ConnectCoreAsync(
             long generation,
-            CancellationTokenSource generationCancellation,
+            CancellationToken generationToken,
             string roomUrl,
             string token)
         {
@@ -186,9 +204,15 @@ namespace VRAutism.Cloud.LiveKit
             try
             {
                 if (!_lifecycleGate.Wait(0))
-                    await _lifecycleGate.WaitAsync(generationCancellation.Token).ConfigureAwait(false);
-                entered = true;
-                if (!IsGenerationCurrent(generation, generationCancellation.Token))
+                {
+                    await _lifecycleGate.WaitAsync(generationToken);
+                    entered = true;
+                }
+                else
+                {
+                    entered = true;
+                }
+                if (!IsGenerationCurrent(generation, generationToken))
                     return;
 
                 TeardownPending();
@@ -200,14 +224,14 @@ namespace VRAutism.Cloud.LiveKit
                         generation,
                         roomUrl,
                         token,
-                        generationCancellation.Token);
+                        generationToken);
                 }
-                catch (OperationCanceledException) when (!IsGenerationCurrent(generation, generationCancellation.Token))
+                catch (OperationCanceledException) when (!IsGenerationCurrent(generation, generationToken))
                 {
                     return;
                 }
 
-                if (!IsGenerationCurrent(generation, generationCancellation.Token))
+                if (!IsGenerationCurrent(generation, generationToken))
                 {
                     _roomConnection.DetachAndDisconnect(candidate);
                     return;
@@ -216,7 +240,7 @@ namespace VRAutism.Cloud.LiveKit
                 _roomConnection.Commit(candidate);
                 lock (_stateGate)
                 {
-                    if (!IsGenerationCurrentNoLock(generation, generationCancellation.Token))
+                    if (!IsGenerationCurrentNoLock(generation, generationToken))
                     {
                         _roomConnection.DetachAndDisconnect(candidate);
                         return;
@@ -225,22 +249,27 @@ namespace VRAutism.Cloud.LiveKit
                     _state = LiveKitLifecycleState.Connected;
                 }
 
-                if (!IsGenerationCurrent(generation, generationCancellation.Token))
+                _executor.Post(generation, () =>
                 {
-                    Teardown(candidate);
-                    return;
-                }
+                    lock (_stateGate)
+                    {
+                        if (_state != LiveKitLifecycleState.Connected ||
+                            generation != _generation ||
+                            !ReferenceEquals(_roomConnection.CurrentHandle, candidate))
+                            return;
+                    }
 
-                ConnectedOrReconnected?.Invoke();
+                    ConnectedOrReconnected?.Invoke();
+                });
             }
-            catch (OperationCanceledException) when (!IsGenerationCurrent(generation, generationCancellation.Token))
+            catch (OperationCanceledException) when (!IsGenerationCurrent(generation, generationToken))
             {
             }
             catch (Exception exception)
             {
                 lock (_stateGate)
                 {
-                    if (IsGenerationCurrentNoLock(generation, generationCancellation.Token))
+                    if (IsGenerationCurrentNoLock(generation, generationToken))
                         _state = LiveKitLifecycleState.Disconnected;
                 }
 
@@ -253,20 +282,26 @@ namespace VRAutism.Cloud.LiveKit
                     _lifecycleGate.Release();
                 }
 
-                CompleteOperation(generationCancellation);
+                CompleteOperation(generation);
             }
         }
 
         private async Task DisconnectCoreAsync(
             long generation,
-            CancellationTokenSource generationCancellation)
+            CancellationToken generationToken)
         {
             var entered = false;
             try
             {
                 if (!_lifecycleGate.Wait(0))
-                    await _lifecycleGate.WaitAsync(generationCancellation.Token).ConfigureAwait(false);
-                entered = true;
+                {
+                    await _lifecycleGate.WaitAsync(generationToken);
+                    entered = true;
+                }
+                else
+                {
+                    entered = true;
+                }
                 lock (_stateGate)
                 {
                     if (_state == LiveKitLifecycleState.Destroyed || generation != _generation)
@@ -280,7 +315,7 @@ namespace VRAutism.Cloud.LiveKit
                         _state = LiveKitLifecycleState.Disconnected;
                 }
             }
-            catch (OperationCanceledException) when (!IsGenerationCurrent(generation, generationCancellation.Token))
+            catch (OperationCanceledException) when (!IsGenerationCurrent(generation, generationToken))
             {
             }
             finally
@@ -290,7 +325,7 @@ namespace VRAutism.Cloud.LiveKit
                     _lifecycleGate.Release();
                 }
 
-                CompleteOperation(generationCancellation);
+                CompleteOperation(generation);
             }
         }
 
@@ -358,16 +393,19 @@ namespace VRAutism.Cloud.LiveKit
         private RoomConnectionHandle[] SnapshotPendingTeardownNoLock() =>
             new List<RoomConnectionHandle>(_pendingTeardownHandles).ToArray();
 
-        private void CompleteOperation(CancellationTokenSource generationCancellation)
+        private void CompleteOperation(long generation)
         {
+            CancellationTokenSource generationCancellation = null;
             lock (_stateGate)
             {
+                if (_generationCancellations.TryGetValue(generation, out generationCancellation))
+                    _generationCancellations.Remove(generation);
                 if (ReferenceEquals(_generationCancellation, generationCancellation))
                     _generationCancellation = null;
                 _activeOperations--;
             }
 
-            generationCancellation.Dispose();
+            generationCancellation?.Dispose();
             MaybeDisposeResources();
         }
 

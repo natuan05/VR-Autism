@@ -154,9 +154,13 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             typeof(LiveKitService).GetField("_roomConnection", privateFields).SetValue(service, roomConnection);
             typeof(LiveKitService).GetField("_lifecycleCoordinator", privateFields).SetValue(service, coordinator);
             var lifecycleConnected = typeof(LiveKitService).GetMethod("OnLifecycleConnected", privateFields);
-            coordinator.ConnectedOrReconnected += () => lifecycleConnected.Invoke(service, null);
-            var publicConnectedSignals = 0;
             var ownerThreadId = Thread.CurrentThread.ManagedThreadId;
+            coordinator.ConnectedOrReconnected += () =>
+            {
+                Assert.AreEqual(ownerThreadId, Thread.CurrentThread.ManagedThreadId);
+                lifecycleConnected.Invoke(service, null);
+            };
+            var publicConnectedSignals = 0;
             service.ReconnectedV2 += () =>
             {
                 publicConnectedSignals++;
@@ -168,12 +172,13 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             var connectB = coordinator.ConnectAsync("room-b", "token-b");
 
             adapterA.CompleteConnect();
-            yield return CompleteWithinFrames(connectA, 60);
+            yield return CompleteWithinFrames(connectA, 60, executor);
             adapterB.CompleteConnect();
-            yield return CompleteWithinFrames(connectB, 60);
+            yield return CompleteWithinFrames(connectB, 60, executor);
             executor.Drain();
 
             Assert.AreSame(adapterB, coordinator.CurrentHandle.Adapter);
+            Assert.AreEqual(ownerThreadId, adapterB.ConnectEntryThreadId);
             Assert.AreEqual(1, publicConnectedSignals);
             Assert.IsTrue(service.IsConnectedV2);
             Assert.AreEqual(LiveKitLifecycleState.Connected, coordinator.State);
@@ -186,9 +191,10 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
         {
             var adapter = new FakeRoomAdapter();
             var roomConnection = new LiveKitRoomConnection(new FakeRoomAdapterFactory(adapter));
+            var executor = new LiveKitMainThreadExecutor();
             var coordinator = new LiveKitLifecycleCoordinator(
                 roomConnection,
-                new LiveKitMainThreadExecutor(),
+                executor,
                 () => { },
                 () => { },
                 () => { });
@@ -198,8 +204,8 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             var disconnect = coordinator.DisconnectAsync();
             adapter.CompleteConnect();
 
-            yield return CompleteWithinFrames(connect, 60);
-            yield return CompleteWithinFrames(disconnect, 60);
+            yield return CompleteWithinFrames(connect, 60, executor);
+            yield return CompleteWithinFrames(disconnect, 60, executor);
 
             Assert.AreEqual(1, adapter.DisconnectCalls);
             Assert.IsNull(coordinator.CurrentHandle);
@@ -240,7 +246,7 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
 
             var connectA = coordinator.ConnectAsync("room-a", "token-a");
             adapterA.CompleteConnect();
-            yield return CompleteWithinFrames(connectA, 60);
+            yield return CompleteWithinFrames(connectA, 60, executor);
             var handleA = roomConnection.CurrentHandle;
             adapterA.RaiseData(new byte[] { 0 }, "lesson-graph-v2.voice");
             executor.Drain();
@@ -254,7 +260,7 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             Assert.AreNotEqual(handleA.Generation, coordinator.CurrentGeneration);
 
             adapterB.CompleteConnect();
-            yield return CompleteWithinFrames(connectB, 60);
+            yield return CompleteWithinFrames(connectB, 60, executor);
             adapterB.RaiseData(new byte[] { 2 }, "lesson-graph-v2.voice");
             executor.Drain();
             Assert.AreEqual(2, callbackCount);
@@ -279,12 +285,12 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
 
             var connect = coordinator.ConnectAsync("room-a", "token-a");
             adapter.CompleteConnect();
-            yield return CompleteWithinFrames(connect, 60);
+            yield return CompleteWithinFrames(connect, 60, executor);
 
             var firstDisconnect = coordinator.DisconnectAsync();
-            yield return CompleteWithinFrames(firstDisconnect, 60);
+            yield return CompleteWithinFrames(firstDisconnect, 60, executor);
             var secondDisconnect = coordinator.DisconnectAsync();
-            yield return CompleteWithinFrames(secondDisconnect, 60);
+            yield return CompleteWithinFrames(secondDisconnect, 60, executor);
 
             CollectionAssert.AreEqual(new[] { "pov", "microphone", "audio", "room" }, teardown);
             Assert.AreEqual(1, adapter.DisconnectCalls);
@@ -293,10 +299,18 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             coordinator.Destroy();
         }
 
-        private static IEnumerator CompleteWithinFrames(Task task, int frameCount)
+        private static IEnumerator CompleteWithinFrames(
+            Task task,
+            int frameCount,
+            LiveKitMainThreadExecutor executor = null)
         {
             for (var frame = 0; frame < frameCount && !task.IsCompleted; frame++)
+            {
+                executor?.Drain();
                 yield return null;
+            }
+
+            executor?.Drain();
 
             if (task.IsFaulted)
                 throw task.Exception.InnerException ?? task.Exception;
@@ -310,6 +324,7 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             private readonly TaskCompletionSource<bool> _connect = new TaskCompletionSource<bool>();
 
             public bool Connected { get; set; }
+            public int ConnectEntryThreadId { get; private set; }
             public int DisconnectCalls { get; private set; }
             public Action OnDisconnect { get; set; }
             public byte[] LastPublishedData { get; private set; }
@@ -326,7 +341,11 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             public event Action<IRemoteTrack, RemoteTrackPublication, RemoteParticipant> TrackSubscribed;
             public event Action<IRemoteTrack, RemoteTrackPublication, RemoteParticipant> TrackUnsubscribed;
 
-            public Task ConnectAsync(string roomUrl, string token) => _connect.Task;
+            public Task ConnectAsync(string roomUrl, string token)
+            {
+                ConnectEntryThreadId = Thread.CurrentThread.ManagedThreadId;
+                return _connect.Task;
+            }
 
             public void CompleteConnect()
             {

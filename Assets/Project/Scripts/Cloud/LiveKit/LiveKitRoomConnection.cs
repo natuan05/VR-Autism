@@ -124,6 +124,16 @@ namespace VRAutism.Cloud.LiveKit
             }
         }
 
+        internal RoomConnectionHandle[] GetAllHandles()
+        {
+            lock (_gate)
+            {
+                var handles = new RoomConnectionHandle[_registrations.Count];
+                _registrations.Keys.CopyTo(handles, 0);
+                return handles;
+            }
+        }
+
         internal bool IsCurrent(long generation)
         {
             lock (_gate)
