@@ -65,6 +65,28 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Object.DestroyImmediate(graph);
         }
 
+        [Test]
+        public async Task StartLessonAsync_UnreachableNodeFailsPreflightBeforeActivation()
+        {
+            var graph = Graph("entry", new List<LessonNodeData>
+            {
+                new LessonNodeData("entry", NodeType.Wait, new WaitNodeConfig(1)),
+                new LessonNodeData("unreachable", NodeType.Wait, new WaitNodeConfig(1)),
+            });
+            var executor = new ImmediateExecutor(NodeStatus.Success);
+            var runner = NewRunner(graph, new MapRegistry(executor));
+            var entered = 0;
+            runner.NodeEntered += _ => entered++;
+
+            var result = await runner.StartLessonAsync();
+
+            Assert.AreEqual(LessonFailureReason.InvalidGraph, result.FailureReason);
+            Assert.AreEqual(0, entered);
+            Assert.AreEqual(0, executor.Executions);
+            Object.DestroyImmediate(runner.gameObject);
+            Object.DestroyImmediate(graph);
+        }
+
         [UnityTest]
         public IEnumerator WaitExecutor_SkipWinsBeforeDelay()
         {

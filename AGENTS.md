@@ -99,3 +99,8 @@ Every agent must preserve the following architectural non-negotiables:
    - Refresh GitNexus index via `gitnexus analyze` after creating or restructuring major files.
 2. **Git Commit Standards**:
    - Follow Conventional Commits: `feat(...)`, `fix(...)`, `refactor(...)`, `test(...)`, `docs(...)`.
+3. **Unity Implementation Loop**:
+   - By default, agents implement code and tests, then run checks that do not require launching Unity. The user performs final Unity compilation, EditMode/Test Runner runs, and manual GUI checks. Do not run Unity batch mode or a full Unity test suite unless the user requests it.
+   - Before handoff, inspect the scoped diff, run `git diff --check`, and run GitNexus `detect_changes`. Keep the existing impact-analysis requirement before editing symbols.
+   - Use one implementation pass and one independent review per coherent change set. Re-review only material fixes. Avoid parallel agents or lengthy process artifacts for small changes.
+   - Handoff must list changed files, unverified Unity behavior, and the smallest relevant test filters or manual checks. When the user supplies failures, fix the affected area and request a focused rerun; reserve full-suite runs for the user's final pass.

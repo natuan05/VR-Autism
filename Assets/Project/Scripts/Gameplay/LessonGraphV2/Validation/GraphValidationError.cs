@@ -57,6 +57,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
 
         // Graph structure errors
         CycleDetected,
+        UnreachableNode,
     }
 
     /// <summary>

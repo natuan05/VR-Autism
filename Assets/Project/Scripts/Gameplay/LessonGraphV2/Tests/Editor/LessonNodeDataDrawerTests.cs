@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,6 +26,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         [SetUp]
         public void SetUp()
         {
+            _tempAssetPath = null;
             _graph = ScriptableObject.CreateInstance<LessonGraph>();
         }
 
@@ -500,8 +502,128 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.IsNotNull(root.Q<PropertyField>("config-field"));
         }
 
+        [UnityTest]
+        public IEnumerator CreatePropertyGUI_NestedConfigEdit_RefreshesVisibleValueAfterUndoAndRedo()
+        {
+            var nodeProp = SetupNodeProperty(new LessonNodeData(
+                "guid-ui-nested-edit",
+                NodeType.Quest,
+                new QuestNodeConfig(new List<string>(), -1f, "Original prompt")));
+            var root = AttachAndBind(new LessonNodeDataDrawer().CreatePropertyGUI(nodeProp));
+
+            yield return null;
+
+            TextField FindVoicePromptField() =>
+                root.Query<TextField>().ToList().FirstOrDefault(field => field.label == "Voice Prompt");
+
+            var promptField = FindVoicePromptField();
+            Assert.IsNotNull(promptField, "The nested Quest config field must be visible in the drawer.");
+            Assert.AreEqual("Original prompt", promptField.value);
+
+            promptField.value = "Edited prompt";
+            Assert.AreEqual("Edited prompt", nodeProp.FindPropertyRelative("_config")
+                .FindPropertyRelative("_voicePrompt").stringValue);
+
+            Undo.PerformUndo();
+            yield return null;
+            yield return null;
+
+            promptField = FindVoicePromptField();
+            Assert.IsNotNull(promptField);
+            Assert.AreEqual("Original prompt", promptField.value,
+                "Undo must refresh the visible nested config field as well as serialized data.");
+
+            Undo.PerformRedo();
+            yield return null;
+            yield return null;
+
+            promptField = FindVoicePromptField();
+            Assert.IsNotNull(promptField);
+            Assert.AreEqual("Edited prompt", promptField.value,
+                "Redo must refresh the visible nested config field as well as serialized data.");
+        }
+
+        [UnityTest]
+        public IEnumerator CreatePropertyGUI_UnrelatedEdgeEdit_KeepsFocusedNodeTextField()
+        {
+            _graph.Editor_SetEdges(new List<LessonEdgeData>
+            {
+                new LessonEdgeData("start", "next", null, 1),
+            });
+            var nodeProp = SetupNodeProperty(new LessonNodeData(
+                "guid-ui-unrelated-edge",
+                NodeType.Quest,
+                new QuestNodeConfig(new List<string>(), -1f, "Keep focus")));
+            var root = AttachAndBind(new LessonNodeDataDrawer().CreatePropertyGUI(nodeProp));
+
+            yield return null;
+
+            TextField FindVoicePromptField() =>
+                root.Query<TextField>().ToList().FirstOrDefault(field => field.label == "Voice Prompt");
+
+            var promptField = FindVoicePromptField();
+            Assert.IsNotNull(promptField);
+            promptField.Focus();
+            var focusController = root.panel.focusController;
+            var focusedElement = focusController.focusedElement;
+            Assert.IsNotNull(focusedElement, "The nested text field must accept focus before the edge edit.");
+
+            var edgePriority = _serializedObject.FindProperty("_edges")
+                .GetArrayElementAtIndex(0)
+                .FindPropertyRelative("_priority");
+            edgePriority.intValue = 2;
+            _serializedObject.ApplyModifiedProperties();
+
+            yield return null;
+            yield return null;
+
+            Assert.AreSame(promptField, FindVoicePromptField(),
+                "Editing an unrelated edge must not rebuild this node's nested text field.");
+            Assert.AreSame(focusedElement, focusController.focusedElement,
+                "Editing an unrelated edge must not detach the active node field or steal focus.");
+        }
+
+        [UnityTest]
+        public IEnumerator CreatePropertyGUI_NodeIdEdit_KeepsTextFieldAndUpdatesGenerateButton()
+        {
+            var nodeProp = SetupNodeProperty(
+                new LessonNodeData(string.Empty, NodeType.Quest, new QuestNodeConfig()));
+            var root = AttachAndBind(new LessonNodeDataDrawer().CreatePropertyGUI(nodeProp));
+            yield return null;
+
+            var idPropertyField = root.Q<PropertyField>("id-field");
+            var idTextField = idPropertyField?.Q<TextField>();
+            Assert.IsNotNull(idTextField);
+            Assert.IsNotNull(root.Q<Button>("generate-node-id-button"));
+
+            idTextField.Focus();
+            var focusController = root.panel.focusController;
+            var focusedElement = focusController.focusedElement;
+            Assert.IsNotNull(focusedElement);
+
+            idTextField.value = "assigned-node-id";
+            yield return null;
+            yield return null;
+
+            Assert.AreSame(idTextField, root.Q<PropertyField>("id-field")?.Q<TextField>(),
+                "Typing a node ID must not replace the bound text field.");
+            Assert.IsNull(root.Q<Button>("generate-node-id-button"),
+                "The Generate action should disappear once the ID is nonblank.");
+            Assert.AreSame(focusedElement, focusController.focusedElement,
+                "Typing a node ID must not detach the active field or steal focus.");
+
+            idTextField.value = string.Empty;
+            yield return null;
+            yield return null;
+
+            Assert.AreSame(idTextField, root.Q<PropertyField>("id-field")?.Q<TextField>());
+            Assert.IsNotNull(root.Q<Button>("generate-node-id-button"),
+                "The Generate action should return if the ID is cleared.");
+            Assert.AreSame(focusedElement, focusController.focusedElement);
+        }
+
         [Test]
-        public void CreatePropertyGUI_NodeTypeField_IsBoundToSerializedNodeType()
+        public void CreatePropertyGUI_NodeTypeField_IsNotDirectlyBoundToSerializedNodeType()
         {
             var nodeProp = SetupNodeProperty(
                 new LessonNodeData("guid-ui-bound", NodeType.Quest, new QuestNodeConfig()));
@@ -510,9 +632,49 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var nodeTypeField = root.Q<EnumField>("node-type-field");
 
             Assert.IsNotNull(nodeTypeField);
-            Assert.AreEqual(
-                nodeProp.FindPropertyRelative("_nodeType").propertyPath,
-                nodeTypeField.bindingPath);
+            Assert.IsTrue(string.IsNullOrEmpty(nodeTypeField.bindingPath),
+                "Node type selection must wait for confirmation before it can mutate serialized data.");
+        }
+
+        [UnityTest]
+        public IEnumerator CreatePropertyGUI_NodeTypeField_RefreshesAfterUndoAndRedo()
+        {
+            var nodeProp = SetupNodeProperty(
+                new LessonNodeData("guid-ui-type-undo", NodeType.Quest, new QuestNodeConfig()));
+            var root = AttachAndBind(new LessonNodeDataDrawer().CreatePropertyGUI(nodeProp));
+            yield return null;
+
+            Undo.IncrementCurrentGroup();
+            Undo.SetCurrentGroupName("Change Node Type Through Drawer");
+            root.Q<EnumField>("node-type-field").value = NodeType.Wait;
+            var confirmButton = root.Q<Button>("confirm-node-type-change-button");
+            Assert.IsNotNull(confirmButton);
+            Submit(confirmButton);
+            Assert.AreEqual(NodeType.Wait, root.Q<EnumField>("node-type-field").value);
+            yield return null;
+
+            Undo.PerformUndo();
+            yield return null;
+            yield return null;
+
+            Assert.AreEqual(NodeType.Quest,
+                (NodeType)nodeProp.FindPropertyRelative("_nodeType").enumValueIndex,
+                "Undo must restore the serialized discriminator before the UI refresh is checked.");
+            var nodeTypeField = root.Q<EnumField>("node-type-field");
+            Assert.IsNotNull(nodeTypeField);
+            Assert.AreEqual(NodeType.Quest, nodeTypeField.value,
+                "Undo must rebuild the unbound node type field from the serialized discriminator.");
+            Assert.IsInstanceOf<QuestNodeConfig>(nodeProp.FindPropertyRelative("_config").managedReferenceValue);
+
+            Undo.PerformRedo();
+            yield return null;
+            yield return null;
+
+            nodeTypeField = root.Q<EnumField>("node-type-field");
+            Assert.IsNotNull(nodeTypeField);
+            Assert.AreEqual(NodeType.Wait, nodeTypeField.value,
+                "Redo must rebuild the unbound node type field from the serialized discriminator.");
+            Assert.IsInstanceOf<WaitNodeConfig>(nodeProp.FindPropertyRelative("_config").managedReferenceValue);
         }
 
         [Test]
@@ -582,7 +744,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         [Test]
         public void CreatePropertyGUI_ChangeNodeTypeDropdown_ChangesTypeAndConfig()
         {
-            var nodeProp = SetupNodeProperty(new LessonNodeData("guid-ui-dd", NodeType.Quest, new QuestNodeConfig()));
+            var existingConfig = new QuestNodeConfig(new List<string> { "preserve-until-confirm" });
+            var nodeProp = SetupNodeProperty(new LessonNodeData("guid-ui-dd", NodeType.Quest, existingConfig));
             var drawer = new LessonNodeDataDrawer();
 
             var root = AttachAndBind(drawer.CreatePropertyGUI(nodeProp));
@@ -591,10 +754,45 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
 
             nodeTypeField.value = NodeType.Wait;
 
+            Assert.IsNotNull(root.Q<HelpBox>("node-type-change-warning"));
+            Assert.AreEqual((int)NodeType.Quest, nodeProp.FindPropertyRelative("_nodeType").enumValueIndex);
+            Assert.AreSame(existingConfig, nodeProp.FindPropertyRelative("_config").managedReferenceValue,
+                "Changing the selection must not discard config before confirmation.");
+
+            var confirmButton = root.Q<Button>("confirm-node-type-change-button");
+            Assert.IsNotNull(confirmButton);
+            Submit(confirmButton);
+
+            Assert.IsNull(root.Q<HelpBox>("node-type-change-warning"));
             Assert.AreEqual((int)NodeType.Wait, nodeProp.FindPropertyRelative("_nodeType").enumValueIndex);
             var config = nodeProp.FindPropertyRelative("_config").managedReferenceValue;
             Assert.IsNotNull(config);
             Assert.IsInstanceOf<WaitNodeConfig>(config);
+        }
+
+        [Test]
+        public void CreatePropertyGUI_CancelNodeTypeChange_PreservesExistingPayload()
+        {
+            var existingConfig = new QuestNodeConfig(
+                new List<string> { "keep-this-binding" }, 17f, "Keep this prompt");
+            var nodeProp = SetupNodeProperty(
+                new LessonNodeData("guid-ui-cancel", NodeType.Quest, existingConfig));
+            var root = AttachAndBind(new LessonNodeDataDrawer().CreatePropertyGUI(nodeProp));
+
+            root.Q<EnumField>("node-type-field").value = NodeType.Wait;
+
+            var cancelButton = root.Q<Button>("cancel-node-type-change-button");
+            Assert.IsNotNull(root.Q<HelpBox>("node-type-change-warning"));
+            Assert.IsNotNull(cancelButton);
+            Submit(cancelButton);
+
+            Assert.AreEqual((int)NodeType.Quest, nodeProp.FindPropertyRelative("_nodeType").enumValueIndex);
+            var config = nodeProp.FindPropertyRelative("_config").managedReferenceValue as QuestNodeConfig;
+            Assert.AreSame(existingConfig, config);
+            Assert.AreEqual("keep-this-binding", config.CompletionBindingIds[0]);
+            Assert.AreEqual(17f, config.TimeoutSeconds);
+            Assert.AreEqual("Keep this prompt", config.VoicePrompt);
+            Assert.IsNull(root.Q<HelpBox>("node-type-change-warning"));
         }
 
         [TestCase(NodeType.Timeline)]

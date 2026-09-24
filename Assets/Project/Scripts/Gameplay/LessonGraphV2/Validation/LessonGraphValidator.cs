@@ -281,6 +281,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
             if (nodesValid && edgesValid)
                 DetectCycles(graph, nodeIds, errors);
 
+            if (nodesValid && edgesValid &&
+                !string.IsNullOrWhiteSpace(graph.EntryNodeId) &&
+                nodeIds.Contains(graph.EntryNodeId))
+            {
+                DetectUnreachableNodes(graph, graph.EntryNodeId, nodeIds, errors);
+            }
+
             return errors.Count == 0
                 ? GraphValidationResult.Ok()
                 : GraphValidationResult.Fail(errors);
@@ -385,6 +392,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
                     $"DialogueNodeConfig.timeoutSeconds must be -1 (no timeout) or a finite positive value. Got: {t}.",
                     nodeId));
             }
+
+            if (string.IsNullOrWhiteSpace(config.NpcBindingId))
+            {
+                errors.Add(new GraphValidationError(
+                    GraphValidationErrorCode.InvalidDialogueConfig,
+                    "DialogueNodeConfig.npcBindingId must not be empty or whitespace.",
+                    nodeId));
+            }
         }
 
         private static void ValidateWaitConfig(
@@ -454,6 +469,58 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
             {
                 if (color[startId] == 0)
                     DfsVisit(startId, adjacency, color, errors);
+            }
+        }
+
+        private static void DetectUnreachableNodes(
+            LessonGraph graph,
+            string entryNodeId,
+            HashSet<string> allNodeIds,
+            List<GraphValidationError> errors)
+        {
+            var adjacency = new Dictionary<string, List<string>>(allNodeIds.Count);
+            foreach (var id in allNodeIds)
+                adjacency[id] = new List<string>();
+
+            foreach (var edge in graph.Edges)
+            {
+                if (edge == null ||
+                    string.IsNullOrWhiteSpace(edge.FromNodeId) ||
+                    string.IsNullOrWhiteSpace(edge.ToNodeId))
+                    continue;
+
+                if (!adjacency.TryGetValue(edge.FromNodeId, out var neighbors) ||
+                    !allNodeIds.Contains(edge.ToNodeId))
+                    continue;
+
+                neighbors.Add(edge.ToNodeId);
+            }
+
+            var reachable = new HashSet<string> { entryNodeId };
+            var pending = new Queue<string>();
+            pending.Enqueue(entryNodeId);
+            while (pending.Count > 0)
+            {
+                var nodeId = pending.Dequeue();
+                foreach (var neighbor in adjacency[nodeId])
+                {
+                    if (reachable.Add(neighbor))
+                        pending.Enqueue(neighbor);
+                }
+            }
+
+            var unreachable = new List<string>();
+            foreach (var nodeId in allNodeIds)
+                if (!reachable.Contains(nodeId))
+                    unreachable.Add(nodeId);
+            unreachable.Sort(StringComparer.Ordinal);
+
+            foreach (var nodeId in unreachable)
+            {
+                errors.Add(new GraphValidationError(
+                    GraphValidationErrorCode.UnreachableNode,
+                    $"Node \"{nodeId}\" is unreachable from EntryNodeId \"{entryNodeId}\".",
+                    nodeId));
             }
         }
 

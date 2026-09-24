@@ -508,10 +508,90 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
 
             Rebuild(root, property);
 
-            // Track property updates for Undo / Redo or external mutations
-            root.TrackPropertyValue(nodeTypeProp, _ => Rebuild(root, property));
+            TrackProperty(root, nodeTypeProp, property);
+            var idProp = property.FindPropertyRelative("_id");
+            if (idProp != null)
+            {
+                TrackNodeIdProperty(root, idProp, property);
+            }
+            TrackProperty(root, configProp, property);
 
             return root;
+        }
+
+        private static void TrackProperty(
+            VisualElement root,
+            SerializedProperty trackedProperty,
+            SerializedProperty nodeProperty)
+        {
+            var tracker = new VisualElement();
+            tracker.TrackPropertyValue(trackedProperty, _ => Rebuild(root, nodeProperty));
+            root.Add(tracker);
+        }
+
+        private static void TrackNodeIdProperty(
+            VisualElement root,
+            SerializedProperty idProperty,
+            SerializedProperty nodeProperty)
+        {
+            var tracker = new VisualElement();
+            tracker.TrackPropertyValue(idProperty, _ => RefreshNodeIdControls(root, nodeProperty));
+            root.Add(tracker);
+        }
+
+        private static void RefreshNodeIdControls(VisualElement root, SerializedProperty nodeProperty)
+        {
+            var idProperty = nodeProperty?.FindPropertyRelative("_id");
+            var idField = root?.Q<PropertyField>("id-field");
+            if (idProperty == null || idField?.parent == null)
+            {
+                return;
+            }
+
+            var generateButton = root.Q<Button>("generate-node-id-button");
+            var needsGenerateButton = string.IsNullOrWhiteSpace(idProperty.stringValue);
+            if (needsGenerateButton && generateButton == null)
+            {
+                var button = CreateGenerateNodeIdButton(root, nodeProperty);
+                idField.parent.Insert(idField.parent.IndexOf(idField) + 1, button);
+            }
+            else if (!needsGenerateButton)
+            {
+                generateButton?.RemoveFromHierarchy();
+            }
+        }
+
+        private static Button CreateGenerateNodeIdButton(
+            VisualElement root,
+            SerializedProperty nodeProperty)
+        {
+            var button = new Button(() =>
+            {
+                var serializedObject = nodeProperty?.serializedObject;
+                if (serializedObject == null || serializedObject.targetObject == null)
+                {
+                    return;
+                }
+
+                serializedObject.Update();
+                var currentIdProperty = nodeProperty.FindPropertyRelative("_id");
+                if (currentIdProperty == null || !string.IsNullOrWhiteSpace(currentIdProperty.stringValue))
+                {
+                    Rebuild(root, nodeProperty);
+                    return;
+                }
+
+                Undo.RecordObject(serializedObject.targetObject, "Generate Lesson Node ID");
+                currentIdProperty.stringValue = Guid.NewGuid().ToString("N");
+                serializedObject.ApplyModifiedProperties();
+                Rebuild(root, nodeProperty);
+            })
+            {
+                text = "Generate Node ID",
+                tooltip = "Assign a new stable ID to this node."
+            };
+            button.name = "generate-node-id-button";
+            return button;
         }
 
         /// <summary>
@@ -519,7 +599,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
         /// </summary>
         public static void Rebuild(VisualElement root, SerializedProperty property)
         {
-            root.Clear();
+            var content = root.Q<VisualElement>("node-data-content");
+            if (content == null)
+            {
+                content = new VisualElement { name = "node-data-content" };
+                root.Add(content);
+            }
+
+            content.Clear();
 
             if (property == null || property.serializedObject == null)
             {
@@ -561,15 +648,66 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                 var idField = new PropertyField(idProp, "Node ID");
                 idField.name = "id-field";
                 container.Add(idField);
+
+                if (string.IsNullOrWhiteSpace(idProp.stringValue))
+                {
+                    container.Add(CreateGenerateNodeIdButton(root, property));
+                }
             }
 
             // 2. Node Type Dropdown
             var currentType = (NodeType)nodeTypeProp.enumValueIndex;
             var nodeTypeField = new EnumField("Node Type", currentType);
             nodeTypeField.name = "node-type-field";
-            nodeTypeField.bindingPath = nodeTypeProp.propertyPath;
             Action<NodeType> onTypeChanged = newType =>
             {
+                if (newType == currentType)
+                {
+                    return;
+                }
+
+                var missingConfig = LessonNodeSyncHelper.HasMissingManagedReference(configProp);
+                var replacingConfig = LessonNodeSyncHelper.IsSupportedPhase1Type(newType) &&
+                    (configProp.managedReferenceValue != null || missingConfig);
+                if (replacingConfig)
+                {
+                    nodeTypeField.SetValueWithoutNotify(currentType);
+                    root.Q<VisualElement>("node-type-change-confirmation")?.RemoveFromHierarchy();
+
+                    var confirmation = new VisualElement();
+                    confirmation.name = "node-type-change-confirmation";
+                    var warning = new HelpBox(
+                        $"Changing Node Type to '{newType}' will replace the current config and discard its values. Confirm to continue.",
+                        HelpBoxMessageType.Warning);
+                    warning.name = "node-type-change-warning";
+                    confirmation.Add(warning);
+
+                    var buttons = new VisualElement();
+                    buttons.style.flexDirection = FlexDirection.Row;
+                    var confirmButton = new Button(() =>
+                    {
+                        LessonNodeSyncHelper.ChangeNodeType(property, newType);
+                        Rebuild(root, property);
+                    })
+                    {
+                        text = "Confirm Type Change",
+                        tooltip = "Replace the current node config with the selected type's default config."
+                    };
+                    confirmButton.name = "confirm-node-type-change-button";
+                    buttons.Add(confirmButton);
+
+                    var cancelButton = new Button(() => Rebuild(root, property))
+                    {
+                        text = "Cancel",
+                        tooltip = "Keep the current node type and config."
+                    };
+                    cancelButton.name = "cancel-node-type-change-button";
+                    buttons.Add(cancelButton);
+                    confirmation.Add(buttons);
+                    content.Add(confirmation);
+                    return;
+                }
+
                 LessonNodeSyncHelper.ChangeNodeType(property, newType);
                 Rebuild(root, property);
             };
@@ -679,7 +817,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                 container.Add(configField);
             }
 
-            root.Add(container);
+            content.Add(container);
         }
     }
 }

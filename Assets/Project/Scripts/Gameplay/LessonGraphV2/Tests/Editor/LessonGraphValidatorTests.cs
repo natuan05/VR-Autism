@@ -56,7 +56,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             float timeout = 30f) =>
             new LessonNodeData(id, NodeType.Dialogue,
                 new DialogueNodeConfig(seqId ?? id + "-seq", text ?? id + "-text",
-                    blocking: true, timeoutSeconds: timeout));
+                    true, timeout, id + "-npc"));
 
         private static LessonNodeData CheckpointNode(string id, string cpId = null,
             bool emitTelemetry = true) =>
@@ -711,6 +711,80 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.IsFalse(result.IsValid);
             Assert.IsTrue(HasError(result, GraphValidationErrorCode.NullCollection));
             Destroy(g);
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase(" \t ")]
+        public void DialogueConfig_NullOrWhitespaceNpcBindingId_Fails(string npcBindingId)
+        {
+            var config = new DialogueNodeConfig("seq", "Hello");
+            var field = typeof(DialogueNodeConfig).GetField(
+                "_npcBindingId",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            Assert.IsNotNull(field);
+            field.SetValue(config, npcBindingId);
+            var graph = MakeGraph("dialogue", new List<LessonNodeData>
+            {
+                new LessonNodeData("dialogue", NodeType.Dialogue, config),
+            });
+
+            var result = LessonGraphValidator.Validate(graph);
+
+            Assert.IsFalse(result.IsValid);
+            Assert.IsTrue(HasError(result, GraphValidationErrorCode.InvalidDialogueConfig));
+            var bindingErrorFound = false;
+            foreach (var error in result.Errors)
+                if (error.Message.Contains("npcBindingId")) bindingErrorFound = true;
+            Assert.IsTrue(bindingErrorFound);
+            Destroy(graph);
+        }
+
+        [Test]
+        public void UnreachableNodes_AreReportedInSortedOrderAndNullEntriesAreIgnored()
+        {
+            var graph = MakeGraph("entry", new List<LessonNodeData>
+            {
+                WaitNode("z"),
+                null,
+                WaitNode("entry"),
+                WaitNode("b"),
+                WaitNode("a"),
+            }, new List<LessonEdgeData> { null });
+
+            var result = LessonGraphValidator.Validate(graph);
+            var unreachableIds = new List<string>();
+            foreach (var error in result.Errors)
+                if (error.ErrorCode == GraphValidationErrorCode.UnreachableNode)
+                    unreachableIds.Add(error.NodeId);
+
+            CollectionAssert.AreEqual(new[] { "a", "b", "z" }, unreachableIds);
+            Destroy(graph);
+        }
+
+        [Test]
+        public void UnreachableNodes_OnlyDisconnectedNodeIsReportedWhenValidPathExists()
+        {
+            var graph = MakeGraph("entry", new List<LessonNodeData>
+            {
+                WaitNode("entry"),
+                WaitNode("child"),
+                WaitNode("grandchild"),
+                WaitNode("disconnected"),
+            }, new List<LessonEdgeData>
+            {
+                Always("entry", "child"),
+                Always("child", "grandchild"),
+            });
+
+            var result = LessonGraphValidator.Validate(graph);
+            var unreachableIds = new List<string>();
+            foreach (var error in result.Errors)
+                if (error.ErrorCode == GraphValidationErrorCode.UnreachableNode)
+                    unreachableIds.Add(error.NodeId);
+
+            CollectionAssert.AreEqual(new[] { "disconnected" }, unreachableIds);
+            Destroy(graph);
         }
 
         // ── Fake Phase 2 condition ─────────────────────────────────────────────
