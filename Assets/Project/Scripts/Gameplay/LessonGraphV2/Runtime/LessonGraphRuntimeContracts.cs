@@ -8,6 +8,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
 {
     public enum NodeStatus { Success, Skipped, Timeout, Failed }
     public enum LessonFailureReason { None, InvalidGraph, Aborted }
+    public enum LessonRuntimeStateV2 { Running, Pausing, Paused, Completed, Failed, Cancelled }
 
     public static class NodeStatusCondition
     {
