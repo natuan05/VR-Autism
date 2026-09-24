@@ -84,3 +84,6 @@ project-context.md
 copilot-instructions.md
 
 .gitnexus/
+
+# Unity-generated UXML editor schemas
+/UIElementsSchema/
