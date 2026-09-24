@@ -55,6 +55,23 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
     public sealed class NodeEnteredEvent { public string RunId { get; } public string ActivationId { get; } public string NodeId { get; } public double ElapsedSeconds { get; } public NodeEnteredEvent(string runId, string activationId, string nodeId, double elapsedSeconds) { RunId = runId; ActivationId = activationId; NodeId = nodeId; ElapsedSeconds = elapsedSeconds; } }
     public sealed class NodeCompletedEvent { public NodeResult Result { get; } public NodeCompletedEvent(NodeResult result) { Result = result; } }
     public sealed class LessonCompletedEvent { public LessonResult Result { get; } public LessonCompletedEvent(LessonResult result) { Result = result; } }
+    public sealed class NodeCancelledEventV2
+    {
+        public string RunId { get; }
+        public string NodeId { get; }
+        public string ActivationId { get; }
+        public string Reason { get; }
+        public double ElapsedSeconds { get; }
+
+        public NodeCancelledEventV2(string runId, string nodeId, string activationId, string reason, double elapsedSeconds)
+        {
+            RunId = runId;
+            NodeId = nodeId;
+            ActivationId = activationId;
+            Reason = reason;
+            ElapsedSeconds = elapsedSeconds;
+        }
+    }
 
     public interface ILessonStartPreflight { bool IsReady(LessonGraph graph, out string reason); }
     public interface INodeClock { double ElapsedSeconds { get; } Task Delay(float seconds, CancellationToken cancellationToken); }
