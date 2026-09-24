@@ -606,6 +606,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                 root.Add(content);
             }
 
+            content.Unbind();
             content.Clear();
 
             if (property == null || property.serializedObject == null)
@@ -818,6 +819,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
             }
 
             content.Add(container);
+            if (root.panel != null)
+            {
+                content.Bind(property.serializedObject);
+            }
         }
     }
 }

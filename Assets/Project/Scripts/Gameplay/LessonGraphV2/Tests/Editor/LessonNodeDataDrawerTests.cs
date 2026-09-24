@@ -770,6 +770,32 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.IsInstanceOf<WaitNodeConfig>(config);
         }
 
+        [UnityTest]
+        public IEnumerator CreatePropertyGUI_ConfirmTypeChange_ShowsEditableNewConfigFields()
+        {
+            var nodeProp = SetupNodeProperty(new LessonNodeData(
+                "guid-ui-confirm-fields", NodeType.Quest, new QuestNodeConfig()));
+            var root = AttachAndBind(new LessonNodeDataDrawer().CreatePropertyGUI(nodeProp));
+            yield return null;
+
+            root.Q<EnumField>("node-type-field").value = NodeType.Dialogue;
+            Submit(root.Q<Button>("confirm-node-type-change-button"));
+
+            TextField dialogueTextField = null;
+            for (var frame = 0; frame < 5 && dialogueTextField == null; frame++)
+            {
+                yield return null;
+                dialogueTextField = root.Q<PropertyField>("config-field")?
+                    .Query<TextField>().ToList().FirstOrDefault(field => field.label == "Text");
+            }
+
+            Assert.IsNotNull(dialogueTextField,
+                "Confirm must render editable fields for the new Dialogue config.");
+            dialogueTextField.value = "New dialogue line";
+            Assert.AreEqual("New dialogue line",
+                ((DialogueNodeConfig)nodeProp.FindPropertyRelative("_config").managedReferenceValue).Text);
+        }
+
         [Test]
         public void CreatePropertyGUI_CancelNodeTypeChange_PreservesExistingPayload()
         {
