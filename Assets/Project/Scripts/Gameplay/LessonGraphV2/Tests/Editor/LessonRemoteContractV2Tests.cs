@@ -115,6 +115,17 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         }
 
         [Test]
+        public void TryParse_RejectsWhitespaceInsideUnicodeEscape()
+        {
+            const string json = "{\"contract_version\":2,\"event\":\"LESSON_COMMAND\",\"command_id\":\"cmd\\u 041\",\"session_id\":\"session-1\",\"run_id\":\"run-1\",\"node_id\":\"quest-1\",\"activation_id\":\"activation-1\",\"command\":\"SKIP\",\"binding_id\":\"\"}";
+            LessonCommandV2 command;
+            string reason;
+            Assert.IsFalse(LessonCommandCodecV2.TryParse(Encoding.UTF8.GetBytes(json), out command, out reason));
+            Assert.IsNull(command);
+            Assert.AreEqual(LessonCommandReasonV2.Malformed, reason);
+        }
+
+        [Test]
         public void StateSerialization_MatchesSharedLiteralFixture()
         {
             var state = new LessonStateV2
@@ -140,6 +151,29 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 bindings = new[] { new LessonBindingV2 { binding_id = "soap-touch", npc_binding_id = "teacher-npc", can_verbal_hint = true, can_visual_hint = true } }
             };
             Assert.AreEqual(StateFixture, JsonUtility.ToJson(state));
+        }
+
+        [Test]
+        public void CommandResultSerialization_MatchesSharedLiteralFixtureWithNestedState()
+        {
+            const string resultFixture = "{\"contract_version\":2,\"event\":\"LESSON_COMMAND_RESULT\",\"command_id\":\"cmd-1\",\"session_id\":\"session-1\",\"run_id\":\"run-1\",\"node_id\":\"quest-1\",\"activation_id\":\"activation-1\",\"command\":\"VISUAL_HINT\",\"binding_id\":\"soap-touch\",\"accepted\":true,\"reason\":\"NONE\",\"state\":{\"contract_version\":2,\"session_id\":\"session-1\",\"run_id\":\"run-1\",\"graph_id\":\"graph-1\",\"lesson_id\":\"lesson-1\",\"launch_token\":\"launch-1\",\"lesson_voice_revision\":3,\"child_phrase_revision\":4,\"node_id\":\"quest-1\",\"node_type\":\"Quest\",\"node_index\":0,\"activation_id\":\"activation-1\",\"status\":\"running\",\"checkpoint_id\":\"\",\"updated_at_utc\":\"2026-09-24T00:00:00Z\",\"state_revision\":1,\"active_node_ids\":[\"quest-1\"],\"parallel_group_id\":\"\",\"bindings\":[{\"binding_id\":\"soap-touch\",\"npc_binding_id\":\"teacher-npc\",\"can_verbal_hint\":true,\"can_visual_hint\":true}]}}";
+            var result = new LessonCommandResultV2
+            {
+                contract_version = 2,
+                @event = LessonRemoteContractV2.CommandResultEvent,
+                command_id = "cmd-1",
+                session_id = "session-1",
+                run_id = "run-1",
+                node_id = "quest-1",
+                activation_id = "activation-1",
+                command = LessonCommandKindV2.VisualHint,
+                binding_id = "soap-touch",
+                accepted = true,
+                reason = LessonCommandReasonV2.None,
+                state = JsonUtility.FromJson<LessonStateV2>(StateFixture)
+            };
+
+            Assert.AreEqual(resultFixture, JsonUtility.ToJson(result));
         }
 
         [Test]

@@ -132,8 +132,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
                     case 't': result.Append('\t'); break;
                     case 'u':
                         if (index + 4 > json.Length) return false;
-                        int code;
-                        if (!int.TryParse(json.Substring(index, 4), System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out code)) return false;
+                        var code = 0;
+                        for (var digitIndex = 0; digitIndex < 4; digitIndex++)
+                        {
+                            var digit = HexDigitValue(json[index + digitIndex]);
+                            if (digit < 0) return false;
+                            code = (code << 4) | digit;
+                        }
                         result.Append((char)code);
                         index += 4;
                         break;
@@ -141,6 +146,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
                 }
             }
             return false;
+        }
+
+        private static int HexDigitValue(char value)
+        {
+            if (value >= '0' && value <= '9') return value - '0';
+            if (value >= 'a' && value <= 'f') return value - 'a' + 10;
+            if (value >= 'A' && value <= 'F') return value - 'A' + 10;
+            return -1;
         }
 
         private static bool IsKnownCommand(string value) => value == LessonCommandKindV2.Skip || value == LessonCommandKindV2.Pause ||
