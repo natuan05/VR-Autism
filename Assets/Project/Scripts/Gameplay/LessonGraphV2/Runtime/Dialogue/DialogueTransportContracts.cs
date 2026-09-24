@@ -22,7 +22,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
         {
             activation_id = activationId ?? string.Empty;
             sequence_id = sequenceId ?? string.Empty;
-            text = text ?? string.Empty;
+            this.text = text ?? string.Empty;
             npc_binding_id = npcBindingId ?? string.Empty;
         }
     }
