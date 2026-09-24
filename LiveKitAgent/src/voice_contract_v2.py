@@ -9,6 +9,7 @@ from typing import TypeAlias
 CONTRACT_VERSION = 2
 MAX_PHRASES_PER_QUEST = 50
 VOICE_TOPIC = "lesson-graph-v2.voice"
+REMOTE_TOPIC = "lesson-graph-v2.remote"
 
 
 class PacketValidationError(ValueError):
@@ -38,6 +39,13 @@ class SpeakScriptV2:
 
 
 @dataclass(frozen=True)
+class VerbalHintV2:
+    command_id: str
+    activation_id: str
+    npc_binding_id: str
+
+
+@dataclass(frozen=True)
 class SpeakScriptDoneV2:
     activation_id: str
     sequence_id: str
@@ -46,7 +54,9 @@ class SpeakScriptDoneV2:
     reason: str = ""
 
 
-UnityPacket: TypeAlias = SetActiveQuest | CancelActiveQuest | SpeakScriptV2
+UnityPacket: TypeAlias = (
+    SetActiveQuest | CancelActiveQuest | SpeakScriptV2 | VerbalHintV2
+)
 
 
 def parse_unity_packet(payload: bytes | str) -> UnityPacket:
@@ -106,6 +116,22 @@ def parse_unity_packet(payload: bytes | str) -> UnityPacket:
             sequence_id=_required_text(data, "sequence_id"),
             npc_binding_id=_required_text(data, "npc_binding_id"),
             text=_required_text(data, "text"),
+        )
+    if event == "VERBAL_HINT":
+        _require_exact_keys(
+            data,
+            {
+                "event",
+                "contract_version",
+                "command_id",
+                "activation_id",
+                "npc_binding_id",
+            },
+        )
+        return VerbalHintV2(
+            command_id=_required_text(data, "command_id"),
+            activation_id=_required_text(data, "activation_id"),
+            npc_binding_id=_required_text(data, "npc_binding_id"),
         )
     raise PacketValidationError("unsupported V2 event")
 

@@ -36,11 +36,13 @@ from voice_command_runtime_v2 import (
     VoiceCommandRuntime,
 )
 from voice_contract_v2 import (
+    REMOTE_TOPIC,
     VOICE_TOPIC,
     CancelActiveQuest,
     PacketValidationError,
     SetActiveQuest,
     SpeakScriptV2,
+    VerbalHintV2,
     parse_unity_packet,
     quest_matched_packet,
     quest_status_packet,
@@ -103,10 +105,13 @@ def build_quest_instructions(quest_name: str, phrases: list[str]) -> str:
 async def _synthesize_phrases(
     tts: agents_tts.TTS,
     phrases: list[str],
-    cache: dict[str, list[rtc.AudioFrame]],
+    cache: dict[tuple[str, str, float, str], list[rtc.AudioFrame]],
+    profile_key: tuple[str, str, float],
 ) -> None:
     """Pre-synthesize phrases concurrently into per-job cache."""
-    to_synthesize = [p for p in phrases if p not in cache]
+    to_synthesize = [
+        phrase for phrase in phrases if (*profile_key, phrase) not in cache
+    ]
     if not to_synthesize:
         return
 
@@ -117,7 +122,7 @@ async def _synthesize_phrases(
                 async for event in stream:
                     if event.frame:
                         frames.append(event.frame)
-            cache[text] = frames
+            cache[(*profile_key, text)] = frames
             logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
         except Exception as exc:
             logger.warning("[TTS] Failed to synthesize phrase %r: %s", text, exc)
@@ -238,11 +243,15 @@ class JobRuntime:
         self.packet_lock = asyncio.Lock()
         self.command_lock = asyncio.Lock()
         self.publication_lock = asyncio.Lock()
+        self.verbal_hint_lock = asyncio.Lock()
         self.activation_task: asyncio.Task[Any] | None = None
         self.active_speech_handle: Any = None
+        self.active_verbal_hint_task: asyncio.Task[Any] | None = None
+        self.active_verbal_hint_activation_id: str | None = None
+        self.active_verbal_hint_handle: Any = None
         self.matched_sent: set[str] = set()
         self.background_tasks: set[asyncio.Task[Any]] = set()
-        self.tts_cache: dict[str, list[rtc.AudioFrame]] = {}
+        self.tts_cache: dict[tuple[str, str, float, str], list[rtc.AudioFrame]] = {}
 
     def spawn(self, coro: Any) -> None:
         """Spawn background task with auto-cleanup on completion."""
@@ -420,16 +429,13 @@ async def entrypoint(ctx: JobContext) -> None:
             # Wait for session initialization if packet arrives during handshake
             await agent_ready.wait()
             try:
-                raw_text = data_packet.data.decode("utf-8")
-                if data_packet.topic == VOICE_TOPIC:
-                    await _process_v2_packet(agent, session, runtime, raw_text)
-                    return
-
-                data = json.loads(raw_text)
-                event_type = data.get("event")
-                if event_type in ("VERBAL_HINT", "ON_REMINDER"):
-                    logger.info("[HINT] Received event: %s", event_type)
-                    await _handle_hint_reminder(session, runtime, event_type)
+                await _process_data_packet(
+                    agent,
+                    session,
+                    runtime,
+                    data_packet.topic,
+                    data_packet.data,
+                )
 
             except Exception as err:
                 logger.error("[DATA] Error processing DataPacket: %s", err)
@@ -443,6 +449,28 @@ async def entrypoint(ctx: JobContext) -> None:
     await session.start(room=ctx.room, agent=agent)
     agent_ready.set()
     logger.info("[AGENT] Agent pipeline active and ready for packets")
+
+
+async def _process_data_packet(
+    agent: TeacherAgent,
+    session: AgentSession,
+    runtime: JobRuntime,
+    topic: str,
+    payload: bytes | str,
+) -> None:
+    """Route V2 voice and legacy hint packets while ignoring remote commands."""
+    raw_text = payload.decode("utf-8") if isinstance(payload, bytes) else payload
+    if topic == VOICE_TOPIC:
+        await _process_v2_packet(agent, session, runtime, raw_text)
+        return
+    if topic == REMOTE_TOPIC:
+        return
+
+    data = json.loads(raw_text)
+    event_type = data.get("event")
+    if event_type in ("VERBAL_HINT", "ON_REMINDER"):
+        logger.info("[HINT] Received event: %s", event_type)
+        await _handle_hint_reminder(session, runtime, event_type)
 
 
 async def _process_v2_packet(
@@ -460,6 +488,9 @@ async def _process_v2_packet(
 
     if isinstance(packet, SpeakScriptV2):
         await _handle_speak_script_v2(session, runtime, packet)
+        return
+    if isinstance(packet, VerbalHintV2):
+        await _handle_verbal_hint_v2(session, runtime, packet)
         return
 
     async with runtime.packet_lock:
@@ -520,6 +551,19 @@ async def _reset_activation(
     if task and not task.done():
         task.cancel()
         await asyncio.gather(task, return_exceptions=True)
+    hint_handle = runtime.active_verbal_hint_handle
+    runtime.active_verbal_hint_handle = None
+    hint_done = getattr(hint_handle, "done", None) if hint_handle else None
+    if hint_handle and (not callable(hint_done) or not hint_done()):
+        with contextlib.suppress(Exception):
+            hint_handle.interrupt()
+    hint_task = runtime.active_verbal_hint_task
+    if hint_task and not hint_task.done() and hint_task is not asyncio.current_task():
+        hint_task.cancel()
+        await asyncio.gather(hint_task, return_exceptions=True)
+    if runtime.active_verbal_hint_task is hint_task:
+        runtime.active_verbal_hint_task = None
+        runtime.active_verbal_hint_activation_id = None
     if runtime.active_speech_handle and not runtime.active_speech_handle.done():
         with contextlib.suppress(Exception):
             runtime.active_speech_handle.interrupt()
@@ -602,9 +646,15 @@ async def _handle_quest_activation(
         )
 
         new_instructions = build_quest_instructions(quest_name, phrases)
+        profile_key = (npc_binding_id, profile.voice_name, profile.speaking_rate)
         await asyncio.gather(
             clear_agent_chat_history(agent),
-            _synthesize_phrases(session.tts, phrases, runtime.tts_cache),
+            _synthesize_phrases(
+                session.tts,
+                phrases,
+                runtime.tts_cache,
+                profile_key,
+            ),
         )
         if not runtime.voice_runtime.can_continue(activation_id):
             return
@@ -614,7 +664,7 @@ async def _handle_quest_activation(
         if not runtime.voice_runtime.can_continue(activation_id):
             return
 
-        cached_frames = runtime.tts_cache.get(opening)
+        cached_frames = runtime.tts_cache.get((*profile_key, opening))
         audio_arg = _frames_to_async_gen(cached_frames) if cached_frames else None
         logger.info(
             '[AGENT] Opening phrase (cached=%s): "%s"',
@@ -660,7 +710,11 @@ async def _handle_hint_reminder(
             return
 
         phrase = random.choice(phrases)
-        cached_frames = runtime.tts_cache.get(phrase)
+        npc_binding_id = runtime.voice_runtime.active_npc_binding_id or ""
+        profile, _ = runtime.voice_registry.get(npc_binding_id)
+        cached_frames = runtime.tts_cache.get(
+            (npc_binding_id, profile.voice_name, profile.speaking_rate, phrase)
+        )
         audio_arg = _frames_to_async_gen(cached_frames) if cached_frames else None
         logger.info(
             "[HINT] %s playing phrase (cached=%s): %r",
@@ -675,6 +729,84 @@ async def _handle_hint_reminder(
         )
     except Exception as err:
         logger.error("[HINT] Error handling %s: %s", event_name, err)
+
+
+async def _handle_verbal_hint_v2(
+    session: AgentSession,
+    runtime: JobRuntime,
+    packet: VerbalHintV2,
+) -> None:
+    """Speak one deduplicated phrase for the active activation and NPC."""
+    async with runtime.verbal_hint_lock:
+        async with runtime.packet_lock:
+            phrase = runtime.voice_runtime.claim_verbal_hint(packet)
+            if phrase is None:
+                logger.info(
+                    "[V2] Ignoring stale, duplicate, or wrong-NPC verbal hint %s",
+                    packet.command_id,
+                )
+                return
+            hint_task = asyncio.current_task()
+            runtime.active_verbal_hint_task = hint_task
+            runtime.active_verbal_hint_activation_id = packet.activation_id
+
+        handle = None
+        try:
+            profile, is_fallback = runtime.voice_registry.get(packet.npc_binding_id)
+            if is_fallback:
+                logger.warning(
+                    "[V2] Unknown npc_binding_id %r for verbal hint %s. "
+                    "Falling back to default voice %r.",
+                    packet.npc_binding_id,
+                    packet.command_id,
+                    profile.voice_name,
+                )
+            _apply_voice_profile(session, profile)
+            profile_key = (
+                packet.npc_binding_id,
+                profile.voice_name,
+                profile.speaking_rate,
+            )
+            cache_key = (*profile_key, phrase)
+            if cache_key not in runtime.tts_cache:
+                await _synthesize_phrases(
+                    session.tts,
+                    [phrase],
+                    runtime.tts_cache,
+                    profile_key,
+                )
+
+            if (
+                not runtime.voice_runtime.can_continue(packet.activation_id)
+                or runtime.voice_runtime.active_npc_binding_id
+                != packet.npc_binding_id
+            ):
+                return
+
+            cached_frames = runtime.tts_cache.get(cache_key)
+            audio_arg = (
+                _frames_to_async_gen(cached_frames) if cached_frames else None
+            )
+            handle = await session.say(
+                phrase,
+                audio=audio_arg,
+                allow_interruptions=True,
+            )
+            runtime.active_verbal_hint_handle = handle
+            if handle is not None and hasattr(handle, "wait_for_playout"):
+                await handle.wait_for_playout()
+            elif asyncio.iscoroutine(handle):
+                await handle
+        except asyncio.CancelledError:
+            raise
+        except Exception as err:
+            logger.error("[V2] Error handling verbal hint %s: %s", packet.command_id, err)
+        finally:
+            if runtime.active_verbal_hint_task is hint_task:
+                runtime.active_verbal_hint_task = None
+                runtime.active_verbal_hint_activation_id = None
+            if runtime.active_verbal_hint_handle is handle:
+                runtime.active_verbal_hint_handle = None
 
 
 async def _handle_speak_script_v2(

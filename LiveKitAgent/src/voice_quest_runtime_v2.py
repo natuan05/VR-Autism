@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from collections import OrderedDict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
-from voice_contract_v2 import CancelActiveQuest, SetActiveQuest
+from voice_contract_v2 import CancelActiveQuest, SetActiveQuest, VerbalHintV2
 
 
 class ActivationDisposition(Enum):
@@ -26,9 +26,12 @@ class ActiveActivation:
     activation_id: str
     goal: str
     phrases: tuple[str, ...]
+    npc_binding_id: str = ""
     status: ActivationStatus = ActivationStatus.ACTIVE
     opening_claimed: bool = False
     cancellation_reason: str = ""
+    verbal_hint_command_ids: set[str] = field(default_factory=set)
+    next_hint_phrase_index: int = 0
 
 
 class VoiceQuestRuntime:
@@ -50,12 +53,21 @@ class VoiceQuestRuntime:
     def active_phrases(self) -> tuple[str, ...]:
         return self._active.phrases if self._active else ()
 
+    @property
+    def active_npc_binding_id(self) -> str | None:
+        return self._active.npc_binding_id if self._active else None
+
     def activate(self, request: SetActiveQuest) -> ActivationDisposition:
         """Install a request atomically, or identify a reconnect replay."""
         if self._active and self._active.activation_id == request.activation_id:
-            if (self._active.goal, self._active.phrases) != (
+            if (
+                self._active.goal,
+                self._active.phrases,
+                self._active.npc_binding_id,
+            ) != (
                 request.quest_goal,
                 request.phrases,
+                request.npc_binding_id,
             ):
                 raise ValueError("activation payload changed")
             return ActivationDisposition.REPLAY
@@ -71,8 +83,30 @@ class VoiceQuestRuntime:
             activation_id=request.activation_id,
             goal=request.quest_goal,
             phrases=request.phrases,
+            npc_binding_id=request.npc_binding_id,
         )
         return ActivationDisposition.NEW
+
+    def claim_verbal_hint(self, request: VerbalHintV2) -> str | None:
+        """Claim one unique hint for the matching live activation and NPC."""
+        if not self._is_active(request.activation_id):
+            return None
+        activation = self._active
+        if (
+            not request.command_id.strip()
+            or not activation.npc_binding_id
+            or request.npc_binding_id != activation.npc_binding_id
+            or request.command_id in activation.verbal_hint_command_ids
+            or not activation.phrases
+        ):
+            return None
+
+        activation.verbal_hint_command_ids.add(request.command_id)
+        phrase = activation.phrases[activation.next_hint_phrase_index]
+        activation.next_hint_phrase_index = (
+            activation.next_hint_phrase_index + 1
+        ) % len(activation.phrases)
+        return phrase
 
     def claim_opening(self, activation_id: str) -> bool:
         """Allow the opening phrase once while the activation remains live."""
