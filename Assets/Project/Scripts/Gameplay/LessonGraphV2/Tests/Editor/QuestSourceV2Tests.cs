@@ -166,6 +166,70 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.AreEqual("first", source.CurrentActivationId);
         }
 
+        [Test]
+        public void VisualHintRestoresIndicatorStateCapturedAtActivation()
+        {
+            var indicator = new GameObject("visual-hint-indicator");
+            indicator.SetActive(false);
+            _objects.Add(indicator);
+            var source = Source("visual-hint");
+            typeof(QuestSourceV2)
+                .GetField("_visualHintIndicator", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .SetValue(source, indicator);
+            source.TryActivate(Activation("visual-activation"));
+
+            Assert.IsTrue(source.TryShowVisualHint("visual-activation"));
+            Assert.IsTrue(indicator.activeSelf);
+            Assert.IsFalse(source.TryShowVisualHint("old-activation"));
+            source.TryCancel(new QuestSourceCancellation("visual-activation", "test"));
+
+            Assert.IsFalse(indicator.activeSelf, "The V2 hint cleanup must restore the indicator's prior inactive state.");
+        }
+
+        [Test]
+        public void VisualHintWithoutAssignedIndicatorIsUnsupported()
+        {
+            var source = Source("no-visual-hint");
+            source.TryActivate(Activation("visual-activation"));
+
+            Assert.IsFalse(source.TryShowVisualHint("visual-activation"));
+            Assert.IsFalse(source.CanShowVisualHint);
+            source.TryCancel(new QuestSourceCancellation("visual-activation", "test"));
+        }
+
+        [Test]
+        public void VisualHintPreservesAnIndicatorThatWasAlreadyActive()
+        {
+            var indicator = new GameObject("already-active-indicator");
+            _objects.Add(indicator);
+            var source = Source("active-visual-hint");
+            typeof(QuestSourceV2)
+                .GetField("_visualHintIndicator", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .SetValue(source, indicator);
+            source.TryActivate(Activation("active-visual-activation"));
+
+            Assert.IsTrue(source.TryShowVisualHint("active-visual-activation"));
+            source.TryCancel(new QuestSourceCancellation("active-visual-activation", "test"));
+
+            Assert.IsTrue(indicator.activeSelf, "Cleanup must restore the indicator's previous active state.");
+        }
+
+        [Test]
+        public void CleanupIgnoresAVisualHintIndicatorDestroyedDuringActivation()
+        {
+            var indicator = new GameObject("destroyed-indicator");
+            _objects.Add(indicator);
+            var source = Source("destroyed-visual-hint");
+            typeof(QuestSourceV2)
+                .GetField("_visualHintIndicator", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .SetValue(source, indicator);
+            source.TryActivate(Activation("destroyed-activation"));
+            source.TryShowVisualHint("destroyed-activation");
+            UnityEngine.Object.DestroyImmediate(indicator);
+
+            Assert.DoesNotThrow(() => source.TryCancel(new QuestSourceCancellation("destroyed-activation", "test")));
+        }
+
         private TestQuestSource Source(string bindingId, bool completeDuringActivation = false)
         {
             var gameObject = new GameObject($"source-{bindingId}");

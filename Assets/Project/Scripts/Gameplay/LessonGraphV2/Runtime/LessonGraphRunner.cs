@@ -8,6 +8,7 @@ using UnityEngine;
 using VRAutism.Gameplay.LessonGraphV2.Data;
 using VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions;
 using VRAutism.Gameplay.LessonGraphV2.Remote;
+using VRAutism.Gameplay.LessonGraphV2.Runtime.Executors;
 using VRAutism.Gameplay.LessonGraphV2.Validation;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Runtime
@@ -32,18 +33,20 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         private SynchronizationContext _unitySynchronizationContext;
         private LessonStateV2 _currentState;
         private INodeExecutor _activeExecutor;
+        private Task<NodeResult> _activeExecutionTask;
+        private QuestNodeExecutor _pauseQuestExecutor;
         private LessonNodeData _activeNode;
         private TaskCompletionSource<LessonStateV2> _pauseCompleted;
         private TaskCompletionSource<string> _resumeRequested;
         private TaskCompletionSource<LessonStateV2> _resumeStarted;
         private string _activeRunId;
         private string _activeActivationId;
-        private double _activeNodeStartedAt;
         private int _stateRevision;
         private bool _executorReady;
         private bool _pauseRequestedFlag;
         private bool _resumeInProgress;
         private bool _nodeCancellationEmitted;
+        private bool _nodeResultCommitted;
         private bool _lessonCompletedEmitted;
 
         public event Action<NodeEnteredEvent> NodeEntered;
@@ -109,12 +112,18 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             NodeCancelledEventV2 cancelledEvent = null;
             CancellationTokenSource lessonCancellation;
             CancellationTokenSource activationCancellation;
+            QuestNodeExecutor pauseExecutor;
+            string pauseActivationId;
             lock (_gate)
             {
                 lessonCancellation = _lessonCancellation;
                 activationCancellation = _activationCancellation;
                 if (string.IsNullOrEmpty(_activeRunId) || IsTerminal(_currentState?.status)) return;
 
+                pauseExecutor = _pauseQuestExecutor;
+                pauseActivationId = _currentState?.activation_id ?? _activeActivationId ?? string.Empty;
+                _pauseQuestExecutor = null;
+                _pauseRequestedFlag = false;
                 cancelledEvent = CreateNodeCancelledLocked("CANCELLED");
                 changedState = SetStateLocked("cancelled", _activeRunId, _currentState?.node_id ?? _activeNode?.Id,
                     _currentState?.node_type ?? _activeNode?.NodeType.ToString(), _currentState?.node_index ?? NodeIndex(_activeNode?.Id),
@@ -126,6 +135,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
 
             if (cancelledEvent != null) Emit(NodeCancelled, cancelledEvent);
             Emit(StateChanged, CloneState(changedState));
+            pauseExecutor?.CancelPauseRequest(pauseActivationId);
             CancelActive(activationCancellation);
             CancelActive(lessonCancellation);
         }
@@ -164,6 +174,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             TaskCompletionSource<LessonStateV2> pauseCompletion = null;
             TaskCompletionSource<string> resumeSignal = null;
             TaskCompletionSource<LessonStateV2> resumeStarted = null;
+            Task<LessonCommandResultV2> hintTask = null;
+            QuestNodeExecutor hintExecutor = null;
+            QuestNodeExecutor pauseExecutor = null;
             LessonStateV2 changedState = null;
             string rejection = null;
             string resumedActivationId = null;
@@ -196,11 +209,17 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     }
                     else if (command.command == LessonCommandKindV2.Pause)
                     {
-                        if (_currentState.status != "running" || _activationCancellation == null)
+                        if (_currentState.status != "running" || _activationCancellation == null || _nodeResultCommitted ||
+                            (_activeExecutionTask != null && _activeExecutionTask.IsCompleted))
+                            rejection = LessonCommandReasonV2.InvalidState;
+                        else if (_activeExecutor is QuestNodeExecutor questExecutor &&
+                                 questExecutor.HasTerminalSourceDecision(command.activation_id))
                             rejection = LessonCommandReasonV2.InvalidState;
                         else
                         {
                             _pauseRequestedFlag = true;
+                            pauseExecutor = _activeExecutor as QuestNodeExecutor;
+                            _pauseQuestExecutor = pauseExecutor;
                             _pauseCompleted = new TaskCompletionSource<LessonStateV2>(TaskCreationOptions.RunContinuationsAsynchronously);
                             _resumeRequested = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
                             _resumeStarted = new TaskCompletionSource<LessonStateV2>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -222,6 +241,21 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                             resumeStarted = _resumeStarted;
                         }
                     }
+                    else if (command.command == LessonCommandKindV2.VerbalHint || command.command == LessonCommandKindV2.VisualHint)
+                    {
+                        if (_currentState.status != "running" || _nodeResultCommitted)
+                            rejection = LessonCommandReasonV2.InvalidState;
+                        else if (!_executorReady)
+                            rejection = LessonCommandReasonV2.NotActive;
+                        else if (!(_activeExecutor is QuestNodeExecutor questExecutor))
+                            rejection = LessonCommandReasonV2.UnsupportedCapability;
+                        else
+                        {
+                            hintExecutor = questExecutor;
+                            try { hintTask = questExecutor.TryApplyHintAsync(command); }
+                            catch { rejection = LessonCommandReasonV2.TransportUnavailable; }
+                        }
+                    }
                     else if (_currentState.status != "running")
                     {
                         rejection = LessonCommandReasonV2.InvalidState;
@@ -240,10 +274,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             if (rejection != null)
                 return PublishDecision(CreateCommandResult(command, false, rejection, CurrentState));
 
+            if (hintTask != null)
+                return await CompleteHintCommandAsync(command, hintExecutor, hintTask);
+
             if (changedState != null)
             {
-                Emit(StateChanged, CloneState(changedState));
+                pauseExecutor?.NotifyPauseRequested(command.activation_id);
                 CancelActive(activationToCancel);
+                Emit(StateChanged, CloneState(changedState));
                 var pausedState = await pauseCompletion.Task;
                 return PublishDecision(CreateCommandResult(command, true, LessonCommandReasonV2.None, pausedState));
             }
@@ -353,9 +391,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     var activationToken = GetActivationToken(runId, activationId);
                     try
                     {
+                        SetExecutorStarting(runId, activationId, executor);
                         var executionTask = executor.ExecuteAsync(new NodeExecutionContext(runId, activationId, _graph.name, node, _clock.ElapsedSeconds,
                             activationToken, _skipCancellation.Token, _timeoutCancellation.Token, _checkpointTelemetry, _clock));
-                        SetExecutorReady(runId, activationId, executor, executionTask != null);
+                        var executorState = SetExecutorReady(runId, activationId, executor, executionTask);
+                        if (executorState != null) Emit(StateChanged, executorState);
                         if (executionTask == null)
                         {
                             result = null;
@@ -387,6 +427,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                         result = NodeResult.Completed(node.Id, activationId, NodeStatus.Failed, _clock.ElapsedSeconds, "exception");
                     }
 
+                    SetExecutorReady(runId, activationId, null, null);
+
                     if (cancellationToken.IsCancellationRequested)
                         return FinishAborted(runId);
 
@@ -406,6 +448,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                         result = NodeResult.Completed(node.Id, activationId, NodeStatus.Failed, _clock.ElapsedSeconds, "invalid_result");
                     }
 
+                    if (!CommitNodeResult(runId, activationId)) return FinishAborted(runId);
                     Emit(NodeCompleted, new NodeCompletedEvent(result));
                     if (cancellationToken.IsCancellationRequested || !IsCurrentActivation(runId, activationId))
                         return FinishAborted(runId);
@@ -462,12 +505,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 _activeRunId = runId;
                 _activeActivationId = activationId;
                 _activeNode = node;
-                _activeNodeStartedAt = _clock.ElapsedSeconds;
                 _activeExecutor = null;
+                _activeExecutionTask = null;
                 _executorReady = false;
                 _pauseRequestedFlag = false;
                 _resumeInProgress = false;
                 _nodeCancellationEmitted = false;
+                _nodeResultCommitted = false;
                 state = SetStateLocked("running", runId, node.Id, node.NodeType.ToString(), NodeIndex(node.Id), activationId);
                 resumeStarted = _resumeStarted;
                 _pauseCompleted = null;
@@ -493,6 +537,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 _skipCancellation?.Dispose(); _skipCancellation = null;
                 _timeoutCancellation?.Dispose(); _timeoutCancellation = null;
                 _activeExecutor = null;
+                _activeExecutionTask = null;
                 _activeNode = null;
                 _executorReady = false;
                 _pauseRequestedFlag = false;
@@ -524,14 +569,82 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     : CancellationToken.None;
         }
 
-        private void SetExecutorReady(string runId, string activationId, INodeExecutor executor, bool taskStarted)
+        private LessonStateV2 SetExecutorReady(string runId, string activationId, INodeExecutor executor, Task<NodeResult> executionTask)
+        {
+            lock (_gate)
+            {
+                if (_activeRunId != runId || _activeActivationId != activationId) return null;
+                if (executionTask != null) _activeExecutionTask = executionTask;
+                var taskStarted = executionTask != null && !executionTask.IsCompleted;
+                _activeExecutor = taskStarted ? executor : null;
+                _executorReady = executor != null && taskStarted;
+                if (!_executorReady || !(executor is QuestNodeExecutor questExecutor) ||
+                    _currentState == null || _currentState.status != "running")
+                    return null;
+
+                _currentState.bindings = questExecutor.GetActiveBindings(activationId);
+                _currentState.state_revision = ++_stateRevision;
+                _currentState.updated_at_utc = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+                return CloneState(_currentState);
+            }
+        }
+
+        private void SetExecutorStarting(string runId, string activationId, INodeExecutor executor)
         {
             lock (_gate)
             {
                 if (_activeRunId != runId || _activeActivationId != activationId) return;
                 _activeExecutor = executor;
-                _executorReady = executor != null && taskStarted;
+                _activeExecutionTask = null;
+                _executorReady = false;
             }
+        }
+
+        private bool CommitNodeResult(string runId, string activationId)
+        {
+            lock (_gate)
+            {
+                if (_activeRunId != runId || _activeActivationId != activationId ||
+                    _currentState?.status != "running" || _lessonCancellation?.IsCancellationRequested == true)
+                    return false;
+                _nodeResultCommitted = true;
+                _executorReady = false;
+                _activeExecutor = null;
+                _activeExecutionTask = null;
+                return true;
+            }
+        }
+
+        private async Task<LessonCommandResultV2> CompleteHintCommandAsync(
+            LessonCommandV2 command,
+            QuestNodeExecutor executor,
+            Task<LessonCommandResultV2> hintTask)
+        {
+            LessonCommandResultV2 hintResult;
+            try { hintResult = await hintTask; }
+            catch (OperationCanceledException)
+            {
+                hintResult = CreateCommandResult(command, false, LessonCommandReasonV2.Cancelled, null);
+            }
+            catch
+            {
+                hintResult = CreateCommandResult(command, false, LessonCommandReasonV2.TransportUnavailable, null);
+            }
+
+            bool accepted = hintResult != null && hintResult.accepted;
+            string reason = hintResult?.reason ?? LessonCommandReasonV2.UnsupportedCapability;
+            LessonStateV2 state;
+            lock (_gate)
+            {
+                if (!accepted && (_activeRunId != command.run_id || _activeActivationId != command.activation_id ||
+                    _currentState?.node_id != command.node_id || _currentState?.status != "running" ||
+                    _nodeResultCommitted || !_executorReady || !ReferenceEquals(_activeExecutor, executor)))
+                {
+                    reason = LessonCommandReasonV2.StaleActivation;
+                }
+                state = CloneState(_currentState);
+            }
+            return PublishDecision(CreateCommandResult(command, accepted, accepted ? LessonCommandReasonV2.None : reason, state));
         }
 
         private bool IsPauseRequested(string runId, string activationId)
@@ -545,6 +658,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             LessonStateV2 state;
             NodeCancelledEventV2 cancelledEvent;
             TaskCompletionSource<LessonStateV2> pauseCompletion;
+            QuestNodeExecutor pauseExecutor;
             lock (_gate)
             {
                 if (_activeRunId != runId || _activeActivationId != activationId || !_pauseRequestedFlag) return;
@@ -553,13 +667,17 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 _skipCancellation?.Dispose(); _skipCancellation = null;
                 _timeoutCancellation?.Dispose(); _timeoutCancellation = null;
                 _activeExecutor = null;
+                _activeExecutionTask = null;
                 _executorReady = false;
                 state = SetStateLocked("paused", runId, _activeNode?.Id, _activeNode?.NodeType.ToString(),
                     NodeIndex(_activeNode?.Id), activationId);
                 pauseCompletion = _pauseCompleted;
+                pauseExecutor = _pauseQuestExecutor;
+                _pauseQuestExecutor = null;
             }
             if (cancelledEvent != null) Emit(NodeCancelled, cancelledEvent);
             Emit(StateChanged, CloneState(state));
+            pauseExecutor?.RearmAfterPause(activationId);
             pauseCompletion?.TrySetResult(CloneState(state));
         }
 
@@ -621,10 +739,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
 
         private NodeCancelledEventV2 CreateNodeCancelledLocked(string reason)
         {
-            if (_nodeCancellationEmitted || _activeNode == null || string.IsNullOrEmpty(_activeActivationId)) return null;
+            if (_nodeCancellationEmitted || _nodeResultCommitted || _activeNode == null || string.IsNullOrEmpty(_activeActivationId)) return null;
             _nodeCancellationEmitted = true;
             return new NodeCancelledEventV2(_activeRunId, _activeNode.Id, _activeActivationId, reason,
-                Math.Max(0d, _clock.ElapsedSeconds - _activeNodeStartedAt));
+                _clock.ElapsedSeconds);
         }
 
         private LessonStateV2 SetStateLocked(string status, string runId, string nodeId, string nodeType, int nodeIndex, string activationId)
@@ -652,7 +770,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     ? (string.IsNullOrEmpty(nodeId) ? Array.Empty<string>() : new[] { nodeId })
                     : Array.Empty<string>(),
                 parallel_group_id = string.Empty,
-                bindings = Array.Empty<LessonBindingV2>()
+                bindings = status == "running" || status == "pausing"
+                    ? (_activeExecutor as QuestNodeExecutor)?.GetActiveBindings(activationId) ?? Array.Empty<LessonBindingV2>()
+                    : Array.Empty<LessonBindingV2>()
             };
             return CloneState(_currentState);
         }

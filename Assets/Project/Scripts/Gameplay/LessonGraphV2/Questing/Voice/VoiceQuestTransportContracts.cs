@@ -7,6 +7,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
     {
         public const string Topic = "lesson-graph-v2.voice";
         public const int ContractVersion = 2;
+        public const string VerbalHintEvent = "VERBAL_HINT";
     }
 
     [Serializable]
@@ -22,6 +23,23 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             activation_id = activationId ?? string.Empty;
             quest_goal = goal ?? string.Empty;
             phrases = new List<string>(effectivePhrases ?? Array.Empty<string>());
+            npc_binding_id = npcBindingId ?? string.Empty;
+        }
+    }
+
+    [Serializable]
+    public sealed class VoiceQuestVerbalHint
+    {
+        public int contract_version = VoiceQuestTransportV2Constants.ContractVersion;
+        public string @event = VoiceQuestTransportV2Constants.VerbalHintEvent;
+        public string command_id;
+        public string activation_id;
+        public string npc_binding_id;
+
+        public VoiceQuestVerbalHint(string activationId, string commandId, string npcBindingId)
+        {
+            activation_id = activationId ?? string.Empty;
+            command_id = commandId ?? string.Empty;
             npc_binding_id = npcBindingId ?? string.Empty;
         }
     }
@@ -47,5 +65,6 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
         event Action<VoiceQuestSignal> SignalReceived;
         System.Threading.Tasks.Task ActivateAsync(VoiceQuestActivation request, System.Threading.CancellationToken cancellationToken);
         System.Threading.Tasks.Task CancelAsync(string activationId, string reason, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<bool> SendVerbalHintAsync(VoiceQuestVerbalHint request, System.Threading.CancellationToken cancellationToken);
     }
 }

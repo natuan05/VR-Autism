@@ -5,16 +5,24 @@ using UnityEngine;
 namespace VRAutism.Gameplay.LessonGraphV2.Questing
 {
     [DisallowMultipleComponent]
-    public abstract class QuestSourceV2 : MonoBehaviour, IQuestSource
+    public abstract class QuestSourceV2 : MonoBehaviour, IQuestSource, IQuestVisualHintV2
     {
+        internal const string PauseCancellationReason = "pause";
+
         [Tooltip("Stable ID used by LessonGraph quest node completion bindings.")]
         [SerializeField] private string _bindingId = string.Empty;
+        [Tooltip("Optional V2-only indicator toggled by a visual hint for this activation.")]
+        [SerializeField] private GameObject _visualHintIndicator;
 
         private int _mainThreadId;
         private QuestSourceActivation _activation;
         private bool _cleanupPerformed;
+        private string _lastCancellationReason = string.Empty;
+        private bool _hintIndicatorStateCaptured;
+        private bool _hintIndicatorWasActive;
 
         public string BindingId => _bindingId ?? string.Empty;
+        public bool CanShowVisualHint => _visualHintIndicator != null;
         public QuestSourceState State { get; private set; } = QuestSourceState.Inactive;
         public string CurrentActivationId => _activation?.ActivationId ?? string.Empty;
         public bool IsAvailable => isActiveAndEnabled && State == QuestSourceState.Inactive;
@@ -36,6 +44,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
             }
 
             _activation = activation;
+            _lastCancellationReason = string.Empty;
+            _hintIndicatorStateCaptured = _visualHintIndicator != null;
+            _hintIndicatorWasActive = _hintIndicatorStateCaptured && _visualHintIndicator.activeSelf;
             SetState(QuestSourceState.Activating);
             try
             {
@@ -59,6 +70,17 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
             return true;
         }
 
+        public bool TryShowVisualHint(string activationId)
+        {
+            if (!IsMainThread() || _activation == null || State != QuestSourceState.Active ||
+                !string.Equals(_activation.ActivationId, activationId, StringComparison.Ordinal) ||
+                _visualHintIndicator == null)
+                return false;
+
+            _visualHintIndicator.SetActive(true);
+            return true;
+        }
+
         public bool TryCancel(QuestSourceCancellation cancellation)
         {
             if (!IsMainThread() || cancellation == null) return false;
@@ -77,6 +99,22 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
                 Debug.Log($"[LessonGraphV2] Source CANCELLED binding='{BindingId}' activation={cancellation.ActivationId} reason={cancellation.Reason}", this);
             }
             return result;
+        }
+
+        public bool TryRearmAfterPause(string activationId)
+        {
+            if (!IsMainThread() || State != QuestSourceState.Cancelled || _activation == null ||
+                !string.Equals(_activation.ActivationId, activationId, StringComparison.Ordinal) ||
+                !string.Equals(_lastCancellationReason, PauseCancellationReason, StringComparison.Ordinal))
+                return false;
+
+            _activation = null;
+            _lastCancellationReason = string.Empty;
+            _cleanupPerformed = false;
+            _hintIndicatorStateCaptured = false;
+            _hintIndicatorWasActive = false;
+            SetState(QuestSourceState.Inactive);
+            return true;
         }
 
         protected bool TryComplete(string activationId, string completionChannel)
@@ -174,6 +212,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
                 completedAtMonotonicSeconds,
                 failureCode,
                 cancellationReason);
+            _lastCancellationReason = terminalStatus == QuestSourceTerminalStatus.Cancelled
+                ? cancellationReason ?? string.Empty
+                : string.Empty;
             SetState(terminalState);
             Emit(Terminated, result);
             CleanupOnce();
@@ -205,8 +246,16 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
         {
             if (_cleanupPerformed) return;
             _cleanupPerformed = true;
+            RestoreHintIndicatorState();
             try { OnSourceCleanup(); }
             catch (Exception exception) { Debug.LogException(exception, this); }
+        }
+
+        private void RestoreHintIndicatorState()
+        {
+            if (!_hintIndicatorStateCaptured) return;
+            _hintIndicatorStateCaptured = false;
+            if (_visualHintIndicator != null) _visualHintIndicator.SetActive(_hintIndicatorWasActive);
         }
 
         private void HandleUnavailable()

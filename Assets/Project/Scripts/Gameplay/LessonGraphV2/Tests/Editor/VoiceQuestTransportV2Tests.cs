@@ -118,5 +118,64 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }
+
+        [Test]
+        public void VerbalHintPublishesCorrelatedPacketOnVoiceTopic()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                transport.Configure(client);
+                transport.ActivateAsync(new VoiceQuestActivation("activation-1", "goal", new[] { "phrase" }, "teacher-npc"), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+
+                var sent = transport.SendVerbalHintAsync(
+                    new VoiceQuestVerbalHint("activation-1", "hint-1", "teacher-npc"), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+
+                Assert.That(sent, Is.True);
+                Assert.That(client.Sent, Has.Count.EqualTo(2));
+                StringAssert.Contains("\"event\":\"VERBAL_HINT\"", client.Sent[1]);
+                StringAssert.Contains("\"contract_version\":2", client.Sent[1]);
+                StringAssert.Contains("\"activation_id\":\"activation-1\"", client.Sent[1]);
+                StringAssert.Contains("\"command_id\":\"hint-1\"", client.Sent[1]);
+                StringAssert.Contains("\"npc_binding_id\":\"teacher-npc\"", client.Sent[1]);
+                Assert.That(client.Sent[1], Does.Not.Contain("phrases"));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void DisconnectedVerbalHintReturnsFalseAndIsNotReplayedOnReconnect()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                transport.Configure(client);
+                transport.ActivateAsync(new VoiceQuestActivation("activation-1", "goal", new[] { "phrase" }, "teacher-npc"), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+                client.IsConnectedV2 = false;
+
+                var sent = transport.SendVerbalHintAsync(
+                    new VoiceQuestVerbalHint("activation-1", "hint-offline", "teacher-npc"), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+                client.IsConnectedV2 = true;
+                client.Reconnect();
+                Pump(transport);
+
+                Assert.That(sent, Is.False);
+                Assert.That(client.Sent, Has.Count.EqualTo(2), "Only desired activation state is reconciled after reconnect.");
+                StringAssert.Contains("SET_ACTIVE_QUEST", client.Sent[1]);
+                Assert.That(client.Sent[1], Does.Not.Contain("VERBAL_HINT"));
+                Assert.That(client.Sent[1], Does.Not.Contain("hint-offline"));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
     }
 }

@@ -104,6 +104,23 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             return Task.CompletedTask;
         }
 
+        public Task<bool> SendVerbalHintAsync(VoiceQuestVerbalHint request, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (request == null || string.IsNullOrWhiteSpace(request.command_id) ||
+                string.IsNullOrWhiteSpace(request.activation_id) || string.IsNullOrWhiteSpace(request.npc_binding_id) ||
+                _client == null || !_client.IsConnectedV2 || _current == null || _terminal ||
+                !string.Equals(_current.activation_id, request.activation_id, StringComparison.Ordinal) ||
+                !string.Equals(_current.npc_binding_id, request.npc_binding_id, StringComparison.Ordinal))
+                return Task.FromResult(false);
+
+            _client.PublishDataV2(
+                Encoding.UTF8.GetBytes(JsonUtility.ToJson(request)),
+                VoiceQuestTransportV2Constants.Topic,
+                true);
+            return Task.FromResult(true);
+        }
+
         private void Publish(Packet packet)
         {
             if (_client == null || !_client.IsConnectedV2) return;

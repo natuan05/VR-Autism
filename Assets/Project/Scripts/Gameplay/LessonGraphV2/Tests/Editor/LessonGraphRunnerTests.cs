@@ -274,6 +274,54 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Object.DestroyImmediate(runner.gameObject); Object.DestroyImmediate(graph);
         }
 
+        [UnityTest]
+        public IEnumerator Runner_NodeCancellationUsesAbsoluteMonotonicElapsedTime()
+        {
+            var graph = Graph("source", new List<LessonNodeData> { new LessonNodeData("source", NodeType.Wait, new WaitNodeConfig(30)) });
+            var executor = new ControlledExecutor();
+            var clock = new TrackingClock { Elapsed = 10d };
+            var runnerObject = new GameObject("absolute-node-cancellation-time");
+            var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            runner.Configure(graph, new SingleRegistry(executor), new PassPreflight(), clock);
+            var cancelled = new List<NodeCancelledEventV2>();
+            runner.NodeCancelled += cancelled.Add;
+            var lessonTask = runner.StartLessonAsync();
+            yield return UntilFrames(() => executor.Contexts.Count == 1);
+
+            clock.Elapsed = 42.75d;
+            runner.AbortLesson();
+            yield return CompleteWithinFrames(lessonTask);
+
+            Assert.That(lessonTask.GetAwaiter().GetResult().FailureReason, Is.EqualTo(LessonFailureReason.Aborted));
+            Assert.That(cancelled, Has.Count.EqualTo(1));
+            Assert.That(cancelled[0].ElapsedSeconds, Is.EqualTo(42.75d),
+                "Cancellation telemetry records the monotonic run clock, not this node's duration.");
+            Object.DestroyImmediate(runnerObject);
+            Object.DestroyImmediate(graph);
+        }
+
+        [UnityTest]
+        public IEnumerator Runner_AbortFromNodeCompletedCallbackDoesNotEmitNodeCancellation()
+        {
+            var graph = Graph("source", new List<LessonNodeData> { new LessonNodeData("source", NodeType.Wait, new WaitNodeConfig(1)) });
+            var clock = new TrackingClock { Elapsed = 15d };
+            var runnerObject = new GameObject("abort-after-node-result");
+            var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            runner.Configure(graph, new SingleRegistry(new ImmediateExecutor(NodeStatus.Success)), new PassPreflight(), clock);
+            var completed = 0;
+            var cancelled = 0;
+            runner.NodeCompleted += _ => { completed++; runner.AbortLesson(); };
+            runner.NodeCancelled += _ => cancelled++;
+            var lessonTask = runner.StartLessonAsync();
+            yield return CompleteWithinFrames(lessonTask);
+
+            Assert.That(lessonTask.GetAwaiter().GetResult().FailureReason, Is.EqualTo(LessonFailureReason.Aborted));
+            Assert.That(completed, Is.EqualTo(1));
+            Assert.That(cancelled, Is.Zero, "A committed node result and its activation cancellation are mutually exclusive terminal events.");
+            Object.DestroyImmediate(runnerObject);
+            Object.DestroyImmediate(graph);
+        }
+
         [Test]
         public async Task CheckpointExecutor_TelemetryFailureReturnsFailedResult()
         {
@@ -474,6 +522,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         {
             for (var frame = 0; frame < 30 && !task.IsCompleted; frame++) yield return null;
             Assert.IsTrue(task.IsCompleted, "Wait task did not complete within 30 editor frames.");
+        }
+
+        private static IEnumerator UntilFrames(System.Func<bool> condition)
+        {
+            for (var frame = 0; frame < 30 && !condition(); frame++) yield return null;
+            Assert.IsTrue(condition(), "Condition did not become true within 30 editor frames.");
         }
 
         private static NodeExecutionContext WaitContext(CancellationToken cancellation, CancellationToken skip, CancellationToken timeout)
