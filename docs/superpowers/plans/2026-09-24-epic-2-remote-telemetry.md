@@ -54,6 +54,7 @@ Observed baseline:
 - `NodeResult.ElapsedSeconds` currently represents the shared clock reading, not node duration. Do not serialize that as per-node elapsed without subtracting entry time.
 - `VoicePhraseSessionSnapshotV2` carries launch token, lesson ID, lesson voice revision and child phrase revision. `SessionContext.Instance.SessionId` carries the external session ID; runner RunId is a different identity.
 - `Cloud/Models/SessionData.cs` only has `quest_logs`; no NodeLogData exists. Existing FirebaseManager accumulates legacy logs and must not become the V2 writer.
+- `Bathroom-V2.unity` has an enabled `TimeManager` alongside `LessonGraphRunnerInstaller`. `TimeManager.Start()` calls `FirebaseManager.BeginSession()` and starts the existing LiveKit/session handshake; `SaveLessonTimeData()` can call `FirebaseManager.SaveSession()` for the same session. A whole-document legacy save would overwrite V2-owned session projections. Keep the handshake, but gate legacy Firestore accumulation/save for an active V2 lesson.
 - Web session page currently uses `useLiveKitDataChannel` for legacy voice and RTDB `pushRemoteCommand` for visual hint/skip. A separate V2 path is required. `ControlSidebar.tsx` is not necessarily the page's actual control surface; change the rendered controls in `[id]/page.tsx`, not an unused component.
 - Python's strict `parse_unity_packet` accepts SET_ACTIVE_QUEST, CANCEL_ACTIVE_QUEST and SPEAK_SCRIPT, but no correlated VERBAL_HINT. Existing unversioned hint handler chooses cached active phrases and is insufficient for V2 correlation.
 
@@ -273,18 +274,20 @@ Assert.That(session.quest_logs[0].hints_visual, Is.EqualTo(1));
 
 **Depends on:** Task 5. **Deliverable:** session-scoped telemetry adapter, bounded retry writer, concrete RTDB/Firestore sinks, installation without legacy mutation.
 
-**Files:** Create `V2/Telemetry/LessonTelemetryAdapterV2.cs`, `V2/Telemetry/LessonTelemetryWriterV2.cs`, `V2/Telemetry/FirebaseLessonTelemetrySinkV2.cs`, `V2/Tests/Editor/LessonTelemetryWriterV2Tests.cs`, `V2/Tests/Editor/LessonTelemetryAdapterV2Tests.cs`; modify `V2/Runtime/LessonGraphRunnerInstaller.cs`.
+**Files:** Create `V2/Telemetry/LessonTelemetryAdapterV2.cs`, `V2/Telemetry/LessonTelemetryWriterV2.cs`, `V2/Telemetry/FirebaseLessonTelemetrySinkV2.cs`, `V2/Tests/Editor/LessonTelemetryWriterV2Tests.cs`, `V2/Tests/Editor/LessonTelemetryAdapterV2Tests.cs`; modify `V2/Runtime/LessonGraphRunnerInstaller.cs` and `Assets/Project/Scripts/Core/Manager/TimeManager.cs` with a V2-only persistence guard. Preserve legacy behavior when no active V2 installer exists.
 
 **Interfaces:** `ILessonTelemetrySinkV2.WriteStateAsync(LessonStateV2 state, CancellationToken token)`, `UpsertBatchAsync(TelemetryWriteBatchV2 batch, CancellationToken token)`; `LessonTelemetryWriterV2.Enqueue(TelemetryWriteBatchV2 batch)`, `FlushAsync(CancellationToken token): Task`, `PendingCount: int`; adapter `Attach(LessonGraphRunner runner, LessonSessionContextV2 context)`, `Detach()`; writer owns pending immutable batches after adapter scene teardown. One owner per external session/run.
 
 **Test-first steps:**
 
 - [ ] Run upstream impact on installer and Firebase model symbols to edit; inspect existing session ownership.
+- [ ] Run upstream impact on `TimeManager.Start`, `LogQuestComplete`, and `SaveLessonTimeData` before the V2 guard. Assert that the V2 scene keeps the existing handshake/LiveKit behavior while only the FirebaseManager BeginSession/AccumulateQuestLog/SaveSession path is skipped for V2. Legacy scenes keep that path.
 - [ ] Add fake-sink tests for first-write failure, apply-then-throw, replay, stale revision, unload, and cancelled retry delay.
 - [ ] Add path assertions for only `live_sessions/{sessionId}/lesson_graph` and preserved unrelated Firestore fields.
 - [ ] Implement ordered retry queue with injected delay, coalesced newest state, and retained audit batches.
 - [ ] Implement RTDB revision/ownership transaction and Firestore stable-ID upsert/merge transaction.
 - [ ] Attach telemetry before runner start; detach after terminal capture, retaining session writer through scene teardown.
+- [ ] Seed V2 session metadata from the immutable session context and `SessionContext` into the merge projection, because the guarded legacy `BeginSession`/`SaveSession` path no longer creates the V2 Firestore session document.
 - [ ] Inspect legacy-writer exclusion and exact diff; Unity tests remain unrun.
 - [ ] Run `git diff --check`, GitNexus `detect_changes`, independent review, and commit only Task 6 files.
 
@@ -300,7 +303,7 @@ Assert.That(fakeSink.WrittenPaths.All(p => p == "live_sessions/session-1/lesson_
 - [ ] Implement single ordered write queue, retry delays 1s/2s/4s/8s capped at 30s, cancellation-aware injected delay. Coalesce pending state to newest revision while preserving every audit event. Use RTDB transaction comparing `(run_id,state_revision)` under one session; never overwrite a new run with a late previous-run completion. Capture current run ownership at launch.
 - [ ] Firestore transaction reads keyed V2 maps, upserts by identity, derives ordered arrays and merges only V2-owned fields. Each event document Set/merge uses stable ID. Retry frozen UTC timestamps and elapsed values. Explicitly test unknown unrelated session fields survive.
 - [ ] Handle partial success independently: successful audit need not be appended again, retry harmless upserts, never send state backwards. Writer survives runner OnDestroy until bounded session-end flush completes or reports pending/error; avoid fire-and-forget async void exception loss.
-- [ ] Composition subscribes before StartLessonAsync and unsubscribes after terminal capture; repeat Configure cannot double subscribe. Do not call FirebaseManager.AccumulateQuestLog or alter TelemetryStreamer. Reject ambiguous dual legacy/V2 writer setup in V2 composition and include manual setup check at handoff.
+- [ ] Composition subscribes before StartLessonAsync and unsubscribes after terminal capture; repeat Configure cannot double subscribe. Do not call FirebaseManager.AccumulateQuestLog or alter TelemetryStreamer. In `TimeManager`, identify an active V2 installer once per scene and skip only legacy FirebaseManager calls for that V2 lesson; keep the handshake and other TimeManager duties. Assert the guard in focused tests and reject any remaining ambiguous dual-writer setup at composition. Include a manual scene setup check at handoff.
 - [ ] Reviewer verifies only permitted RTDB subtree, Firestore transaction and no business-state mutation by observers. User filters `LessonTelemetryWriterV2Tests`, `LessonTelemetryAdapterV2Tests`; run non-Unity static/diff checks and detect_changes. Suggested commit `feat(telemetry): persist V2 state and idempotent audit`.
 
 ## Task 7 — Consume authoritative telemetry and close cross-stack coverage (2.3)
@@ -334,20 +337,19 @@ Stop after Tasks 1-7 have code, focused Python/web tests, static diff checks, an
 
 ## Required user verification and release gate
 
-Story 2.1 is code-complete but real-room verification is still outstanding; do not relabel this as verified by mocks or by the new stories. Run these smallest manual checks with the user after they compile/test Unity:
+Story 2.1 is `done` in sprint status, and the user has confirmed audible dialogue in the real room. Treat that as the established baseline. Run these checks for new 2.2/2.3 behavior after the user compiles/tests Unity:
 
-1. Single agent room, dialogue node blocks until actual audible playback finishes; unknown NPC uses fallback voice; audio destination follows assigned NPC. Then a VoiceQuest opens with its assigned profile.
-2. Dashboard targets that active voice binding; one verbal hint speaks once, visual hint shows only selected indicator. Duplicate command, wrong binding and old activation return rejection without advancing node.
-3. Pause during dialogue synthesis/playback and during voice/touch work cancels old work and indicator; resume stays on the node with fresh activation. Delayed old completion does not advance it.
-4. Disconnect/reconnect Unity, agent, dashboard independently; current state recovers; no transient hint replays; duplicate audit writes remain one per identity. Verify state never regresses.
-5. Skip/timeout/failure/abort/scene unload close node logs, preserve terminal state and produce one compatible quest entry per logical QuestNode. Inspect RTDB lesson_graph only and Firestore stable event IDs, UTC timestamps, monotonic duration and unchanged legacy fields.
-6. Run one existing legacy lesson and remote hint/skip flow to confirm the dedicated V2 route has not hijacked it.
+1. Dashboard targets the active voice binding; one verbal hint speaks once, visual hint shows only selected indicator. Duplicate command, wrong binding and old activation return rejection without advancing node.
+2. Pause during dialogue synthesis/playback and during voice/touch work cancels old work and indicator; resume stays on the node with fresh activation. Delayed old completion does not advance it.
+3. Disconnect/reconnect Unity, agent, dashboard independently; current state recovers; no transient hint replays; duplicate audit writes remain one per identity. Verify state never regresses.
+4. Skip/timeout/failure/abort/scene unload close node logs, preserve terminal state and produce one compatible quest entry per logical QuestNode. Inspect RTDB lesson_graph only and Firestore stable event IDs, UTC timestamps, monotonic duration and unchanged legacy fields.
+5. Run one existing legacy lesson and remote hint/skip flow to confirm the dedicated V2 route has not hijacked it.
 
-Deployment cutover of agent.py to agent_v2.py is a separate action. Do not claim real-room acceptance until the above evidence exists; report story 2.2/2.3 code/review status separately from the 2.1 integration risk.
+Deployment cutover of agent.py to agent_v2.py is a separate action. Do not claim real-room acceptance of new 2.2/2.3 behavior until the above evidence exists; keep the verified 2.1 baseline distinct.
 
 ## Plan self-review
 
-- SPEC coverage: CAP-1 is existing 2.1 code plus real-room release gate; CAP-2 Tasks 1-2; CAP-3 Task 3; CAP-4 Task 4; CAP-5 Tasks 5-7; CAP-6 cross-stack fixtures, legacy checks, and final review in Tasks 1, 3, 4, and 7. No capability is omitted.
+- SPEC coverage: CAP-1 is the user-verified 2.1 baseline; CAP-2 Tasks 1-2; CAP-3 Task 3; CAP-4 Task 4; CAP-5 Tasks 5-7; CAP-6 cross-stack fixtures, legacy checks, and final review in Tasks 1, 3, 4, and 7. No capability is omitted.
 - Placeholder scan: no `TBD`, `TODO`, undefined later-task interface, or vague error-handling step. Type scan: `LessonCommandV2`, `LessonCommandResultV2`, `LessonStateV2`, `LessonSessionContextV2`, and `TelemetryWriteBatchV2` are introduced before consumers; web/Python names match the frozen contract.
 
 - Story 2.2 routing/correlation/rejections: Tasks 1–4; pause/new activation: Task 2; verbal/visual capabilities: Task 3; dashboard and legacy isolation: Task 4.
