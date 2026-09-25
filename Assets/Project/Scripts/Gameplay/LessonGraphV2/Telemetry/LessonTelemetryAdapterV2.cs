@@ -181,10 +181,20 @@ namespace VRAutism.Gameplay.LessonGraphV2.Telemetry
         {
             if (result == null || _sessionContext == null) return;
             LessonStateV2 state = result.state == null ? null : LessonTelemetryWriterV2.CopyState(result.state);
+            LessonStateV2 currentState = (_runner == null ? null : _runner.CurrentState) ?? _lastObservedState;
+            string runId = !string.IsNullOrWhiteSpace(state?.run_id) ? state.run_id :
+                !string.IsNullOrWhiteSpace(currentState?.run_id) ? currentState.run_id : null;
+            if (string.IsNullOrWhiteSpace(runId)) return;
+
             string nodeId = !string.IsNullOrWhiteSpace(result.node_id) ? result.node_id : state?.node_id;
             string activationId = !string.IsNullOrWhiteSpace(result.activation_id) ? result.activation_id : state?.activation_id;
-            LessonTelemetryNodeV2 node = CreateNode(nodeId, activationId, state);
-            string runId = !string.IsNullOrWhiteSpace(result.run_id) ? result.run_id : state?.run_id;
+            LessonStateV2 nodeState = state != null && string.Equals(state.node_id, nodeId, StringComparison.Ordinal)
+                ? state
+                : null;
+            LessonTelemetryNodeV2 node = CreateNode(nodeId, activationId, nodeState);
+            // The result run_id is the submitted target. Audit rejected commands under the
+            // authoritative run that owns this session's writer, while retaining target node and
+            // activation correlation from the result above.
             StartRunClock(runId);
             Record(LessonLifecycleEventV2.CommandDisposition(Context(runId), node,
                 result.command_id, result.command, result.binding_id, result.accepted, result.reason,

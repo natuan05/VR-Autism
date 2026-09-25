@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,9 +9,11 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using VRAutism.Gameplay.LessonGraphV2.Data;
+using VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs;
 using VRAutism.Gameplay.LessonGraphV2.Questing;
 using VRAutism.Gameplay.LessonGraphV2.Remote;
 using VRAutism.Gameplay.LessonGraphV2.Runtime;
+using VRAutism.Gameplay.LessonGraphV2.Runtime.Executors;
 using VRAutism.Gameplay.LessonGraphV2.Telemetry;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
@@ -102,6 +106,161 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             }
             finally
             {
+                adapter.Detach();
+                writer.Dispose();
+                UnityEngine.Object.DestroyImmediate(runnerObject);
+                UnityEngine.Object.DestroyImmediate(graph);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator WrongRunCommand_IsAuditedByActiveRunAndKeepsElapsedMonotonic()
+        {
+            var sink = new FakeSink();
+            var graph = ScriptableObject.CreateInstance<LessonGraph>();
+            graph.Editor_SetNodes(new List<LessonNodeData>
+            {
+                new LessonNodeData("node-1", NodeType.Quest, null),
+                new LessonNodeData("rejected-node", NodeType.Wait, null)
+            });
+            var runnerObject = new GameObject("telemetry-wrong-run-command-test");
+            var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            var writer = new LessonTelemetryWriterV2(sink, (delay, token) => Task.CompletedTask);
+            var adapter = new LessonTelemetryAdapterV2(writer, graph, new FixedUtcClock());
+            var context = new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 2, 3);
+            SetPrivateField(runner, "_sessionContext", context);
+            SetPrivateField(runner, "_activeRunId", "run-1");
+            SetPrivateField(runner, "_currentState", State("running", 1));
+
+            try
+            {
+                adapter.Attach(runner, context);
+                Raise(runner, "NodeEntered", new NodeEnteredEvent("run-1", "activation-1", "node-1", 0d));
+                yield return WaitFor(Task.Delay(150));
+                double elapsedBeforeWrongRun = GetPrivateField<Stopwatch>(adapter, "_monotonicClock").Elapsed.TotalSeconds;
+
+                var wrongRunCommand = new LessonCommandV2
+                {
+                    contract_version = LessonRemoteContractV2.ContractVersion,
+                    @event = LessonRemoteContractV2.CommandEvent,
+                    command_id = "cmd-wrong-run",
+                    session_id = "session-1",
+                    run_id = "other-run",
+                    node_id = "rejected-node",
+                    activation_id = "rejected-activation",
+                    command = LessonCommandKindV2.Skip,
+                    binding_id = string.Empty
+                };
+                Task<LessonCommandResultV2> commandTask = runner.ApplyCommandAsync(wrongRunCommand);
+                yield return WaitFor(commandTask);
+                LessonCommandResultV2 commandResult = commandTask.GetAwaiter().GetResult();
+
+                Assert.That(commandResult.reason, Is.EqualTo(LessonCommandReasonV2.WrongRun));
+                Assert.That(commandResult.run_id, Is.EqualTo("other-run"));
+                Assert.That(commandResult.node_id, Is.EqualTo("rejected-node"));
+                Assert.That(commandResult.activation_id, Is.EqualTo("rejected-activation"));
+                Assert.That(commandResult.state.run_id, Is.EqualTo("run-1"));
+
+                yield return WaitFor(Task.Delay(20));
+                Raise(runner, "NodeCompleted", new NodeCompletedEvent(
+                    NodeResult.Completed("node-1", "activation-1", NodeStatus.Success, 0.01d)));
+
+                Task flush = writer.FlushAsync(CancellationToken.None);
+                yield return WaitFor(flush);
+
+                Assert.That(sink.WrongRunAudit, Is.Not.Null, "The active session writer must accept the rejected command audit.");
+                Assert.That(sink.WrongRunAudit.run_id, Is.EqualTo("run-1"), "Audit ownership follows the authoritative run.");
+                Assert.That(sink.WrongRunAudit.command_id, Is.EqualTo("cmd-wrong-run"));
+                Assert.That(sink.WrongRunAudit.reason, Is.EqualTo(LessonCommandReasonV2.WrongRun));
+                Assert.That(sink.WrongRunAudit.node_id, Is.EqualTo("rejected-node"), "The rejected command's target correlation is retained.");
+                Assert.That(sink.WrongRunAudit.activation_id, Is.EqualTo("rejected-activation"));
+                Assert.That(sink.WrongRunAudit.node_type, Is.EqualTo("Wait"));
+                Assert.That(sink.WrongRunAudit.node_index, Is.EqualTo(1));
+                Assert.That(elapsedBeforeWrongRun, Is.GreaterThan(0.1d));
+                Assert.That(sink.NodeCompletedElapsedSeconds, Is.GreaterThan(elapsedBeforeWrongRun),
+                    "A rejected command must not reset the active run clock before later lifecycle events.");
+                Assert.That(sink.NodeDurationSeconds, Is.GreaterThan(elapsedBeforeWrongRun),
+                    "The uninterrupted run clock must produce a positive duration for the later node lifecycle.");
+            }
+            finally
+            {
+                adapter.Detach();
+                writer.Dispose();
+                UnityEngine.Object.DestroyImmediate(runnerObject);
+                UnityEngine.Object.DestroyImmediate(graph);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator PreStartWrongRunCommand_DoesNotClaimWriterBeforeTheActualRun()
+        {
+            var sink = new FakeSink();
+            var graph = ScriptableObject.CreateInstance<LessonGraph>();
+            graph.name = "telemetry-prestart-wrong-run-test-graph";
+            graph.Editor_SetEntryNodeId("active-node");
+            graph.Editor_SetNodes(new List<LessonNodeData>
+            {
+                new LessonNodeData("active-node", NodeType.Wait, new WaitNodeConfig(30f))
+            });
+            graph.Editor_SetEdges(new List<LessonEdgeData>());
+            var runnerObject = new GameObject("telemetry-prestart-wrong-run-test");
+            var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            var writer = new LessonTelemetryWriterV2(sink, (delay, token) => Task.CompletedTask);
+            var adapter = new LessonTelemetryAdapterV2(writer, graph, new FixedUtcClock());
+            var context = new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 2, 3);
+            Task<LessonResult> lessonTask = null;
+
+            try
+            {
+                runner.Configure(graph, new SingleExecutorRegistry(new WaitNodeExecutor(new NeverNodeClock())),
+                    clock: new NeverNodeClock());
+                runner.ConfigureSession(context);
+                adapter.Attach(runner, context);
+
+                var preStartCommand = new LessonCommandV2
+                {
+                    contract_version = LessonRemoteContractV2.ContractVersion,
+                    @event = LessonRemoteContractV2.CommandEvent,
+                    command_id = "cmd-prestart-wrong-run",
+                    session_id = "session-1",
+                    run_id = "foreign-run",
+                    node_id = "active-node",
+                    activation_id = "foreign-activation",
+                    command = LessonCommandKindV2.Skip,
+                    binding_id = string.Empty
+                };
+                Task<LessonCommandResultV2> commandTask = runner.ApplyCommandAsync(preStartCommand);
+                yield return WaitFor(commandTask);
+                LessonCommandResultV2 commandResult = commandTask.GetAwaiter().GetResult();
+
+                Assert.That(runner.CurrentState, Is.Null);
+                Assert.That(commandResult.reason, Is.EqualTo(LessonCommandReasonV2.WrongRun));
+                Assert.That(commandResult.run_id, Is.EqualTo("foreign-run"));
+                Assert.That(commandResult.state, Is.Null);
+
+                lessonTask = runner.StartLessonAsync();
+                int frame = 0;
+                while ((runner.CurrentState == null || runner.CurrentState.status != "running") && frame++ < 120)
+                    yield return null;
+
+                LessonStateV2 runningState = runner.CurrentState;
+                Assert.That(runningState, Is.Not.Null);
+                Assert.That(runningState.status, Is.EqualTo("running"));
+                Assert.That(runningState.run_id, Is.Not.Empty);
+
+                runner.AbortLesson();
+                yield return WaitFor(lessonTask);
+
+                Task flush = writer.FlushAsync(CancellationToken.None);
+                yield return WaitFor(flush);
+
+                Assert.That(sink.WrongRunAudit, Is.Null, "A pre-start rejection has no authoritative run to own a telemetry audit.");
+                Assert.That(sink.NodeEnteredAuditCount, Is.EqualTo(1), "The subsequent real run must still be accepted by its session writer.");
+                Assert.That(sink.LatestState.run_id, Is.EqualTo(runningState.run_id));
+            }
+            finally
+            {
+                if (lessonTask != null && !lessonTask.IsCompleted) runner.AbortLesson();
                 adapter.Detach();
                 writer.Dispose();
                 UnityEngine.Object.DestroyImmediate(runnerObject);
@@ -486,6 +645,25 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             public DateTimeOffset UtcNow => T0;
         }
 
+        private sealed class SingleExecutorRegistry : INodeExecutorRegistry
+        {
+            private readonly INodeExecutor _executor;
+
+            public SingleExecutorRegistry(INodeExecutor executor) => _executor = executor;
+
+            public bool TryGet(NodeType type, out INodeExecutor executor)
+            {
+                executor = _executor;
+                return executor != null;
+            }
+        }
+
+        private sealed class NeverNodeClock : INodeClock
+        {
+            public double ElapsedSeconds => 0d;
+            public Task Delay(float seconds, CancellationToken cancellationToken) => Task.Delay(Timeout.Infinite, cancellationToken);
+        }
+
         private sealed class FakeSink : ILessonTelemetrySinkV2
         {
             public int NodeEnteredAuditCount;
@@ -496,7 +674,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             public int QuestLogCount;
             public LessonStateV2 LatestState;
             public double NodeEnteredElapsedSeconds = -1d;
+            public double NodeCompletedElapsedSeconds = -1d;
+            public double NodeDurationSeconds = -1d;
             public double TerminalElapsedSeconds = -1d;
+            public LessonAuditEventDataV2 WrongRunAudit;
 
             public Task WriteStateAsync(LessonStateV2 state, CancellationToken token)
             {
@@ -513,6 +694,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                     AuditEventCount++;
                     if (audit.event_type == LessonTelemetryEventTypeV2.NodeEntered) NodeEnteredAuditCount++;
                     if (audit.event_type == LessonTelemetryEventTypeV2.NodeEntered) NodeEnteredElapsedSeconds = audit.elapsed_seconds;
+                    if (audit.event_type == LessonTelemetryEventTypeV2.CommandRejected && audit.reason == LessonCommandReasonV2.WrongRun)
+                        WrongRunAudit = audit;
+                    if (audit.event_type == LessonTelemetryEventTypeV2.NodeCompleted)
+                        NodeCompletedElapsedSeconds = audit.elapsed_seconds;
                     if (audit.event_type == LessonTelemetryEventTypeV2.LessonCancelled) SessionCancelledAuditCount++;
                     if (audit.event_type == LessonTelemetryEventTypeV2.LessonCompleted) SessionCompletedAuditCount++;
                     if (audit.event_type == LessonTelemetryEventTypeV2.LessonCompleted ||
@@ -520,6 +705,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                         audit.event_type == LessonTelemetryEventTypeV2.LessonFailed)
                         TerminalElapsedSeconds = audit.elapsed_seconds;
                 }
+                foreach (var log in batch.node_logs_by_id.Values) NodeDurationSeconds = log.duration_seconds;
                 NodeLogCount += batch.node_logs_by_id.Count;
                 QuestLogCount += batch.quest_logs_by_id.Count;
                 return Task.CompletedTask;
