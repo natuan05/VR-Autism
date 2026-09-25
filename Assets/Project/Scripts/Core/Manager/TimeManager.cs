@@ -10,6 +10,7 @@ using VRAutism.Cloud;
 using VRAutism.Cloud.Models;
 using VRAutism.Core.Telemetry;
 using VRAutism.Gameplay.Actions;
+using VRAutism.Gameplay.LessonGraphV2.Runtime;
 
 namespace VRAutism.Core
 {
@@ -24,6 +25,7 @@ namespace VRAutism.Core
 
         // Tracks the current quest's start time to compute response_time
         private double _questStartSecond;
+        private bool _v2InstallerOwnsSessionPersistence;
 
         private void Awake()
         {
@@ -42,6 +44,7 @@ namespace VRAutism.Core
 
         private void Start()
         {
+            _v2InstallerOwnsSessionPersistence = LessonGraphRunnerInstaller.ShouldSkipLegacyFirebasePersistence();
             QuestController.OnActiveQuestCompleted += LogQuestComplete;
 
             _startTime = DateTime.Now;
@@ -62,17 +65,21 @@ namespace VRAutism.Core
                 Debug.LogWarning("[TimeManager] SessionContext không có LessonId — có thể đang chạy trực tiếp Scene để test.");
             }
 
-            // Hand lesson metadata off to FirebaseManager to start tracking
-            FirebaseManager.Instance.BeginSession(
-                lessonId:   lessonId,
-                lessonName: lessonName,
-                levelName:  levelName,
-                levelIndex: levelIndex,
-                lessonType: lessonType,
-                sessionId:  sessionId,
-                childId:    childId,
-                hostId:     ctx != null ? ctx.HostId : ""
-            );
+            // V2's session-scoped telemetry writer owns Firestore persistence in its scenes.
+            // Keep the legacy accumulator for every scene without an active V2 installer.
+            if (!_v2InstallerOwnsSessionPersistence)
+            {
+                FirebaseManager.Instance.BeginSession(
+                    lessonId:   lessonId,
+                    lessonName: lessonName,
+                    levelName:  levelName,
+                    levelIndex: levelIndex,
+                    lessonType: lessonType,
+                    sessionId:  sessionId,
+                    childId:    childId,
+                    hostId:     ctx != null ? ctx.HostId : ""
+                );
+            }
 
             // Handshake: Báo cho Web Dashboard biết trẻ đã vào scene thành công.
             // Dùng SceneManager.GetActiveScene().name để luôn lấy đúng tên bài đang chạy,
@@ -141,7 +148,8 @@ namespace VRAutism.Core
                 response_time_from_hint = responseTimeFromHint
             };
 
-            FirebaseManager.Instance.AccumulateQuestLog(log);
+            if (!_v2InstallerOwnsSessionPersistence)
+                FirebaseManager.Instance.AccumulateQuestLog(log);
         }
 
         /// <summary>Gọi từ UnityEvent Inspector (không tham số). Defaults: success, score=0.</summary>
@@ -163,7 +171,8 @@ namespace VRAutism.Core
                 Debug.LogWarning("[TimeManager] SaveLessonTimeData: _timer was null, using _startTime fallback.");
             }
 
-            FirebaseManager.Instance.SaveSession(completionStatus, score, durationSeconds);
+            if (!_v2InstallerOwnsSessionPersistence)
+                FirebaseManager.Instance.SaveSession(completionStatus, score, durationSeconds);
             Debug.Log($"[TimeManager] Lesson ended. Duration: {durationSeconds:F1}s, Status: {completionStatus}");
 
             // Gửi tín hiệu "ended" lên RTDB để Web Dashboard tự động thoát trang Session.

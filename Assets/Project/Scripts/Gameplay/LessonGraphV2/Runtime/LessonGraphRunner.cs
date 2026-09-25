@@ -41,6 +41,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         private TaskCompletionSource<LessonStateV2> _resumeStarted;
         private string _activeRunId;
         private string _activeActivationId;
+        private LessonGraphRunnerInstaller _telemetryInstaller;
         private int _stateRevision;
         private bool _executorReady;
         private bool _pauseRequestedFlag;
@@ -94,13 +95,46 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     Debug.LogWarning($"[LessonGraphV2] StartLesson ignored — lesson already running", this);
                     return _activeTask;
                 }
+                LessonGraphRunnerInstaller installer = _telemetryInstaller != null
+                    ? _telemetryInstaller
+                    : GetComponent<LessonGraphRunnerInstaller>();
+                string authorizationError;
+                bool installerOwnsThisRun = installer != null;
+                if (installerOwnsThisRun && !installer.CanAuthorizeLessonStart(out authorizationError))
+                {
+                    Debug.LogError("[LessonGraphV2] Refusing to start because the active installer could not authorize the lesson. " +
+                        authorizationError, this);
+                    return Task.FromResult(LessonResult.Failed(Guid.NewGuid().ToString("N"), LessonFailureReason.InvalidGraph));
+                }
                 if (!CanStart()) return Task.FromResult(LessonResult.Failed(Guid.NewGuid().ToString("N"), LessonFailureReason.InvalidGraph));
+                if (installerOwnsThisRun) installer.MarkLessonStartRequested();
 
                 if (_usesDefaultClock) _clock = new MonotonicClock();
                 _lessonCancellation = new CancellationTokenSource();
                 _activeRunId = Guid.NewGuid().ToString("N");
                 _activeTask = RunAsync(_activeRunId, _lessonCancellation.Token);
                 return _activeTask;
+            }
+        }
+
+        internal void RegisterTelemetryInstaller(LessonGraphRunnerInstaller installer)
+        {
+            if (installer == null) throw new ArgumentNullException(nameof(installer));
+            lock (_gate)
+            {
+                if (_telemetryInstaller != null && !ReferenceEquals(_telemetryInstaller, installer))
+                    throw new InvalidOperationException("A lesson runner can have only one active V2 telemetry installer owner.");
+                _telemetryInstaller = installer;
+            }
+        }
+
+        internal void UnregisterTelemetryInstaller(LessonGraphRunnerInstaller installer)
+        {
+            if (installer == null) return;
+            lock (_gate)
+            {
+                if (ReferenceEquals(_telemetryInstaller, installer))
+                    _telemetryInstaller = null;
             }
         }
 

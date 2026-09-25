@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using VRAutism.Cloud.LiveKit;
 using VRAutism.Core;
@@ -6,6 +8,7 @@ using VRAutism.Gameplay.LessonGraphV2.Data;
 using VRAutism.Gameplay.LessonGraphV2.Phrases;
 using VRAutism.Gameplay.LessonGraphV2.Questing;
 using VRAutism.Gameplay.LessonGraphV2.Remote;
+using VRAutism.Gameplay.LessonGraphV2.Telemetry;
 using VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Runtime
@@ -16,6 +19,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
     [DisallowMultipleComponent]
     public sealed class LessonGraphRunnerInstaller : MonoBehaviour
     {
+        private const int SceneUnloadFlushTimeoutMilliseconds = 5000;
+
         [SerializeField] private LessonGraph _lessonGraph;
         [SerializeField] private LessonGraphRunner _runner;
         [SerializeField] private LessonGraphBindings _bindings;
@@ -38,11 +43,61 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         private LessonGraph _configuredGraph;
         private LessonGraphBindings _configuredBindings;
         private LiveKitDialogueTransportV2 _configuredDialogueTransport;
+        private LessonTelemetryWriterV2 _telemetryWriter;
+        private LessonTelemetryAdapterV2 _telemetryAdapter;
+        private bool _telemetryConfigured;
+        private bool _telemetryInitializationFailed;
+        private string _telemetryInitializationError;
+        private LessonGraphRunner _registeredRunner;
 
         public LessonGraph LessonGraph => _lessonGraph;
         public LessonGraphRunner Runner => _runner;
         public LessonGraphBindings Bindings => _bindings;
         public LiveKitDialogueTransportV2 DialogueTransport => _dialogueTransport;
+        public bool IsTelemetryPersistenceReady => _telemetryConfigured && !_telemetryInitializationFailed;
+        public string TelemetryPersistenceError => _telemetryInitializationError;
+
+        public bool CanAuthorizeLessonStart(out string reason)
+        {
+            if (!isActiveAndEnabled)
+            {
+                reason = "V2 telemetry installer is disabled while its runner is still attached.";
+                return false;
+            }
+            if (!IsTelemetryPersistenceReady)
+            {
+                reason = string.IsNullOrWhiteSpace(_telemetryInitializationError)
+                    ? "V2 telemetry composition is not ready."
+                    : _telemetryInitializationError;
+                return false;
+            }
+            if (_lessonStartRequested)
+            {
+                reason = "This V2 installer already owns a lesson run for the external session.";
+                return false;
+            }
+
+            reason = null;
+            return true;
+        }
+
+        public void MarkLessonStartRequested()
+        {
+            if (!_telemetryConfigured || _lessonStartRequested)
+                throw new InvalidOperationException("A V2 lesson start must be authorized exactly once after telemetry composition.");
+            _lessonStartRequested = true;
+        }
+
+        public static bool ShouldSkipLegacyFirebasePersistence(bool hasActiveV2Installer) => hasActiveV2Installer;
+
+        public static bool ShouldSkipLegacyFirebasePersistence()
+        {
+            LessonGraphRunnerInstaller[] installers = FindObjectsOfType<LessonGraphRunnerInstaller>();
+            for (int i = 0; i < installers.Length; i++)
+                if (installers[i] != null && installers[i].isActiveAndEnabled)
+                    return ShouldSkipLegacyFirebasePersistence(true);
+            return ShouldSkipLegacyFirebasePersistence(false);
+        }
 
         private void Awake()
         {
@@ -50,15 +105,45 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             if (_bindings == null) _bindings = GetComponent<LessonGraphBindings>();
             if (_dialogueTransport == null) _dialogueTransport = GetComponent<LiveKitDialogueTransportV2>() ?? FindObjectOfType<LiveKitDialogueTransportV2>();
             if (_remoteBridge == null) _remoteBridge = GetComponent<LiveKitLessonRemoteBridgeV2>();
-            Configure();
+            try
+            {
+                Configure();
+            }
+            catch (Exception exception)
+            {
+                _telemetryInitializationFailed = true;
+                _telemetryInitializationError = "V2 installer composition failed: " + exception.Message;
+                Debug.LogError("[LessonGraphV2] " + _telemetryInitializationError, this);
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (_runner == null) return;
+            try
+            {
+                RegisterRunnerOwner();
+            }
+            catch (Exception exception)
+            {
+                _telemetryInitializationFailed = true;
+                _telemetryInitializationError = "V2 installer composition failed: " + exception.Message;
+                Debug.LogError("[LessonGraphV2] " + _telemetryInitializationError, this);
+            }
         }
 
         private async void Start()
         {
             RetryOptionalConfiguration();
             if (!_startOnStart) return;
+            if (!_runnerConfigured || !EnsureTelemetryConfigured())
+            {
+                if (!_runnerConfigured && string.IsNullOrWhiteSpace(_telemetryInitializationError))
+                    _telemetryInitializationError = "V2 runner configuration is unavailable; refusing to start without its telemetry owner.";
+                Debug.LogError("[LessonGraphV2] Refusing to start because V2 telemetry composition is not ready. " + _telemetryInitializationError, this);
+                return;
+            }
             Debug.Log($"[LessonGraphV2] Installer auto-starting lesson graph='{_lessonGraph.name}'", this);
-            _lessonStartRequested = true;
             try
             {
                 var result = await _runner.StartLessonAsync();
@@ -81,14 +166,19 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
 
         public void Configure()
         {
-            if (_lessonGraph == null) throw new InvalidOperationException("LessonGraphRunnerInstaller needs a LessonGraph asset.");
-            if (_runner == null) throw new InvalidOperationException("LessonGraphRunnerInstaller needs a LessonGraphRunner component.");
-            if (_bindings == null) throw new InvalidOperationException("LessonGraphRunnerInstaller needs a LessonGraphBindings component.");
-
+            if (_runner == null) _runner = GetComponent<LessonGraphRunner>();
             var runnerConfigurationChanged = !_runnerConfigured || !ReferenceEquals(_configuredRunner, _runner) ||
                 !ReferenceEquals(_configuredGraph, _lessonGraph) ||
                 !ReferenceEquals(_configuredBindings, _bindings) ||
                 !ReferenceEquals(_configuredDialogueTransport, _dialogueTransport);
+            if (_telemetryConfigured && runnerConfigurationChanged)
+                throw new InvalidOperationException("Runner composition cannot change after the V2 telemetry adapter attaches.");
+
+            RegisterRunnerOwner();
+            if (_lessonGraph == null) throw new InvalidOperationException("LessonGraphRunnerInstaller needs a LessonGraph asset.");
+            if (_runner == null) throw new InvalidOperationException("LessonGraphRunnerInstaller needs a LessonGraphRunner component.");
+            if (_bindings == null) throw new InvalidOperationException("LessonGraphRunnerInstaller needs a LessonGraphBindings component.");
+
             if (runnerConfigurationChanged)
             {
                 _clock = new MonotonicClock();
@@ -105,17 +195,171 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             }
 
             RetryOptionalConfiguration();
+            if (_sessionContextCaptured && !_telemetryInitializationFailed)
+                EnsureTelemetryConfigured();
             if (runnerConfigurationChanged)
                 Debug.Log($"[LessonGraphV2] Installer configured: graph='{_lessonGraph.name}' runner={_runner.name} bindings={_bindings.name}", this);
+        }
+
+        private bool EnsureTelemetryConfigured()
+        {
+            if (_telemetryInitializationFailed) return false;
+            if (_telemetryConfigured)
+            {
+                SessionContext currentSessionContext = SessionContext.Instance;
+                if (currentSessionContext != null &&
+                    string.Equals(currentSessionContext.SessionId, _sessionContext.SessionId, StringComparison.Ordinal) &&
+                    string.Equals(currentSessionContext.LessonId, _sessionContext.LessonId, StringComparison.Ordinal) &&
+                    IsCapturedPhraseSnapshotCurrent(currentSessionContext))
+                    return true;
+                return FailTelemetryInitialization("the active session or immutable phrase snapshot changed after telemetry composition.");
+            }
+            if (!_runnerConfigured || _runner == null || _lessonGraph == null || _sessionContext == null)
+                return FailTelemetryInitialization("V2 runner, graph, or immutable session context is unavailable.");
+
+            SessionContext activeSessionContext = SessionContext.Instance;
+            if (activeSessionContext == null ||
+                !string.Equals(activeSessionContext.SessionId, _sessionContext.SessionId, StringComparison.Ordinal) ||
+                !string.Equals(activeSessionContext.LessonId, _sessionContext.LessonId, StringComparison.Ordinal))
+                return FailTelemetryInitialization("the active SessionContext does not match the captured V2 session.");
+
+            LessonTelemetryWriterV2 writer = null;
+            bool registered = false;
+            try
+            {
+                var sink = new FirebaseLessonTelemetrySinkV2(_sessionContext, activeSessionContext, _lessonGraph.name);
+                writer = new LessonTelemetryWriterV2(sink);
+                if (!LessonTelemetryWriterV2.TryRegisterSessionWriter(_sessionContext.SessionId, writer))
+                    throw new InvalidOperationException("A V2 telemetry writer already owns this external session.");
+                registered = true;
+
+                var adapter = new LessonTelemetryAdapterV2(writer, _lessonGraph);
+                adapter.Attach(_runner, _sessionContext);
+                _telemetryWriter = writer;
+                _telemetryAdapter = adapter;
+                _telemetryConfigured = true;
+                _telemetryInitializationError = null;
+                return true;
+            }
+            catch (Exception exception)
+            {
+                if (registered)
+                    LessonTelemetryWriterV2.ReleaseSessionWriter(_sessionContext.SessionId, writer);
+                writer?.Dispose();
+                return FailTelemetryInitialization(exception.Message);
+            }
+        }
+
+        private void RegisterRunnerOwner()
+        {
+            if (_runner == null)
+            {
+                ReleaseRunnerOwner();
+                return;
+            }
+            if (ReferenceEquals(_registeredRunner, _runner)) return;
+
+            ReleaseRunnerOwner();
+            _runner.RegisterTelemetryInstaller(this);
+            _registeredRunner = _runner;
+        }
+
+        private void ReleaseRunnerOwner()
+        {
+            if (_registeredRunner != null)
+                _registeredRunner.UnregisterTelemetryInstaller(this);
+            _registeredRunner = null;
+        }
+
+        private bool FailTelemetryInitialization(string reason)
+        {
+            _telemetryInitializationFailed = true;
+            _telemetryInitializationError = reason;
+            Debug.LogError("[LessonGraphV2] V2 telemetry is required for this enabled installer; lesson start is blocked: " + reason, this);
+            return false;
+        }
+
+        private void OnDestroy()
+        {
+            if (_telemetryAdapter != null)
+            {
+                try
+                {
+                    _telemetryAdapter.CaptureSceneUnload();
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogError("[LessonGraphV2] Scene-unload telemetry capture failed: " + exception);
+                }
+                try
+                {
+                    _telemetryAdapter.Detach();
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogError("[LessonGraphV2] Telemetry event detach failed: " + exception);
+                }
+                _telemetryAdapter = null;
+            }
+
+            // Keep the runner fail-closed through disable and telemetry detachment. In particular,
+            // serialized runners on another GameObject cannot fall back to GetComponent here.
+            ReleaseRunnerOwner();
+
+            LessonTelemetryWriterV2 writer = _telemetryWriter;
+            _telemetryWriter = null;
+            if (writer != null && _sessionContext != null)
+                FlushAndReleaseSessionWriterAsync(_sessionContext.SessionId, writer);
+        }
+
+        private static async Task FlushAndReleaseSessionWriterAsync(string sessionId, LessonTelemetryWriterV2 writer)
+        {
+            try
+            {
+                using (var timeout = new CancellationTokenSource(SceneUnloadFlushTimeoutMilliseconds))
+                    await writer.FlushAsync(timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.LogWarning($"[LessonGraphV2] Scene unload flush timed out with {writer.PendingCount} telemetry batch(es) pending; background retries remain active.");
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError("[LessonGraphV2] Scene unload flush failed: " + exception);
+            }
+
+            try
+            {
+                // The session registry roots the writer while it drains, even after this installer
+                // is destroyed. This second wait has no scene lifetime and releases ownership only
+                // after every retained batch has either succeeded or the writer is explicitly stopped.
+                await writer.FlushAsync(CancellationToken.None);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError("[LessonGraphV2] Background telemetry drain failed: " + exception);
+            }
+
+            if (writer.PendingCount == 0)
+            {
+                LessonTelemetryWriterV2.ReleaseSessionWriter(sessionId, writer);
+                writer.Dispose();
+            }
+            else
+            {
+                Debug.LogError($"[LessonGraphV2] V2 telemetry writer remains registered with {writer.PendingCount} batch(es) pending. Last error: {writer.LastError}");
+            }
         }
 
         private void RetryOptionalConfiguration()
         {
             // Session identity and phrase revisions are captured once before a run starts.
-            // If they arrive later, this run remains local-only; applying them mid-run would
-            // make its remote identity differ from the state already owned by the runner.
+            // Late metadata can still be composed before start; applying it mid-run would make
+            // the remote identity differ from the state already owned by the runner.
             if (!_sessionContextCaptured && !_lessonStartRequested && _runner?.CurrentState == null)
                 TryCaptureSessionContext();
+            if (_runnerConfigured && _sessionContextCaptured && !_telemetryConfigured && !_telemetryInitializationFailed)
+                EnsureTelemetryConfigured();
             ConfigureRemoteBridge();
         }
 
@@ -127,7 +371,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             var externalSessionId = activeSessionContext?.SessionId;
             if (string.IsNullOrWhiteSpace(externalSessionId))
             {
-                WarnSessionContextUnavailable("SessionContext.SessionId is empty; local lesson execution remains available.");
+                WarnSessionContextUnavailable("SessionContext.SessionId is empty; V2 lesson start is blocked until session persistence metadata is available.");
                 return false;
             }
 
