@@ -30,5 +30,8 @@ namespace VRAutism.Cloud.Models
 
         // Nested sub-collections stored inline for the bulk write
         [FirestoreProperty] public List<QuestLogData> quest_logs { get; set; } = new List<QuestLogData>();
+
+        // V2 activation-scoped observations. Legacy session documents omit this field.
+        [FirestoreProperty] public List<NodeLogData> node_logs { get; set; } = new List<NodeLogData>();
     }
 }
