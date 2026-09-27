@@ -1,0 +1,28 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.3/staging' branch; Version is '6000.3.13f1 (8c4f11e4fb20) revision 9195281'; Using compiler version '194234433'; Build Type 'Release'
+OS: 'Windows 11  (10.0.26200) Core' Language: 'en' Physical Memory: 15554 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Admin" at "2026-09-10T17:31:16.5059352Z"
+Date: 2026-09-10T17:31:16Z
+
+COMMAND LINE ARGUMENTS:
+D:\Program Files\Unity Editors\6000.3.13f1\Editor\Unity.exe
+-batchmode
+-nographics
+-logFile
+D:\Lab\VR-Autism\unity_batch.log
+-projectPath
+D:\Lab\VR-Autism
+-runTests
+-testPlatform
+EditMode
+-testFilter
+VRAutism.Gameplay.LessonGraphV2.Tests.Editor.LessonNodeDataDrawerTests
+-testResults
+D:\Lab\VR-Autism\TestResults\LessonNodeDataDrawerTests.xml
+-quit
+Successfully changed project path to: D:\Lab\VR-Autism
+D:/Lab/VR-Autism
+Exiting without the bug reporter. Application will terminate with return code 1

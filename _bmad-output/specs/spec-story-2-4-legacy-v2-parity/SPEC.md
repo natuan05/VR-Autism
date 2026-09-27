@@ -1,51 +1,54 @@
 ---
 id: SPEC-story-2-4-legacy-v2-parity
 companions:
+  - delivery-phases.md
   - ../../planning-artifacts/epics.md
   - ../../implementation-artifacts/epic-2-context.md
 sources: []
 ---
 
-# Story 2.4: Legacy/V2 feature parity and controller retirement
+# Story 2.4: Legacy/V2 parity before and after Epic 3
 
 ## Why
 
-Lesson Graph V2 must preserve required therapy features and observable behavior before replacing the legacy action controller stack. A working runner and new session telemetry alone do not establish parity for profile settings, hints, VR presentation, behavior sensors, scene effects, and complete lesson/session flow. Story 2.4 closes these gaps while preserving shared consumers and historical records.
+Lesson Graph V2 must fully replace required ActionManager and old Quest behavior without breaking shared Quiz/Exploration consumers or historical records. Comparing the runtimes before Epic 3 exposes missing behavior and dependencies early; final gap closure and controller retirement follow Epic 3. Working voice, remote controls, and lesson-flow telemetry do not establish complete parity for profiles, hints, VR presentation, sensors, or lesson/session lifecycle.
 
 ## Capabilities
 
 - **CAP-1**
-  - **intent:** Maintainers can compare every required legacy feature and observable behavior with its V2 counterpart.
-  - **success:** The Story 2.4 parity matrix in the adopted epics companion covers the minimum inventory and records owners, evidence, differences, required outcomes, tasks/dependencies, and acceptance checks for every item.
+  - **intent:** Maintainers can identify required behavior and ownership differences before implementing Epic 3.
+  - **success:** An evidence-backed parity matrix covers the complete inventory in Story 2.4 of the epics companion; every missing, partial, different, or unverified item has a required outcome, owner, task/dependency, and acceptance check. The pre-Epic-3 inventory exit conditions in delivery-phases.md are met.
 - **CAP-2**
-  - **intent:** The completed Lesson Graph system delivers required legacy behavior through implemented and verified equivalents.
-  - **success:** Every required gap is closed with implementation and acceptance evidence, or an explicit user-approved behavior decision; unfinished later-epic dependencies remain open and prevent replacement readiness.
+  - **intent:** The completed Lesson Graph system delivers required legacy behavior through coordinated Epic 3 dependencies and remaining Story 2.4 work.
+  - **success:** Required advanced-flow dependencies are assigned to specific Epic 3 stories; after Epic 3 completes, the matrix is reassessed and every required gap is implemented and verified or resolved by an explicit user-approved behavior decision. Unfinished dependencies and unverified required behavior block replacement readiness.
 - **CAP-3**
-  - **intent:** Each lesson session has one authoritative owner for runtime work and observation across transitions and teardown.
-  - **success:** The adopted ownership criteria pass for timing, LiveKit/media, commands, sensor targets, state/persistence, stale events, and shared Quiz/Exploration dependencies.
+  - **intent:** Each session has one authoritative owner for runtime work and observation across transitions and teardown.
+  - **success:** Ownership is inventoried before Epic 3 and verified at final acceptance for timing, LiveKit/media, commands, sensor targets, state/persistence, delayed events, and shared Quiz/Exploration dependencies, meeting the adopted ownership criteria.
 - **CAP-4**
   - **intent:** Therapists retain correct live and historical reporting throughout the migration.
-  - **success:** Agreed schema, timing, status, hint, and sensor associations render correctly without duplicate writes, lost history, or V2/legacy overwrites; access-rule and reconnect/exit checks pass.
+  - **success:** Agreed schema, timing, status, hint, and sensor associations render correctly without duplicate writes, lost history, or legacy/V2 overwrites. Access-rule, session/run correlation, reconnect/exit, and shared web-presentation criteria pass before cutover.
 - **CAP-5**
-  - **intent:** Maintainers can retire obsolete legacy lesson controllers after V2 fully replaces the required lesson behavior.
-  - **success:** Migrated lessons pass the parity matrix with legacy controllers disabled; after accepted cutover and consumer/reference migration, obsolete controllers are removed and the representative regression matrix passes again.
+  - **intent:** Maintainers can retire ActionManager and the obsolete gameplay Quest stack after V2 fully replaces required behavior.
+  - **success:** Epic 3 and required migration dependencies are complete; migrated lessons pass with legacy controllers disabled; cutover is accepted and references/consumers are migrated. Only then are obsolete controllers removed, with representative Lesson Graph, Quiz/Exploration, Firebase/web, and historical-reader regressions passing again.
 
 ## Constraints
 
-- Preserve the existing Story 2.4 ownership, schema, access-rule, dashboard, lifecycle, and shared-manager requirements in the adopted companions. Keep the sprint tracking key and backlog status until implementation begins.
-- Inventory can start after Stories 2.2/2.3; final replacement depends on all required Lesson Graph work, including later epics. An audit or gap list alone does not satisfy CAP-2 or CAP-5.
-- Compare observable behavior without restoring deprecated transports or violating single-microphone/single-agent ownership and synchronized cross-stack contracts.
-- Retirement covers ActionManager and the old Quest model/controller stack with obsolete action-specific integrations. Quiz/Exploration retain their existing runtimes and continue using TimeManager/FirebaseManager; the parity/cutover gate applies to migrated Action/Quest lessons and requires regressions for the unchanged shared consumers.
-- Preserve historical session readers and shared managers. No obsolete Action/Quest controller removal precedes accepted parity/cutover evidence.
-- Retained managers may detach obsolete Action/Quest callbacks and type references while preserving their Quiz/Exploration duties. Retiring gameplay Quest models does not delete historical QuestLogData or session contracts.
-- Unity compilation, focused tests, manual scene checks, and real-room acceptance are performed by the user under the project workflow.
+- Execute the phases in delivery-phases.md: inventory before Epic 3; Epic 3 dependency delivery; remaining gap closure, replacement acceptance, and retirement after Epic 3. Audit completion and Epic 3 completion alone do not mark Story 2.4 done.
+- Preserve the complete Story 2.4 feature/behavior, ownership, schema/access-rule, dashboard/history, lifecycle, and regression criteria in the adopted companions. This sequencing refines those criteria rather than reducing them.
+- Keep tracking key 2-4-reconcile-legacy-and-lesson-graph-session-ownership. A planning-only spec update does not change its sprint status; once work starts, it remains open until the final gate passes.
+- Retirement covers ActionManager, the old gameplay Quest model/controller stack, and obsolete action-specific integrations. Quiz/Exploration retain their runtimes and TimeManager/FirebaseManager; neither migration nor manager deletion is required.
+- Retained managers may detach obsolete Action/Quest callbacks or type references while preserving Quiz/Exploration duties. Historical QuestLogData, session contracts, and their readers remain supported.
+- Preserve LiveKit-only real-time transport, sole microphone capture ownership in LiveKitService, single-agent NPC routing, and synchronized C#/Python/TypeScript contracts; do not restore deprecated transports.
+- Required observable differences need an explicit user decision. Previously accepted delivery or scoped verification waivers do not prove full replacement parity.
+- User-run Unity compilation, focused tests, scene checks, and real-room acceptance remain the project workflow. Final cutover requires recorded evidence and explicit user acceptance before removal.
 
 ## Non-goals
 
 - Runtime implementation or controller deletion during this planning update.
-- Expanding the current Stories 2.2/2.3 implementation or treating session-flow telemetry as completed behavior-sensor integration.
-- Migrating or removing Quiz/Exploration runtimes, or replacing/deleting the TimeManager/FirebaseManager they continue to use.
+- Reimplementing Epic 3 advanced-node capabilities inside Story 2.4 or reopening accepted Stories 2.2/2.3 merely to deliver this spec.
+- Treating session-flow telemetry as completed child behavior-sensor integration.
+- Migrating/removing Quiz or Exploration, deleting their shared managers, or deleting historical data contracts.
 
 ## Success signal
 
-Representative migrated lessons run from launch through return to lobby with the legacy lesson controllers disabled, preserving all required therapy behavior, sensor association, session data, and web presentation. After accepted cutover, obsolete controllers and references can be removed while the representative regression matrix and historical readers continue to pass.
+Before Epic 3, the parity matrix and dependency handoff are actionable. After Epic 3 and remaining gap closure, representative migrated lessons run from launch through return to lobby with ActionManager and old Quest controllers disabled, preserving required behavior, sensor association, session data, and web presentation. Following accepted cutover, removal leaves the representative regression matrix and historical readers passing with Quiz/Exploration and their shared managers retained.
