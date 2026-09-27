@@ -26,6 +26,7 @@ namespace VRAutism.Cloud.LiveKit
         private ILiveKitMicrophonePublication _activePublication;
         private RoomConnectionHandle _activeHandle;
         private PendingPublication _pendingPublication;
+        private bool _enabledDesired;
 
         internal LiveKitMicrophonePublisher(
             ILiveKitMicrophonePublicationFactory factory,
@@ -42,10 +43,13 @@ namespace VRAutism.Cloud.LiveKit
         {
             if (!enable)
             {
+                _enabledDesired = false;
                 if (_activePublication != null)
                     _activePublication.SetMuted(true);
                 return;
             }
+
+            _enabledDesired = true;
 
             if (_activePublication != null)
             {
@@ -71,6 +75,13 @@ namespace VRAutism.Cloud.LiveKit
 
                 if (!ReferenceEquals(_pendingPublication, pending) || pending.Cleaned)
                     return;
+
+                if (!_enabledDesired)
+                {
+                    Cleanup(pending);
+                    _pendingPublication = null;
+                    return;
+                }
 
                 if (isGenerationCurrent == null || !isGenerationCurrent(capturedHandle.Generation))
                 {

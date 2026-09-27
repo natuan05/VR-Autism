@@ -55,6 +55,11 @@ MonoBehaviour:
     _position: {x: 1600, y: 0}
     _config:
       rid: 1007
+  - _id: wash-prompt-dispense-soap
+    _nodeType: 1
+    _position: {x: 1600, y: 0}
+    _config:
+      rid: 4156067637724184677
   _edges:
   - _fromNodeId: wash-turn-on-water
     _toNodeId: wash-prompt-wet-hands
@@ -67,10 +72,15 @@ MonoBehaviour:
     _condition:
       rid: 2007
   - _fromNodeId: wash-wet-hands
+    _toNodeId: wash-prompt-dispense-soap
+    _priority: 0
+    _condition:
+      rid: 2006
+  - _fromNodeId: wash-prompt-dispense-soap
     _toNodeId: wash-dispense-soap
     _priority: 0
     _condition:
-      rid: 2002
+      rid: 2006
   - _fromNodeId: wash-dispense-soap
     _toNodeId: wash-rub-hands
     _priority: 0
@@ -101,7 +111,7 @@ MonoBehaviour:
         _completionBindingIds:
         - washing-hand.turn-on-water.touch
         _timeoutSeconds: 300
-        _voicePrompt: Turn on the water.
+        _voicePrompt: Turn on the water
     - rid: 1002
       type: {class: QuestNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs,
         asm: Assembly-CSharp}
@@ -154,11 +164,6 @@ MonoBehaviour:
         asm: Assembly-CSharp}
       data:
         _requiredStatus: success
-    - rid: 2002
-      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
-        asm: Assembly-CSharp}
-      data:
-        _requiredStatus: success
     - rid: 2003
       type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
         asm: Assembly-CSharp}
@@ -191,6 +196,16 @@ MonoBehaviour:
         _sequenceId: wash-prompt-wet-hands
         _text: "Gi\u1EDD con \u0111\u01B0a tay d\u01B0\u1EDBi v\xF2i n\u01B0\u1EDBc
           l\xE0m \u01B0\u1EDBt nh\xE9e"
+        _npcBindingId: teacher-npc
+        _blocking: 1
+        _timeoutSeconds: 30
+    - rid: 4156067637724184677
+      type: {class: DialogueNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs,
+        asm: Assembly-CSharp}
+      data:
+        _sequenceId: wash-prompt-dispense-soap
+        _text: "Ti\u1EBFp theo con h\xE3y nh\xECn sang b\xEAn tr\xE1i, l\u1EA5y x\xE0
+          ph\xF2ng v\xE0o tay nh\xE9e"
         _npcBindingId: teacher-npc
         _blocking: 1
         _timeoutSeconds: 30

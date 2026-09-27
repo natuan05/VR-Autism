@@ -582,7 +582,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         {
             private readonly TaskCompletionSource<NodeResult> _completion = new TaskCompletionSource<NodeResult>();
             private NodeExecutionContext _context;
-            public Task<NodeResult> ExecuteAsync(NodeExecutionContext context) { _context = context; return _completion.Task; }
+            public readonly List<NodeExecutionContext> Contexts = new List<NodeExecutionContext>();
+            public Task<NodeResult> ExecuteAsync(NodeExecutionContext context)
+            {
+                _context = context;
+                Contexts.Add(context);
+                return _completion.Task;
+            }
             public void Complete(NodeStatus status) => _completion.TrySetResult(NodeResult.Completed(_context.Node.Id, _context.ActivationId, status, _context.ElapsedSeconds));
         }
 

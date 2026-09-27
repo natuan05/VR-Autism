@@ -78,6 +78,42 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             Assert.DoesNotThrow(() => realAdapter.PublishData(new byte[] { 9 }, "lesson-graph-v2.voice", true));
         }
 
+        [TestCase("lesson-graph-v2.voice", true)]
+        [TestCase("lesson-graph-v2.remote", true)]
+        [TestCase("legacy-topic", false)]
+        [TestCase(null, false)]
+        public void IncomingPacket_RoutesKnownV2TopicsAndPreservesLegacyFallback(string topic, bool expectedV2)
+        {
+            var transport = new LiveKitDataPacketTransport(() => null);
+            var payload = new byte[] { 4, 5, 6 };
+            byte[] v2Data = null;
+            byte[] legacyData = null;
+            string v2Topic = null;
+            string legacyTopic = null;
+            var v2Calls = 0;
+            var legacyCalls = 0;
+            transport.DataReceivedV2 += (data, receivedTopic) =>
+            {
+                v2Calls++;
+                v2Data = data;
+                v2Topic = receivedTopic;
+            };
+            transport.LegacyDataReceived += (data, receivedTopic) =>
+            {
+                legacyCalls++;
+                legacyData = data;
+                legacyTopic = receivedTopic;
+            };
+
+            transport.HandleIncoming(payload, null, topic);
+
+            Assert.AreEqual(expectedV2 ? 1 : 0, v2Calls);
+            Assert.AreEqual(expectedV2 ? 0 : 1, legacyCalls);
+            Assert.AreNotSame(payload, expectedV2 ? v2Data : legacyData);
+            CollectionAssert.AreEqual(payload, expectedV2 ? v2Data : legacyData);
+            Assert.AreEqual(topic, expectedV2 ? v2Topic : legacyTopic);
+        }
+
         [Test]
         public void LegacyPacket_PreservesCurrentPayloadAndEventBehavior()
         {
@@ -116,6 +152,41 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             Assert.IsTrue(publication.Disposed);
             Assert.IsFalse(publication.Started);
             Assert.AreSame(handle, publication.UnpublishedHandle);
+        }
+
+        [UnityTest]
+        public IEnumerator DisablingMicrophoneWhilePublishIsPending_PreventsLateStart()
+        {
+            var publication = new FakeMicrophonePublication();
+            var publisher = new LiveKitMicrophonePublisher(new FakeMicrophoneFactory(publication), null);
+            var handle = new RoomConnectionHandle(7, new FakeRoomAdapter { Connected = true });
+
+            var task = publisher.SetEnabledAsync(true, handle, value => value == 7);
+            publisher.SetEnabledAsync(false, handle, value => value == 7).GetAwaiter().GetResult();
+            publication.CompletePublish();
+            yield return CompleteWithinFrames(task, 60);
+
+            Assert.IsFalse(publication.Started);
+            Assert.IsTrue(publication.Unpublished);
+            Assert.IsTrue(publication.Disposed);
+        }
+
+        [UnityTest]
+        public IEnumerator ReenablingMicrophoneWhilePublishIsPendingHonorsLatestRequest()
+        {
+            var publication = new FakeMicrophonePublication();
+            var publisher = new LiveKitMicrophonePublisher(new FakeMicrophoneFactory(publication), null);
+            var handle = new RoomConnectionHandle(7, new FakeRoomAdapter { Connected = true });
+
+            var task = publisher.SetEnabledAsync(true, handle, value => value == 7);
+            publisher.SetEnabledAsync(false, handle, value => value == 7).GetAwaiter().GetResult();
+            publisher.SetEnabledAsync(true, handle, value => value == 7).GetAwaiter().GetResult();
+            publication.CompletePublish();
+            yield return CompleteWithinFrames(task, 60);
+
+            Assert.IsTrue(publication.Started);
+            Assert.IsFalse(publication.Unpublished);
+            publisher.Stop();
         }
 
         [UnityTest]

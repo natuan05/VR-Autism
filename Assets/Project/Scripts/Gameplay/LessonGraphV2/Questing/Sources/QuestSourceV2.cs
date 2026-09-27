@@ -1,6 +1,8 @@
 using System;
 using System.Threading;
 using UnityEngine;
+using Plugins.QuickOutline.Scripts;
+using VRAutism.Core;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Questing
 {
@@ -11,7 +13,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
 
         [Tooltip("Stable ID used by LessonGraph quest node completion bindings.")]
         [SerializeField] private string _bindingId = string.Empty;
-        [Tooltip("Optional V2-only indicator toggled by a visual hint for this activation.")]
+        [Tooltip("Optional visual hint target: a dedicated indicator GameObject is activated, or an object with Outline has only its Outline.enabled toggled. Outline targets use the visual guidance profile baseline.")]
         [SerializeField] private GameObject _visualHintIndicator;
 
         private int _mainThreadId;
@@ -20,6 +22,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
         private string _lastCancellationReason = string.Empty;
         private bool _hintIndicatorStateCaptured;
         private bool _hintIndicatorWasActive;
+        private Outline _visualHintOutline;
 
         public string BindingId => _bindingId ?? string.Empty;
         public bool CanShowVisualHint => _visualHintIndicator != null;
@@ -33,6 +36,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
         protected virtual void Awake()
         {
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
+            ResolveVisualHintOutline();
+            if (_visualHintOutline != null) _visualHintOutline.enabled = false;
         }
 
         public bool TryActivate(QuestSourceActivation activation)
@@ -45,8 +50,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
 
             _activation = activation;
             _lastCancellationReason = string.Empty;
-            _hintIndicatorStateCaptured = _visualHintIndicator != null;
+            ResolveVisualHintOutline();
+            _hintIndicatorStateCaptured = _visualHintIndicator != null && _visualHintOutline == null;
             _hintIndicatorWasActive = _hintIndicatorStateCaptured && _visualHintIndicator.activeSelf;
+            if (_visualHintOutline != null)
+                _visualHintOutline.enabled = SessionContext.Instance?.CurrentParams?.Actions?.EnableVisualGuidance ?? false;
             SetState(QuestSourceState.Activating);
             try
             {
@@ -77,7 +85,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
                 _visualHintIndicator == null)
                 return false;
 
-            _visualHintIndicator.SetActive(true);
+            ResolveVisualHintOutline();
+            if (_visualHintOutline != null)
+                _visualHintOutline.enabled = true;
+            else
+                _visualHintIndicator.SetActive(true);
             return true;
         }
 
@@ -253,9 +265,24 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
 
         private void RestoreHintIndicatorState()
         {
+            ResolveVisualHintOutline();
+            if (_visualHintOutline != null)
+            {
+                _visualHintOutline.enabled = false;
+                _hintIndicatorStateCaptured = false;
+                return;
+            }
+
             if (!_hintIndicatorStateCaptured) return;
             _hintIndicatorStateCaptured = false;
             if (_visualHintIndicator != null) _visualHintIndicator.SetActive(_hintIndicatorWasActive);
+        }
+
+        private void ResolveVisualHintOutline()
+        {
+            _visualHintOutline = _visualHintIndicator != null
+                ? _visualHintIndicator.GetComponent<Outline>()
+                : null;
         }
 
         private void HandleUnavailable()

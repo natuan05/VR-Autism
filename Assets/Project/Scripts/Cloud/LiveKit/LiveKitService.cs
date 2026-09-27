@@ -8,7 +8,7 @@ using LiveKit.Proto;
 
 namespace VRAutism.Cloud.LiveKit
 {
-    public class LiveKitService : MonoBehaviour, ILiveKitRoomClient, ILiveKitDataPacketClientV2, INpcAudioRouterV2, ILiveKitCoroutineHost
+    public class LiveKitService : MonoBehaviour, ILiveKitRoomClient, ILiveKitDataPacketClientV2, INpcAudioRouterV2, ILiveKitCoroutineHost, ILiveKitMicrophoneControlV2
     {
         private static LiveKitService _instance;
         private static int _unityMainThreadId = -1;

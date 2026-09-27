@@ -5,7 +5,8 @@ namespace VRAutism.Cloud.LiveKit
 {
     internal sealed class LiveKitDataPacketTransport
     {
-        private const string V2Topic = "lesson-graph-v2.voice";
+        private const string V2VoiceTopic = "lesson-graph-v2.voice";
+        private const string V2RemoteTopic = "lesson-graph-v2.remote";
         private readonly Func<RoomConnectionHandle> _currentHandle;
 
         internal event Action<byte[], string> DataReceivedV2;
@@ -29,7 +30,8 @@ namespace VRAutism.Cloud.LiveKit
         internal void HandleIncoming(byte[] data, Participant participant, string topic)
         {
             var copy = data == null ? null : (byte[])data.Clone();
-            if (string.Equals(topic, V2Topic, StringComparison.Ordinal))
+            if (string.Equals(topic, V2VoiceTopic, StringComparison.Ordinal) ||
+                string.Equals(topic, V2RemoteTopic, StringComparison.Ordinal))
             {
                 DataReceivedV2?.Invoke(copy, topic);
                 return;

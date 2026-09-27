@@ -219,6 +219,115 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &113373297
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 113373298}
+  - component: {fileID: 113373301}
+  - component: {fileID: 113373300}
+  - component: {fileID: 113373299}
+  m_Layer: 0
+  m_Name: Cylinder.004 (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &113373298
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 113373297}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7067334, y: 0.0229759, z: 0.022975901, w: 0.7067334}
+  m_LocalPosition: {x: -0, y: 0.4775334, z: -0.06613176}
+  m_LocalScale: {x: 7.41851, y: 7.41851, z: 2.6442516}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 652140267}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &113373299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 113373297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Plugins.QuickOutline.Scripts.Outline
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+--- !u!23 &113373300
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 113373297}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: -7255647052170860681, guid: a4fe84c3dfbd6484d8b4ee48832aa629, type: 3}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &113373301
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 113373297}
+  m_Mesh: {fileID: 6255687079079774844, guid: a4fe84c3dfbd6484d8b4ee48832aa629, type: 3}
 --- !u!1 &115985988
 GameObject:
   m_ObjectHideFlags: 0
@@ -338,8 +447,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1025430716}
   - {fileID: 652237926}
+  - {fileID: 192978528}
   - {fileID: 1111842967}
   - {fileID: 1586549351}
   - {fileID: 522769744}
@@ -347,6 +456,54 @@ Transform:
   - {fileID: 1674571971}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &192978527
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 192978528}
+  - component: {fileID: 192978529}
+  m_Layer: 0
+  m_Name: Voice-WetHands
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &192978528
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 192978527}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 125198165}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &192978529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 192978527}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 041822a2bc04f7e4a80d3096a0567b4e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.Sources.VoiceQuestSourceV2
+  _bindingId: washing-hand.wet-hands
+  _visualHintIndicator: {fileID: 0}
+  _npcBindingId: teacher-npc
+  _transport: {fileID: 1900500010}
 --- !u!1 &264301592
 GameObject:
   m_ObjectHideFlags: 0
@@ -1050,6 +1207,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.HoldTouchQuestSourceV2
   _bindingId: washing-hand.rub-hands.hold
+  _visualHintIndicator: {fileID: 677987934}
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -1266,6 +1424,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: a4fe84c3dfbd6484d8b4ee48832aa629,
         type: 3}
       insertIndex: -1
+      addedObject: {fileID: 113373298}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: a4fe84c3dfbd6484d8b4ee48832aa629,
+        type: 3}
+      insertIndex: -1
       addedObject: {fileID: 1586076940}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a4fe84c3dfbd6484d8b4ee48832aa629,
@@ -1276,24 +1438,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 652140272}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a4fe84c3dfbd6484d8b4ee48832aa629,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 652140271}
-    - targetCorrespondingSourceObject: {fileID: -8380157826906577798, guid: a4fe84c3dfbd6484d8b4ee48832aa629,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 652140270}
   m_SourcePrefab: {fileID: 100100000, guid: a4fe84c3dfbd6484d8b4ee48832aa629, type: 3}
 --- !u!4 &652140267 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a4fe84c3dfbd6484d8b4ee48832aa629,
-    type: 3}
-  m_PrefabInstance: {fileID: 652140266}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &652140268 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: -8380157826906577798, guid: a4fe84c3dfbd6484d8b4ee48832aa629,
     type: 3}
   m_PrefabInstance: {fileID: 652140266}
   m_PrefabAsset: {fileID: 0}
@@ -1303,42 +1451,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 652140266}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &652140270
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 652140268}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Plugins.QuickOutline.Scripts.Outline
-  outlineMode: 1
-  outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  outlineWidth: 2
-  precomputeOutline: 0
-  bakeKeys: []
-  bakeValues: []
---- !u!114 &652140271
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 652140269}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outlineMode: 1
-  outlineColor: {r: 1, g: 1, b: 1, a: 1}
-  outlineWidth: 5
-  precomputeOutline: 0
-  bakeKeys: []
-  bakeValues: []
 --- !u!95 &652140272
 Animator:
   serializedVersion: 7
@@ -1443,6 +1555,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.TouchQuestSourceV2
   _bindingId: washing-hand.turn-on-water.touch
+  _visualHintIndicator: {fileID: 113373297}
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -7336,53 +7449,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 295052170}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1025430715
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1025430716}
-  - component: {fileID: 1025430717}
-  m_Layer: 0
-  m_Name: VoiceQuest1
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1025430716
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1025430715}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 125198165}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1025430717
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1025430715}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 041822a2bc04f7e4a80d3096a0567b4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.Sources.VoiceQuestSourceV2
-  _bindingId: washing-hand.wet-hands
-  _npcBindingId: teacher-npc
-  _transport: {fileID: 1900500010}
 --- !u!1 &1061493299
 GameObject:
   m_ObjectHideFlags: 0
@@ -7653,6 +7719,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.HoldTouchQuestSourceV2
   _bindingId: washing-hand.wet-hands.hold
+  _visualHintIndicator: {fileID: 677987934}
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -7811,6 +7878,7 @@ GameObject:
   - component: {fileID: 1130038380}
   - component: {fileID: 1900500010}
   - component: {fileID: 1900500020}
+  - component: {fileID: 1900500021}
   m_Layer: 0
   m_Name: LesssonGraphRuntime
   m_TagString: Untagged
@@ -7849,7 +7917,7 @@ MonoBehaviour:
   - _bindingId: washing-hand.turn-on-water.touch
     _source: {fileID: 652237928}
   - _bindingId: washing-hand.wet-hands
-    _source: {fileID: 1025430717}
+    _source: {fileID: 192978529}
   - _bindingId: washing-hand.wet-hands.hold
     _source: {fileID: 1111842969}
   - _bindingId: washing-hand.dispense-soap.touch
@@ -7888,6 +7956,7 @@ MonoBehaviour:
   _runner: {fileID: 1130038378}
   _bindings: {fileID: 1130038377}
   _dialogueTransport: {fileID: 1900500020}
+  _remoteBridge: {fileID: 1900500021}
   _startOnStart: 1
 --- !u!114 &1130038380
 MonoBehaviour:
@@ -8940,6 +9009,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.TouchQuestSourceV2
   _bindingId: washing-hand.dispense-soap.touch
+  _visualHintIndicator: {fileID: 264301592}
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -13987,6 +14057,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.TouchQuestSourceV2
   _bindingId: washing-hand.turn-off-water.touch
+  _visualHintIndicator: {fileID: 113373297}
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -14133,6 +14204,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.HoldTouchQuestSourceV2
   _bindingId: washing-hand.dry-hands.hold
+  _visualHintIndicator: {fileID: 1013617247}
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -14894,6 +14966,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa53660c58a028a4d94e0dd33d7cc373, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue.LiveKitDialogueTransportV2
+--- !u!114 &1900500021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1130038375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1d24430d253482ab8fbfa0bd08bba12, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Remote.LiveKitLessonRemoteBridgeV2
 --- !u!1 &1910456863
 GameObject:
   m_ObjectHideFlags: 0

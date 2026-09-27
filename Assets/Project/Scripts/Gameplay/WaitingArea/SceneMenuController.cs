@@ -16,33 +16,59 @@ namespace VRAutism.Gameplay.WaitingArea{
     public class SceneMenuController : MonoBehaviour
     {
         public static SceneMenuController Instance;
+
+        private bool _ownsSingleton;
+        private bool _hasStarted;
+        private bool _launchInProgress;
+        private Cloud.RTDB.PairingManager _subscribedPairingManager;
         
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                _ownsSingleton = false;
+                enabled = false;
+                return;
+            }
+
             Instance = this;
+            _ownsSingleton = true;
         }
 
         private void Start()
         {
+            if (!_ownsSingleton || Instance != this || _hasStarted) return;
+            _hasStarted = true;
+
             // Đảm bảo khi ở GameMenu, luồng LiveKit POV và Mic luôn tắt hoàn toàn
             if (Cloud.LiveKit.LiveKitService.Instance != null)
             {
                 Cloud.LiveKit.LiveKitService.Instance.Disconnect();
             }
 
-            if (Cloud.RTDB.PairingManager.Instance != null)
+            _subscribedPairingManager = Cloud.RTDB.PairingManager.Instance;
+            if (_subscribedPairingManager != null)
             {
-                Cloud.RTDB.PairingManager.Instance.OnNewSessionCommand += LoadRemoteLesson;
+                _subscribedPairingManager.OnNewSessionCommand += LoadRemoteLesson;
             }
         }
 
         private async void LoadRemoteLesson(string childId, string sceneName, string lessonId, string sessionId, string hostId, string livekitToken)
         {
+            if (!_ownsSingleton || Instance != this) return;
+
             if (string.IsNullOrEmpty(lessonId) || string.IsNullOrEmpty(sceneName))
             {
                 Debug.LogWarning("[SceneMenuController] lessonId hoặc sceneName trống. Bỏ qua lệnh (có thể do sửa RTDB thủ công từng field).");
                 return;
             }
+
+            if (_launchInProgress)
+            {
+                Debug.LogWarning("[SceneMenuController] Lesson launch already in progress. Ignoring duplicate session command.");
+                return;
+            }
+            _launchInProgress = true;
 
             Debug.Log($"[SceneMenuController] Nhận lệnh Session. Bé: {childId}, Bài: {lessonId}, Scene: {sceneName}, Buổi: {sessionId}");
             VoicePhraseSnapshotStoreV2.Clear();
@@ -328,11 +354,12 @@ namespace VRAutism.Gameplay.WaitingArea{
             if (pendingScene == null)
             {
                 if (v2SnapshotReady) SceneManager.LoadScene(sceneName);
+                else _launchInProgress = false;
                 return;
             }
             if (!v2SnapshotReady)
             {
-                Debug.LogError($"[LessonGraphV2] Scene activation blocked for lesson='{lessonId}'. Retry the session command.");
+                Debug.LogError($"[LessonGraphV2] Scene activation blocked for lesson='{lessonId}'. Restart Play before sending another session command.");
                 return;
             }
             Debug.Log($"[SceneMenuController] Chuyển tới Scene: {sceneName}");
@@ -349,10 +376,14 @@ namespace VRAutism.Gameplay.WaitingArea{
 
         private void OnDestroy()
         {
-            if (Cloud.RTDB.PairingManager.Instance != null)
+            if (_subscribedPairingManager != null)
             {
-                Cloud.RTDB.PairingManager.Instance.OnNewSessionCommand -= LoadRemoteLesson;
+                _subscribedPairingManager.OnNewSessionCommand -= LoadRemoteLesson;
+                _subscribedPairingManager = null;
             }
+
+            if (Instance == this) Instance = null;
+            _ownsSingleton = false;
         }
     }
 }

@@ -43,28 +43,55 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
         private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
         private ILiveKitDataPacketClientV2 _client;
         private INpcAudioRouterV2 _router;
+        private ILiveKitMicrophoneControlV2 _microphone;
+        private Action<byte[], string> _dataReceivedHandler;
+        private Action _reconnectedHandler;
         private VoiceQuestActivation _current;
         private bool _terminal;
+        private bool _microphoneEnabled;
+        private bool _suspended;
+        private bool _destroyed;
+        private int _configurationVersion;
+        private int _lifecycleVersion;
         private Packet _desired;
         private VoiceQuestSignalType? _terminalSignal;
 
         public event Action<VoiceQuestSignal> SignalReceived;
         public string CurrentActivationId => _current?.activation_id ?? string.Empty;
 
-        public void Configure(ILiveKitDataPacketClientV2 client, INpcAudioRouterV2 router = null)
+        public void Configure(
+            ILiveKitDataPacketClientV2 client,
+            INpcAudioRouterV2 router = null,
+            ILiveKitMicrophoneControlV2 microphone = null)
         {
+            if (_destroyed) return;
+            SetMicrophoneEnabled(false);
+            _configurationVersion++;
             if (_client != null)
             {
-                _client.DataReceivedV2 -= OnDataReceived;
-                _client.ReconnectedV2 -= OnReconnected;
+                _client.DataReceivedV2 -= _dataReceivedHandler;
+                _client.ReconnectedV2 -= _reconnectedHandler;
             }
             _client = client;
             _router = router ?? (client as INpcAudioRouterV2);
+            _microphone = microphone ?? (client as ILiveKitMicrophoneControlV2);
             if (_client != null)
             {
-                _client.DataReceivedV2 += OnDataReceived;
-                _client.ReconnectedV2 += OnReconnected;
+                var configurationVersion = _configurationVersion;
+                _dataReceivedHandler = (data, topic) => OnDataReceived(data, topic, configurationVersion);
+                _reconnectedHandler = () => OnReconnected(configurationVersion);
+                _client.DataReceivedV2 += _dataReceivedHandler;
+                _client.ReconnectedV2 += _reconnectedHandler;
             }
+            else
+            {
+                _dataReceivedHandler = null;
+                _reconnectedHandler = null;
+            }
+
+            _microphoneEnabled = false;
+            if (_client != null && _client.IsConnectedV2 && _current != null && !_terminal)
+                SetMicrophoneEnabled(true);
         }
 
         private void Awake()
@@ -78,12 +105,15 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
 
         public Task ActivateAsync(VoiceQuestActivation request, CancellationToken cancellationToken)
         {
+            if (_destroyed) return Task.CompletedTask;
             if (request == null || string.IsNullOrWhiteSpace(request.activation_id))
                 throw new ArgumentException("Activation must have an id.", nameof(request));
             cancellationToken.ThrowIfCancellationRequested();
             _current = new VoiceQuestActivation(request.activation_id, request.quest_goal, request.phrases, request.npc_binding_id);
             _terminal = false;
             _terminalSignal = null;
+            if (_client != null && _client.IsConnectedV2)
+                SetMicrophoneEnabled(true);
             if (!string.IsNullOrWhiteSpace(_current.npc_binding_id))
             {
                 _router?.SetActiveNpcRoute(_current.npc_binding_id);
@@ -95,10 +125,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
 
         public Task CancelAsync(string activationId, string reason, CancellationToken cancellationToken)
         {
+            if (_destroyed) return Task.CompletedTask;
             cancellationToken.ThrowIfCancellationRequested();
             if (_current == null || !string.Equals(_current.activation_id, activationId, StringComparison.Ordinal)) return Task.CompletedTask;
             if (_terminal) return Task.CompletedTask;
             _terminal = true;
+            SetMicrophoneEnabled(false);
             _desired = new Packet { @event = "CANCEL_ACTIVE_QUEST", contract_version = 2, activation_id = activationId, reason = string.IsNullOrWhiteSpace(reason) ? "cancelled" : reason };
             Publish(_desired);
             return Task.CompletedTask;
@@ -106,6 +138,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
 
         public Task<bool> SendVerbalHintAsync(VoiceQuestVerbalHint request, CancellationToken cancellationToken)
         {
+            if (_destroyed || _suspended) return Task.FromResult(false);
             cancellationToken.ThrowIfCancellationRequested();
             if (request == null || string.IsNullOrWhiteSpace(request.command_id) ||
                 string.IsNullOrWhiteSpace(request.activation_id) || string.IsNullOrWhiteSpace(request.npc_binding_id) ||
@@ -123,26 +156,54 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
 
         private void Publish(Packet packet)
         {
-            if (_client == null || !_client.IsConnectedV2) return;
+            if (_destroyed || _suspended || _client == null || !_client.IsConnectedV2) return;
             object envelope = packet.@event == "SET_ACTIVE_QUEST"
                 ? (object)new ActivatePacket { activation_id = packet.activation_id, quest_goal = packet.quest_goal, phrases = packet.phrases, npc_binding_id = packet.npc_binding_id }
                 : new CancelPacket { activation_id = packet.activation_id, reason = packet.reason };
             _client.PublishDataV2(Encoding.UTF8.GetBytes(JsonUtility.ToJson(envelope)), VoiceQuestTransportV2Constants.Topic, true);
         }
 
-        private void OnReconnected()
+        private void OnReconnected(int configurationVersion)
         {
-            _mainThreadQueue.Enqueue(() => { if (_desired != null) Publish(_desired); });
+            if (_destroyed || _suspended) return;
+            var lifecycleVersion = _lifecycleVersion;
+            _mainThreadQueue.Enqueue(() =>
+            {
+                if (_destroyed || _suspended || configurationVersion != _configurationVersion || lifecycleVersion != _lifecycleVersion)
+                    return;
+                if (_current != null && !_terminal)
+                {
+                    _microphoneEnabled = false;
+                    SetMicrophoneEnabled(true);
+                }
+                if (_desired != null)
+                    Publish(_desired);
+            });
         }
 
-        private void OnDataReceived(byte[] data, string topic)
+        private void OnDataReceived(byte[] data, string topic, int configurationVersion)
         {
+            if (_destroyed || _suspended) return;
             if (!string.Equals(topic, VoiceQuestTransportV2Constants.Topic, StringComparison.Ordinal)) return;
             Packet packet;
             try { packet = JsonUtility.FromJson<Packet>(Encoding.UTF8.GetString(data)); }
             catch { return; }
             if (packet == null || packet.contract_version != 2 || string.IsNullOrWhiteSpace(packet.activation_id)) return;
-            _mainThreadQueue.Enqueue(() => HandlePacket(packet));
+            var lifecycleVersion = _lifecycleVersion;
+            _mainThreadQueue.Enqueue(() =>
+            {
+                if (_destroyed || _suspended || configurationVersion != _configurationVersion || lifecycleVersion != _lifecycleVersion)
+                    return;
+                HandlePacket(packet);
+            });
+        }
+
+        private void SetMicrophoneEnabled(bool enabled)
+        {
+            if (enabled && (_suspended || _destroyed)) return;
+            if (_microphoneEnabled == enabled) return;
+            _microphoneEnabled = enabled;
+            _microphone?.EnableMicrophone(enabled);
         }
 
         private void HandlePacket(Packet packet)
@@ -155,6 +216,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
                     packet.status == "CANCELLED" && _desired?.@event == "CANCEL_ACTIVE_QUEST")
                 {
                     _terminalSignal = VoiceQuestSignalType.Cancelled;
+                    _desired = null;
                     SignalReceived?.Invoke(new VoiceQuestSignal(packet.activation_id, VoiceQuestSignalType.Cancelled, packet.reason));
                 }
                 return;
@@ -163,6 +225,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             {
                 _terminal = true;
                 _terminalSignal = VoiceQuestSignalType.Matched;
+                _desired = null;
+                SetMicrophoneEnabled(false);
                 SignalReceived?.Invoke(new VoiceQuestSignal(packet.activation_id, VoiceQuestSignalType.Matched));
                 return;
             }
@@ -173,11 +237,38 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             {
                 _terminal = true;
                 _terminalSignal = packet.status == "CANCELLED" ? VoiceQuestSignalType.Cancelled : VoiceQuestSignalType.Failed;
+                if (_terminalSignal != VoiceQuestSignalType.Cancelled || _desired?.@event != "CANCEL_ACTIVE_QUEST")
+                    _desired = null;
+                SetMicrophoneEnabled(false);
                 SignalReceived?.Invoke(new VoiceQuestSignal(packet.activation_id, _terminalSignal.Value, packet.reason));
             }
             // MATCHED status confirms the QUEST_MATCHED event; it never awards success by itself.
         }
 
-        private void OnDestroy() => Configure(null);
+        private void OnEnable()
+        {
+            _suspended = false;
+            if (_client != null && _client.IsConnectedV2)
+            {
+                if (_current != null && !_terminal)
+                    SetMicrophoneEnabled(true);
+                if (_desired != null)
+                    Publish(_desired);
+            }
+        }
+
+        private void OnDisable()
+        {
+            _suspended = true;
+            _lifecycleVersion++;
+            SetMicrophoneEnabled(false);
+        }
+
+        private void OnDestroy()
+        {
+            _lifecycleVersion++;
+            Configure(null);
+            _destroyed = true;
+        }
     }
 }

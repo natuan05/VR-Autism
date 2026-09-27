@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Plugins.QuickOutline.Scripts;
+using VRAutism.Core;
+using VRAutism.Core.Models;
 using VRAutism.Gameplay.LessonGraphV2.Data;
 using VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions;
 using VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs;
@@ -23,6 +26,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
     public sealed class QuestHintRoutingV2Tests
     {
         private readonly List<UnityEngine.Object> _objects = new List<UnityEngine.Object>();
+        private SessionContext _previousSessionContext;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _previousSessionContext = SessionContext.Instance;
+        }
 
         [TearDown]
         public void TearDown()
@@ -35,6 +45,63 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             foreach (var item in _objects)
                 if (item != null) UnityEngine.Object.DestroyImmediate(item);
             _objects.Clear();
+            SessionContext.Instance = _previousSessionContext;
+        }
+
+        [Test]
+        public void OutlineTargetUsesDisabledProfileBaselineAndKeepsItsMeshActive()
+        {
+            SetVisualGuidance(false);
+            var target = OutlineTarget("profile-disabled-outline");
+            var outline = target.GetComponent<Outline>();
+            outline.enabled = true;
+            var source = Source("outline-binding", target);
+            InitializeSource(source);
+
+            Assert.That(outline.enabled, Is.False, "Awake must turn off an assigned Outline before activation.");
+
+            Assert.That(source.TryActivate(new QuestSourceActivation("outline-disabled", DateTimeOffset.UtcNow, 0d)), Is.True);
+
+            Assert.That(outline.enabled, Is.False);
+            Assert.That(target.activeSelf, Is.True, "The outline target is the interactable mesh and must stay active.");
+            source.CancelCurrent();
+        }
+
+        [Test]
+        public void OutlineTargetUsesEnabledProfileBaseline()
+        {
+            SetVisualGuidance(true);
+            var target = OutlineTarget("profile-enabled-outline");
+            var outline = target.GetComponent<Outline>();
+            var source = Source("outline-enabled-binding", target);
+            InitializeSource(source);
+
+            Assert.That(source.TryActivate(new QuestSourceActivation("outline-enabled", DateTimeOffset.UtcNow, 0d)), Is.True);
+
+            Assert.That(outline.enabled, Is.True);
+            Assert.That(target.activeSelf, Is.True);
+            source.CancelCurrent();
+            Assert.That(outline.enabled, Is.False, "Terminal cleanup must always turn the outline off.");
+        }
+
+        [Test]
+        public void ExplicitVisualHintCanEnableOutlineWhenProfileBaselineIsOffThenCleanupTurnsItOff()
+        {
+            SetVisualGuidance(false);
+            var target = OutlineTarget("manual-hint-outline");
+            var source = Source("manual-outline-binding", target);
+            InitializeSource(source);
+            const string activationId = "manual-outline-activation";
+            Assert.That(source.TryActivate(new QuestSourceActivation(activationId, DateTimeOffset.UtcNow, 0d)), Is.True);
+            Assert.That(target.GetComponent<Outline>().enabled, Is.False);
+
+            Assert.That(source.TryShowVisualHint(activationId), Is.True);
+            Assert.That(target.GetComponent<Outline>().enabled, Is.True);
+            Assert.That(target.activeSelf, Is.True);
+
+            source.CancelCurrent();
+            Assert.That(target.GetComponent<Outline>().enabled, Is.False);
+            Assert.That(target.activeSelf, Is.True);
         }
 
         [UnityTest]
@@ -480,6 +547,36 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             indicator.SetActive(false);
             _objects.Add(indicator);
             return indicator;
+        }
+
+        private GameObject OutlineTarget(string name)
+        {
+            var target = new GameObject(name);
+            _objects.Add(target);
+            var mesh = new Mesh();
+            _objects.Add(mesh);
+            target.AddComponent<MeshFilter>().sharedMesh = mesh;
+            target.AddComponent<MeshRenderer>();
+            target.AddComponent<Outline>();
+            return target;
+        }
+
+        private void SetVisualGuidance(bool enabled)
+        {
+            var contextObject = new GameObject("hint-routing-session-context");
+            contextObject.SetActive(false);
+            _objects.Add(contextObject);
+            var context = contextObject.AddComponent<SessionContext>();
+            context.CurrentParams = new LessonParameters();
+            context.CurrentParams.Actions.EnableVisualGuidance = enabled;
+            SessionContext.Instance = context;
+        }
+
+        private static void InitializeSource(QuestSourceV2 source)
+        {
+            typeof(QuestSourceV2)
+                .GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(source, null);
         }
 
         private LessonGraph Graph(params string[] bindingIds)
