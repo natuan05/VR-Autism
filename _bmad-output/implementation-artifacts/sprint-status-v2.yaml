@@ -1,0 +1,44 @@
+# generated: 2026-08-28
+# last_updated: 2026-09-27
+# project: VR-Autism
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: D:\Lab\VR-Autism\_bmad-output\implementation-artifacts
+# plan_source: _bmad-output/planning-artifacts/epics.md
+# note: V2 tracker; legacy sprint-status.yaml remains untouched.
+# acceptance: 2026-09-27 user accepted current delivery; real-room voice completion,
+#   pause and cancellation confirmed. Reconnect verification waived by user.
+# verification: focused Unity automated tests remain unrun in this session;
+#   Firestore readback has not been confirmed in this conversation.
+
+generated: 2026-08-28
+last_updated: 2026-09-27
+project: VR-Autism
+project_key: NOKEY
+tracking_system: file-system
+story_location: D:\Lab\VR-Autism\_bmad-output\implementation-artifacts
+plan_source: _bmad-output/planning-artifacts/epics.md
+
+development_status:
+  epic-1: done
+  1-1-create-validated-lessongraph-v2-assets: done
+  1-2-run-validated-phase-1-graph-flow: done
+  1-3-bind-isolated-v2-quest-sources-to-a-scene: done
+  1-4-complete-a-touch-or-holdtouch-questnode-once: done
+  1-5-provide-a-typed-activation-correlated-livekit-v2-quest-transport: done
+  epic-1-retrospective: optional
+
+  epic-2: in-progress
+  2-1-run-a-blocking-dialogue-node-through-livekit-v2: done
+  2-2-apply-safe-remote-lesson-commands-through-the-v2-runner: done
+  2-3-publish-isolated-idempotent-v2-lesson-flow-telemetry: done
+  2-4-reconcile-legacy-and-lesson-graph-session-ownership: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-author-validated-advanced-phase-2-graph-nodes: backlog
+  3-2-execute-a-timeline-node-from-unity-signals: backlog
+  3-3-execute-structured-parallel-gate-and-bounded-loop-flow: backlog
+  3-4-checkpoint-and-resume-an-advanced-lesson-safely: backlog
+  3-5-author-and-validate-graph-flow-through-an-editor-surface: backlog
+  epic-3-retrospective: optional
