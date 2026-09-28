@@ -369,7 +369,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     Debug.LogWarning($"[LessonGraphV2] CanStart failed: registry is null", this);
                     return false;
                 }
-                var validation = LessonGraphValidator.Validate(_graph);
+                var validation = LessonGraphValidator.ValidateForExecution(_graph);
                 if (!validation.IsValid)
                 {
                     var errorDetails = string.Join("; ", validation.Errors);

@@ -34,6 +34,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
         {
             nameof(StatusCondition),
             nameof(AlwaysCondition),
+            nameof(VariableCondition),
+            nameof(CompositeCondition),
         };
 
         private static readonly string[] s_statuses =
@@ -200,7 +202,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                 return;
             }
 
-            if (!(condition is StatusCondition) && !(condition is AlwaysCondition))
+            var graph = edgeProperty.serializedObject.targetObject as LessonGraph;
+            var schemaTwo = graph != null && graph.SchemaVersion >= 2;
+            var isAdvanced = condition is VariableCondition || condition is CompositeCondition;
+            if (!(condition is StatusCondition) && !(condition is AlwaysCondition) && !(schemaTwo && isAdvanced))
             {
                 AddReplacementWarning(
                     container,
@@ -212,10 +217,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                 return;
             }
 
-            var currentType = condition is StatusCondition ? nameof(StatusCondition) : nameof(AlwaysCondition);
+            var currentType = condition.GetType().Name;
+            var availableTypes = schemaTwo ? new List<string>(s_conditionTypes) :
+                new List<string> { nameof(StatusCondition), nameof(AlwaysCondition) };
             var typeField = new PopupField<string>(
                 "Condition Type",
-                new List<string>(s_conditionTypes),
+                availableTypes,
                 currentType)
             {
                 name = "condition-type-field",
@@ -227,9 +234,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                     return;
                 }
 
-                IEdgeCondition replacement = evt.newValue == nameof(AlwaysCondition)
-                    ? (IEdgeCondition)new AlwaysCondition()
-                    : new StatusCondition(StatusCondition.Success);
+                IEdgeCondition replacement;
+                switch (evt.newValue)
+                {
+                    case nameof(AlwaysCondition): replacement = new AlwaysCondition(); break;
+                    case nameof(VariableCondition): replacement = new VariableCondition(); break;
+                    case nameof(CompositeCondition): replacement = new CompositeCondition(); break;
+                    default: replacement = new StatusCondition(StatusCondition.Success); break;
+                }
                 SetManagedReference(conditionProperty, replacement, "Change Lesson Edge Condition");
                 Rebuild(root, edgeProperty);
             });
@@ -253,6 +265,20 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                 statusField.RegisterValueChangedCallback(evt =>
                     SetStringValue(statusProperty, evt.newValue, "Change Lesson Edge Status"));
                 container.Add(statusField);
+            }
+            else if (isAdvanced)
+            {
+                if (condition is CompositeCondition)
+                    container.Add(ConditionAuthoringControls.CreateReferenceControl(
+                        "Composite Condition", conditionProperty, () => Rebuild(root, edgeProperty), 1, "edge-condition"));
+                else
+                {
+                    var conditionField = new PropertyField(conditionProperty, "Condition Fields")
+                    {
+                        name = "typed-condition-fields",
+                    };
+                    container.Add(conditionField);
+                }
             }
         }
 

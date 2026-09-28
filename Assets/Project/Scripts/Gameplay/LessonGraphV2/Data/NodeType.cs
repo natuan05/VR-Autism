@@ -1,8 +1,6 @@
 namespace VRAutism.Gameplay.LessonGraphV2.Data
 {
-    /// <summary>
-    /// Phase 1 node types. Timeline, Parallel, Gate are Phase 2 — validator rejects them.
-    /// </summary>
+    /// <summary>Serialized lesson node kinds. Existing numeric values are stable.</summary>
     public enum NodeType
     {
         Quest,
@@ -10,10 +8,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Data
         Wait,
         Checkpoint,
 
-        // Phase 2 — declared here so assets referencing them still compile,
-        // but LessonGraphValidator will reject any graph containing these types.
         Timeline,
         Parallel,
         Gate,
+        Loop,
     }
 }

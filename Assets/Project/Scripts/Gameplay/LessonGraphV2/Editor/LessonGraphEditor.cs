@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 using VRAutism.Gameplay.LessonGraphV2.Data;
 using VRAutism.Gameplay.LessonGraphV2.Validation;
@@ -34,7 +35,21 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
         public override VisualElement CreateInspectorGUI()
         {
             _root = new VisualElement { name = "lesson-graph-inspector" };
-            _root.Add(new PropertyField(serializedObject.FindProperty("_schemaVersion"), "Schema Version"));
+            var graph = target as LessonGraph;
+            if (graph != null && graph.SchemaVersion == 1 && !string.IsNullOrEmpty(AssetDatabase.GetAssetPath(graph)))
+            {
+                var migrationButton = new Button(() => MigrateToSchemaTwo(graph))
+                {
+                    text = "Create Schema 2 Copy",
+                    name = "schema-two-migration-button",
+                    tooltip = "Validates and saves a separate schema-2 copy. The original remains unchanged."
+                };
+                _root.Add(migrationButton);
+            }
+            _root.Add(new Label($"Schema Version: {graph?.SchemaVersion ?? 0}")
+            {
+                name = "schema-version-label",
+            });
 
             _entryFieldHost = new VisualElement { name = "entry-node-field-host" };
             _root.Add(_entryFieldHost);
@@ -161,7 +176,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
             }
 
             _validationPanel.Clear();
-            var result = LessonGraphValidator.Validate((LessonGraph)target);
+            var graph = (LessonGraph)target;
+            if (graph.SchemaVersion == 1)
+                _validationPanel.Add(new HelpBox(
+                    "Schema 1 assets remain supported. Advanced node and condition types require an explicit schema-2 copy.",
+                    HelpBoxMessageType.Info));
+            var result = LessonGraphValidator.Validate(graph);
             var summary = new Label(result.IsValid
                 ? "Graph validation passed."
                 : $"Graph validation found {result.Errors.Count} error(s).")
@@ -179,6 +199,19 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                 {
                     name = $"validation-error-{index}",
                 });
+            }
+        }
+
+        private static void MigrateToSchemaTwo(LessonGraph source)
+        {
+            if (LessonGraphSchemaMigration.TryCreateSchemaTwoCopy(source, out var copy, out _, out var error))
+            {
+                Selection.activeObject = copy;
+                EditorGUIUtility.PingObject(copy);
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("Lesson Graph Migration", error, "OK");
             }
         }
 

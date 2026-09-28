@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using VRAutism.Gameplay.LessonGraphV2.Data;
 using VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs;
 using VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions;
@@ -18,7 +19,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
         /// Highest schema version this validator understands.
         /// Graphs with a higher version must be rejected as unsupported.
         /// </summary>
-        public const int CurrentSchemaVersion = 1;
+        public const int CurrentSchemaVersion = 2;
 
         // Phase 1 allowed node types.
         private static readonly HashSet<NodeType> s_allowedNodeTypes = new HashSet<NodeType>
@@ -52,6 +53,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
             { NodeType.Dialogue,   typeof(DialogueNodeConfig)   },
             { NodeType.Wait,       typeof(WaitNodeConfig)       },
             { NodeType.Checkpoint, typeof(CheckpointNodeConfig) },
+            { NodeType.Timeline, typeof(TimelineNodeConfig) },
+            { NodeType.Parallel, typeof(ParallelNodeConfig) },
+            { NodeType.Gate, typeof(GateNodeConfig) },
+            { NodeType.Loop, typeof(LoopNodeConfig) },
         };
 
         /// <summary>
@@ -164,12 +169,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
 
                     var nodeId = node.Id;
 
-                    // 5a. Phase 2 node types are rejected.
-                    if (!s_allowedNodeTypes.Contains(node.NodeType))
+                    var schemaOneNode = s_allowedNodeTypes.Contains(node.NodeType);
+                    var schemaTwoNode = s_expectedConfigType.ContainsKey(node.NodeType);
+                    if (!schemaTwoNode || (graph.SchemaVersion == 1 && !schemaOneNode))
                     {
                         errors.Add(new GraphValidationError(
                             GraphValidationErrorCode.Phase2NodeType,
-                            $"Node type \"{node.NodeType}\" is not supported in Phase 1.",
+                            $"Node type \"{node.NodeType}\" is not supported by schema {graph.SchemaVersion}.",
                             nodeId));
                     }
 
@@ -184,9 +190,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
                     }
 
                     // 5c. NodeType ↔ Config type must match (Phase 1 nodes only).
-                    if (s_allowedNodeTypes.Contains(node.NodeType) &&
-                        s_expectedConfigType.TryGetValue(node.NodeType, out var expectedType) &&
-                        node.Config.GetType() != expectedType)
+                    if (s_expectedConfigType.TryGetValue(node.NodeType, out var expectedType) &&
+                        (graph.SchemaVersion == 2 || schemaOneNode) && node.Config.GetType() != expectedType)
                     {
                         errors.Add(new GraphValidationError(
                             GraphValidationErrorCode.NodeTypeConfigMismatch,
@@ -210,6 +215,34 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
                             break;
                         case CheckpointNodeConfig c:
                             ValidateCheckpointConfig(c, nodeId, errors);
+                            if (graph.SchemaVersion == 2 && string.IsNullOrWhiteSpace(c.ResumeCompatibilityKey))
+                                errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidCheckpointConfig,
+                                    "Schema 2 checkpoints require a nonblank resumeCompatibilityKey.", nodeId));
+                            break;
+                        case TimelineNodeConfig t:
+                            ValidateTimelineConfig(t, nodeId, errors);
+                            break;
+                        case ParallelNodeConfig p:
+                            if (p.Branches == null || p.Branches.Count < 2 || string.IsNullOrWhiteSpace(p.GateNodeId) ||
+                                !Enum.IsDefined(typeof(ParallelJoinPolicy), p.JoinPolicy))
+                                errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidParallelConfig,
+                                    "Parallel requires at least two branches, a gate node ID, and a valid join policy.", nodeId));
+                            break;
+                        case GateNodeConfig g:
+                            if (string.IsNullOrWhiteSpace(g.ParallelNodeId) || g.CompletedBranchIds == null ||
+                                g.CompletedBranchIds.Count == 0 || !Enum.IsDefined(typeof(GateConditionMode), g.Mode))
+                                errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidGateConfig,
+                                    "Gate requires an owner parallel ID, completed branch inputs, and a valid mode.", nodeId));
+                            break;
+                        case LoopNodeConfig l:
+                            if (string.IsNullOrWhiteSpace(l.BodyChildNodeId) || string.IsNullOrWhiteSpace(l.ExitNodeId) ||
+                                l.BodyChildNodeId == l.ExitNodeId || l.BodyChildNodeId == nodeId || l.ExitNodeId == nodeId ||
+                                l.MaximumIterations <= 0 || l.ExitCondition == null)
+                                errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidLoopConfig,
+                                    "Loop requires distinct body and exit IDs, a positive maximum iteration count, and an exit condition.", nodeId));
+                            if (l.ExitCondition != null)
+                                ValidateCondition(l.ExitCondition, graph.SchemaVersion, nodeId, errors,
+                                    new HashSet<IEdgeCondition>(), 1, GraphValidationErrorCode.InvalidLoopConfig);
                             break;
                     }
                 }
@@ -255,9 +288,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
                         continue;
                     }
 
-                    // 6d. Phase 2 condition types are rejected.
+                    // 6d. Conditions are schema-versioned and strictly whitelisted.
                     var condType = edge.Condition.GetType();
-                    if (!s_allowedConditionTypes.Contains(condType))
+                    if (!s_allowedConditionTypes.Contains(condType) &&
+                        !(graph.SchemaVersion == 2 && (condType == typeof(VariableCondition) || condType == typeof(CompositeCondition))))
                     {
                         errors.Add(new GraphValidationError(
                             GraphValidationErrorCode.Phase2EdgeCondition,
@@ -274,23 +308,264 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
                             $"StatusCondition has invalid requiredStatus \"{sc.RequiredStatus}\". " +
                             $"Allowed: {string.Join(", ", s_validStatuses)}."));
                     }
+                    else if (edge.Condition is VariableCondition variable)
+                    {
+                        ValidateVariableCondition(variable, errors, string.Empty);
+                    }
+                    else if (edge.Condition is CompositeCondition composite)
+                    {
+                        ValidateCondition(composite, graph.SchemaVersion, string.Empty, errors,
+                            new HashSet<IEdgeCondition>(), 1, GraphValidationErrorCode.InvalidCompositeCondition);
+                    }
                 }
             }
 
             // ── 7. Cycle detection (DFS on ALL nodes, including disconnected) ──
             if (nodesValid && edgesValid)
+            {
                 DetectCycles(graph, nodeIds, errors);
+                ValidateStructuredReferences(graph, nodeIds, errors);
+            }
 
             if (nodesValid && edgesValid &&
                 !string.IsNullOrWhiteSpace(graph.EntryNodeId) &&
                 nodeIds.Contains(graph.EntryNodeId))
             {
-                DetectUnreachableNodes(graph, graph.EntryNodeId, nodeIds, errors);
+                DetectUnreachableNodesWithOwnership(graph, graph.EntryNodeId, nodeIds, errors);
             }
 
             return errors.Count == 0
                 ? GraphValidationResult.Ok()
                 : GraphValidationResult.Fail(errors);
+        }
+
+        /// <summary>Runtime gate used by the Phase 1 runner after authoring validation.</summary>
+        public static GraphValidationResult ValidateForExecution(LessonGraph graph)
+        {
+            var authoring = Validate(graph);
+            if (!authoring.IsValid) return authoring;
+            var errors = new List<GraphValidationError>();
+            foreach (var node in graph.Nodes)
+            {
+                if (node != null && (node.NodeType == NodeType.Timeline || node.NodeType == NodeType.Parallel ||
+                    node.NodeType == NodeType.Gate || node.NodeType == NodeType.Loop))
+                    errors.Add(new GraphValidationError(GraphValidationErrorCode.UnsupportedExecutionFeature,
+                        $"Node type '{node.NodeType}' is authoring-valid but is not supported by the Phase 1 runner.", node.Id));
+            }
+            foreach (var edge in graph.Edges)
+                if (edge?.Condition is VariableCondition || edge?.Condition is CompositeCondition)
+                    errors.Add(new GraphValidationError(GraphValidationErrorCode.UnsupportedExecutionFeature,
+                        "Variable and composite conditions are not supported by the Phase 1 runner."));
+            return errors.Count == 0 ? GraphValidationResult.Ok() : GraphValidationResult.Fail(errors);
+        }
+
+        private static void ValidateTimelineConfig(TimelineNodeConfig config, string nodeId, List<GraphValidationError> errors)
+        {
+            if (config.TimelineAsset == null || string.IsNullOrWhiteSpace(config.ExpectedSignalName) ||
+                float.IsNaN(config.TimeoutSeconds) || float.IsInfinity(config.TimeoutSeconds) || config.TimeoutSeconds <= 0 ||
+                (config.TimeoutOutcome != TimelineTimeoutOutcome.Timeout && config.TimeoutOutcome != TimelineTimeoutOutcome.Failed))
+                errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidTimelineConfig,
+                    "Timeline requires a PlayableAsset, expected signal name, finite positive timeout, and Timeout or Failed outcome.", nodeId));
+        }
+
+        private static void ValidateVariableCondition(VariableCondition condition, List<GraphValidationError> errors, string nodeId)
+        {
+            bool invalid = string.IsNullOrWhiteSpace(condition.VariableName) ||
+                !Enum.IsDefined(typeof(VariableValueType), condition.ValueType) ||
+                !Enum.IsDefined(typeof(VariableComparisonOperator), condition.Operator);
+            var ordering = condition.Operator == VariableComparisonOperator.LessThan ||
+                condition.Operator == VariableComparisonOperator.LessThanOrEqual ||
+                condition.Operator == VariableComparisonOperator.GreaterThan ||
+                condition.Operator == VariableComparisonOperator.GreaterThanOrEqual;
+            if ((condition.ValueType == VariableValueType.Boolean || condition.ValueType == VariableValueType.String) && ordering)
+                invalid = true;
+            if (condition.ValueType == VariableValueType.Float &&
+                (float.IsNaN(condition.FloatValue) || float.IsInfinity(condition.FloatValue))) invalid = true;
+            if (condition.ValueType == VariableValueType.String && condition.StringValue == null) invalid = true;
+            if (invalid)
+                errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidVariableCondition,
+                    "Variable condition has a blank name, unsupported type/operator, invalid ordering operator, or non-finite value.", nodeId));
+        }
+
+        private static void ValidateCondition(IEdgeCondition condition, int schemaVersion, string nodeId,
+            List<GraphValidationError> errors, HashSet<IEdgeCondition> path, int depth, GraphValidationErrorCode code)
+        {
+            if (condition == null)
+            {
+                errors.Add(new GraphValidationError(code, "Condition tree contains a null child.", nodeId));
+                return;
+            }
+            if (condition is CompositeCondition && depth > 16)
+            {
+                errors.Add(new GraphValidationError(code, "Composite conditions may not nest deeper than 16 levels.", nodeId));
+                return;
+            }
+            if (!path.Add(condition))
+            {
+                errors.Add(new GraphValidationError(code, "Condition tree contains a reference cycle.", nodeId));
+                return;
+            }
+            if (condition is VariableCondition variable)
+                ValidateVariableCondition(variable, errors, nodeId);
+            else if (condition is CompositeCondition composite)
+            {
+                if (schemaVersion < 2 || !Enum.IsDefined(typeof(CompositeConditionOperator), composite.Operator) ||
+                    composite.Conditions == null || composite.Conditions.Count == 0)
+                    errors.Add(new GraphValidationError(code, "Composite condition requires schema 2, a valid operator, and nonempty children.", nodeId));
+                else
+                    foreach (var child in composite.Conditions)
+                        ValidateCondition(child, schemaVersion, nodeId, errors, path, depth + 1, code);
+            }
+            else if (condition is StatusCondition status && !s_validStatuses.Contains(status.RequiredStatus))
+                errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidStatusValue,
+                    $"StatusCondition has invalid requiredStatus '{status.RequiredStatus}'.", nodeId));
+            else if (condition.GetType() != typeof(AlwaysCondition) && condition.GetType() != typeof(StatusCondition))
+                errors.Add(new GraphValidationError(code, $"Unsupported condition type '{condition.GetType().Name}'.", nodeId));
+            path.Remove(condition);
+        }
+
+        private static void ValidateStructuredReferences(LessonGraph graph, HashSet<string> ids, List<GraphValidationError> errors)
+        {
+            var byId = new Dictionary<string, LessonNodeData>();
+            foreach (var n in graph.Nodes)
+                if (n != null && !string.IsNullOrWhiteSpace(n.Id) && !byId.ContainsKey(n.Id)) byId.Add(n.Id, n);
+            var outgoing = new Dictionary<string, List<string>>();
+            foreach (var id in ids) outgoing[id] = new List<string>();
+            foreach (var edge in graph.Edges)
+                if (edge != null && !string.IsNullOrWhiteSpace(edge.FromNodeId) && !string.IsNullOrWhiteSpace(edge.ToNodeId) &&
+                    ids.Contains(edge.FromNodeId) && ids.Contains(edge.ToNodeId)) outgoing[edge.FromNodeId].Add(edge.ToNodeId);
+            var checkpointIds = new HashSet<string>();
+            foreach (var node in graph.Nodes)
+            {
+                if (node == null || string.IsNullOrWhiteSpace(node.Id)) continue;
+                if (graph.SchemaVersion == 2 && node.Config is CheckpointNodeConfig checkpoint && !string.IsNullOrWhiteSpace(checkpoint.CheckpointId) &&
+                    !checkpointIds.Add(checkpoint.CheckpointId))
+                    errors.Add(new GraphValidationError(GraphValidationErrorCode.DuplicateCheckpointId,
+                        $"Checkpoint ID '{checkpoint.CheckpointId}' is used more than once.", node.Id));
+                if (node.Config is ParallelNodeConfig parallel)
+                {
+                    var branches = parallel.Branches;
+                    var branchIds = new HashSet<string>();
+                    var childIds = new HashSet<string>();
+                    if (branches == null) continue;
+                    foreach (var branch in branches)
+                    {
+                        if (branch == null || string.IsNullOrWhiteSpace(branch.BranchId) || branchIds.Contains(branch.BranchId) ||
+                            string.IsNullOrWhiteSpace(branch.ChildNodeId) || childIds.Contains(branch.ChildNodeId) ||
+                            branch.ChildNodeId == node.Id || !byId.ContainsKey(branch.ChildNodeId))
+                        {
+                            errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidParallelConfig,
+                                "Parallel branch IDs must be unique and nonblank, and child IDs must be unique existing nodes.", node.Id));
+                            continue;
+                        }
+                        branchIds.Add(branch.BranchId);
+                        childIds.Add(branch.ChildNodeId);
+                        if (outgoing[branch.ChildNodeId].Count > 0)
+                            errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidParallelConfig,
+                                $"Parallel child '{branch.ChildNodeId}' cannot have ordinary outgoing edges.", branch.ChildNodeId));
+                    }
+                    if (string.IsNullOrWhiteSpace(parallel.GateNodeId) || !byId.TryGetValue(parallel.GateNodeId, out var gateNode) || gateNode.NodeType != NodeType.Gate ||
+                        !(gateNode.Config is GateNodeConfig gate) || gate.ParallelNodeId != node.Id)
+                    {
+                        errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidGateConfig,
+                            "Parallel must reference a Gate whose ownerParallelNodeId matches this node.", node.Id));
+                        continue;
+                    }
+                    if (!graph.Edges.Any(e => e != null && e.FromNodeId == node.Id && e.ToNodeId == parallel.GateNodeId))
+                        errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidGateConfig,
+                            "A Parallel-to-Gate edge is required.", node.Id));
+                    var gateInputs = new HashSet<string>();
+                    if (gate.CompletedBranchIds == null) continue;
+                    foreach (var branchId in gate.CompletedBranchIds)
+                        if (string.IsNullOrWhiteSpace(branchId) || !gateInputs.Add(branchId) || !branchIds.Contains(branchId))
+                            errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidGateConfig,
+                                "Gate branch inputs must be unique IDs belonging to the owning Parallel.", gateNode.Id));
+                    if (gateInputs.Count == 0 || branchIds.Any(id => !gateInputs.Contains(id)))
+                        errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidGateConfig,
+                            "Gate inputs must include each branch owned by its Parallel.", gateNode.Id));
+                    if (parallel.JoinPolicy == ParallelJoinPolicy.FirstCompleted && gate.Mode == GateConditionMode.And)
+                        errors.Add(new GraphValidationError(GraphValidationErrorCode.ParallelGateDeadlock,
+                            "FirstCompleted cannot use an And gate because cancelled branches cannot complete it.", node.Id));
+                    foreach (var childId in childIds)
+                    {
+                        var pending = new Queue<string>(); var seen = new HashSet<string>(); pending.Enqueue(childId);
+                        while (pending.Count > 0)
+                        {
+                            var current = pending.Dequeue();
+                            if (!seen.Add(current) || current == parallel.GateNodeId) continue;
+                            if (byId.TryGetValue(current, out var pathNode) && pathNode.Config is CheckpointNodeConfig)
+                                errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidCheckpointPlacement,
+                                    "Checkpoints are only valid after the Parallel-to-Gate join boundary.", current));
+                            foreach (var next in outgoing[current]) pending.Enqueue(next);
+                        }
+                    }
+                    var joinPath = new Queue<string>();
+                    var joinVisited = new HashSet<string>();
+                    foreach (var next in outgoing[node.Id]) joinPath.Enqueue(next);
+                    while (joinPath.Count > 0)
+                    {
+                        var current = joinPath.Dequeue();
+                        if (!joinVisited.Add(current) || current == parallel.GateNodeId) continue;
+                        if (byId.TryGetValue(current, out var pathNode) && pathNode.Config is CheckpointNodeConfig)
+                            errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidCheckpointPlacement,
+                                "Checkpoints are only valid after the Parallel-to-Gate join boundary.", current));
+                        foreach (var next in outgoing[current]) joinPath.Enqueue(next);
+                    }
+                }
+                if (node.Config is GateNodeConfig gateConfig &&
+                    (string.IsNullOrWhiteSpace(gateConfig.ParallelNodeId) || !byId.TryGetValue(gateConfig.ParallelNodeId, out var owner) || owner.NodeType != NodeType.Parallel ||
+                     !(owner.Config is ParallelNodeConfig ownerConfig) || ownerConfig.GateNodeId != node.Id))
+                    errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidGateConfig,
+                        "Gate owner must be a Parallel that references this Gate.", node.Id));
+                if (node.Config is LoopNodeConfig loop)
+                {
+                    if (string.IsNullOrWhiteSpace(loop.BodyChildNodeId) || string.IsNullOrWhiteSpace(loop.ExitNodeId) ||
+                        !byId.ContainsKey(loop.BodyChildNodeId) || !byId.ContainsKey(loop.ExitNodeId))
+                        errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidLoopConfig,
+                            "Loop body and exit IDs must reference existing nodes.", node.Id));
+                    if (!string.IsNullOrWhiteSpace(loop.BodyChildNodeId) && byId.ContainsKey(loop.BodyChildNodeId) &&
+                        outgoing[loop.BodyChildNodeId].Count > 0)
+                        errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidLoopConfig,
+                            "Loop body child cannot have ordinary outgoing edges.", loop.BodyChildNodeId));
+                }
+            }
+        }
+
+        private static void DetectUnreachableNodesWithOwnership(LessonGraph graph, string entryNodeId,
+            HashSet<string> allNodeIds, List<GraphValidationError> errors)
+        {
+            var adjacency = new Dictionary<string, List<string>>();
+            foreach (var id in allNodeIds) adjacency[id] = new List<string>();
+            foreach (var edge in graph.Edges)
+                if (edge != null && !string.IsNullOrWhiteSpace(edge.FromNodeId) && !string.IsNullOrWhiteSpace(edge.ToNodeId) &&
+                    adjacency.ContainsKey(edge.FromNodeId) && adjacency.ContainsKey(edge.ToNodeId))
+                    adjacency[edge.FromNodeId].Add(edge.ToNodeId);
+            foreach (var node in graph.Nodes)
+            {
+                if (node == null || string.IsNullOrWhiteSpace(node.Id)) continue;
+                if (node.Config is ParallelNodeConfig parallel && adjacency.ContainsKey(node.Id))
+                {
+                    if (!string.IsNullOrWhiteSpace(parallel.GateNodeId) && adjacency.ContainsKey(parallel.GateNodeId))
+                        adjacency[node.Id].Add(parallel.GateNodeId);
+                    if (parallel.Branches != null) foreach (var branch in parallel.Branches)
+                        if (branch != null && !string.IsNullOrWhiteSpace(branch.ChildNodeId) && adjacency.ContainsKey(branch.ChildNodeId))
+                            adjacency[node.Id].Add(branch.ChildNodeId);
+                }
+                else if (node.Config is LoopNodeConfig loop && adjacency.ContainsKey(node.Id))
+                {
+                    if (!string.IsNullOrWhiteSpace(loop.BodyChildNodeId) && adjacency.ContainsKey(loop.BodyChildNodeId))
+                        adjacency[node.Id].Add(loop.BodyChildNodeId);
+                    if (!string.IsNullOrWhiteSpace(loop.ExitNodeId) && adjacency.ContainsKey(loop.ExitNodeId))
+                        adjacency[node.Id].Add(loop.ExitNodeId);
+                }
+            }
+            var reachable = new HashSet<string> { entryNodeId };
+            var pending = new Queue<string>(); pending.Enqueue(entryNodeId);
+            while (pending.Count > 0)
+                foreach (var next in adjacency[pending.Dequeue()]) if (reachable.Add(next)) pending.Enqueue(next);
+            foreach (var id in allNodeIds.OrderBy(id => id, StringComparer.Ordinal))
+                if (!reachable.Contains(id)) errors.Add(new GraphValidationError(GraphValidationErrorCode.UnreachableNode,
+                    $"Node '{id}' is unreachable from EntryNodeId '{entryNodeId}'.", id));
         }
 
         // ── Config validators ──────────────────────────────────────────────────

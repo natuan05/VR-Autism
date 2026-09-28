@@ -45,7 +45,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
             { NodeType.Quest, typeof(QuestNodeConfig) },
             { NodeType.Dialogue, typeof(DialogueNodeConfig) },
             { NodeType.Wait, typeof(WaitNodeConfig) },
-            { NodeType.Checkpoint, typeof(CheckpointNodeConfig) }
+            { NodeType.Checkpoint, typeof(CheckpointNodeConfig) },
+            { NodeType.Timeline, typeof(TimelineNodeConfig) },
+            { NodeType.Parallel, typeof(ParallelNodeConfig) },
+            { NodeType.Gate, typeof(GateNodeConfig) },
+            { NodeType.Loop, typeof(LoopNodeConfig) }
         };
 
         private static readonly Dictionary<Type, NodeType> s_configTypeToNodeType = new Dictionary<Type, NodeType>
@@ -53,7 +57,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
             { typeof(QuestNodeConfig), NodeType.Quest },
             { typeof(DialogueNodeConfig), NodeType.Dialogue },
             { typeof(WaitNodeConfig), NodeType.Wait },
-            { typeof(CheckpointNodeConfig), NodeType.Checkpoint }
+            { typeof(CheckpointNodeConfig), NodeType.Checkpoint },
+            { typeof(TimelineNodeConfig), NodeType.Timeline },
+            { typeof(ParallelNodeConfig), NodeType.Parallel },
+            { typeof(GateNodeConfig), NodeType.Gate },
+            { typeof(LoopNodeConfig), NodeType.Loop }
         };
 
         /// <summary>
@@ -61,7 +69,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
         /// </summary>
         public static bool IsSupportedPhase1Type(NodeType nodeType)
         {
-            return Enum.IsDefined(typeof(NodeType), nodeType) && s_nodeTypeToConfigType.ContainsKey(nodeType);
+            return nodeType == NodeType.Quest || nodeType == NodeType.Dialogue ||
+                nodeType == NodeType.Wait || nodeType == NodeType.Checkpoint;
         }
 
         /// <summary>
@@ -71,6 +80,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
         {
             return s_nodeTypeToConfigType.TryGetValue(nodeType, out var configType) ? configType : null;
         }
+
+        public static bool IsSupportedNodeType(NodeType nodeType) => s_nodeTypeToConfigType.ContainsKey(nodeType);
 
         /// <summary>
         /// Attempts to map a concrete config Type back to its corresponding Phase 1 NodeType.
@@ -102,6 +113,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                     return new WaitNodeConfig();
                 case NodeType.Checkpoint:
                     return new CheckpointNodeConfig();
+                case NodeType.Timeline:
+                    return new TimelineNodeConfig();
+                case NodeType.Parallel:
+                    return new ParallelNodeConfig();
+                case NodeType.Gate:
+                    return new GateNodeConfig();
+                case NodeType.Loop:
+                    return new LoopNodeConfig();
                 default:
                     throw new NotSupportedException($"Node type '{nodeType}' is not supported in Phase 1.");
             }
@@ -158,6 +177,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
             var nodeType = (NodeType)nodeTypeProp.enumValueIndex;
             var config = configProp.managedReferenceValue as INodeConfig;
 
+            var graph = nodeProperty.serializedObject.targetObject as LessonGraph;
+            if (graph != null && graph.SchemaVersion >= 2 && IsSupportedNodeType(nodeType))
+            {
+                if (config == null) return NodeSyncStatus.NullConfig;
+                return config.GetType() == GetExpectedConfigType(nodeType)
+                    ? NodeSyncStatus.Compatible
+                    : NodeSyncStatus.Mismatch;
+            }
             return GetSyncStatus(nodeType, config);
         }
 
@@ -331,7 +358,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
         }
 
         /// <summary>
-        /// Initializes a null config for Phase 1 nodes with a matching default instance.
+        /// Initializes a null config for a recognized node type with a matching default instance.
         /// Returns true if initialized, false if already non-null or unsupported.
         /// </summary>
         public static bool InitializeNullConfig(SerializedProperty nodeProperty)
@@ -347,9 +374,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
             if (nodeTypeProp == null || configProp == null) return false;
 
             var nodeType = (NodeType)nodeTypeProp.enumValueIndex;
-            if (!IsSupportedPhase1Type(nodeType)) return false;
+            if (!IsSupportedNodeType(nodeType)) return false;
 
-            if (configProp.managedReferenceValue != null) return false;
+            var ownerGraph = nodeProperty.serializedObject.targetObject as LessonGraph;
+            if (!IsSupportedPhase1Type(nodeType) && (ownerGraph == null || ownerGraph.SchemaVersion < 2))
+                return false;
+
+            if (configProp.managedReferenceValue != null || HasMissingManagedReference(configProp)) return false;
 
             if (nodeProperty.serializedObject.targetObject != null)
             {
@@ -362,8 +393,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
         }
 
         /// <summary>
-        /// Explicitly changes node type and replaces config with that type's default instance (Phase 1).
-        /// If changing to Phase 2, updates discriminator without inventing a config.
+        /// Explicitly changes node type and replaces config with its typed default instance.
         /// Preserves node ID and position.
         /// </summary>
         public static bool ChangeNodeType(SerializedProperty nodeProperty, NodeType newType)
@@ -386,7 +416,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
             }
 
             nodeTypeProp.enumValueIndex = (int)newType;
-            if (IsSupportedPhase1Type(newType))
+            if (IsSupportedNodeType(newType))
             {
                 configProp.managedReferenceValue = CreateDefaultConfig(newType);
             }
@@ -448,7 +478,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
             if (GetSyncStatus(nodeProperty) != NodeSyncStatus.Mismatch) return false;
 
             var nodeType = (NodeType)nodeTypeProp.enumValueIndex;
-            if (!IsSupportedPhase1Type(nodeType)) return false;
+            if (!IsSupportedNodeType(nodeType)) return false;
 
             if (nodeProperty.serializedObject.targetObject != null)
             {
@@ -668,7 +698,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                 }
 
                 var missingConfig = LessonNodeSyncHelper.HasMissingManagedReference(configProp);
-                var replacingConfig = LessonNodeSyncHelper.IsSupportedPhase1Type(newType) &&
+                var replacingConfig = LessonNodeSyncHelper.IsSupportedNodeType(newType) &&
                     (configProp.managedReferenceValue != null || missingConfig);
                 if (replacingConfig)
                 {
@@ -744,8 +774,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
             else if (status == NodeSyncStatus.UnsupportedPhase2)
             {
                 var phase2Box = new HelpBox(
-                    $"Phase 2 node type '{currentType}' is not supported in Phase 1 graphs. " +
-                    "Serialized data is preserved. Run LessonGraphValidator to check the graph.",
+                    $"Node type '{currentType}' needs a schema-2 config or migration. Serialized data is preserved.",
                     HelpBoxMessageType.Warning);
                 phase2Box.name = "phase2-warning";
                 container.Add(phase2Box);
@@ -816,6 +845,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                 var configField = new PropertyField(configProp, "Config");
                 configField.name = "config-field";
                 container.Add(configField);
+            }
+
+            if (!LessonNodeSyncHelper.HasMissingManagedReference(configProp) && configObj is LoopNodeConfig)
+            {
+                var exitCondition = configProp.FindPropertyRelative("_exitCondition");
+                if (exitCondition != null)
+                    container.Add(ConditionAuthoringControls.CreateReferenceControl(
+                        "Loop Exit Condition", exitCondition, () => Rebuild(root, property), 1, "loop-exit"));
             }
 
             content.Add(container);

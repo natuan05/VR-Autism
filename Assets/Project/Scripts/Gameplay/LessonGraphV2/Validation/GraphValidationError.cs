@@ -58,6 +58,18 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
         // Graph structure errors
         CycleDetected,
         UnreachableNode,
+
+        // Schema 2 authoring errors (append only to preserve existing values).
+        InvalidTimelineConfig,
+        InvalidParallelConfig,
+        InvalidGateConfig,
+        InvalidLoopConfig,
+        InvalidVariableCondition,
+        InvalidCompositeCondition,
+        DuplicateCheckpointId,
+        InvalidCheckpointPlacement,
+        ParallelGateDeadlock,
+        UnsupportedExecutionFeature,
     }
 
     /// <summary>

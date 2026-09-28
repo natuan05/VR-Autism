@@ -111,6 +111,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         [TestCase(NodeType.Timeline, ExpectedResult = false)]
         [TestCase(NodeType.Parallel, ExpectedResult = false)]
         [TestCase(NodeType.Gate, ExpectedResult = false)]
+        [TestCase(NodeType.Loop, ExpectedResult = false)]
         [TestCase((NodeType)999, ExpectedResult = false)]
         public bool IsSupportedPhase1Type_ForPhase2OrUnknownTypes_ReturnsFalse(NodeType nodeType)
         {
@@ -126,12 +127,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.AreEqual(typeof(CheckpointNodeConfig), LessonNodeSyncHelper.GetExpectedConfigType(NodeType.Checkpoint));
         }
 
-        [TestCase(NodeType.Timeline)]
-        [TestCase(NodeType.Parallel)]
-        [TestCase(NodeType.Gate)]
-        public void GetExpectedConfigType_ForPhase2Types_ReturnsNull(NodeType phase2Type)
+        [TestCase(NodeType.Timeline, typeof(TimelineNodeConfig))]
+        [TestCase(NodeType.Parallel, typeof(ParallelNodeConfig))]
+        [TestCase(NodeType.Gate, typeof(GateNodeConfig))]
+        [TestCase(NodeType.Loop, typeof(LoopNodeConfig))]
+        public void GetExpectedConfigType_ForAdvancedTypes_ReturnsMatchingConfig(NodeType phase2Type, Type expectedConfig)
         {
-            Assert.IsNull(LessonNodeSyncHelper.GetExpectedConfigType(phase2Type));
+            Assert.AreEqual(expectedConfig, LessonNodeSyncHelper.GetExpectedConfigType(phase2Type));
         }
 
         [Test]
@@ -174,12 +176,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.IsInstanceOf<CheckpointNodeConfig>(checkpointCfg);
         }
 
-        [TestCase(NodeType.Timeline)]
-        [TestCase(NodeType.Parallel)]
-        [TestCase(NodeType.Gate)]
-        public void CreateDefaultConfig_ForPhase2Types_ThrowsNotSupportedException(NodeType phase2Type)
+        [TestCase(NodeType.Timeline, typeof(TimelineNodeConfig))]
+        [TestCase(NodeType.Parallel, typeof(ParallelNodeConfig))]
+        [TestCase(NodeType.Gate, typeof(GateNodeConfig))]
+        [TestCase(NodeType.Loop, typeof(LoopNodeConfig))]
+        public void CreateDefaultConfig_ForAdvancedTypes_CreatesMatchingConfig(NodeType phase2Type, Type expectedConfig)
         {
-            Assert.Throws<NotSupportedException>(() => LessonNodeSyncHelper.CreateDefaultConfig(phase2Type));
+            Assert.IsInstanceOf(expectedConfig, LessonNodeSyncHelper.CreateDefaultConfig(phase2Type));
         }
 
         // ── 2. Mismatch Detection ───────────────────────────────────────────────
@@ -222,6 +225,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         [TestCase(NodeType.Timeline)]
         [TestCase(NodeType.Parallel)]
         [TestCase(NodeType.Gate)]
+        [TestCase(NodeType.Loop)]
         public void GetSyncStatus_WhenPhase2Type_ReturnsUnsupportedPhase2(NodeType phase2Type)
         {
             Assert.AreEqual(NodeSyncStatus.UnsupportedPhase2, LessonNodeSyncHelper.GetSyncStatus(phase2Type, null));
@@ -269,6 +273,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         [TestCase(NodeType.Timeline)]
         [TestCase(NodeType.Parallel)]
         [TestCase(NodeType.Gate)]
+        [TestCase(NodeType.Loop)]
         public void InitializeNullConfig_WhenPhase2_ReturnsFalseAndKeepsNull(NodeType phase2Type)
         {
             var nodeProp = SetupNodeProperty(new LessonNodeData("guid-p2", phase2Type, null));
@@ -327,15 +332,17 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         }
 
         [Test]
-        public void ChangeNodeType_ToPhase2_SetsNodeTypeWithoutInventingConfig()
+        public void ChangeNodeType_ToAdvanced_CreatesTypedConfigWithoutChangingSchema()
         {
             var nodeProp = SetupNodeProperty(new LessonNodeData("guid-p2", NodeType.Quest, null));
+            var originalSchemaVersion = _graph.SchemaVersion;
 
             bool result = LessonNodeSyncHelper.ChangeNodeType(nodeProp, NodeType.Timeline);
 
             Assert.IsTrue(result);
             Assert.AreEqual((int)NodeType.Timeline, nodeProp.FindPropertyRelative("_nodeType").enumValueIndex);
-            Assert.IsNull(nodeProp.FindPropertyRelative("_config").managedReferenceValue);
+            Assert.IsInstanceOf<TimelineNodeConfig>(nodeProp.FindPropertyRelative("_config").managedReferenceValue);
+            Assert.AreEqual(originalSchemaVersion, _graph.SchemaVersion);
         }
 
         // ── 5. Data-Preserving Config Repair ─────────────────────────────────────
@@ -424,6 +431,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         [TestCase(NodeType.Timeline)]
         [TestCase(NodeType.Parallel)]
         [TestCase(NodeType.Gate)]
+        [TestCase(NodeType.Loop)]
         public void RepairUsingNodeType_WhenPhase2_ReturnsFalse(NodeType phase2Type)
         {
             var nodeProp = SetupNodeProperty(new LessonNodeData("guid-p2", phase2Type, new QuestNodeConfig()));
@@ -824,6 +832,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         [TestCase(NodeType.Timeline)]
         [TestCase(NodeType.Parallel)]
         [TestCase(NodeType.Gate)]
+        [TestCase(NodeType.Loop)]
         public void CreatePropertyGUI_Phase2Node_RendersUnsupportedWarningWithoutMutating(NodeType phase2Type)
         {
             var nodeProp = SetupNodeProperty(new LessonNodeData("guid-ui-p2", phase2Type, null));
