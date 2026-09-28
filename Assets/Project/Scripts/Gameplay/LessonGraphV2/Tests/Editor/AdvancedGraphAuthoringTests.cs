@@ -4,16 +4,50 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using VRAutism.Gameplay.LessonGraphV2.Data;
 using VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions;
 using VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs;
 using VRAutism.Gameplay.LessonGraphV2.Editor;
+using VRAutism.Gameplay.LessonGraphV2.Validation;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
 {
     public sealed class AdvancedGraphAuthoringTests
     {
+        private static EditorWindow AttachAndBind(VisualElement root, SerializedObject serializedObject)
+        {
+            var window = ScriptableObject.CreateInstance<EditorWindow>();
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+            {
+                LogAssert.Expect(LogType.Error, "No graphic device is available to initialize the view.");
+                LogAssert.Expect(LogType.Error, "No graphic device is available to show the window.");
+                LogAssert.Expect(LogType.Error, "No graphic device is available to initialize the view.");
+                LogAssert.Expect(LogType.Error, "No graphic device is available to show the window.");
+            }
+
+            window.Show();
+            window.rootVisualElement.Add(root);
+            root.Bind(serializedObject);
+            return window;
+        }
+
+        private static void CloseWindow(EditorWindow window)
+        {
+            if (window == null) return;
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+            {
+                LogAssert.Expect(LogType.Error, "No graphic device is available to initialize the view.");
+                LogAssert.Expect(LogType.Error, "No graphic device is available to show the window.");
+                LogAssert.Expect(LogType.Error, "No graphic device is available to initialize the view.");
+                LogAssert.Expect(LogType.Error, "No graphic device is available to show the window.");
+            }
+
+            window.Close();
+        }
+
         [Test]
         public void AdvancedTypeCreatesTypedConfigAndPreservesNodeIdentityAndPosition()
         {
@@ -43,6 +77,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         public void SchemaTwoEdgeInspectorCanSelectTypedVariableCondition()
         {
             var graph = ScriptableObject.CreateInstance<LessonGraph>();
+            EditorWindow window = null;
             try
             {
                 graph.Editor_SetSchemaVersion(2);
@@ -58,12 +93,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 var serialized = new SerializedObject(graph);
                 var edge = serialized.FindProperty("_edges").GetArrayElementAtIndex(0);
                 var root = new LessonEdgeDataDrawer().CreatePropertyGUI(edge);
+                window = AttachAndBind(root, serialized);
 
                 root.Q<PopupField<string>>("condition-type-field").value = nameof(VariableCondition);
 
                 Assert.IsInstanceOf<VariableCondition>(edge.FindPropertyRelative("_condition").managedReferenceValue);
             }
-            finally { Object.DestroyImmediate(graph); Undo.ClearAll(); }
+            finally { CloseWindow(window); Object.DestroyImmediate(graph); Undo.ClearAll(); }
         }
 
         [Test]
@@ -88,6 +124,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         public void LoopDefaultCanBeCompletedWithTypedExitConditionInInspector()
         {
             var graph = ScriptableObject.CreateInstance<LessonGraph>();
+            EditorWindow window = null;
             try
             {
                 graph.Editor_SetSchemaVersion(2);
@@ -106,6 +143,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 serialized.ApplyModifiedProperties();
 
                 var root = new LessonNodeDataDrawer().CreatePropertyGUI(loopNode);
+                window = AttachAndBind(root, serialized);
                 root.Q<PopupField<string>>("loop-exit-condition-type-field").value = nameof(AlwaysCondition);
 
                 serialized.Update();
@@ -115,13 +153,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 Assert.IsTrue(LessonGraphValidator.Validate(graph).IsValid,
                     LessonGraphValidator.Validate(graph).ToString());
             }
-            finally { Object.DestroyImmediate(graph); Undo.ClearAll(); }
+            finally { CloseWindow(window); Object.DestroyImmediate(graph); Undo.ClearAll(); }
         }
 
         [Test]
         public void CompositeDefaultCanReceiveTypedChildrenInInspector()
         {
             var graph = ScriptableObject.CreateInstance<LessonGraph>();
+            EditorWindow window = null;
             try
             {
                 graph.Editor_SetSchemaVersion(2);
@@ -138,6 +177,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 var serialized = new SerializedObject(graph);
                 var edge = serialized.FindProperty("_edges").GetArrayElementAtIndex(0);
                 var root = new LessonEdgeDataDrawer().CreatePropertyGUI(edge);
+                window = AttachAndBind(root, serialized);
                 root.Q<PopupField<string>>("condition-type-field").value = nameof(CompositeCondition);
                 root.Q<PopupField<string>>("edge-condition-add-child-condition-field").value = nameof(AlwaysCondition);
 
@@ -150,7 +190,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 Assert.IsTrue(LessonGraphValidator.Validate(graph).IsValid,
                     LessonGraphValidator.Validate(graph).ToString());
             }
-            finally { Object.DestroyImmediate(graph); Undo.ClearAll(); }
+            finally { CloseWindow(window); Object.DestroyImmediate(graph); Undo.ClearAll(); }
         }
 
         [Test]
