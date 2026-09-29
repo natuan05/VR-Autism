@@ -19,18 +19,23 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             IQuestBindingResolver questBindingResolver,
             INodeClock clock,
             ICheckpointTelemetry checkpointTelemetry = null,
-            IDialogueTransportV2 dialogueTransport = null)
+            IDialogueTransportV2 dialogueTransport = null,
+            ITimelinePlaybackController timelinePlaybackController = null)
         {
             if (questBindingResolver == null) throw new ArgumentNullException(nameof(questBindingResolver));
             if (clock == null) throw new ArgumentNullException(nameof(clock));
 
-            _executors = new Dictionary<NodeType, INodeExecutor>
+            var executors = new Dictionary<NodeType, INodeExecutor>
             {
                 { NodeType.Wait, new WaitNodeExecutor(clock) },
                 { NodeType.Checkpoint, new CheckpointNodeExecutor(checkpointTelemetry) },
                 { NodeType.Quest, new QuestNodeExecutor(questBindingResolver, clock) },
                 { NodeType.Dialogue, new DialogueNodeExecutor(dialogueTransport, clock) },
             };
+
+            if (timelinePlaybackController != null)
+                executors.Add(NodeType.Timeline, new TimelineNodeExecutor(timelinePlaybackController, clock));
+            _executors = executors;
         }
 
         public bool TryGet(NodeType type, out INodeExecutor executor) =>

@@ -1,5 +1,5 @@
 # generated: 2026-08-28
-# last_updated: 2026-09-27
+# last_updated: 2026-09-29
 # project: VR-Autism
 # project_key: NOKEY
 # tracking_system: file-system
@@ -16,9 +16,19 @@
 #   other scene checks and F8 readback remain open. After V2 feature delivery,
 #   disable legacy Action/Quest controllers before V2 integrity readback;
 #   final parity, explicit cutover acceptance, removal and regressions remain open.
+# story-3-1: schema-2 authoring implementation reviewed in isolated worktree;
+#   diff check and GitNexus detect_changes pass for tracked edits. Index refresh
+#   failed (Invalid UTF-8), so new files are outside its risk summary. Unity
+#   compilation, focused EditMode tests, and Inspector checks remain before done.
+# story-3-2: Timeline runtime implementation independently reviewed in this
+#   worktree. Unity compilation, focused EditMode tests, and manual playback,
+#   signal, timeout, cancellation, and scene-unload checks remain before done.
+# story-3-3: structured Parallel/Gate/Loop runtime implementation independently
+#   reviewed in this worktree. Unity compilation, focused EditMode tests, and
+#   manual branch cancellation, Gate, Loop, and variable-store checks remain.
 
 generated: 2026-08-28
-last_updated: 2026-09-27
+last_updated: 2026-09-29
 project: VR-Autism
 project_key: NOKEY
 tracking_system: file-system
@@ -41,10 +51,10 @@ development_status:
   2-4-reconcile-legacy-and-lesson-graph-session-ownership: in-progress
   epic-2-retrospective: optional
 
-  epic-3: backlog
-  3-1-author-validated-advanced-phase-2-graph-nodes: backlog
-  3-2-execute-a-timeline-node-from-unity-signals: backlog
-  3-3-execute-structured-parallel-gate-and-bounded-loop-flow: backlog
+  epic-3: in-progress
+  3-1-author-validated-advanced-phase-2-graph-nodes: review
+  3-2-execute-a-timeline-node-from-unity-signals: review
+  3-3-execute-structured-parallel-gate-and-bounded-loop-flow: review
   3-4-checkpoint-and-resume-an-advanced-lesson-safely: backlog
   3-5-author-and-validate-graph-flow-through-an-editor-surface: backlog
   epic-3-retrospective: optional

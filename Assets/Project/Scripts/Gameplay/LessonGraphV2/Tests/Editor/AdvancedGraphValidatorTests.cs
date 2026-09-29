@@ -43,7 +43,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         }
 
         [Test]
-        public void SchemaTwoValidationAllowsAdvancedAuthoringButExecutionPreflightRejectsIt()
+        public void SchemaTwoExecutionPreflightAllowsStructuredFlowWhenVariableSourceIsAvailable()
         {
             var graph = Graph("loop",
                 new LessonNodeData("loop", NodeType.Loop,
@@ -56,7 +56,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             {
                 Assert.IsTrue(LessonGraphValidator.Validate(graph).IsValid,
                     LessonGraphValidator.Validate(graph).ToString());
-                Assert.IsFalse(LessonGraphValidator.ValidateForExecution(graph).IsValid);
+                Assert.IsFalse(LessonGraphValidator.ValidateForExecution(graph).IsValid,
+                    "Variable conditions require a configured runtime source.");
+                Assert.IsTrue(LessonGraphValidator.ValidateForExecution(graph, variableSourceAvailable: true).IsValid,
+                    LessonGraphValidator.ValidateForExecution(graph, variableSourceAvailable: true).ToString());
             }
             finally { Object.DestroyImmediate(graph); }
         }
@@ -83,6 +86,72 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 var result = LessonGraphValidator.Validate(graph);
                 Assert.IsFalse(result.IsValid);
                 Assert.IsTrue(result.Errors.Any(e => e.ErrorCode == GraphValidationErrorCode.ParallelGateDeadlock));
+            }
+            finally { Object.DestroyImmediate(graph); }
+        }
+
+        [Test]
+        public void ExecutionPreflightRejectsGateEntryAndUnrelatedIncomingEdge()
+        {
+            var entryGate = Graph("gate",
+                new LessonNodeData("parallel", NodeType.Parallel,
+                    new ParallelNodeConfig(new[] { new ParallelBranch("a", "child-a"), new ParallelBranch("b", "child-b") },
+                        "gate", ParallelJoinPolicy.AllSuccess)),
+                new LessonNodeData("child-a", NodeType.Wait, new WaitNodeConfig(1)),
+                new LessonNodeData("child-b", NodeType.Wait, new WaitNodeConfig(1)),
+                new LessonNodeData("gate", NodeType.Gate,
+                    new GateNodeConfig("parallel", new[] { "a", "b" }, GateConditionMode.And)));
+            entryGate.Editor_SetEdges(new List<LessonEdgeData> { new LessonEdgeData("parallel", "gate", new AlwaysCondition()) });
+
+            var unrelatedIncoming = Graph("start",
+                new LessonNodeData("start", NodeType.Wait, new WaitNodeConfig(1)),
+                new LessonNodeData("parallel", NodeType.Parallel,
+                    new ParallelNodeConfig(new[] { new ParallelBranch("a", "child-a"), new ParallelBranch("b", "child-b") },
+                        "gate", ParallelJoinPolicy.AllSuccess)),
+                new LessonNodeData("child-a", NodeType.Wait, new WaitNodeConfig(1)),
+                new LessonNodeData("child-b", NodeType.Dialogue, new DialogueNodeConfig("seq", "text", "npc")),
+                new LessonNodeData("other-parent", NodeType.Wait, new WaitNodeConfig(1)),
+                new LessonNodeData("gate", NodeType.Gate,
+                    new GateNodeConfig("parallel", new[] { "a", "b" }, GateConditionMode.And)),
+                new LessonNodeData("exit", NodeType.Wait, new WaitNodeConfig(1)));
+            unrelatedIncoming.Editor_SetEdges(new List<LessonEdgeData>
+            {
+                new LessonEdgeData("start", "parallel", new AlwaysCondition()),
+                new LessonEdgeData("parallel", "gate", new AlwaysCondition()),
+                new LessonEdgeData("parallel", "other-parent", new StatusCondition("failed")),
+                new LessonEdgeData("other-parent", "gate", new AlwaysCondition()),
+                new LessonEdgeData("gate", "exit", new AlwaysCondition()),
+            });
+            try
+            {
+                Assert.IsFalse(LessonGraphValidator.ValidateForExecution(entryGate).IsValid);
+                Assert.IsFalse(LessonGraphValidator.ValidateForExecution(unrelatedIncoming).IsValid);
+            }
+            finally
+            {
+                Object.DestroyImmediate(entryGate);
+                Object.DestroyImmediate(unrelatedIncoming);
+            }
+        }
+
+        [Test]
+        public void ExecutionPreflightRequiresSourceForVariableEdgeConditions()
+        {
+            var graph = Graph("start",
+                new LessonNodeData("start", NodeType.Wait, new WaitNodeConfig(1)),
+                new LessonNodeData("yes", NodeType.Wait, new WaitNodeConfig(1)),
+                new LessonNodeData("fallback", NodeType.Wait, new WaitNodeConfig(1)));
+            graph.Editor_SetEdges(new List<LessonEdgeData>
+            {
+                new LessonEdgeData("start", "yes", new VariableCondition("ready", VariableValueType.Boolean,
+                    VariableComparisonOperator.Equal, true)),
+                new LessonEdgeData("start", "fallback", new AlwaysCondition()),
+            });
+            try
+            {
+                Assert.IsTrue(LessonGraphValidator.Validate(graph).IsValid, LessonGraphValidator.Validate(graph).ToString());
+                Assert.IsFalse(LessonGraphValidator.ValidateForExecution(graph).IsValid);
+                Assert.IsTrue(LessonGraphValidator.ValidateForExecution(graph, variableSourceAvailable: true).IsValid);
             }
             finally { Object.DestroyImmediate(graph); }
         }

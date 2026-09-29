@@ -339,24 +339,96 @@ namespace VRAutism.Gameplay.LessonGraphV2.Validation
                 : GraphValidationResult.Fail(errors);
         }
 
-        /// <summary>Runtime gate used by the Phase 1 runner after authoring validation.</summary>
-        public static GraphValidationResult ValidateForExecution(LessonGraph graph)
+        /// <summary>Runtime gate for structured ownership and configured variable-condition support.</summary>
+        public static GraphValidationResult ValidateForExecution(LessonGraph graph, bool variableSourceAvailable = false)
         {
             var authoring = Validate(graph);
             if (!authoring.IsValid) return authoring;
             var errors = new List<GraphValidationError>();
+            ValidateExecutionOwnership(graph, errors);
+            bool usesVariables = graph.Edges.Any(edge => edge != null && ContainsVariableCondition(edge.Condition)) ||
+                graph.Nodes.Any(node => node?.Config is LoopNodeConfig loop && ContainsVariableCondition(loop.ExitCondition));
+            if (usesVariables && !variableSourceAvailable)
+                errors.Add(new GraphValidationError(GraphValidationErrorCode.UnsupportedExecutionFeature,
+                    "This graph uses variable conditions, but no lesson variable source is configured."));
+            return errors.Count == 0 ? GraphValidationResult.Ok() : GraphValidationResult.Fail(errors);
+        }
+
+        private static bool ContainsVariableCondition(IEdgeCondition condition)
+        {
+            if (condition is VariableCondition) return true;
+            if (!(condition is CompositeCondition composite) || composite.Conditions == null) return false;
+            return composite.Conditions.Any(ContainsVariableCondition);
+        }
+
+        private static void ValidateExecutionOwnership(LessonGraph graph, List<GraphValidationError> errors)
+        {
+            var byId = graph.Nodes.Where(node => node != null).GroupBy(node => node.Id, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+            if (byId.TryGetValue(graph.EntryNodeId, out var entry) && entry.NodeType == NodeType.Gate)
+                errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidGateConfig,
+                    "A Gate cannot be a normal graph entry; it must be reached from its owning Parallel.", entry.Id));
+
+            var owners = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var node in graph.Nodes)
             {
-                if (node != null && (node.NodeType == NodeType.Timeline || node.NodeType == NodeType.Parallel ||
-                    node.NodeType == NodeType.Gate || node.NodeType == NodeType.Loop))
-                    errors.Add(new GraphValidationError(GraphValidationErrorCode.UnsupportedExecutionFeature,
-                        $"Node type '{node.NodeType}' is authoring-valid but is not supported by the Phase 1 runner.", node.Id));
+                if (node?.Config is ParallelNodeConfig parallel && parallel.Branches != null)
+                {
+                    var timelineChildren = 0;
+                    foreach (var branch in parallel.Branches)
+                    {
+                        if (branch == null || !byId.TryGetValue(branch.ChildNodeId, out var child)) continue;
+                        if (child.NodeType == NodeType.Timeline) timelineChildren++;
+                        ValidateOwnedChild(node.Id, child, owners, errors);
+                        ValidateOwnedChildEntry(graph, child, errors);
+                    }
+                    if (timelineChildren > 1)
+                        errors.Add(new GraphValidationError(GraphValidationErrorCode.UnsupportedExecutionFeature,
+                            "A Parallel can own at most one Timeline branch because the scene has one Timeline playback controller.", node.Id));
+                    if (!string.IsNullOrWhiteSpace(parallel.GateNodeId))
+                    {
+                        var incoming = graph.Edges.Where(edge => edge != null && edge.ToNodeId == parallel.GateNodeId).ToArray();
+                        if (incoming.Length != 1 || incoming[0].FromNodeId != node.Id)
+                            errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidGateConfig,
+                                "An owned Gate may only be entered by its owning Parallel.", parallel.GateNodeId));
+                    }
+                }
+                else if (node?.Config is LoopNodeConfig loop && byId.TryGetValue(loop.BodyChildNodeId, out var body))
+                {
+                    ValidateOwnedChild(node.Id, body, owners, errors);
+                    ValidateOwnedChildEntry(graph, body, errors);
+                }
+                if (node?.Config is LoopNodeConfig configuredLoop &&
+                    byId.TryGetValue(configuredLoop.ExitNodeId, out var exit) && exit.NodeType == NodeType.Gate)
+                    errors.Add(new GraphValidationError(GraphValidationErrorCode.InvalidGateConfig,
+                        "A Gate cannot be reached as a Loop exit; only its owning Parallel may enter it.", exit.Id));
             }
-            foreach (var edge in graph.Edges)
-                if (edge?.Condition is VariableCondition || edge?.Condition is CompositeCondition)
-                    errors.Add(new GraphValidationError(GraphValidationErrorCode.UnsupportedExecutionFeature,
-                        "Variable and composite conditions are not supported by the Phase 1 runner."));
-            return errors.Count == 0 ? GraphValidationResult.Ok() : GraphValidationResult.Fail(errors);
+        }
+
+        private static void ValidateOwnedChild(string ownerId, LessonNodeData child, Dictionary<string, string> owners,
+            List<GraphValidationError> errors)
+        {
+            if (child.NodeType == NodeType.Parallel || child.NodeType == NodeType.Gate || child.NodeType == NodeType.Loop)
+                errors.Add(new GraphValidationError(GraphValidationErrorCode.UnsupportedExecutionFeature,
+                    "Structured nodes cannot be nested as an owned Parallel branch or Loop body.", child.Id));
+            if (child.NodeType == NodeType.Checkpoint)
+                errors.Add(new GraphValidationError(GraphValidationErrorCode.UnsupportedExecutionFeature,
+                    "Checkpoint telemetry cannot run inside an owned Parallel branch or Loop body.", child.Id));
+            if (child.Id == ownerId)
+                errors.Add(new GraphValidationError(GraphValidationErrorCode.UnsupportedExecutionFeature,
+                    "A structured node cannot own itself as a child activation.", child.Id));
+            if (owners.TryGetValue(child.Id, out var previousOwner) && previousOwner != ownerId)
+                errors.Add(new GraphValidationError(GraphValidationErrorCode.UnsupportedExecutionFeature,
+                    $"Node '{child.Id}' cannot be owned by both '{previousOwner}' and '{ownerId}'.", child.Id));
+            else
+                owners[child.Id] = ownerId;
+        }
+
+        private static void ValidateOwnedChildEntry(LessonGraph graph, LessonNodeData child, List<GraphValidationError> errors)
+        {
+            if (graph.EntryNodeId == child.Id || graph.Edges.Any(edge => edge != null && edge.ToNodeId == child.Id))
+                errors.Add(new GraphValidationError(GraphValidationErrorCode.UnsupportedExecutionFeature,
+                    "Owned branch and Loop body nodes cannot also be entered through ordinary graph routing.", child.Id));
         }
 
         private static void ValidateTimelineConfig(TimelineNodeConfig config, string nodeId, List<GraphValidationError> errors)

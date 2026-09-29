@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -24,6 +25,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         private INodeClock _clock;
         private bool _usesDefaultClock;
         private ICheckpointTelemetry _checkpointTelemetry;
+        private ILessonVariableSource _variableSource;
+        private readonly Dictionary<string, int> _runNodeVisitCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        private readonly Dictionary<string, int> _runEdgeVisitCounts = new Dictionary<string, int>(StringComparer.Ordinal);
         private CancellationTokenSource _lessonCancellation;
         private CancellationTokenSource _activationCancellation;
         private CancellationTokenSource _skipCancellation;
@@ -62,7 +66,18 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             get { lock (_gate) return CloneState(_currentState); }
         }
 
-        public void Configure(LessonGraph graph, INodeExecutorRegistry registry, ILessonStartPreflight preflight = null, INodeClock clock = null, ICheckpointTelemetry checkpointTelemetry = null)
+        public IReadOnlyDictionary<string, int> RunNodeVisitCounts
+        {
+            get { lock (_gate) return new ReadOnlyDictionary<string, int>(new Dictionary<string, int>(_runNodeVisitCounts, StringComparer.Ordinal)); }
+        }
+
+        public IReadOnlyDictionary<string, int> RunEdgeVisitCounts
+        {
+            get { lock (_gate) return new ReadOnlyDictionary<string, int>(new Dictionary<string, int>(_runEdgeVisitCounts, StringComparer.Ordinal)); }
+        }
+
+        public void Configure(LessonGraph graph, INodeExecutorRegistry registry, ILessonStartPreflight preflight = null,
+            INodeClock clock = null, ICheckpointTelemetry checkpointTelemetry = null, ILessonVariableSource variableSource = null)
         {
             _graph = graph;
             _registry = registry;
@@ -70,6 +85,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             _clock = clock;
             _usesDefaultClock = clock == null;
             _checkpointTelemetry = checkpointTelemetry;
+            _variableSource = variableSource;
         }
 
         public void ConfigureSession(LessonSessionContextV2 context)
@@ -110,6 +126,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 if (installerOwnsThisRun) installer.MarkLessonStartRequested();
 
                 if (_usesDefaultClock) _clock = new MonotonicClock();
+                _runNodeVisitCounts.Clear();
+                _runEdgeVisitCounts.Clear();
                 _lessonCancellation = new CancellationTokenSource();
                 _activeRunId = Guid.NewGuid().ToString("N");
                 _activeTask = RunAsync(_activeRunId, _lessonCancellation.Token);
@@ -369,7 +387,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     Debug.LogWarning($"[LessonGraphV2] CanStart failed: registry is null", this);
                     return false;
                 }
-                var validation = LessonGraphValidator.ValidateForExecution(_graph);
+                var validation = LessonGraphValidator.ValidateForExecution(_graph, _variableSource != null);
                 if (!validation.IsValid)
                 {
                     var errorDetails = string.Join("; ", validation.Errors);
@@ -381,9 +399,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     Debug.LogWarning($"[LessonGraphV2] CanStart failed: preflight not ready. Reason: {reason}", this);
                     return false;
                 }
-                if (!_graph.Nodes.All(node => node != null && _registry.TryGet(node.NodeType, out var executor) && executor != null))
+                if (!_graph.Nodes.All(node => node != null && (IsStructuredNode(node.NodeType) ||
+                    (_registry.TryGet(node.NodeType, out var executor) && executor != null))))
                 {
-                    var missing = _graph.Nodes.Where(node => node == null || !_registry.TryGet(node.NodeType, out var exec) || exec == null)
+                    var missing = _graph.Nodes.Where(node => node == null || (!IsStructuredNode(node.NodeType) &&
+                        (!_registry.TryGet(node.NodeType, out var exec) || exec == null)))
                                               .Select(node => node?.Id ?? "null_node");
                     Debug.LogWarning($"[LessonGraphV2] CanStart failed: missing executor for nodes: {string.Join(", ", missing)}", this);
                     return false;
@@ -397,11 +417,15 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             }
         }
 
+        private static bool IsStructuredNode(NodeType type) =>
+            type == NodeType.Parallel || type == NodeType.Gate || type == NodeType.Loop;
+
         private async Task<LessonResult> RunAsync(string runId, CancellationToken cancellationToken)
         {
             try
             {
                 var nodes = _graph.Nodes.ToDictionary(node => node.Id);
+                var branchEvidence = new Dictionary<string, StructuredBranchEvidence>(StringComparer.Ordinal);
                 var node = nodes[_graph.EntryNodeId];
                 Debug.Log($"[LessonGraphV2] LESSON START graph={_graph.name} entry={node.Id} runId={runId}", this);
                 string activationId = null;
@@ -409,6 +433,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     activationId = activationId ?? Guid.NewGuid().ToString("N");
+                    RecordNodeVisit(node.Id);
                     BeginActivation(runId, activationId, node);
                     if (cancellationToken.IsCancellationRequested) return FinishAborted(runId);
                     Emit(NodeEntered, new NodeEnteredEvent(runId, activationId, node.Id, _clock.ElapsedSeconds));
@@ -420,14 +445,18 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                         if (activationId == null || cancellationToken.IsCancellationRequested) return FinishAborted(runId);
                         continue;
                     }
-                    _registry.TryGet(node.NodeType, out var executor);
+                    INodeExecutor executor = null;
+                    if (!IsStructuredNode(node.NodeType)) _registry.TryGet(node.NodeType, out executor);
                     NodeResult result;
                     var activationToken = GetActivationToken(runId, activationId);
                     try
                     {
                         SetExecutorStarting(runId, activationId, executor);
-                        var executionTask = executor.ExecuteAsync(new NodeExecutionContext(runId, activationId, _graph.name, node, _clock.ElapsedSeconds,
-                            activationToken, _skipCancellation.Token, _timeoutCancellation.Token, _checkpointTelemetry, _clock));
+                        var context = new NodeExecutionContext(runId, activationId, _graph.name, node, _clock.ElapsedSeconds,
+                            activationToken, _skipCancellation.Token, _timeoutCancellation.Token, _checkpointTelemetry, _clock);
+                        var executionTask = IsStructuredNode(node.NodeType)
+                            ? ExecuteStructuredNodeAsync(context, branchEvidence)
+                            : executor.ExecuteAsync(context);
                         var executorState = SetExecutorReady(runId, activationId, executor, executionTask);
                         if (executorState != null) Emit(StateChanged, executorState);
                         if (executionTask == null)
@@ -486,7 +515,27 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     Emit(NodeCompleted, new NodeCompletedEvent(result));
                     if (cancellationToken.IsCancellationRequested || !IsCurrentActivation(runId, activationId))
                         return FinishAborted(runId);
-                    var next = SelectEdge(node.Id, result.Status);
+                    LessonEdgeData next;
+                    if (node.Config is ParallelNodeConfig parallelConfig && result.Status == NodeStatus.Success)
+                    {
+                        next = null;
+                        RecordEdgeVisit(node.Id, parallelConfig.GateNodeId);
+                        node = nodes[parallelConfig.GateNodeId];
+                        activationId = null;
+                        continue;
+                    }
+                    if (node.Config is LoopNodeConfig loopConfig && result.Status == NodeStatus.Success)
+                    {
+                        next = null;
+                        RecordEdgeVisit(node.Id, loopConfig.ExitNodeId);
+                        node = nodes[loopConfig.ExitNodeId];
+                        activationId = null;
+                        continue;
+                    }
+                    next = SelectEdge(node.Id, result.Status);
+                    if (node.Config is ParallelNodeConfig failedParallel && result.Status != NodeStatus.Success &&
+                        next != null && next.ToNodeId == failedParallel.GateNodeId)
+                        next = null;
                     Debug.Log($"[LessonGraphV2] EDGE node={node.Id} status={result.Status} → next={next?.ToNodeId ?? "TERMINAL"}", this);
                     if (next == null)
                     {
@@ -494,6 +543,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                         var terminalState = result.Status == NodeStatus.Failed || result.Status == NodeStatus.Timeout ? "failed" : "completed";
                         return FinishLesson(runId, completed, terminalState);
                     }
+                    RecordEdgeVisit(next.FromNodeId, next.ToNodeId);
                     node = nodes[next.ToNodeId];
                     activationId = null;
                 }
@@ -514,8 +564,54 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             var matchedStatus = outgoing.Where(candidate => candidate.edge.Condition is StatusCondition condition && condition.RequiredStatus == NodeStatusCondition.ToCondition(status))
                 .OrderBy(candidate => candidate.edge.Priority).ThenBy(candidate => candidate.index).FirstOrDefault();
             if (matchedStatus != null) return matchedStatus.edge;
-            return outgoing.Where(candidate => candidate.edge.Condition is AlwaysCondition).OrderBy(candidate => candidate.edge.Priority).ThenBy(candidate => candidate.index)
+            return outgoing.Where(candidate => !(candidate.edge.Condition is StatusCondition) &&
+                    LessonConditionEvaluator.Evaluate(candidate.edge.Condition, status, _variableSource))
+                .OrderBy(candidate => candidate.edge.Priority).ThenBy(candidate => candidate.index)
                 .Select(candidate => candidate.edge).FirstOrDefault();
+        }
+
+        private async Task<NodeResult> ExecuteStructuredNodeAsync(NodeExecutionContext context,
+            Dictionary<string, StructuredBranchEvidence> branchEvidence)
+        {
+            var flow = new StructuredFlowExecution(_graph, _registry, _clock, _variableSource, _checkpointTelemetry,
+                RecordNodeVisit, RecordEdgeVisit);
+            if (context.Node.Config is ParallelNodeConfig)
+            {
+                var result = await flow.ExecuteParallelAsync(context);
+                if (result.BranchEvidence != null) branchEvidence[context.Node.Id] = result.BranchEvidence;
+                return result.ParentResult;
+            }
+            if (context.Node.Config is GateNodeConfig gate)
+            {
+                branchEvidence.TryGetValue(gate.ParallelNodeId, out var evidence);
+                branchEvidence.Remove(gate.ParallelNodeId);
+                return flow.ExecuteGate(context, evidence);
+            }
+            if (context.Node.Config is LoopNodeConfig)
+                return (await flow.ExecuteLoopAsync(context)).ParentResult;
+            return NodeResult.Completed(context.Node.Id, context.ActivationId, NodeStatus.Failed,
+                _clock.ElapsedSeconds, "unsupported_structured_node");
+        }
+
+        private void RecordNodeVisit(string nodeId)
+        {
+            if (string.IsNullOrWhiteSpace(nodeId)) return;
+            lock (_gate)
+            {
+                _runNodeVisitCounts.TryGetValue(nodeId, out var count);
+                _runNodeVisitCounts[nodeId] = count + 1;
+            }
+        }
+
+        private void RecordEdgeVisit(string fromNodeId, string toNodeId)
+        {
+            if (string.IsNullOrWhiteSpace(fromNodeId) || string.IsNullOrWhiteSpace(toNodeId)) return;
+            var key = fromNodeId + "->" + toNodeId;
+            lock (_gate)
+            {
+                _runEdgeVisitCounts.TryGetValue(key, out var count);
+                _runEdgeVisitCounts[key] = count + 1;
+            }
         }
 
         private void BeginActivation(string runId, string activationId, LessonNodeData node)

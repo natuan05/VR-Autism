@@ -26,6 +26,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         [SerializeField] private LessonGraphBindings _bindings;
         [SerializeField] private LiveKitDialogueTransportV2 _dialogueTransport;
         [SerializeField] private LiveKitLessonRemoteBridgeV2 _remoteBridge;
+        [SerializeField] private TimelinePlaybackController _timelinePlaybackController;
+        [SerializeField] private LessonGraphVariableStore _variableStore;
         [SerializeField] private bool _startOnStart;
 
         private INodeClock _clock;
@@ -43,6 +45,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         private LessonGraph _configuredGraph;
         private LessonGraphBindings _configuredBindings;
         private LiveKitDialogueTransportV2 _configuredDialogueTransport;
+        private TimelinePlaybackController _configuredTimelinePlaybackController;
+        private LessonGraphVariableStore _configuredVariableStore;
         private LessonTelemetryWriterV2 _telemetryWriter;
         private LessonTelemetryAdapterV2 _telemetryAdapter;
         private bool _telemetryConfigured;
@@ -105,6 +109,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             if (_bindings == null) _bindings = GetComponent<LessonGraphBindings>();
             if (_dialogueTransport == null) _dialogueTransport = GetComponent<LiveKitDialogueTransportV2>() ?? FindObjectOfType<LiveKitDialogueTransportV2>();
             if (_remoteBridge == null) _remoteBridge = GetComponent<LiveKitLessonRemoteBridgeV2>();
+            if (_timelinePlaybackController == null) _timelinePlaybackController = GetComponent<TimelinePlaybackController>();
             try
             {
                 Configure();
@@ -167,10 +172,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         public void Configure()
         {
             if (_runner == null) _runner = GetComponent<LessonGraphRunner>();
+            if (_variableStore == null) _variableStore = GetComponent<LessonGraphVariableStore>();
             var runnerConfigurationChanged = !_runnerConfigured || !ReferenceEquals(_configuredRunner, _runner) ||
                 !ReferenceEquals(_configuredGraph, _lessonGraph) ||
                 !ReferenceEquals(_configuredBindings, _bindings) ||
-                !ReferenceEquals(_configuredDialogueTransport, _dialogueTransport);
+                !ReferenceEquals(_configuredDialogueTransport, _dialogueTransport) ||
+                !ReferenceEquals(_configuredTimelinePlaybackController, _timelinePlaybackController) ||
+                !ReferenceEquals(_configuredVariableStore, _variableStore);
             if (_telemetryConfigured && runnerConfigurationChanged)
                 throw new InvalidOperationException("Runner composition cannot change after the V2 telemetry adapter attaches.");
 
@@ -184,13 +192,17 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 _clock = new MonotonicClock();
                 _runner.Configure(
                     _lessonGraph,
-                    new LessonGraphExecutorRegistry(_bindings, _clock, dialogueTransport: _dialogueTransport),
+                    new LessonGraphExecutorRegistry(_bindings, _clock, dialogueTransport: _dialogueTransport,
+                        timelinePlaybackController: _timelinePlaybackController),
                     _bindings,
-                    _clock);
+                    _clock,
+                    variableSource: _variableStore);
                 _configuredRunner = _runner;
                 _configuredGraph = _lessonGraph;
                 _configuredBindings = _bindings;
                 _configuredDialogueTransport = _dialogueTransport;
+                _configuredTimelinePlaybackController = _timelinePlaybackController;
+                _configuredVariableStore = _variableStore;
                 _runnerConfigured = true;
             }
 
