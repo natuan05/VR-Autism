@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using VRAutism.Gameplay.LessonGraphV2.Data;
 using VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions;
+using VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs;
 using VRAutism.Gameplay.LessonGraphV2.Remote;
 using VRAutism.Gameplay.LessonGraphV2.Runtime.Executors;
 using VRAutism.Gameplay.LessonGraphV2.Validation;
