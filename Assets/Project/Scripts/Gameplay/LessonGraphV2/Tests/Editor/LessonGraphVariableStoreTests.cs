@@ -33,7 +33,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 Assert.IsTrue(store.Remove("ready"));
                 Assert.IsFalse(store.TryGetValue("ready", out _));
             }
-            finally { Object.DestroyImmediate(gameObject); }
+            finally { UnityEngine.Object.DestroyImmediate(gameObject); }
         }
 
         [Test]
@@ -74,8 +74,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             }
             finally
             {
-                Object.DestroyImmediate(gameObject);
-                Object.DestroyImmediate(graph);
+                UnityEngine.Object.DestroyImmediate(gameObject);
+                UnityEngine.Object.DestroyImmediate(graph);
             }
         }
 
@@ -100,7 +100,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             entryType.GetField("Type").SetValue(entry, VariableValueType.Boolean);
             entryType.GetField("Boolean").SetValue(entry, value);
             var listType = typeof(List<>).MakeGenericType(entryType);
-            var entries = (IList)Activator.CreateInstance(listType);
+            var entries = (System.Collections.IList)Activator.CreateInstance(listType);
             entries.Add(entry);
             typeof(LessonGraphVariableStore).GetField("_initialValues", BindingFlags.Instance | BindingFlags.NonPublic)
                 .SetValue(store, entries);
