@@ -78,7 +78,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             private readonly PlayableDirector _director;
             private readonly PlayableAsset _asset;
             private readonly string _expectedSignalName;
-            private readonly TaskCompletionSource<bool> _signal = new TaskCompletionSource<bool>();
+            private readonly TaskCompletionSource<bool> _signal =
+                new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             private readonly List<TrackBinding> _bindings = new List<TrackBinding>();
             private readonly List<SignalAsset> _registeredSignals = new List<SignalAsset>();
             private SignalReceiver _receiver;

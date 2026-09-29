@@ -305,6 +305,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 for (var frame = 0; frame < 30 && registry.StartedCount < 2; frame++) yield return null;
                 Assert.AreEqual(2, registry.StartedCount, "Both owned child activations must be active before scene unload.");
 
+                typeof(LessonGraphRunner)
+                    .GetMethod("OnDisable", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                    .Invoke(runner, null);
                 runnerObject.SetActive(false);
                 yield return CompleteWithinFrames(task);
                 Assert.AreEqual(LessonFailureReason.Aborted, task.GetAwaiter().GetResult().FailureReason);
@@ -355,19 +358,21 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 Assert.AreEqual(2, registry.StartedCount);
 
                 var pause = runner.ApplyCommandAsync(Command(runner.CurrentState, LessonCommandKindV2.Pause, "pause-1"));
-                yield return CompleteWithinFrames(pause);
+                yield return CompleteWithinFrames(pause, "pause command", () =>
+                    $"state={runner.CurrentState.status}, cancelled children={registry.CancelledCount}/{registry.StartedCount}");
                 Assert.IsTrue(pause.GetAwaiter().GetResult().accepted);
                 Assert.AreEqual("paused", runner.CurrentState.status);
                 Assert.AreEqual(2, registry.CancelledCount);
 
                 var resume = runner.ApplyCommandAsync(Command(runner.CurrentState, LessonCommandKindV2.Resume, "resume-1"));
-                yield return CompleteWithinFrames(resume);
+                yield return CompleteWithinFrames(resume, "resume command", () =>
+                    $"state={runner.CurrentState.status}, started children={registry.StartedCount}");
                 Assert.IsTrue(resume.GetAwaiter().GetResult().accepted);
                 for (var frame = 0; frame < 30 && registry.StartedCount < 4; frame++) yield return null;
                 Assert.AreEqual(4, registry.StartedCount, "Resume creates fresh child activations.");
 
                 runner.AbortLesson();
-                yield return CompleteWithinFrames(lessonTask);
+                yield return CompleteWithinFrames(lessonTask, "aborted lesson");
                 Assert.AreEqual(4, registry.CancelledCount);
             }
             finally
@@ -496,10 +501,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             public Task<NodeResult> ExecuteAsync(NodeExecutionContext context) => _owner.Start(context);
         }
 
-        private static IEnumerator CompleteWithinFrames(Task task)
+        private static IEnumerator CompleteWithinFrames(Task task, string operation = "runner task", System.Func<string> diagnostics = null)
         {
             for (var frame = 0; frame < 30 && !task.IsCompleted; frame++) yield return null;
-            Assert.IsTrue(task.IsCompleted, "Runner task did not complete within 30 editor frames.");
+            Assert.IsTrue(task.IsCompleted, operation + " did not complete within 30 editor frames. " + diagnostics?.Invoke());
         }
 
         private static LessonCommandV2 Command(LessonStateV2 state, string command, string commandId) => new LessonCommandV2

@@ -10,11 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a2ea9d271e026d444bffb1f9bc0512dc, type: 3}
-  m_Name: Bathroom-V2-LessonGraph
+  m_Name: Bathroom-V2-LessonGraph_Schema2
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Data.LessonGraph
-  _schemaVersion: 1
-  _entryNodeId: wash-turn-on-water
+  _schemaVersion: 2
+  _entryNodeId: wash-tutorial-timeline
   _nodes:
+  - _id: wash-tutorial-timeline
+    _nodeType: 4
+    _position: {x: 1600, y: 0}
+    _config:
+      rid: 4156067757877362784
   - _id: wash-turn-on-water
     _nodeType: 0
     _position: {x: 0, y: 0}
@@ -61,6 +66,11 @@ MonoBehaviour:
     _config:
       rid: 1007
   _edges:
+  - _fromNodeId: wash-tutorial-timeline
+    _toNodeId: wash-turn-on-water
+    _priority: 0
+    _condition:
+      rid: 2006
   - _fromNodeId: wash-turn-on-water
     _toNodeId: wash-prompt-wet-hands
     _priority: 0
@@ -210,3 +220,12 @@ MonoBehaviour:
         _npcBindingId: teacher-npc
         _blocking: 1
         _timeoutSeconds: 30
+    - rid: 4156067757877362784
+      type: {class: TimelineNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs,
+        asm: Assembly-CSharp}
+      data:
+        _timelineAsset: {fileID: 11400000, guid: 43d1754b610eba546ae4ce084a07fad4,
+          type: 2}
+        _expectedSignalName: washing_hand_tutorial_end
+        _timeoutSeconds: 60
+        _timeoutOutcome: 0

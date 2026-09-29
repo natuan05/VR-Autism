@@ -172,6 +172,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         public void Configure()
         {
             if (_runner == null) _runner = GetComponent<LessonGraphRunner>();
+            if (_bindings == null) _bindings = GetComponent<LessonGraphBindings>();
             if (_variableStore == null) _variableStore = GetComponent<LessonGraphVariableStore>();
             var runnerConfigurationChanged = !_runnerConfigured || !ReferenceEquals(_configuredRunner, _runner) ||
                 !ReferenceEquals(_configuredGraph, _lessonGraph) ||

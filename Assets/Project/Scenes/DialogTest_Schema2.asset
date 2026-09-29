@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a2ea9d271e026d444bffb1f9bc0512dc, type: 3}
-  m_Name: DialogTest
+  m_Name: DialogTest_Schema2
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Data.LessonGraph
-  _schemaVersion: 1
+  _schemaVersion: 2
   _entryNodeId: realroom-dialogue-teacher
   _nodes:
   - _id: realroom-dialogue-teacher

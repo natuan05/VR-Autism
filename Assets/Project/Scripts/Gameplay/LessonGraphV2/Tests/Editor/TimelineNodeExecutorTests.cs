@@ -184,11 +184,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var session = controller.StartPlayback(Config(TimelineTimeoutOutcome.Timeout, timeline));
             Assert.IsNotNull(session);
             Assert.AreSame(controller.GetComponent<SignalReceiver>(), director.GetGenericBinding(signalTrack));
+            InvokeLifecycle(controller, "OnDisable");
             controller.enabled = false;
             yield return null;
             Assert.AreSame(previousBinding, director.GetGenericBinding(signalTrack));
             Assert.AreEqual(PlayState.Paused, director.state);
-            Assert.Throws<OperationCanceledException>(() => session.SignalTask.GetAwaiter().GetResult());
+            Assert.Catch<OperationCanceledException>(() => session.SignalTask.GetAwaiter().GetResult());
         }
 
         [UnityTest]
@@ -215,6 +216,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.IsNotNull(receiver);
 
             receiver.OnNotify(Playable.Null, emitter, null);
+            InvokeLifecycle(controller, "OnDisable");
             controller.enabled = false;
             yield return CompleteWithinFrames(task);
             Assert.Throws<OperationCanceledException>(() => task.GetAwaiter().GetResult(),
@@ -249,6 +251,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var receiver = directorObject.GetComponent<SignalReceiver>();
             var capturedLateSignal = receiver.GetReaction(signal);
 
+            InvokeLifecycle(controller, "OnDestroy");
             UnityEngine.Object.DestroyImmediate(controller);
             capturedLateSignal.Invoke();
             yield return null;
@@ -317,6 +320,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.IsTrue(task.IsCompleted, "Task did not complete within 20 EditMode frames.");
         }
 
+        private static void InvokeLifecycle(TimelinePlaybackController controller, string methodName)
+        {
+            typeof(TimelinePlaybackController)
+                .GetMethod(methodName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .Invoke(controller, null);
+        }
+
         private sealed class FakePlayback : ITimelinePlaybackController
         {
             public bool ReturnNull;
@@ -350,15 +360,19 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
 
         private sealed class ManualClock : INodeClock
         {
-            private readonly TaskCompletionSource<bool> _delay = new TaskCompletionSource<bool>();
+            private TaskCompletionSource<bool> _delay;
             public double ElapsedSeconds => 1d;
             public Task Delay(float seconds, CancellationToken cancellationToken)
             {
+                _delay = new TaskCompletionSource<bool>();
                 if (cancellationToken.CanBeCanceled)
-                    cancellationToken.Register(() => _delay.TrySetCanceled());
+                {
+                    var delay = _delay;
+                    cancellationToken.Register(() => delay.TrySetCanceled());
+                }
                 return _delay.Task;
             }
-            public void CompleteDelay() => _delay.TrySetResult(true);
+            public void CompleteDelay() => _delay?.TrySetResult(true);
         }
 
         private sealed class NonCooperativeClock : INodeClock

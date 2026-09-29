@@ -7952,11 +7952,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56d5eea2f17f4f388d9b8b4b8ed4b93e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Runtime.LessonGraphRunnerInstaller
-  _lessonGraph: {fileID: 11400000, guid: 3b4eb3ed1f7d49899b2545c71bd3b5f7, type: 2}
+  _lessonGraph: {fileID: 11400000, guid: ad32e9c811bab714783073ba2f9d7666, type: 2}
   _runner: {fileID: 1130038378}
   _bindings: {fileID: 1130038377}
   _dialogueTransport: {fileID: 1900500020}
   _remoteBridge: {fileID: 1900500021}
+  _timelinePlaybackController: {fileID: 1347164648}
+  _variableStore: {fileID: 0}
   _startOnStart: 1
 --- !u!114 &1130038380
 MonoBehaviour:
@@ -8072,6 +8074,7 @@ GameObject:
   - component: {fileID: 1347164647}
   - component: {fileID: 1347164645}
   - component: {fileID: 1347164646}
+  - component: {fileID: 1347164648}
   m_Layer: 0
   m_Name: WashingHandTimeLine
   m_TagString: Untagged
@@ -8153,6 +8156,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1347164648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1347164644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f9c6371b7624d6987afdf03181a542f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Runtime.TimelinePlaybackController
+  _director: {fileID: 1347164645}
 --- !u!1 &1375054275
 GameObject:
   m_ObjectHideFlags: 0
