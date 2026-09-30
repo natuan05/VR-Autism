@@ -182,6 +182,83 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 "The visible edge condition field must refresh after Redo.");
         }
 
+        [UnityTest]
+        public IEnumerator AddQuestNode_CreatesEmptyIndependentConfigWithUndoAndRedo()
+        {
+            _graph.Editor_SetNodes(new List<LessonNodeData>
+            {
+                new LessonNodeData("original", NodeType.Quest,
+                    new QuestNodeConfig(new List<string> { "original-binding" }, 12f, "original prompt")),
+            });
+            var root = AttachAndBind(CreateInspectorRoot());
+            yield return null;
+            yield return null;
+
+            var list = root.Q<ListView>("nodes-property");
+            Assert.IsNotNull(list);
+            Assert.IsNotNull(list.overridingAddButtonBehavior);
+            Undo.IncrementCurrentGroup();
+            list.overridingAddButtonBehavior(list, null);
+
+            Assert.AreEqual(2, _graph.Nodes.Count);
+            var added = _graph.Nodes[1];
+            Assert.IsNotEmpty(added.Id);
+            Assert.AreNotEqual("original", added.Id);
+            Assert.AreEqual(NodeType.Quest, added.NodeType);
+            var config = (QuestNodeConfig)added.Config;
+            Assert.AreNotSame(_graph.Nodes[0].Config, config);
+            Assert.IsEmpty(config.CompletionBindingIds);
+            Assert.AreEqual(-1f, config.TimeoutSeconds);
+            Assert.IsEmpty(config.VoicePrompt);
+            var addedId = added.Id;
+
+            Undo.PerformUndo();
+            _editor.serializedObject.Update();
+            Assert.AreEqual(1, _graph.Nodes.Count);
+            Undo.PerformRedo();
+            _editor.serializedObject.Update();
+            Assert.AreEqual(2, _graph.Nodes.Count);
+            Assert.AreEqual(addedId, _graph.Nodes[1].Id);
+            Assert.IsEmpty(((QuestNodeConfig)_graph.Nodes[1].Config).CompletionBindingIds);
+            CollectionAssert.AreEqual(new[] { "original-binding" },
+                ((QuestNodeConfig)_graph.Nodes[0].Config).CompletionBindingIds);
+        }
+
+        [UnityTest]
+        public IEnumerator AddEdge_CreatesFreshDefaultConditionWithUndoAndRedo()
+        {
+            _graph.Editor_SetEdges(new List<LessonEdgeData>
+            {
+                new LessonEdgeData("a", "b", new StatusCondition(StatusCondition.Failed), 7),
+            });
+            var root = AttachAndBind(CreateInspectorRoot());
+            yield return null;
+            yield return null;
+
+            var list = root.Q<ListView>("edges-property");
+            Assert.IsNotNull(list);
+            Assert.IsNotNull(list.overridingAddButtonBehavior);
+            Undo.IncrementCurrentGroup();
+            list.overridingAddButtonBehavior(list, null);
+
+            Assert.AreEqual(2, _graph.Edges.Count);
+            Assert.IsEmpty(_graph.Edges[1].FromNodeId);
+            Assert.IsEmpty(_graph.Edges[1].ToNodeId);
+            Assert.AreEqual(0, _graph.Edges[1].Priority);
+            Assert.AreNotSame(_graph.Edges[0].Condition, _graph.Edges[1].Condition);
+            Assert.AreEqual(StatusCondition.Success, ((StatusCondition)_graph.Edges[1].Condition).RequiredStatus);
+
+            Undo.PerformUndo();
+            _editor.serializedObject.Update();
+            Assert.AreEqual(1, _graph.Edges.Count);
+            Undo.PerformRedo();
+            _editor.serializedObject.Update();
+            Assert.AreEqual(2, _graph.Edges.Count);
+            Assert.AreNotSame(_graph.Edges[0].Condition, _graph.Edges[1].Condition);
+            Assert.AreEqual(StatusCondition.Failed, ((StatusCondition)_graph.Edges[0].Condition).RequiredStatus);
+            Assert.AreEqual(StatusCondition.Success, ((StatusCondition)_graph.Edges[1].Condition).RequiredStatus);
+        }
+
         private VisualElement CreateInspectorRoot()
         {
             _editor = UnityEditor.Editor.CreateEditor(_graph);

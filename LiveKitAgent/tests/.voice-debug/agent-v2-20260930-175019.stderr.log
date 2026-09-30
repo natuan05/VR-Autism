@@ -1,0 +1,786 @@
+17:50:21 [WARNING] livekit.agents: dev mode is deprecated and will be removed in a future release; use `lk agent dev` instead (https://docs.livekit.io/reference/developer-tools/livekit-cli/#setup)
+17:50:21 [DEBUG] asyncio: Using proactor: IocpProactor
+17:50:21 [DEBUG] livekit.agents: no system trust store found, setting SSL_CERT_FILE to the certifi bundle
+17:50:21 [INFO] livekit.agents: starting worker
+17:50:21 [INFO] livekit.agents: plugin registered
+17:50:21 [INFO] livekit.agents: plugin registered
+17:50:21 [INFO] livekit.agents: HTTP server listening on :57314
+17:50:22 [INFO] livekit.agents: registered worker
+17:52:59 [INFO] livekit.agents: received job request
+17:52:59 [DEBUG] livekit.agents: received assignment
+17:52:59 [WARNING] livekit.agents: no warmed process available for job, waiting for one to be created
+17:52:59 [INFO] livekit.agents: initializing job runner
+17:52:59 [DEBUG] asyncio: Using proactor: IocpProactor
+17:52:59 [INFO] livekit.agents: job runner initialized
+17:53:00 [INFO] vr-voice-agent: [LIVEKIT] Connected to room: 6207e8c5-d472-4777-91ed-b8d32f15abbf
+17:53:00 [DEBUG] google.auth._default: Checking 'D:\Lab\VR-Autism\LiveKitAgent\service-account.json' for explicit credentials as part of auth process...
+17:53:00 [DEBUG] livekit.plugins.google: using chirp_3 model for voice vi-VN-Chirp3-HD-Aoede
+17:53:00 [WARNING] livekit.agents: preemptive_generation is deprecated and will be removed in v2.0. Use turn_handling=TurnHandlingOptions(...) instead
+17:53:00 [INFO] vr-voice-agent: [SESSION] Starting AgentSession...
+17:53:00 [DEBUG] livekit.agents: input stream attached
+17:53:00 [INFO] livekit.agents: adaptive interruption detector initialized
+17:53:00 [DEBUG] livekit.agents: http_session(): creating a new httpclient ctx
+17:53:00 [INFO] vr-voice-agent: [AGENT] TeacherAgent ready in room (standby mode)
+17:53:00 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:00 [DEBUG] grpc._cython.cygrpc: Using AsyncIOEngine.POLLER as I/O engine
+17:53:00 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:01 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:01 [DEBUG] livekit.agents: using audio io: `RoomIO` -> `AgentSession` -> `TranscriptSynchronizer` -> `AudioSinkProxy` -> `RoomIO`
+17:53:01 [DEBUG] livekit.agents: using transcript io: `AgentSession` -> `TranscriptSynchronizer` -> `RoomIO`
+17:53:01 [INFO] vr-voice-agent: [AGENT] Agent pipeline active and ready for packets
+17:53:01 [DEBUG] livekit.agents: audio turn detector initialized
+17:53:01 [DEBUG] livekit.agents: adaptive interruption session created
+17:53:12 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:12 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:12 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:33 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:33 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:33 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:40 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+17:53:40 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+17:53:40 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:40 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:40 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:40 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+17:53:40 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '76c22d9dd6f74be29c72688e267accfe', 'status': 'ACTIVE'}
+17:53:40 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:40 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:40 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:40 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:40 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:40 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+17:53:40 [DEBUG] grpc._cython.cygrpc: Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x0000026D7A9D86B0>,)
+17:53:40 [WARNING] vr-voice-agent: [TTS] Failed to synthesize phrase 'Con hãy chào th\u1ea7y cô và các b\u1ea1n \u0111i.': message='Empty language code.', status_code=400, retryable=False, body=[]
+--- Logging error ---
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\google\api_core\grpc_helpers_async.py", line 85, in __await__
+    response = yield from self._call.__await__()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_interceptor.py", line 484, in __await__
+    call = yield from self._interceptors_task.__await__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_interceptor.py", line 714, in _invoke
+    return await _run_interceptor(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+        list(interceptors), client_call_details, request
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_interceptor.py", line 690, in _run_interceptor
+    call_or_response = await interceptors[0].intercept_unary_unary(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        continuation, client_call_details, request
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\google\cloud\texttospeech_v1\services\text_to_speech\transports\grpc_asyncio.py", line 93, in intercept_unary_unary
+    result = await response
+             ^^^^^^^^^^^^^^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 329, in __await__
+    raise _create_rpc_error(
+    ...<2 lines>...
+    )
+grpc.aio._call.AioRpcError: <AioRpcError of RPC that terminated with:
+	status = StatusCode.INVALID_ARGUMENT
+	details = "Empty language code."
+	debug_error_string = "INVALID_ARGUMENT:Empty language code."
+>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\tts.py", line 325, in _run
+    response: SynthesizeSpeechResponse = await self._tts._ensure_client().synthesize_speech(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<11 lines>...
+    )
+    ^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\google\cloud\texttospeech_v1\services\text_to_speech\async_client.py", line 537, in synthesize_speech
+    response = await rpc(
+               ^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\google\api_core\grpc_helpers_async.py", line 88, in __await__
+    raise exceptions.from_grpc_error(rpc_error) from rpc_error
+google.api_core.exceptions.InvalidArgument: 400 Empty language code.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 122, in _synth_one
+    async for event in stream:
+        if event.frame:
+            frames.append(event.frame)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\tts\tts.py", line 471, in __anext__
+    raise exc  # noqa: B904
+    ^^^^^^^^^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\tts\tts.py", line 302, in _traceable_main_task
+    await self._main_task()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\tts\tts.py", line 395, in _main_task
+    await self._run(output_emitter)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\tts.py", line 350, in _run
+    raise APIStatusError(e.message, status_code=e.code or -1, body=f"{e.details}") from e
+livekit.agents._exceptions.APIStatusError: message='Empty language code.', status_code=400, retryable=False, body=[]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea7' in position 110: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 128, in _synth_one
+    logger.warning("[TTS] Failed to synthesize phrase %r: %s", text, exc)
+Message: '[TTS] Failed to synthesize phrase %r: %s'
+Arguments: ('Con hãy chào th\u1ea7y cô và các b\u1ea1n \u0111i.', APIStatusError('Empty language code.', status_code=<HTTPStatus.BAD_REQUEST: 400>, request_id=None, body='[]', retryable=False))
+17:53:40 [WARNING] vr-voice-agent: [TTS] Failed to synthesize phrase 'Chào c\u1ea3 l\u1edbp \u0111i con.': message='Empty language code.', status_code=400, retryable=False, body=[]
+--- Logging error ---
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\google\api_core\grpc_helpers_async.py", line 85, in __await__
+    response = yield from self._call.__await__()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_interceptor.py", line 484, in __await__
+    call = yield from self._interceptors_task.__await__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_interceptor.py", line 714, in _invoke
+    return await _run_interceptor(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+        list(interceptors), client_call_details, request
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_interceptor.py", line 690, in _run_interceptor
+    call_or_response = await interceptors[0].intercept_unary_unary(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        continuation, client_call_details, request
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\google\cloud\texttospeech_v1\services\text_to_speech\transports\grpc_asyncio.py", line 93, in intercept_unary_unary
+    result = await response
+             ^^^^^^^^^^^^^^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 329, in __await__
+    raise _create_rpc_error(
+    ...<2 lines>...
+    )
+grpc.aio._call.AioRpcError: <AioRpcError of RPC that terminated with:
+	status = StatusCode.INVALID_ARGUMENT
+	details = "Empty language code."
+	debug_error_string = "INVALID_ARGUMENT:Empty language code."
+>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\tts.py", line 325, in _run
+    response: SynthesizeSpeechResponse = await self._tts._ensure_client().synthesize_speech(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<11 lines>...
+    )
+    ^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\google\cloud\texttospeech_v1\services\text_to_speech\async_client.py", line 537, in synthesize_speech
+    response = await rpc(
+               ^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\google\api_core\grpc_helpers_async.py", line 88, in __await__
+    raise exceptions.from_grpc_error(rpc_error) from rpc_error
+google.api_core.exceptions.InvalidArgument: 400 Empty language code.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 122, in _synth_one
+    async for event in stream:
+        if event.frame:
+            frames.append(event.frame)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\tts\tts.py", line 471, in __anext__
+    raise exc  # noqa: B904
+    ^^^^^^^^^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\tts\tts.py", line 302, in _traceable_main_task
+    await self._main_task()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\tts\tts.py", line 395, in _main_task
+    await self._run(output_emitter)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\tts.py", line 350, in _run
+    raise APIStatusError(e.message, status_code=e.code or -1, body=f"{e.details}") from e
+livekit.agents._exceptions.APIStatusError: message='Empty language code.', status_code=400, retryable=False, body=[]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea3' in position 101: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 128, in _synth_one
+    logger.warning("[TTS] Failed to synthesize phrase %r: %s", text, exc)
+Message: '[TTS] Failed to synthesize phrase %r: %s'
+Arguments: ('Chào c\u1ea3 l\u1edbp \u0111i con.', APIStatusError('Empty language code.', status_code=<HTTPStatus.BAD_REQUEST: 400>, request_id=None, body='[]', retryable=False))
+17:53:40 [WARNING] vr-voice-agent: [TTS] Failed to synthesize phrase "Nói 'Chào các b\u1ea1n' \u0111i nào con.": message='Empty language code.', status_code=400, retryable=False, body=[]
+--- Logging error ---
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\google\api_core\grpc_helpers_async.py", line 85, in __await__
+    response = yield from self._call.__await__()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_interceptor.py", line 484, in __await__
+    call = yield from self._interceptors_task.__await__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_interceptor.py", line 714, in _invoke
+    return await _run_interceptor(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+        list(interceptors), client_call_details, request
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_interceptor.py", line 690, in _run_interceptor
+    call_or_response = await interceptors[0].intercept_unary_unary(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        continuation, client_call_details, request
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\google\cloud\texttospeech_v1\services\text_to_speech\transports\grpc_asyncio.py", line 93, in intercept_unary_unary
+    result = await response
+             ^^^^^^^^^^^^^^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 329, in __await__
+    raise _create_rpc_error(
+    ...<2 lines>...
+    )
+grpc.aio._call.AioRpcError: <AioRpcError of RPC that terminated with:
+	status = StatusCode.INVALID_ARGUMENT
+	details = "Empty language code."
+	debug_error_string = "INVALID_ARGUMENT:Empty language code."
+>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\tts.py", line 325, in _run
+    response: SynthesizeSpeechResponse = await self._tts._ensure_client().synthesize_speech(
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<11 lines>...
+    )
+    ^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\google\cloud\texttospeech_v1\services\text_to_speech\async_client.py", line 537, in synthesize_speech
+    response = await rpc(
+               ^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\google\api_core\grpc_helpers_async.py", line 88, in __await__
+    raise exceptions.from_grpc_error(rpc_error) from rpc_error
+google.api_core.exceptions.InvalidArgument: 400 Empty language code.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 122, in _synth_one
+    async for event in stream:
+        if event.frame:
+            frames.append(event.frame)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\tts\tts.py", line 471, in __anext__
+    raise exc  # noqa: B904
+    ^^^^^^^^^
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\tts\tts.py", line 302, in _traceable_main_task
+    await self._main_task()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\tts\tts.py", line 395, in _main_task
+    await self._run(output_emitter)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\tts.py", line 350, in _run
+    raise APIStatusError(e.message, status_code=e.code or -1, body=f"{e.details}") from e
+livekit.agents._exceptions.APIStatusError: message='Empty language code.', status_code=400, retryable=False, body=[]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea1' in position 110: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 128, in _synth_one
+    logger.warning("[TTS] Failed to synthesize phrase %r: %s", text, exc)
+Message: '[TTS] Failed to synthesize phrase %r: %s'
+Arguments: ("Nói 'Chào các b\u1ea1n' \u0111i nào con.", APIStatusError('Empty language code.', status_code=<HTTPStatus.BAD_REQUEST: 400>, request_id=None, body='[]', retryable=False))
+17:53:40 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=False): "Con hãy chào th\u1ea7y cô và các b\u1ea1n \u0111i."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea7' in position 112: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 669, in _handle_quest_activation
+    logger.info(
+Message: '[AGENT] Opening phrase (cached=%s): "%s"'
+Arguments: (False, 'Con hãy chào th\u1ea7y cô và các b\u1ea1n \u0111i.')
+17:53:40 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:41 [DEBUG] livekit.agents: aec warmup active, disabling interruptions for 3.00s
+17:53:41 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-86' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+17:53:43 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea7' in position 140: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 2881, in _tts_task
+    await self._tts_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3093, in _tts_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+17:53:44 [DEBUG] livekit.agents: aec warmup expired, re-enabling interruptions
+17:53:51 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:51 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:53:51 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:02 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:02 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:02 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:13 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:13 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:13 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:35 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:35 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:35 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:46 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:46 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:46 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:57 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:57 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:54:57 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:08 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:08 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:08 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:30 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:30 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:30 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:42 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:42 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:42 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:52 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:52 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:55:52 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:02 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:02 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:02 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:14 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:14 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:14 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:25 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:25 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:25 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:35 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:35 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:35 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:47 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:47 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:47 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:57 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:57 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:56:57 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:09 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:09 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:09 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:20 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:20 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:20 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:31 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:31 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:31 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:42 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:42 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:42 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:53 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:53 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:57:53 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:04 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:04 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:04 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:25 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:25 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:25 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:36 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:36 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:36 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:48 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:48 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:48 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:59 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:59 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:58:59 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:34 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:34 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:34 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:45 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:45 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:45 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:56 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:56 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+17:59:56 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:07 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:07 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:07 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:18 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:18 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:18 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:29 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:29 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:29 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:41 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:41 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:41 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:52 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:52 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:00:52 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:03 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:03 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:03 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:14 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:14 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:14 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:25 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:25 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:25 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:36 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:36 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:36 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:47 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:47 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:47 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:59 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:59 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:01:59 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:21 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:21 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:21 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:43 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:43 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:43 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:54 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:54 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:02:54 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:06 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:06 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:06 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:17 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:17 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:17 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:28 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:28 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:28 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:39 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:39 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:39 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:50 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:50 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:03:50 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:01 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:01 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:01 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:13 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:13 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:13 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:35 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:35 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:35 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:46 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:46 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:46 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:57 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:57 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:04:57 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:08 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:08 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:08 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:30 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:30 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:30 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:41 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:41 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:41 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:53 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:53 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:05:53 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:04 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:04 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:04 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:26 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:26 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:26 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:38 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:38 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:38 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:49 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:49 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:06:49 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:00 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:00 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:00 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:34 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:34 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:34 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:45 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:45 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:45 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:56 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:56 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:07:56 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:07 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:07 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:07 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:18 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:18 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:18 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:29 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:29 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:29 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:41 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:41 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:41 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:52 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:52 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:08:52 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:03 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:03 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:03 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:14 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:14 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:14 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:25 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:25 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:25 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:37 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:37 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:37 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:48 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:48 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:48 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:59 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:59 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:09:59 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:21 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:21 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:21 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:43 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:43 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:43 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:54 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:54 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:10:54 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:06 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:06 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:06 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:17 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:17 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:17 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:28 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:28 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:28 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:39 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:39 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:39 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:50 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:50 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:11:50 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:02 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:02 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:02 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:13 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:13 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:13 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:35 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:35 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:35 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:46 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:46 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:46 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:57 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:57 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:12:57 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:13:09 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:13:09 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072
+18:13:09 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2669184597072

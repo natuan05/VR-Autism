@@ -25,6 +25,7 @@ from livekit.agents import (
     cli,
     function_tool,
     llm,
+    room_io,
 )
 from livekit.agents import tts as agents_tts
 from livekit.agents.voice import Agent, AgentSession
@@ -201,6 +202,7 @@ def _apply_voice_profile(session: AgentSession, profile: VoiceProfile) -> None:
     if tts is not None and hasattr(tts, "update_options"):
         try:
             tts.update_options(
+                language="vi-VN",
                 voice_name=profile.voice_name,
                 speaking_rate=profile.speaking_rate,
             )
@@ -370,6 +372,29 @@ def prewarm(proc: JobProcess) -> None:
 # ---------------------------------------------------------------------------
 # Entrypoint & Packet Processing
 # ---------------------------------------------------------------------------
+async def _wait_for_vr_participant(room: rtc.Room) -> rtc.RemoteParticipant:
+    """Select Unity's existing vr_ identity contract, never a dashboard listener."""
+    available = asyncio.get_running_loop().create_future()
+
+    def on_participant_connected(participant: rtc.RemoteParticipant) -> None:
+        if (
+            not available.done()
+            and participant.kind == rtc.ParticipantKind.PARTICIPANT_KIND_STANDARD
+            and participant.identity.startswith("vr_")
+            and len(participant.identity) > 3
+        ):
+            available.set_result(participant)
+
+    # Register before scanning so a Unity join cannot fall between the two steps.
+    room.on("participant_connected", on_participant_connected)
+    try:
+        for participant in room.remote_participants.values():
+            on_participant_connected(participant)
+        return await available
+    finally:
+        room.off("participant_connected", on_participant_connected)
+
+
 async def entrypoint(ctx: JobContext) -> None:
     runtime = JobRuntime(ctx)
 
@@ -425,6 +450,16 @@ async def entrypoint(ctx: JobContext) -> None:
 
     # 4. Register DataPacket handler BEFORE session.start to prevent packet loss race condition
     def on_data_received(data_packet: rtc.DataPacket) -> None:
+        if not agent_ready.is_set():
+            sender = data_packet.participant
+            if (
+                sender is None
+                or sender.kind != rtc.ParticipantKind.PARTICIPANT_KIND_STANDARD
+                or not sender.identity.startswith("vr_")
+                or len(sender.identity) <= 3
+            ):
+                return
+
         async def _process_packet():
             # Wait for session initialization if packet arrives during handshake
             await agent_ready.wait()
@@ -445,8 +480,24 @@ async def entrypoint(ctx: JobContext) -> None:
     ctx.room.on("data_received", on_data_received)
 
     # 5. Start AgentSession
-    logger.info("[SESSION] Starting AgentSession...")
-    await session.start(room=ctx.room, agent=agent)
+    try:
+        participant = await _wait_for_vr_participant(ctx.room)
+        logger.info(
+            "[AUDIO] Linking Unity microphone participant: %s", participant.identity
+        )
+        logger.info("[SESSION] Starting AgentSession...")
+        await session.start(
+            room=ctx.room,
+            agent=agent,
+            room_options=room_io.RoomOptions(participant_identity=participant.identity),
+        )
+    except (Exception, asyncio.CancelledError):
+        ctx.room.off("data_received", on_data_received)
+        pending = tuple(runtime.background_tasks)
+        for task in pending:
+            task.cancel()
+        await asyncio.gather(*pending, return_exceptions=True)
+        raise
     agent_ready.set()
     logger.info("[AGENT] Agent pipeline active and ready for packets")
 

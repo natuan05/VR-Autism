@@ -200,6 +200,7 @@ async def test_handle_speak_script_v2_selects_voice_profile() -> None:
     await _process_v2_packet(agent, session, runtime, payload)
 
     session.tts.update_options.assert_called_once_with(
+        language="vi-VN",
         voice_name="vi-VN-Chirp3-HD-Puck",
         speaking_rate=1.0,
     )
@@ -236,6 +237,7 @@ async def test_handle_speak_script_v2_unknown_npc_falls_back_to_default() -> Non
     await _process_v2_packet(agent, session, runtime, payload)
 
     session.tts.update_options.assert_called_once_with(
+        language="vi-VN",
         voice_name="vi-VN-Chirp3-HD-Aoede",
         speaking_rate=1.0,
     )
@@ -344,4 +346,3 @@ async def test_handle_speak_script_v2_exception_emits_failed() -> None:
     msg = json.loads(calls[0].args[0].decode("utf-8"))
     assert msg["status"] == "FAILED"
     assert "TTS engine failure" in msg["reason"]
-

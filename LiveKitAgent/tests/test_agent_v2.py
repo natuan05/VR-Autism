@@ -110,6 +110,7 @@ async def test_quest_activation_applies_npc_voice_profile() -> None:
         )
 
     session.tts.update_options.assert_called_once_with(
+        language="vi-VN",
         voice_name="vi-VN-Chirp3-HD-Puck",
         speaking_rate=1.0,
     )

@@ -63,6 +63,45 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             }
         }
 
+        [Test]
+        public void CreatePropertyGUI_SharedQuestConfigDoesNotLinkBindingEdits()
+        {
+            var shared = new QuestNodeConfig(new List<string> { "original-binding" }, 12f, "prompt");
+            _graph.Editor_SetNodes(new List<LessonNodeData>
+            {
+                new LessonNodeData("first", NodeType.Quest, shared),
+                new LessonNodeData("second", NodeType.Quest, shared),
+            });
+            _serializedObject = new SerializedObject(_graph);
+            var node = _serializedObject.FindProperty("_nodes").GetArrayElementAtIndex(1);
+            new LessonNodeDataDrawer().CreatePropertyGUI(node);
+
+            Assert.AreNotSame(_graph.Nodes[0].Config, _graph.Nodes[1].Config);
+            var copied = (QuestNodeConfig)_graph.Nodes[1].Config;
+            CollectionAssert.AreEqual(new[] { "original-binding" }, copied.CompletionBindingIds);
+            Assert.AreEqual(12f, copied.TimeoutSeconds);
+            Assert.AreEqual("prompt", copied.VoicePrompt);
+            Undo.IncrementCurrentGroup();
+            node.FindPropertyRelative("_config").FindPropertyRelative("_completionBindingIds")
+                .GetArrayElementAtIndex(0).stringValue = "second-binding";
+            _serializedObject.ApplyModifiedProperties();
+
+            CollectionAssert.AreEqual(new[] { "original-binding" },
+                ((QuestNodeConfig)_graph.Nodes[0].Config).CompletionBindingIds);
+            CollectionAssert.AreEqual(new[] { "second-binding" },
+                ((QuestNodeConfig)_graph.Nodes[1].Config).CompletionBindingIds);
+            Undo.PerformUndo();
+            _serializedObject.Update();
+            CollectionAssert.AreEqual(new[] { "original-binding" },
+                ((QuestNodeConfig)_graph.Nodes[1].Config).CompletionBindingIds);
+            Undo.PerformRedo();
+            _serializedObject.Update();
+            CollectionAssert.AreEqual(new[] { "second-binding" },
+                ((QuestNodeConfig)_graph.Nodes[1].Config).CompletionBindingIds);
+            CollectionAssert.AreEqual(new[] { "original-binding" },
+                ((QuestNodeConfig)_graph.Nodes[0].Config).CompletionBindingIds);
+        }
+
         private SerializedProperty SetupNodeProperty(LessonNodeData node)
         {
             _graph.Editor_SetNodes(new List<LessonNodeData> { node });

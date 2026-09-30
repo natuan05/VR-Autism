@@ -520,6 +520,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                 return root;
             }
 
+            InitializeIndependentQuestConfig(property);
             var nodeTypeProp = property.FindPropertyRelative("_nodeType");
             var configProp = property.FindPropertyRelative("_config");
 
@@ -547,6 +548,41 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
             TrackProperty(root, configProp, property);
 
             return root;
+        }
+
+        private static void InitializeIndependentQuestConfig(SerializedProperty nodeProperty)
+        {
+            var serializedObject = nodeProperty.serializedObject;
+            serializedObject.Update();
+            var config = serializedObject.FindProperty(nodeProperty.propertyPath)?.FindPropertyRelative("_config");
+            if (!(config?.managedReferenceValue is QuestNodeConfig quest))
+            {
+                return;
+            }
+
+            var nodes = serializedObject.FindProperty("_nodes");
+            if (nodes == null || !nodes.isArray)
+            {
+                return;
+            }
+
+            for (var index = 0; index < nodes.arraySize; index++)
+            {
+                var other = nodes.GetArrayElementAtIndex(index).FindPropertyRelative("_config");
+                if (other.propertyPath == config.propertyPath ||
+                    other.managedReferenceId != config.managedReferenceId)
+                {
+                    continue;
+                }
+
+                // Older assets and the array Duplicate command can share a quest payload.
+                // Preserve its authored values but give this node ownership of its binding list.
+                Undo.RecordObject(serializedObject.targetObject, "Separate Lesson Quest Config");
+                config.managedReferenceValue = new QuestNodeConfig(
+                    new List<string>(quest.CompletionBindingIds), quest.TimeoutSeconds, quest.VoicePrompt);
+                serializedObject.ApplyModifiedProperties();
+                return;
+            }
         }
 
         private static void TrackProperty(

@@ -322,6 +322,35 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             }
         }
 
+        [Test]
+        public void CreatePropertyGUI_SharedStatusConditionEditsOnlySelectedEdgeWithUndoAndRedo()
+        {
+            var shared = new StatusCondition(StatusCondition.Timeout);
+            _graph.Editor_SetEdges(new List<LessonEdgeData>
+            {
+                new LessonEdgeData("a", "b", shared),
+                new LessonEdgeData("a", "c", shared),
+                new LessonEdgeData("a", "d", shared),
+            });
+            _serializedObject = new SerializedObject(_graph);
+            var selected = _serializedObject.FindProperty("_edges").GetArrayElementAtIndex(1);
+            var root = AttachAndBind(CreateEdgeDrawer().CreatePropertyGUI(selected));
+            Undo.IncrementCurrentGroup();
+            root.Q<PopupField<string>>("required-status-field").value = StatusCondition.Failed;
+
+            Assert.AreEqual(StatusCondition.Timeout, ((StatusCondition)_graph.Edges[0].Condition).RequiredStatus);
+            Assert.AreEqual(StatusCondition.Failed, ((StatusCondition)_graph.Edges[1].Condition).RequiredStatus);
+            Assert.AreEqual(StatusCondition.Timeout, ((StatusCondition)_graph.Edges[2].Condition).RequiredStatus);
+            Undo.PerformUndo();
+            _serializedObject.Update();
+            Assert.AreEqual(StatusCondition.Timeout, ((StatusCondition)_graph.Edges[1].Condition).RequiredStatus);
+            Undo.PerformRedo();
+            _serializedObject.Update();
+            Assert.AreEqual(StatusCondition.Timeout, ((StatusCondition)_graph.Edges[0].Condition).RequiredStatus);
+            Assert.AreEqual(StatusCondition.Failed, ((StatusCondition)_graph.Edges[1].Condition).RequiredStatus);
+            Assert.AreEqual(StatusCondition.Timeout, ((StatusCondition)_graph.Edges[2].Condition).RequiredStatus);
+        }
+
         private static PropertyDrawer CreateEdgeDrawer()
         {
             const string DrawerTypeName = "VRAutism.Gameplay.LessonGraphV2.Editor.LessonEdgeDataDrawer";

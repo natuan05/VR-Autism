@@ -1,0 +1,277 @@
+18:13:16 [WARNING] livekit.agents: dev mode is deprecated and will be removed in a future release; use `lk agent dev` instead (https://docs.livekit.io/reference/developer-tools/livekit-cli/#setup)
+18:13:16 [DEBUG] asyncio: Using proactor: IocpProactor
+18:13:16 [DEBUG] livekit.agents: no system trust store found, setting SSL_CERT_FILE to the certifi bundle
+18:13:16 [INFO] livekit.agents: starting worker
+18:13:16 [INFO] livekit.agents: plugin registered
+18:13:16 [INFO] livekit.agents: plugin registered
+18:13:16 [INFO] livekit.agents: HTTP server listening on :59502
+18:13:16 [INFO] livekit.agents: registered worker
+18:13:35 [INFO] livekit.agents: received job request
+18:13:36 [DEBUG] livekit.agents: received assignment
+18:13:36 [WARNING] livekit.agents: no warmed process available for job, waiting for one to be created
+18:13:36 [INFO] livekit.agents: initializing job runner
+18:13:36 [INFO] livekit.agents: job runner initialized
+18:13:36 [DEBUG] asyncio: Using proactor: IocpProactor
+18:13:37 [INFO] vr-voice-agent: [LIVEKIT] Connected to room: 6207e8c5-d472-4777-91ed-b8d32f15abbf
+18:13:37 [DEBUG] google.auth._default: Checking 'D:\Lab\VR-Autism\LiveKitAgent\service-account.json' for explicit credentials as part of auth process...
+18:13:37 [DEBUG] livekit.plugins.google: using chirp_3 model for voice vi-VN-Chirp3-HD-Aoede
+18:13:37 [WARNING] livekit.agents: preemptive_generation is deprecated and will be removed in v2.0. Use turn_handling=TurnHandlingOptions(...) instead
+18:26:23 [WARNING] livekit: livekit_api::signal_client:652:livekit_api::signal_client - dropping pass-through signal — no stream available
+18:26:29 [INFO] livekit.agents: received job request
+18:26:29 [DEBUG] livekit.agents: received assignment
+18:26:29 [WARNING] livekit.agents: no warmed process available for job, waiting for one to be created
+18:26:29 [INFO] livekit.agents: initializing job runner
+18:26:30 [DEBUG] asyncio: Using proactor: IocpProactor
+18:26:30 [INFO] livekit.agents: job runner initialized
+18:26:31 [INFO] vr-voice-agent: [LIVEKIT] Connected to room: 8113e78f-0428-4fe3-a249-08db1ec0d2da
+18:26:31 [DEBUG] google.auth._default: Checking 'D:\Lab\VR-Autism\LiveKitAgent\service-account.json' for explicit credentials as part of auth process...
+18:26:31 [DEBUG] livekit.plugins.google: using chirp_3 model for voice vi-VN-Chirp3-HD-Aoede
+18:26:31 [WARNING] livekit.agents: preemptive_generation is deprecated and will be removed in v2.0. Use turn_handling=TurnHandlingOptions(...) instead
+18:26:31 [INFO] vr-voice-agent: [AUDIO] Linking Unity microphone participant: vr_588575
+18:26:31 [INFO] vr-voice-agent: [SESSION] Starting AgentSession...
+18:26:31 [DEBUG] livekit.agents: input stream attached
+18:26:31 [INFO] livekit.agents: adaptive interruption detector initialized
+18:26:31 [DEBUG] livekit.agents: http_session(): creating a new httpclient ctx
+18:26:31 [INFO] vr-voice-agent: [AGENT] TeacherAgent ready in room (standby mode)
+18:26:31 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:26:31 [DEBUG] grpc._cython.cygrpc: Using AsyncIOEngine.POLLER as I/O engine
+18:26:31 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:26:31 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:26:31 [DEBUG] livekit.agents: using audio io: `RoomIO` -> `AgentSession` -> `TranscriptSynchronizer` -> `AudioSinkProxy` -> `RoomIO`
+18:26:31 [DEBUG] livekit.agents: using transcript io: `AgentSession` -> `TranscriptSynchronizer` -> `RoomIO`
+18:26:31 [INFO] vr-voice-agent: [AGENT] Agent pipeline active and ready for packets
+18:26:31 [DEBUG] livekit.agents: adaptive interruption session created
+18:26:31 [DEBUG] livekit.agents: audio turn detector initialized
+18:26:38 [WARNING] livekit.agents: entrypoint did not exit in time, cancelling
+18:26:38 [DEBUG] livekit.agents: shutting down job task
+18:26:38 [DEBUG] livekit.agents: http_session(): closing the httpclient ctx
+18:26:38 [DEBUG] livekit.agents: http_session(): creating a new httpclient ctx
+18:26:38 [DEBUG] livekit.agents: job exiting
+18:26:42 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:26:42 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:26:42 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:26:53 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:26:53 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:26:53 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:04 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:04 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:04 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:05 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+18:27:05 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+18:27:05 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:05 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:05 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:05 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+18:27:05 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': 'ae06e543480441a5b4c89fc060e33505', 'status': 'ACTIVE'}
+18:27:05 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:05 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:05 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:05 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:05 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:05 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+18:27:05 [DEBUG] grpc._cython.cygrpc: Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x000001D7C4E0A7B0>,)
+18:27:05 [DEBUG] livekit.agents: start reading stream
+18:27:06 [DEBUG] vr-voice-agent: [TTS] Cached 11 frames for phrase: 'Chào cả lớp đi con.'
+18:27:06 [DEBUG] vr-voice-agent: [TTS] Cached 16 frames for phrase: 'Con hãy chào thầy cô và các bạn đi.'
+18:27:06 [DEBUG] vr-voice-agent: [TTS] Cached 18 frames for phrase: "Nói 'Chào các bạn' đi nào con."
+18:27:06 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=True): "Chào cả lớp đi con."
+18:27:06 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-106' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+18:27:06 [DEBUG] livekit.agents: aec warmup active, disabling interruptions for 3.00s
+18:27:07 [DEBUG] livekit.agents: conversation_item_added
+18:27:09 [DEBUG] livekit.agents: aec warmup expired, re-enabling interruptions
+18:27:13 [DEBUG] livekit.agents: received user transcript
+18:27:13 [DEBUG] livekit.agents: eot prediction
+18:27:14 [DEBUG] livekit.agents: user turn committed
+18:27:14 [DEBUG] livekit.agents: using preemptive generation
+18:27:14 [DEBUG] livekit.agents: conversation_item_added
+18:27:14 [DEBUG] livekit.agents: executing tool
+18:27:14 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_MATCHED', 'contract_version': 2, 'activation_id': 'ae06e543480441a5b4c89fc060e33505'}
+18:27:14 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': 'ae06e543480441a5b4c89fc060e33505', 'status': 'MATCHED'}
+18:27:14 [DEBUG] livekit.agents: tools execution completed
+18:27:15 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+18:27:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:15 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': 'ae06e543480441a5b4c89fc060e33505', 'status': 'MATCHED'}
+18:27:15 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+18:27:15 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+18:27:15 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '464a2f012e234b5aba83e81864996dac', 'status': 'ACTIVE'}
+18:27:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:15 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+18:27:15 [DEBUG] vr-voice-agent: [TTS] Cached 13 frames for phrase: 'Tên của con là gì nào?'
+18:27:15 [DEBUG] vr-voice-agent: [TTS] Cached 14 frames for phrase: 'Con hãy tự tin nói to tên mình nhé.'
+18:27:15 [DEBUG] vr-voice-agent: [TTS] Cached 16 frames for phrase: "Nói 'Mình tên là...' đi con."
+18:27:15 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=True): "Con hãy tự tin nói to tên mình nhé."
+18:27:17 [DEBUG] livekit.agents: conversation_item_added
+18:27:23 [DEBUG] livekit.agents: received user transcript
+18:27:23 [DEBUG] livekit.agents: eot prediction
+18:27:23 [DEBUG] livekit.agents: user turn committed
+18:27:23 [DEBUG] livekit.agents: using preemptive generation
+18:27:23 [DEBUG] livekit.agents: conversation_item_added
+18:27:24 [DEBUG] livekit.agents: executing tool
+18:27:24 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_MATCHED', 'contract_version': 2, 'activation_id': '464a2f012e234b5aba83e81864996dac'}
+18:27:24 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '464a2f012e234b5aba83e81864996dac', 'status': 'MATCHED'}
+18:27:24 [DEBUG] livekit.agents: tools execution completed
+18:27:24 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+18:27:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:24 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '464a2f012e234b5aba83e81864996dac', 'status': 'MATCHED'}
+18:27:24 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+18:27:24 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+18:27:24 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '2843be3066864718ab9f5059d5f50822', 'status': 'ACTIVE'}
+18:27:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:24 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:24 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+18:27:24 [DEBUG] vr-voice-agent: [TTS] Cached 14 frames for phrase: 'Giới thiệu số tuổi của con đi nào.'
+18:27:25 [DEBUG] vr-voice-agent: [TTS] Cached 17 frames for phrase: "Nói 'Mình... tuổi' đi con."
+18:27:25 [DEBUG] vr-voice-agent: [TTS] Cached 19 frames for phrase: 'Con mấy tuổi rồi, hãy nói cho các bạn biết nhé.'
+18:27:25 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=True): "Giới thiệu số tuổi của con đi nào."
+18:27:27 [DEBUG] livekit.agents: conversation_item_added
+18:27:35 [DEBUG] livekit.agents: received user transcript
+18:27:35 [DEBUG] livekit.agents: eot prediction
+18:27:35 [DEBUG] livekit.agents: user turn committed
+18:27:35 [DEBUG] livekit.agents: using preemptive generation
+18:27:35 [DEBUG] livekit.agents: conversation_item_added
+18:27:36 [DEBUG] livekit.agents: executing tool
+18:27:36 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_MATCHED', 'contract_version': 2, 'activation_id': '2843be3066864718ab9f5059d5f50822'}
+18:27:36 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '2843be3066864718ab9f5059d5f50822', 'status': 'MATCHED'}
+18:27:36 [DEBUG] livekit.agents: tools execution completed
+18:27:36 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+18:27:36 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:36 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:36 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-413' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+18:27:36 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:36 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '2843be3066864718ab9f5059d5f50822', 'status': 'MATCHED'}
+18:27:36 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+18:27:36 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+18:27:36 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '5bde6dadbee74210a952108371314bae', 'status': 'ACTIVE'}
+18:27:36 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+18:27:36 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:36 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:36 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:37 [DEBUG] vr-voice-agent: [TTS] Cached 12 frames for phrase: 'Sở thích của con là gì nào?'
+18:27:37 [DEBUG] vr-voice-agent: [TTS] Cached 14 frames for phrase: 'Nói cho các bạn biết con thích gì nhé.'
+18:27:37 [DEBUG] vr-voice-agent: [TTS] Cached 17 frames for phrase: 'Con thích làm gì nhất, kể cho các bạn nghe nào.'
+18:27:37 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=True): "Sở thích của con là gì nào?"
+18:27:39 [DEBUG] livekit.agents: conversation_item_added
+18:27:46 [DEBUG] livekit.agents: received user transcript
+18:27:46 [DEBUG] livekit.agents: eot prediction
+18:27:46 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-136' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+18:27:46 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-688' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+18:27:47 [DEBUG] livekit.agents: user turn committed
+18:27:47 [DEBUG] livekit.agents: using preemptive generation
+18:27:47 [DEBUG] livekit.agents: conversation_item_added
+18:27:47 [DEBUG] livekit.agents: executing tool
+18:27:47 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_MATCHED', 'contract_version': 2, 'activation_id': '5bde6dadbee74210a952108371314bae'}
+18:27:47 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '5bde6dadbee74210a952108371314bae', 'status': 'MATCHED'}
+18:27:47 [DEBUG] livekit.agents: tools execution completed
+18:27:47 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=2026213803344
+18:27:49 [DEBUG] livekit.agents: conversation_item_added
+18:28:01 [INFO] livekit.agents: closing agent session due to participant disconnect (disable via `RoomInputOptions.close_on_disconnect=False`)
+18:28:01 [DEBUG] livekit.agents: stream closed
+18:28:01 [DEBUG] livekit.agents: input stream detached
+18:28:03 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+18:28:03 [DEBUG] livekit.agents: session closed

@@ -55,7 +55,7 @@ MonoBehaviour:
     _toNodeId: move_to_position
     _priority: 0
     _condition:
-      rid: 4156067777334739051
+      rid: 4156067777334739055
   - _fromNodeId: move_to_position
     _toNodeId: vq_hello
     _priority: 0
@@ -81,6 +81,11 @@ MonoBehaviour:
     _priority: 0
     _condition:
       rid: 4156067777334739051
+  - _fromNodeId: move_to_position
+    _toNodeId: vq_hello
+    _priority: 0
+    _condition:
+      rid: 4156067777334739057
   references:
     version: 2
     RefIds:
@@ -145,3 +150,13 @@ MonoBehaviour:
         _checkpointId: learntoask.complete
         _emitTelemetry: 1
         _resumeCompatibilityKey: learntoask.complete
+    - rid: 4156067777334739055
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: success
+    - rid: 4156067777334739057
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: skipped

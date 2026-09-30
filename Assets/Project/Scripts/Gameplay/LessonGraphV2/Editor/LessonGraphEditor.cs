@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VRAutism.Gameplay.LessonGraphV2.Data;
+using VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions;
+using VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs;
 using VRAutism.Gameplay.LessonGraphV2.Validation;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Editor
@@ -63,12 +66,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
             var edgesProperty = serializedObject.FindProperty("_edges");
             if (nodesProperty != null)
             {
-                _root.Add(new PropertyField(nodesProperty, "Nodes") { name = "nodes-property" });
+                _root.Add(CreateCollectionField(nodesProperty, "Nodes", "nodes-property", AddNode));
             }
 
             if (edgesProperty != null)
             {
-                _root.Add(new PropertyField(edgesProperty, "Edges") { name = "edges-property" });
+                _root.Add(CreateCollectionField(edgesProperty, "Edges", "edges-property", AddEdge));
             }
 
             _root.TrackSerializedObjectValue(serializedObject, _ =>
@@ -77,6 +80,57 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                 RefreshValidationPanel();
             });
             return _root;
+        }
+
+        private ListView CreateCollectionField(
+            SerializedProperty property, string label, string name, Action addItem)
+        {
+            // Keep Unity's serialized list binding, drawers, removal and reordering.
+            // Its default add operation copies the last item's SerializeReference payload.
+            var list = new ListView
+            {
+                name = name,
+                bindingPath = property.propertyPath,
+                showFoldoutHeader = true,
+                headerTitle = label,
+                showAddRemoveFooter = true,
+                showBoundCollectionSize = false,
+                reorderable = true,
+                virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight,
+                overridingAddButtonBehavior = (_, __) => addItem(),
+            };
+            list.SetEnabled(!serializedObject.isEditingMultipleObjects);
+            return list;
+        }
+
+        private void AddNode()
+        {
+            serializedObject.Update();
+            Undo.RecordObject(target, "Add Lesson Graph Node");
+            var nodes = serializedObject.FindProperty("_nodes");
+            var index = nodes.arraySize++;
+            var node = nodes.GetArrayElementAtIndex(index);
+            node.FindPropertyRelative("_id").stringValue = Guid.NewGuid().ToString("N");
+            node.FindPropertyRelative("_nodeType").intValue = (int)NodeType.Quest;
+            node.FindPropertyRelative("_position").vector2Value = Vector2.zero;
+            node.FindPropertyRelative("_config").managedReferenceValue = new QuestNodeConfig();
+            node.isExpanded = true;
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private void AddEdge()
+        {
+            serializedObject.Update();
+            Undo.RecordObject(target, "Add Lesson Graph Edge");
+            var edges = serializedObject.FindProperty("_edges");
+            var index = edges.arraySize++;
+            var edge = edges.GetArrayElementAtIndex(index);
+            edge.FindPropertyRelative("_fromNodeId").stringValue = string.Empty;
+            edge.FindPropertyRelative("_toNodeId").stringValue = string.Empty;
+            edge.FindPropertyRelative("_priority").intValue = 0;
+            edge.FindPropertyRelative("_condition").managedReferenceValue = new StatusCondition(StatusCondition.Success);
+            edge.isExpanded = true;
+            serializedObject.ApplyModifiedProperties();
         }
 
         private void RefreshEntryNodeField()

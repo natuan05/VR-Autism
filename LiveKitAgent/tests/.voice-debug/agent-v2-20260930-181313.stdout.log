@@ -1,0 +1,276 @@
+2026-09-30 18:13:16,516 - [36mDEBUG[0m asyncio - Using proactor: IocpProactor [90m[0m
+2026-09-30 18:13:16,520 - [36mDEBUG[0m livekit.agents - no system trust store found, setting SSL_CERT_FILE to the certifi bundle [90m[0m
+2026-09-30 18:13:16,521 - [32mINFO[0m livekit.agents - starting worker [90m{"version": "1.7.1", "rtc-version": "1.1.15"}[0m
+2026-09-30 18:13:16,523 - [32mINFO[0m livekit.agents - plugin registered [90m{"plugin": "livekit.plugins.google", "version": "1.6.8"}[0m
+2026-09-30 18:13:16,525 - [32mINFO[0m livekit.agents - plugin registered [90m{"plugin": "livekit.plugins.silero", "version": "1.6.8"}[0m
+2026-09-30 18:13:16,528 - [32mINFO[0m livekit.agents - HTTP server listening on :59502 [90m[0m
+2026-09-30 18:13:16,932 - [32mINFO[0m livekit.agents - registered worker [90m{"agent_name": "", "deployment": "", "id": "AW_rKjqjKQdenzJ", "url": "wss://vra-9jrt51dr.livekit.cloud", "region": "India South", "protocol": 17}[0m
+2026-09-30 18:13:35,775 - [32mINFO[0m livekit.agents - received job request [90m{"job_id": "AJ_A4uLnRjwfYNR", "dispatch_id": "AD_S8MqRvaX2P7y", "room": "6207e8c5-d472-4777-91ed-b8d32f15abbf", "room_id": "RM_CCbaSqbpxKQq", "agent_name": "", "resuming": false, "enable_recording": false}[0m
+2026-09-30 18:13:36,097 - [36mDEBUG[0m livekit.agents - received assignment [90m{"agent_name": "", "room_id": "RM_CCbaSqbpxKQq", "room": "6207e8c5-d472-4777-91ed-b8d32f15abbf", "job_id": "AJ_A4uLnRjwfYNR", "dispatch_id": "AD_S8MqRvaX2P7y", "enable_recording": false}[0m
+2026-09-30 18:13:36,099 - [33mWARNING[0m livekit.agents - no warmed process available for job, waiting for one to be created [90m{"job_id": "AJ_A4uLnRjwfYNR"}[0m
+2026-09-30 18:13:36,101 - [32mINFO[0m livekit.agents - initializing job runner [90m{"tid": 35580}[0m
+2026-09-30 18:13:36,183 - [32mINFO[0m livekit.agents - job runner initialized [90m{"tid": 35580, "elapsed_time": 0.08}[0m
+2026-09-30 18:13:36,183 - [36mDEBUG[0m asyncio - Using proactor: IocpProactor [90m[0m
+2026-09-30 18:13:37,184 - [32mINFO[0m vr-voice-agent - [LIVEKIT] Connected to room: 6207e8c5-d472-4777-91ed-b8d32f15abbf [90m[0m
+2026-09-30 18:13:37,184 - [36mDEBUG[0m google.auth._default - Checking 'D:\Lab\VR-Autism\LiveKitAgent\service-account.json' for explicit credentials as part of auth process... [90m[0m
+2026-09-30 18:13:37,266 - [36mDEBUG[0m livekit.plugins.google - using chirp_3 model for voice vi-VN-Chirp3-HD-Aoede [90m[0m
+2026-09-30 18:13:37,267 - [33mWARNING[0m livekit.agents - preemptive_generation is deprecated and will be removed in v2.0. Use turn_handling=TurnHandlingOptions(...) instead [90m[0m
+2026-09-30 18:26:23,609 - [33mWARNING[0m livekit - livekit_api::signal_client:652:livekit_api::signal_client - dropping pass-through signal — no stream available [90m[0m
+2026-09-30 18:26:29,849 - [32mINFO[0m livekit.agents - received job request [90m{"job_id": "AJ_HyESEht8rSoS", "dispatch_id": "AD_tNMVS4VDCWWn", "room": "8113e78f-0428-4fe3-a249-08db1ec0d2da", "room_id": "RM_oa7qLeC9HoEs", "agent_name": "", "resuming": false, "enable_recording": false}[0m
+2026-09-30 18:26:29,951 - [36mDEBUG[0m livekit.agents - received assignment [90m{"agent_name": "", "room_id": "RM_oa7qLeC9HoEs", "room": "8113e78f-0428-4fe3-a249-08db1ec0d2da", "job_id": "AJ_HyESEht8rSoS", "dispatch_id": "AD_tNMVS4VDCWWn", "enable_recording": false}[0m
+2026-09-30 18:26:29,952 - [33mWARNING[0m livekit.agents - no warmed process available for job, waiting for one to be created [90m{"job_id": "AJ_HyESEht8rSoS"}[0m
+2026-09-30 18:26:29,954 - [32mINFO[0m livekit.agents - initializing job runner [90m{"tid": 21400}[0m
+2026-09-30 18:26:30,093 - [36mDEBUG[0m asyncio - Using proactor: IocpProactor [90m[0m
+2026-09-30 18:26:30,094 - [32mINFO[0m livekit.agents - job runner initialized [90m{"tid": 21400, "elapsed_time": 0.14}[0m
+2026-09-30 18:26:31,000 - [32mINFO[0m vr-voice-agent - [LIVEKIT] Connected to room: 8113e78f-0428-4fe3-a249-08db1ec0d2da [90m[0m
+2026-09-30 18:26:31,002 - [36mDEBUG[0m google.auth._default - Checking 'D:\Lab\VR-Autism\LiveKitAgent\service-account.json' for explicit credentials as part of auth process... [90m[0m
+2026-09-30 18:26:31,074 - [36mDEBUG[0m livekit.plugins.google - using chirp_3 model for voice vi-VN-Chirp3-HD-Aoede [90m[0m
+2026-09-30 18:26:31,074 - [33mWARNING[0m livekit.agents - preemptive_generation is deprecated and will be removed in v2.0. Use turn_handling=TurnHandlingOptions(...) instead [90m[0m
+2026-09-30 18:26:31,075 - [32mINFO[0m vr-voice-agent - [AUDIO] Linking Unity microphone participant: vr_588575 [90m[0m
+2026-09-30 18:26:31,075 - [32mINFO[0m vr-voice-agent - [SESSION] Starting AgentSession... [90m[0m
+2026-09-30 18:26:31,082 - [36mDEBUG[0m livekit.agents - input stream attached [90m{"participant": null, "source": "SOURCE_UNKNOWN", "accepted_sources": ["SOURCE_MICROPHONE"]}[0m
+2026-09-30 18:26:31,085 - [32mINFO[0m livekit.agents - adaptive interruption detector initialized [90m{"base_url": "https://agent-gateway.livekit.cloud/v1", "detection_interval": 0.1, "audio_prefix_duration": 1.0, "max_audio_duration": 3, "min_frames": 2, "threshold": null, "inference_timeout": 0.7}[0m
+2026-09-30 18:26:31,093 - [36mDEBUG[0m livekit.agents - http_session(): creating a new httpclient ctx [90m[0m
+2026-09-30 18:26:31,102 - [32mINFO[0m vr-voice-agent - [AGENT] TeacherAgent ready in room (standby mode) [90m[0m
+2026-09-30 18:26:31,158 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:26:31,159 - [36mDEBUG[0m grpc._cython.cygrpc - Using AsyncIOEngine.POLLER as I/O engine [90m[0m
+2026-09-30 18:26:31,161 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:26:31,198 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:26:31,205 - [36mDEBUG[0m livekit.agents - using audio io: `RoomIO` -> `AgentSession` -> `TranscriptSynchronizer` -> `AudioSinkProxy` -> `RoomIO` [90m[0m
+2026-09-30 18:26:31,206 - [36mDEBUG[0m livekit.agents - using transcript io: `AgentSession` -> `TranscriptSynchronizer` -> `RoomIO` [90m[0m
+2026-09-30 18:26:31,206 - [32mINFO[0m vr-voice-agent - [AGENT] Agent pipeline active and ready for packets [90m[0m
+2026-09-30 18:26:31,528 - [36mDEBUG[0m livekit.agents - adaptive interruption session created [90m{"default_threshold": 0.656, "effective_threshold": 0.656, "user_override": false}[0m
+2026-09-30 18:26:31,539 - [36mDEBUG[0m livekit.agents - audio turn detector initialized [90m{"model": "turn-detector-v1", "thresholds": {"ko": 0.695, "nl": 0.75, "id": 0.47, "ar": 0.355, "en": 0.56, "ja": 0.37, "fr": 0.575, "de": 0.495, "tr": 0.65, "es": 0.59, "zh": 0.59, "pt": 0.665, "hi": 0.575, "it": 0.64}, "default_threshold": 0.56, "overrides": null}[0m
+2026-09-30 18:26:38,619 - [33mWARNING[0m livekit.agents - entrypoint did not exit in time, cancelling [90m[0m
+2026-09-30 18:26:38,620 - [36mDEBUG[0m livekit.agents - shutting down job task [90m{"reason": "room disconnected", "user_initiated": false}[0m
+2026-09-30 18:26:38,621 - [36mDEBUG[0m livekit.agents - http_session(): closing the httpclient ctx [90m[0m
+2026-09-30 18:26:38,622 - [36mDEBUG[0m livekit.agents - http_session(): creating a new httpclient ctx [90m[0m
+2026-09-30 18:26:38,632 - [36mDEBUG[0m livekit.agents - job exiting [90m{"reason": "room disconnected", "tid": 35580, "job_id": "AJ_A4uLnRjwfYNR", "room": "6207e8c5-d472-4777-91ed-b8d32f15abbf"}[0m
+2026-09-30 18:26:42,454 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:26:42,455 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:26:42,457 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:26:53,666 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:26:53,668 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:26:53,670 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:04,936 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:04,937 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:04,940 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:05,356 - [32mINFO[0m vr-voice-agent - [SESSION] Chat history cleared for new quest context [90m[0m
+2026-09-30 18:27:05,358 - [36mDEBUG[0m vr-voice-agent - [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede [90m[0m
+2026-09-30 18:27:05,411 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:05,412 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:05,416 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:05,417 - [32mINFO[0m vr-voice-agent - [SESSION] Chat history cleared for new quest context [90m[0m
+2026-09-30 18:27:05,418 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': 'ae06e543480441a5b4c89fc060e33505', 'status': 'ACTIVE'} [90m[0m
+2026-09-30 18:27:05,465 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:05,466 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:05,469 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:05,470 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:05,471 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:05,492 - [36mDEBUG[0m grpc.aio._call - Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+ [90m[0m
+2026-09-30 18:27:05,493 - [36mDEBUG[0m grpc._cython.cygrpc - Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x000001D7C4E0A7B0>,) [90m[0m
+2026-09-30 18:27:05,615 - [36mDEBUG[0m livekit.agents - start reading stream [90m{"participant": "vr_588575", "source": "SOURCE_MICROPHONE"}[0m
+2026-09-30 18:27:06,196 - [36mDEBUG[0m vr-voice-agent - [TTS] Cached 11 frames for phrase: 'Chào cả lớp đi con.' [90m[0m
+2026-09-30 18:27:06,252 - [36mDEBUG[0m vr-voice-agent - [TTS] Cached 16 frames for phrase: 'Con hãy chào thầy cô và các bạn đi.' [90m[0m
+2026-09-30 18:27:06,315 - [36mDEBUG[0m vr-voice-agent - [TTS] Cached 18 frames for phrase: "Nói 'Chào các bạn' đi nào con." [90m[0m
+2026-09-30 18:27:06,318 - [32mINFO[0m vr-voice-agent - [AGENT] Opening phrase (cached=True): "Chào cả lớp đi con." [90m[0m
+2026-09-30 18:27:06,328 - [31mERROR[0m asyncio - Task was destroyed but it is pending!
+task: <Task pending name='Task-106' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>> [90m[0m
+2026-09-30 18:27:06,378 - [36mDEBUG[0m livekit.agents - aec warmup active, disabling interruptions for 3.00s [90m[0m
+2026-09-30 18:27:07,758 - [36mDEBUG[0m livekit.agents - conversation_item_added [90m{"role": "assistant", "lk.pii.text": "Chào cả lớp đi con."}[0m
+2026-09-30 18:27:09,382 - [36mDEBUG[0m livekit.agents - aec warmup expired, re-enabling interruptions [90m[0m
+2026-09-30 18:27:13,875 - [36mDEBUG[0m livekit.agents - received user transcript [90m{"lk.pii.user_transcript": "Xin chào cả lớp ạ.", "language": "vi-VN", "transcript_delay": 1.5517261028289795}[0m
+2026-09-30 18:27:13,885 - [36mDEBUG[0m livekit.agents - eot prediction [90m{"probability": 0.014936745166778564, "unlikely_threshold": 0.56, "endpointing_delay": 2.5, "language": "vi-VN", "trigger": "stt", "from_cache": true}[0m
+2026-09-30 18:27:14,831 - [36mDEBUG[0m livekit.agents - user turn committed [90m{"last_speaking_time": 1790767632.3233242, "last_final_transcript_time": 1790767633.8761477, "speech_start_time": 1790767627.7881403, "delay_completed": true, "source": "stt", "end_of_turn_probability": 0.014936745166778564, "unlikely_threshold": 0.56}[0m
+2026-09-30 18:27:14,832 - [36mDEBUG[0m livekit.agents - using preemptive generation [90m{"preemptive_lead_time": 0.956141471862793}[0m
+2026-09-30 18:27:14,835 - [36mDEBUG[0m livekit.agents - conversation_item_added [90m{"role": "user", "lk.pii.text": "Xin chào cả lớp ạ."}[0m
+2026-09-30 18:27:14,837 - [36mDEBUG[0m livekit.agents - executing tool [90m{"function": "complete_quest", "lk.pii.arguments": "{}", "speech_id": "speech_4714075d484c"}[0m
+2026-09-30 18:27:14,842 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_MATCHED', 'contract_version': 2, 'activation_id': 'ae06e543480441a5b4c89fc060e33505'} [90m[0m
+2026-09-30 18:27:14,843 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': 'ae06e543480441a5b4c89fc060e33505', 'status': 'MATCHED'} [90m[0m
+2026-09-30 18:27:14,845 - [36mDEBUG[0m livekit.agents - tools execution completed [90m{"speech_id": "speech_4714075d484c"}[0m
+2026-09-30 18:27:15,067 - [32mINFO[0m vr-voice-agent - [SESSION] Chat history cleared for new quest context [90m[0m
+2026-09-30 18:27:15,114 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:15,115 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:15,118 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:15,120 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': 'ae06e543480441a5b4c89fc060e33505', 'status': 'MATCHED'} [90m[0m
+2026-09-30 18:27:15,121 - [36mDEBUG[0m vr-voice-agent - [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede [90m[0m
+2026-09-30 18:27:15,123 - [32mINFO[0m vr-voice-agent - [SESSION] Chat history cleared for new quest context [90m[0m
+2026-09-30 18:27:15,124 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '464a2f012e234b5aba83e81864996dac', 'status': 'ACTIVE'} [90m[0m
+2026-09-30 18:27:15,128 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:15,129 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:15,130 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:15,133 - [36mDEBUG[0m grpc.aio._call - Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+ [90m[0m
+2026-09-30 18:27:15,731 - [36mDEBUG[0m vr-voice-agent - [TTS] Cached 13 frames for phrase: 'Tên của con là gì nào?' [90m[0m
+2026-09-30 18:27:15,750 - [36mDEBUG[0m vr-voice-agent - [TTS] Cached 14 frames for phrase: 'Con hãy tự tin nói to tên mình nhé.' [90m[0m
+2026-09-30 18:27:15,803 - [36mDEBUG[0m vr-voice-agent - [TTS] Cached 16 frames for phrase: "Nói 'Mình tên là...' đi con." [90m[0m
+2026-09-30 18:27:15,807 - [32mINFO[0m vr-voice-agent - [AGENT] Opening phrase (cached=True): "Con hãy tự tin nói to tên mình nhé." [90m[0m
+2026-09-30 18:27:17,908 - [36mDEBUG[0m livekit.agents - conversation_item_added [90m{"role": "assistant", "lk.pii.text": "Con hãy tự tin nói to tên mình nhé."}[0m
+2026-09-30 18:27:23,045 - [36mDEBUG[0m livekit.agents - received user transcript [90m{"lk.pii.user_transcript": "Con tên là Nguyễn Anh Tuấn.", "language": "vi-VN", "transcript_delay": 1.568068265914917}[0m
+2026-09-30 18:27:23,055 - [36mDEBUG[0m livekit.agents - eot prediction [90m{"probability": 0.1625560224056244, "unlikely_threshold": 0.56, "endpointing_delay": 2.5, "language": "vi-VN", "trigger": "stt", "from_cache": true}[0m
+2026-09-30 18:27:23,980 - [36mDEBUG[0m livekit.agents - user turn committed [90m{"last_speaking_time": 1790767641.4774065, "last_final_transcript_time": 1790767643.0473945, "speech_start_time": 1790767640.4926343, "delay_completed": true, "source": "stt", "end_of_turn_probability": 0.1625560224056244, "unlikely_threshold": 0.56}[0m
+2026-09-30 18:27:23,983 - [36mDEBUG[0m livekit.agents - using preemptive generation [90m{"preemptive_lead_time": 0.9358203411102295}[0m
+2026-09-30 18:27:23,985 - [36mDEBUG[0m livekit.agents - conversation_item_added [90m{"role": "user", "lk.pii.text": "Con tên là Nguyễn Anh Tuấn."}[0m
+2026-09-30 18:27:24,081 - [36mDEBUG[0m livekit.agents - executing tool [90m{"function": "complete_quest", "lk.pii.arguments": "{}", "speech_id": "speech_57fcb1d6a3a8"}[0m
+2026-09-30 18:27:24,085 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_MATCHED', 'contract_version': 2, 'activation_id': '464a2f012e234b5aba83e81864996dac'} [90m[0m
+2026-09-30 18:27:24,090 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '464a2f012e234b5aba83e81864996dac', 'status': 'MATCHED'} [90m[0m
+2026-09-30 18:27:24,091 - [36mDEBUG[0m livekit.agents - tools execution completed [90m{"speech_id": "speech_57fcb1d6a3a8"}[0m
+2026-09-30 18:27:24,309 - [32mINFO[0m vr-voice-agent - [SESSION] Chat history cleared for new quest context [90m[0m
+2026-09-30 18:27:24,356 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:24,357 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:24,359 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:24,361 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '464a2f012e234b5aba83e81864996dac', 'status': 'MATCHED'} [90m[0m
+2026-09-30 18:27:24,362 - [36mDEBUG[0m vr-voice-agent - [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede [90m[0m
+2026-09-30 18:27:24,364 - [32mINFO[0m vr-voice-agent - [SESSION] Chat history cleared for new quest context [90m[0m
+2026-09-30 18:27:24,366 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '2843be3066864718ab9f5059d5f50822', 'status': 'ACTIVE'} [90m[0m
+2026-09-30 18:27:24,368 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:24,369 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:24,370 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:24,372 - [36mDEBUG[0m grpc.aio._call - Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+ [90m[0m
+2026-09-30 18:27:24,976 - [36mDEBUG[0m vr-voice-agent - [TTS] Cached 14 frames for phrase: 'Giới thiệu số tuổi của con đi nào.' [90m[0m
+2026-09-30 18:27:25,126 - [36mDEBUG[0m vr-voice-agent - [TTS] Cached 17 frames for phrase: "Nói 'Mình... tuổi' đi con." [90m[0m
+2026-09-30 18:27:25,140 - [36mDEBUG[0m vr-voice-agent - [TTS] Cached 19 frames for phrase: 'Con mấy tuổi rồi, hãy nói cho các bạn biết nhé.' [90m[0m
+2026-09-30 18:27:25,142 - [32mINFO[0m vr-voice-agent - [AGENT] Opening phrase (cached=True): "Giới thiệu số tuổi của con đi nào." [90m[0m
+2026-09-30 18:27:27,238 - [36mDEBUG[0m livekit.agents - conversation_item_added [90m{"role": "assistant", "lk.pii.text": "Giới thiệu số tuổi của con đi nào."}[0m
+2026-09-30 18:27:35,627 - [36mDEBUG[0m livekit.agents - received user transcript [90m{"lk.pii.user_transcript": "6", "language": "vi-VN", "transcript_delay": 4.1007280349731445}[0m
+2026-09-30 18:27:35,636 - [36mDEBUG[0m livekit.agents - eot prediction [90m{"probability": 0.03275755047798157, "unlikely_threshold": 0.56, "endpointing_delay": 2.5, "language": "vi-VN", "trigger": "stt", "from_cache": true}[0m
+2026-09-30 18:27:35,637 - [36mDEBUG[0m livekit.agents - user turn committed [90m{"last_speaking_time": 1790767651.5271292, "last_final_transcript_time": 1790767655.6288435, "speech_start_time": 1790767651.0941844, "delay_completed": false, "source": "stt", "end_of_turn_probability": 0.03275755047798157, "unlikely_threshold": 0.56}[0m
+2026-09-30 18:27:35,640 - [36mDEBUG[0m livekit.agents - using preemptive generation [90m{"preemptive_lead_time": 0.011895418167114258}[0m
+2026-09-30 18:27:35,642 - [36mDEBUG[0m livekit.agents - conversation_item_added [90m{"role": "user", "lk.pii.text": "6"}[0m
+2026-09-30 18:27:36,449 - [36mDEBUG[0m livekit.agents - executing tool [90m{"function": "complete_quest", "lk.pii.arguments": "{}", "speech_id": "speech_a1f21277e9fe"}[0m
+2026-09-30 18:27:36,454 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_MATCHED', 'contract_version': 2, 'activation_id': '2843be3066864718ab9f5059d5f50822'} [90m[0m
+2026-09-30 18:27:36,457 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '2843be3066864718ab9f5059d5f50822', 'status': 'MATCHED'} [90m[0m
+2026-09-30 18:27:36,459 - [36mDEBUG[0m livekit.agents - tools execution completed [90m{"speech_id": "speech_a1f21277e9fe"}[0m
+2026-09-30 18:27:36,686 - [32mINFO[0m vr-voice-agent - [SESSION] Chat history cleared for new quest context [90m[0m
+2026-09-30 18:27:36,736 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:36,737 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:36,743 - [31mERROR[0m asyncio - Task was destroyed but it is pending!
+task: <Task pending name='Task-413' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>> [90m[0m
+2026-09-30 18:27:36,747 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:36,749 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '2843be3066864718ab9f5059d5f50822', 'status': 'MATCHED'} [90m[0m
+2026-09-30 18:27:36,750 - [36mDEBUG[0m vr-voice-agent - [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede [90m[0m
+2026-09-30 18:27:36,751 - [32mINFO[0m vr-voice-agent - [SESSION] Chat history cleared for new quest context [90m[0m
+2026-09-30 18:27:36,752 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '5bde6dadbee74210a952108371314bae', 'status': 'ACTIVE'} [90m[0m
+2026-09-30 18:27:36,758 - [36mDEBUG[0m grpc.aio._call - Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+ [90m[0m
+2026-09-30 18:27:36,759 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:36,760 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:36,760 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:37,291 - [36mDEBUG[0m vr-voice-agent - [TTS] Cached 12 frames for phrase: 'Sở thích của con là gì nào?' [90m[0m
+2026-09-30 18:27:37,378 - [36mDEBUG[0m vr-voice-agent - [TTS] Cached 14 frames for phrase: 'Nói cho các bạn biết con thích gì nhé.' [90m[0m
+2026-09-30 18:27:37,453 - [36mDEBUG[0m vr-voice-agent - [TTS] Cached 17 frames for phrase: 'Con thích làm gì nhất, kể cho các bạn nghe nào.' [90m[0m
+2026-09-30 18:27:37,456 - [32mINFO[0m vr-voice-agent - [AGENT] Opening phrase (cached=True): "Sở thích của con là gì nào?" [90m[0m
+2026-09-30 18:27:39,186 - [36mDEBUG[0m livekit.agents - conversation_item_added [90m{"role": "assistant", "lk.pii.text": "Sở thích của con là gì nào?"}[0m
+2026-09-30 18:27:46,263 - [36mDEBUG[0m livekit.agents - received user transcript [90m{"lk.pii.user_transcript": "Click đi chơi.", "language": "vi-VN", "transcript_delay": 1.6811394691467285}[0m
+2026-09-30 18:27:46,271 - [36mDEBUG[0m livekit.agents - eot prediction [90m{"probability": 0.11358219385147095, "unlikely_threshold": 0.56, "endpointing_delay": 2.5, "language": "vi-VN", "trigger": "stt", "from_cache": true}[0m
+2026-09-30 18:27:46,439 - [31mERROR[0m asyncio - Task was destroyed but it is pending!
+task: <Task pending name='Task-136' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>> [90m[0m
+2026-09-30 18:27:46,440 - [31mERROR[0m asyncio - Task was destroyed but it is pending!
+task: <Task pending name='Task-688' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>> [90m[0m
+2026-09-30 18:27:47,087 - [36mDEBUG[0m livekit.agents - user turn committed [90m{"last_speaking_time": 1790767664.5826921, "last_final_transcript_time": 1790767666.264888, "speech_start_time": 1790767662.3885527, "delay_completed": true, "source": "stt", "end_of_turn_probability": 0.11358219385147095, "unlikely_threshold": 0.56}[0m
+2026-09-30 18:27:47,089 - [36mDEBUG[0m livekit.agents - using preemptive generation [90m{"preemptive_lead_time": 0.8240964412689209}[0m
+2026-09-30 18:27:47,090 - [36mDEBUG[0m livekit.agents - conversation_item_added [90m{"role": "user", "lk.pii.text": "Click đi chơi."}[0m
+2026-09-30 18:27:47,136 - [36mDEBUG[0m livekit.agents - executing tool [90m{"function": "complete_quest", "lk.pii.arguments": "{}", "speech_id": "speech_5ebb56e1f3a8"}[0m
+2026-09-30 18:27:47,140 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_MATCHED', 'contract_version': 2, 'activation_id': '5bde6dadbee74210a952108371314bae'} [90m[0m
+2026-09-30 18:27:47,141 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '5bde6dadbee74210a952108371314bae', 'status': 'MATCHED'} [90m[0m
+2026-09-30 18:27:47,142 - [36mDEBUG[0m livekit.agents - tools execution completed [90m{"speech_id": "speech_5ebb56e1f3a8"}[0m
+2026-09-30 18:27:47,885 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2026213803344 [90m[0m
+2026-09-30 18:27:49,930 - [36mDEBUG[0m livekit.agents - conversation_item_added [90m{"role": "assistant", "lk.pii.text": "Thích đi chơi vui quá con nhỉ!"}[0m
+2026-09-30 18:28:01,130 - [32mINFO[0m livekit.agents - closing agent session due to participant disconnect (disable via `RoomInputOptions.close_on_disconnect=False`) [90m{"room": "8113e78f-0428-4fe3-a249-08db1ec0d2da", "participant": "vr_588575", "reason": "CLIENT_INITIATED"}[0m
+2026-09-30 18:28:01,131 - [36mDEBUG[0m livekit.agents - stream closed [90m{"participant": "vr_588575", "source": "SOURCE_MICROPHONE"}[0m
+2026-09-30 18:28:01,134 - [36mDEBUG[0m livekit.agents - input stream detached [90m{"participant": "vr_588575", "source": "SOURCE_UNKNOWN", "accepted_sources": ["SOURCE_MICROPHONE"]}[0m
+2026-09-30 18:28:03,141 - [36mDEBUG[0m grpc.aio._call - Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+ [90m[0m
+2026-09-30 18:28:03,208 - [36mDEBUG[0m livekit.agents - session closed [90m{"reason": "participant_disconnected", "error": null}[0m

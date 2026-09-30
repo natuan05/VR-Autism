@@ -1,0 +1,393 @@
+2026-09-30 17:50:21,641 - [36mDEBUG[0m asyncio - Using proactor: IocpProactor [90m[0m
+2026-09-30 17:50:21,645 - [36mDEBUG[0m livekit.agents - no system trust store found, setting SSL_CERT_FILE to the certifi bundle [90m[0m
+2026-09-30 17:50:21,647 - [32mINFO[0m livekit.agents - starting worker [90m{"version": "1.7.1", "rtc-version": "1.1.15"}[0m
+2026-09-30 17:50:21,649 - [32mINFO[0m livekit.agents - plugin registered [90m{"plugin": "livekit.plugins.google", "version": "1.6.8"}[0m
+2026-09-30 17:50:21,652 - [32mINFO[0m livekit.agents - plugin registered [90m{"plugin": "livekit.plugins.silero", "version": "1.6.8"}[0m
+2026-09-30 17:50:21,656 - [32mINFO[0m livekit.agents - HTTP server listening on :57314 [90m[0m
+2026-09-30 17:50:22,260 - [32mINFO[0m livekit.agents - registered worker [90m{"agent_name": "", "deployment": "", "id": "AW_pAixyGDTycQD", "url": "wss://vra-9jrt51dr.livekit.cloud", "region": "India South", "protocol": 17}[0m
+2026-09-30 17:52:59,288 - [32mINFO[0m livekit.agents - received job request [90m{"job_id": "AJ_A4uLnRjwfYNR", "dispatch_id": "AD_S8MqRvaX2P7y", "room": "6207e8c5-d472-4777-91ed-b8d32f15abbf", "room_id": "RM_CCbaSqbpxKQq", "agent_name": "", "resuming": false, "enable_recording": false}[0m
+2026-09-30 17:52:59,381 - [36mDEBUG[0m livekit.agents - received assignment [90m{"agent_name": "", "room_id": "RM_CCbaSqbpxKQq", "room": "6207e8c5-d472-4777-91ed-b8d32f15abbf", "job_id": "AJ_A4uLnRjwfYNR", "dispatch_id": "AD_S8MqRvaX2P7y", "enable_recording": false}[0m
+2026-09-30 17:52:59,381 - [33mWARNING[0m livekit.agents - no warmed process available for job, waiting for one to be created [90m{"job_id": "AJ_A4uLnRjwfYNR"}[0m
+2026-09-30 17:52:59,384 - [32mINFO[0m livekit.agents - initializing job runner [90m{"tid": 28380}[0m
+2026-09-30 17:52:59,629 - [36mDEBUG[0m asyncio - Using proactor: IocpProactor [90m[0m
+2026-09-30 17:52:59,629 - [32mINFO[0m livekit.agents - job runner initialized [90m{"tid": 28380, "elapsed_time": 0.24}[0m
+2026-09-30 17:53:00,725 - [32mINFO[0m vr-voice-agent - [LIVEKIT] Connected to room: 6207e8c5-d472-4777-91ed-b8d32f15abbf [90m[0m
+2026-09-30 17:53:00,726 - [36mDEBUG[0m google.auth._default - Checking 'D:\Lab\VR-Autism\LiveKitAgent\service-account.json' for explicit credentials as part of auth process... [90m[0m
+2026-09-30 17:53:00,894 - [36mDEBUG[0m livekit.plugins.google - using chirp_3 model for voice vi-VN-Chirp3-HD-Aoede [90m[0m
+2026-09-30 17:53:00,895 - [33mWARNING[0m livekit.agents - preemptive_generation is deprecated and will be removed in v2.0. Use turn_handling=TurnHandlingOptions(...) instead [90m[0m
+2026-09-30 17:53:00,896 - [32mINFO[0m vr-voice-agent - [SESSION] Starting AgentSession... [90m[0m
+2026-09-30 17:53:00,900 - [36mDEBUG[0m livekit.agents - input stream attached [90m{"participant": null, "source": "SOURCE_UNKNOWN", "accepted_sources": ["SOURCE_MICROPHONE"]}[0m
+2026-09-30 17:53:00,910 - [32mINFO[0m livekit.agents - adaptive interruption detector initialized [90m{"base_url": "https://agent-gateway.livekit.cloud/v1", "detection_interval": 0.1, "audio_prefix_duration": 1.0, "max_audio_duration": 3, "min_frames": 2, "threshold": null, "inference_timeout": 0.7}[0m
+2026-09-30 17:53:00,920 - [36mDEBUG[0m livekit.agents - http_session(): creating a new httpclient ctx [90m[0m
+2026-09-30 17:53:00,932 - [32mINFO[0m vr-voice-agent - [AGENT] TeacherAgent ready in room (standby mode) [90m[0m
+2026-09-30 17:53:00,986 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:00,987 - [36mDEBUG[0m grpc._cython.cygrpc - Using AsyncIOEngine.POLLER as I/O engine [90m[0m
+2026-09-30 17:53:00,990 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:01,024 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:01,044 - [36mDEBUG[0m livekit.agents - using audio io: `RoomIO` -> `AgentSession` -> `TranscriptSynchronizer` -> `AudioSinkProxy` -> `RoomIO` [90m[0m
+2026-09-30 17:53:01,045 - [36mDEBUG[0m livekit.agents - using transcript io: `AgentSession` -> `TranscriptSynchronizer` -> `RoomIO` [90m[0m
+2026-09-30 17:53:01,045 - [32mINFO[0m vr-voice-agent - [AGENT] Agent pipeline active and ready for packets [90m[0m
+2026-09-30 17:53:01,446 - [36mDEBUG[0m livekit.agents - audio turn detector initialized [90m{"model": "turn-detector-v1", "thresholds": {"ko": 0.695, "ar": 0.355, "id": 0.47, "nl": 0.75, "en": 0.56, "ja": 0.37, "fr": 0.575, "it": 0.64, "tr": 0.65, "es": 0.59, "hi": 0.575, "pt": 0.665, "zh": 0.59, "de": 0.495}, "default_threshold": 0.56, "overrides": null}[0m
+2026-09-30 17:53:01,447 - [36mDEBUG[0m livekit.agents - adaptive interruption session created [90m{"default_threshold": 0.656, "effective_threshold": 0.656, "user_override": false}[0m
+2026-09-30 17:53:12,116 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:12,117 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:12,121 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:22,562 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:22,564 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:22,567 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:33,590 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:33,591 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:33,593 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:40,529 - [32mINFO[0m vr-voice-agent - [SESSION] Chat history cleared for new quest context [90m[0m
+2026-09-30 17:53:40,532 - [36mDEBUG[0m vr-voice-agent - [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede [90m[0m
+2026-09-30 17:53:40,589 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:40,590 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:40,592 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:40,593 - [32mINFO[0m vr-voice-agent - [SESSION] Chat history cleared for new quest context [90m[0m
+2026-09-30 17:53:40,594 - [32mINFO[0m vr-voice-agent - [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '76c22d9dd6f74be29c72688e267accfe', 'status': 'ACTIVE'} [90m[0m
+2026-09-30 17:53:40,644 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:40,645 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:40,649 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:40,650 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:40,651 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:40,672 - [36mDEBUG[0m grpc.aio._call - Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+ [90m[0m
+2026-09-30 17:53:40,674 - [36mDEBUG[0m grpc._cython.cygrpc - Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x0000026D7A9D86B0>,) [90m[0m
+2026-09-30 17:53:40,973 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:41,269 - [36mDEBUG[0m livekit.agents - aec warmup active, disabling interruptions for 3.00s [90m[0m
+2026-09-30 17:53:41,281 - [31mERROR[0m asyncio - Task was destroyed but it is pending!
+task: <Task pending name='Task-86' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>> [90m[0m
+2026-09-30 17:53:44,285 - [36mDEBUG[0m livekit.agents - aec warmup expired, re-enabling interruptions [90m[0m
+2026-09-30 17:53:51,766 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:51,767 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:53:51,769 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:02,274 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:02,275 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:02,278 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:13,305 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:13,306 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:13,308 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:24,462 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:24,462 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:24,464 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:35,539 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:35,540 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:35,543 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:46,722 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:46,722 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:46,725 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:57,140 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:57,141 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:54:57,143 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:08,377 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:08,379 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:08,382 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:19,587 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:19,588 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:19,590 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:30,949 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:30,952 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:30,954 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:42,106 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:42,107 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:42,109 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:52,514 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:52,515 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:55:52,517 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:02,929 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:02,930 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:02,932 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:14,174 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:14,175 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:14,177 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:25,402 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:25,402 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:25,406 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:35,834 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:35,835 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:35,837 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:47,024 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:47,025 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:47,027 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:57,995 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:57,996 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:56:57,999 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:09,068 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:09,069 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:09,070 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:20,206 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:20,207 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:20,210 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:31,369 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:31,371 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:31,373 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:42,464 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:42,465 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:42,467 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:53,688 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:53,689 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:57:53,691 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:04,741 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:04,743 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:04,746 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:15,171 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:15,173 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:15,175 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:25,628 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:25,629 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:25,631 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:36,969 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:36,969 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:36,971 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:48,279 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:48,279 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:48,282 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:59,611 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:59,611 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:58:59,614 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:11,023 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:11,025 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:11,027 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:23,042 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:23,044 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:23,046 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:34,412 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:34,414 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:34,416 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:45,835 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:45,836 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:45,839 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:56,980 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:56,982 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 17:59:56,984 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:07,383 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:07,384 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:07,386 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:18,660 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:18,662 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:18,665 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:29,936 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:29,938 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:29,941 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:41,168 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:41,168 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:41,170 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:52,398 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:52,399 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:00:52,402 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:03,661 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:03,663 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:03,666 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:14,278 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:14,280 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:14,282 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:25,533 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:25,533 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:25,536 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:36,663 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:36,665 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:36,667 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:47,903 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:47,905 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:47,907 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:59,076 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:59,076 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:01:59,079 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:10,297 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:10,299 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:10,302 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:21,475 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:21,476 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:21,479 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:32,656 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:32,658 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:32,661 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:43,838 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:43,840 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:43,843 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:54,927 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:54,928 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:02:54,931 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:06,126 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:06,128 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:06,131 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:17,392 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:17,392 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:17,395 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:28,558 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:28,560 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:28,563 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:39,668 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:39,670 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:39,673 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:50,823 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:50,823 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:03:50,826 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:01,917 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:01,919 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:01,922 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:13,079 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:13,081 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:13,084 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:24,102 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:24,104 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:24,107 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:35,178 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:35,178 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:35,181 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:46,378 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:46,380 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:46,382 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:57,380 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:57,380 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:04:57,383 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:08,715 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:08,715 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:08,719 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:19,148 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:19,148 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:19,151 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:30,371 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:30,372 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:30,374 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:41,570 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:41,572 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:41,574 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:53,063 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:53,064 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:05:53,067 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:04,311 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:04,312 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:04,314 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:15,540 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:15,542 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:15,544 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:26,849 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:26,850 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:26,852 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:38,039 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:38,040 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:38,042 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:49,160 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:49,160 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:06:49,162 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:00,321 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:00,321 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:00,323 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:11,553 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:11,554 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:11,556 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:22,917 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:22,918 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:22,919 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:34,143 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:34,144 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:34,146 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:45,332 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:45,333 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:45,335 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:56,306 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:56,308 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:07:56,311 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:07,525 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:07,526 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:07,529 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:18,825 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:18,827 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:18,828 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:29,967 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:29,969 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:29,972 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:41,048 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:41,049 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:41,051 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:52,236 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:52,238 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:08:52,240 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:03,463 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:03,466 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:03,473 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:14,551 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:14,553 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:14,555 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:25,783 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:25,785 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:25,787 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:37,043 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:37,044 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:37,046 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:48,149 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:48,151 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:48,153 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:59,097 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:59,097 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:09:59,099 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:10,190 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:10,192 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:10,194 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:21,412 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:21,413 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:21,416 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:32,498 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:32,500 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:32,503 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:43,491 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:43,493 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:43,496 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:54,820 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:54,821 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:10:54,824 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:06,052 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:06,054 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:06,057 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:17,306 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:17,307 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:17,310 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:28,459 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:28,460 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:28,462 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:39,623 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:39,623 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:39,626 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:50,941 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:50,941 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:11:50,944 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:02,104 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:02,105 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:02,107 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:13,226 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:13,228 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:13,230 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:24,384 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:24,386 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:24,388 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:35,510 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:35,511 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:35,513 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:46,681 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:46,683 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:46,685 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:57,926 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:57,927 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:12:57,929 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:13:09,111 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:13:09,112 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m
+2026-09-30 18:13:09,115 - [36mDEBUG[0m grpc._cython.cygrpc - [_cygrpc] Loaded running loop: id(loop)=2669184597072 [90m[0m

@@ -262,8 +262,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Editor
                 {
                     name = "required-status-field",
                 };
+                // Replace this edge's payload instead of mutating a possibly shared reference.
+                // This also isolates status edits in assets authored before fresh-item insertion.
                 statusField.RegisterValueChangedCallback(evt =>
-                    SetStringValue(statusProperty, evt.newValue, "Change Lesson Edge Status"));
+                    SetManagedReference(conditionProperty, new StatusCondition(evt.newValue), "Change Lesson Edge Status"));
                 container.Add(statusField);
             }
             else if (isAdvanced)
