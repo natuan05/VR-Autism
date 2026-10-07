@@ -10,6 +10,11 @@ using VRAutism.Gameplay.LessonGraphV2.Data;
 using VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions;
 using VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs;
 using VRAutism.Gameplay.LessonGraphV2.Runtime;
+using VRAutism.Gameplay.LessonGraphV2.Runtime.Executors;
+using VRAutism.Gameplay.LessonGraphV2.Questing;
+using VRAutism.Gameplay.LessonGraphV2.Questing.Sources;
+using VRAutism.Gameplay.LessonGraphV2.Questing.Voice;
+using VRAutism.Gameplay.LessonGraphV2.Phrases;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
 {
@@ -210,6 +215,88 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 CollectionAssert.AreEqual(new[] { "body", "body" }, bodyVisits);
             }
             finally { UnityEngine.Object.DestroyImmediate(graph); }
+        }
+
+        [UnityTest]
+        public IEnumerator ExecuteLoop_ReactivatesHoldAndVoiceSourcesAndSendsSecondVoiceActivation()
+        {
+            var graph = CreateGraph(
+                new LessonNodeData("loop", NodeType.Loop, new LoopNodeConfig("body", "exit", 3,
+                    new VariableCondition("done", VariableValueType.Boolean, VariableComparisonOperator.Equal, true))),
+                new LessonNodeData("body", NodeType.Quest, new QuestNodeConfig(new List<string> { "hold", "voice" }, -1f)),
+                new LessonNodeData("exit", NodeType.Wait, new WaitNodeConfig(1)));
+            var go = new GameObject("loop-quest-sources");
+            go.SetActive(false);
+            var previousSnapshot = (VoicePhraseSessionSnapshotV2)typeof(VoicePhraseSnapshotStoreV2)
+                .GetField("_session", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic).GetValue(null);
+            try
+            {
+                var hold = go.AddComponent<HoldTouchQuestSourceV2>();
+                var voice = go.AddComponent<VoiceQuestSourceV2>();
+                var bindings = go.AddComponent<LessonGraphBindings>();
+                SetPrivate(typeof(QuestSourceV2), hold, "_bindingId", "hold");
+                SetPrivate(typeof(QuestSourceV2), voice, "_bindingId", "voice");
+                SetPrivate(typeof(LessonGraphBindings), bindings, "_entries", new List<QuestBindingEntry>
+                {
+                    new QuestBindingEntry("hold", hold), new QuestBindingEntry("voice", voice),
+                });
+                VoicePhraseSnapshotStoreV2.Replace(new Dictionary<string, VoiceQuestPhraseSnapshotV2>
+                {
+                    ["voice"] = new VoiceQuestPhraseSnapshotV2("voice", "Ask", new[] { "Please" }),
+                });
+                var variables = new MutableVariableSource();
+                var transport = new LoopVoiceTransport(variables);
+                voice.ConfigureTransport(transport);
+                go.SetActive(true);
+                typeof(QuestSourceV2).GetMethod("Awake", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(hold, null);
+                typeof(VoiceQuestSourceV2).GetMethod("Awake", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(voice, null);
+                typeof(LessonGraphBindings).GetMethod("Awake", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(bindings, null);
+                var holdResults = new List<QuestSourceResult>();
+                hold.Terminated += holdResults.Add;
+                var clock = new TestClock();
+                var executor = new QuestNodeExecutor(bindings, clock);
+                var registry = new ResultRegistry(executor.ExecuteAsync);
+                var flow = new StructuredFlowExecution(graph, registry, clock, variables, null, _ => { });
+                var task = flow.ExecuteLoopAsync(Context(graph, "loop", clock));
+                yield return CompleteWithinFrames(task);
+
+                Assert.AreEqual(NodeStatus.Success, task.GetAwaiter().GetResult().ParentResult.Status);
+                Assert.AreEqual(2, transport.Activations.Count, "Real voice source must request activation in both iterations.");
+                Assert.AreNotEqual(transport.Activations[0], transport.Activations[1]);
+                Assert.AreEqual(2, holdResults.Count);
+                Assert.AreEqual(QuestSourceTerminalStatus.Cancelled, holdResults[0].Status);
+                Assert.AreEqual(QuestSourceTerminalStatus.Cancelled, holdResults[1].Status);
+                Assert.IsTrue(hold.IsAvailable);
+                Assert.IsTrue(voice.IsAvailable);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(go);
+                UnityEngine.Object.DestroyImmediate(graph);
+                VoicePhraseSnapshotStoreV2.Replace(previousSnapshot);
+            }
+        }
+
+        private static void SetPrivate(Type type, object target, string field, object value) =>
+            type.GetField(field, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(target, value);
+
+        private sealed class LoopVoiceTransport : IVoiceQuestTransport
+        {
+            private readonly MutableVariableSource _variables;
+            public event Action<VoiceQuestSignal> SignalReceived;
+            public readonly List<string> Activations = new List<string>();
+            public LoopVoiceTransport(MutableVariableSource variables) { _variables = variables; }
+            public Task ActivateAsync(VoiceQuestActivation request, CancellationToken cancellationToken)
+            {
+                Activations.Add(request.activation_id);
+                _variables.Done = Activations.Count == 2;
+                if (Activations.Count == 2)
+                    SignalReceived?.Invoke(new VoiceQuestSignal(Activations[0], VoiceQuestSignalType.Matched));
+                SignalReceived?.Invoke(new VoiceQuestSignal(request.activation_id, VoiceQuestSignalType.Matched));
+                return Task.CompletedTask;
+            }
+            public Task CancelAsync(string activationId, string reason, CancellationToken cancellationToken) => Task.CompletedTask;
+            public Task<bool> SendVerbalHintAsync(VoiceQuestVerbalHint request, CancellationToken cancellationToken) => Task.FromResult(true);
         }
 
         private static LessonGraph CreateGraph(params LessonNodeData[] nodes)

@@ -30,7 +30,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
 
             Assert.AreEqual(NodeStatus.Success, result.Status);
             Assert.AreEqual("instant", result.CompletionChannel);
-            Assert.AreEqual("a1", winner.CurrentActivationId);
+            Assert.AreEqual("a1", result.ActivationId);
+            Assert.AreEqual(QuestSourceState.Inactive, winner.State);
             Assert.AreEqual(QuestSourceState.Inactive, untouched.State);
         }
 
@@ -55,13 +56,16 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         private IEnumerator FirstCorrelatedTerminal(QuestSourceTerminalStatus terminal, NodeStatus expected)
         {
             var first = Source("first"); var loser = Source("loser");
+            QuestSourceResult loserResult = null;
+            loser.Terminated += result => loserResult = result;
             var task = new QuestNodeExecutor(new Resolver(first, loser), new Clock()).ExecuteAsync(Context("a2", "first", "loser"));
             first.Emit("a2", terminal);
             yield return CompleteWithinFrames(task);
             var result = task.GetAwaiter().GetResult();
 
             Assert.AreEqual(expected, result.Status);
-            Assert.AreEqual(QuestSourceState.Cancelled, loser.State);
+            Assert.AreEqual(QuestSourceTerminalStatus.Cancelled, loserResult.Status);
+            Assert.AreEqual(QuestSourceState.Inactive, loser.State);
         }
 
         [UnityTest]
@@ -99,13 +103,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var skipTask = new QuestNodeExecutor(new Resolver(skipSource), new Clock()).ExecuteAsync(Context("skip", "skip", skipToken: skip.Token));
             skip.Cancel();
             yield return CompleteWithinFrames(skipTask);
-            Assert.AreEqual(NodeStatus.Skipped, skipTask.GetAwaiter().GetResult().Status); Assert.AreEqual(QuestSourceState.Cancelled, skipSource.State);
+            Assert.AreEqual(NodeStatus.Skipped, skipTask.GetAwaiter().GetResult().Status); Assert.AreEqual(QuestSourceState.Inactive, skipSource.State);
 
             var timeoutSource = Source("timeout"); var timeout = new CancellationTokenSource();
             var timeoutTask = new QuestNodeExecutor(new Resolver(timeoutSource), new Clock()).ExecuteAsync(Context("timeout", "timeout", timeoutToken: timeout.Token));
             timeout.Cancel();
             yield return CompleteWithinFrames(timeoutTask);
-            Assert.AreEqual(NodeStatus.Timeout, timeoutTask.GetAwaiter().GetResult().Status); Assert.AreEqual(QuestSourceState.Cancelled, timeoutSource.State);
+            Assert.AreEqual(NodeStatus.Timeout, timeoutTask.GetAwaiter().GetResult().Status); Assert.AreEqual(QuestSourceState.Inactive, timeoutSource.State);
         }
 
         [UnityTest]
@@ -115,14 +119,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var timeoutTask = new QuestNodeExecutor(new Resolver(timed), clock).ExecuteAsync(Context("timed", new[] { "timed" }, default, default, default, clock, 1f));
             clock.CompleteDelay();
             yield return CompleteWithinFrames(timeoutTask);
-            Assert.AreEqual(NodeStatus.Timeout, timeoutTask.GetAwaiter().GetResult().Status); Assert.AreEqual(QuestSourceState.Cancelled, timed.State);
+            Assert.AreEqual(NodeStatus.Timeout, timeoutTask.GetAwaiter().GetResult().Status); Assert.AreEqual(QuestSourceState.Inactive, timed.State);
 
             var aborted = Source("aborted"); var abort = new CancellationTokenSource();
             var abortTask = new QuestNodeExecutor(new Resolver(aborted), new Clock()).ExecuteAsync(Context("aborted", new[] { "aborted" }, abort.Token, default, default, new Clock(), -1f));
             abort.Cancel();
             yield return CompleteWithinFrames(abortTask);
             Assert.IsTrue(abortTask.IsCanceled);
-            Assert.AreEqual(QuestSourceState.Cancelled, aborted.State);
+            Assert.AreEqual(QuestSourceState.Inactive, aborted.State);
         }
 
         [UnityTest]
@@ -135,6 +139,71 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var duplicateTask = new QuestNodeExecutor(new FailingResolver(), new Clock()).ExecuteAsync(Context("duplicate", new[] { "same", "same" }, default, default, default, new Clock(), -1f));
             yield return CompleteWithinFrames(duplicateTask);
             Assert.AreEqual(NodeStatus.Failed, duplicateTask.GetAwaiter().GetResult().Status);
+        }
+
+        [UnityTest]
+        public IEnumerator ConsecutiveExecutions_ReuseRealBindingsAndRejectPreviousActivation()
+        {
+            var winner = Source("winner");
+            var loser = Source("loser");
+            var bindings = Bindings(winner, loser);
+            var executor = new QuestNodeExecutor(bindings, new Clock());
+            var loserResults = new List<QuestSourceResult>();
+            loser.Terminated += loserResults.Add;
+
+            var first = executor.ExecuteAsync(Context("first", "winner", "loser"));
+            winner.Emit("first", QuestSourceTerminalStatus.Completed);
+            yield return CompleteWithinFrames(first);
+            Assert.AreEqual(NodeStatus.Success, first.GetAwaiter().GetResult().Status);
+            Assert.IsTrue(bindings.Resolve("winner").IsSuccess);
+            Assert.IsTrue(bindings.Resolve("loser").IsSuccess);
+            Assert.AreEqual(QuestSourceTerminalStatus.Cancelled, loserResults[0].Status);
+
+            var second = executor.ExecuteAsync(Context("second", "winner", "loser"));
+            winner.Emit("first", QuestSourceTerminalStatus.Completed);
+            loser.Emit("first", QuestSourceTerminalStatus.Cancelled);
+            Assert.IsFalse(second.IsCompleted);
+            Assert.AreEqual("second", winner.CurrentActivationId);
+            Assert.AreEqual(QuestSourceState.Active, loser.State);
+            winner.Emit("second", QuestSourceTerminalStatus.Completed);
+            yield return CompleteWithinFrames(second);
+            Assert.AreEqual(NodeStatus.Success, second.GetAwaiter().GetResult().Status);
+            Assert.AreEqual(2, loserResults.Count);
+            Assert.IsTrue(winner.IsAvailable);
+            Assert.IsTrue(loser.IsAvailable);
+        }
+
+        [UnityTest]
+        public IEnumerator TimeoutExecution_ReleasesRealBindingForNextActivation()
+        {
+            var source = Source("repeat");
+            var bindings = Bindings(source);
+            var executor = new QuestNodeExecutor(bindings, new Clock());
+            using (var timeout = new CancellationTokenSource())
+            {
+                var first = executor.ExecuteAsync(Context("first", "repeat", timeoutToken: timeout.Token));
+                timeout.Cancel();
+                yield return CompleteWithinFrames(first);
+                Assert.AreEqual(NodeStatus.Timeout, first.GetAwaiter().GetResult().Status);
+            }
+
+            var second = executor.ExecuteAsync(Context("second", "repeat"));
+            Assert.AreEqual(QuestSourceState.Active, source.State);
+            source.Emit("second", QuestSourceTerminalStatus.Completed);
+            yield return CompleteWithinFrames(second);
+            Assert.AreEqual(NodeStatus.Success, second.GetAwaiter().GetResult().Status);
+        }
+
+        private LessonGraphBindings Bindings(params QuestSourceV2[] sources)
+        {
+            var go = new GameObject("real-bindings");
+            _objects.Add(go);
+            var bindings = go.AddComponent<LessonGraphBindings>();
+            var entries = new List<QuestBindingEntry>();
+            foreach (var source in sources) entries.Add(new QuestBindingEntry(source.BindingId, source));
+            typeof(LessonGraphBindings).GetField("_entries", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(bindings, entries);
+            typeof(LessonGraphBindings).GetMethod("Awake", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Invoke(bindings, null);
+            return bindings;
         }
 
         private TestSource Source(string binding, bool completeOnActivation = false)

@@ -1,5 +1,5 @@
 # generated: 2026-08-28
-# last_updated: 2026-09-29
+# last_updated: 2026-10-07
 # project: VR-Autism
 # project_key: NOKEY
 # tracking_system: file-system
@@ -28,7 +28,7 @@
 #   manual branch cancellation, Gate, Loop, and variable-store checks remain.
 
 generated: 2026-08-28
-last_updated: 2026-09-29
+last_updated: 2026-10-07
 project: VR-Autism
 project_key: NOKEY
 tracking_system: file-system
@@ -58,3 +58,43 @@ development_status:
   3-4-checkpoint-and-resume-an-advanced-lesson-safely: backlog
   3-5-author-and-validate-graph-flow-through-an-editor-surface: backlog
   epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-prepare-timeline-handoff-and-support-launch-bypass: backlog
+  4-2-replace-test-installer-with-production-lesson-startup: backlog
+  epic-4-retrospective: optional
+
+# Document paths are relative to the repository root.
+epic_details:
+  epic-4:
+    title: "Prepare and launch production lessons safely"
+    planning_source: _bmad-output/planning-artifacts/epics.md
+    note: "Scope added on 2026-10-03. Amendment 2026-10-07 prioritizes Story 2.4 then independent Story 4.2 for a trial build; Stories 3.4, 3.5 and 4.1 are deferred. Existing story IDs/statuses remain unchanged; concrete startup APIs remain proposed."
+
+story_details:
+  4-1-prepare-timeline-handoff-and-support-launch-bypass:
+    title: "Prepare Timeline handoff state and support launch without Timeline presentations"
+    specification_status: proposed
+    scope: "Authored ready-state profiles, runner-owned finalization, safe manual Skip, and session-scoped Play/Bypass launch options."
+    compatibility: "Missing handoff profile permits normal Play but rejects Skip; Bypass requires complete profile and route preflight."
+    documents:
+      research: _bmad-output/implementation-artifacts/research-timeline-handoff-and-bypass-2026-10-02.md
+      specification: _bmad-output/specs/spec-timeline-handoff-and-bypass/SPEC.md
+      runtime_contract: _bmad-output/specs/spec-timeline-handoff-and-bypass/runtime-contract.md
+      verification: _bmad-output/specs/spec-timeline-handoff-and-bypass/verification.md
+    remaining_design: "Confirm actor anchors, neutral animation, and Bathroom logical/visual prop states in Unity before accepting scene migration."
+    acceptance: "Unity compile, focused tests, and normal/Skip/Bypass state equivalence with a working next-quest interaction. Final production startup also requires Story 4.2."
+
+  4-2-replace-test-installer-with-production-lesson-startup:
+    title: "Replace the temporary LessonGraphRunnerInstaller with application-controlled lesson startup"
+    specification_status: proposed
+    scope: "Normal application Start Lesson flow, scene runtime composition, readiness/start ownership, telemetry/persistence safeguards and cleanup, based on the code/scenes/contracts present when implementation begins."
+    dependencies: "Required Story 2.4 parity/cutover integration; no Story 4.1 prerequisite."
+    excluded_scope: "Timeline handoff profiles, Play/Bypass options/capabilities, can_skip additions, Demo scene routing, checkpoint recovery and editor expansion."
+    documents:
+      specification: _bmad-output/specs/spec-production-lesson-startup/SPEC.md
+      startup_boundary: _bmad-output/specs/spec-production-lesson-startup/startup-boundary.md
+      verification: _bmad-output/specs/spec-production-lesson-startup/verification.md
+    remaining_design: "Re-inspect actual code, scenes, launch contracts and Story 2.4 outcomes when implementation begins; define concrete owner APIs and focused migration steps from that baseline."
+    migration: "Transfer installer responsibilities and remove concrete dependencies in Runner/TimeManager; preserve telemetry ownership, legacy persistence exclusion, reconnect, and unload behavior. Migrate scenes and tests before removing the script."
+    acceptance: "Normal dashboard Start Lesson without the installer; duplicate/stale launch, readiness failure, reconnect, unload and persistence evidence. No Story 4.1 configuration or tests required."

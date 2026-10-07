@@ -29,6 +29,8 @@ FR7: Persist idempotent per-node telemetry and legacy-compatible QuestLogData; p
 FR8: Extend Unity LiveKit transport and Python Agent handling for activation-correlated quest activate, cancel, status, match, script, and script completion packets.
 FR9: Preserve legacy ActionManager and QuestController scenes unchanged while V2 scenes use LessonGraphRunner.
 FR10: Add Phase 2 support for Timeline, structured Parallel and Gate nodes, bounded loops, checkpoint resume, advanced conditions, and an editor graph surface.
+FR11: Establish an authored teaching state after eligible Timeline success/Skip and support a validated no-Timeline lesson launch. Added by user scope amendment on 2026-10-03.
+FR12: Launch production lessons through application-controlled runtime composition and retire the temporary Unity test installer while preserving session, telemetry and cleanup ownership. Added by user scope amendment on 2026-10-03.
 
 ### NonFunctional Requirements
 
@@ -67,6 +69,8 @@ FR7: Epic 2 - Session telemetry and live state.
 FR8: Epic 1 - Quest activation-correlated Unity/Agent transport; Epic 2 - dialogue completion extension.
 FR9: Epic 1 - Legacy isolation and regression proof.
 FR10: Epic 3 - Advanced adaptive graph capabilities.
+FR11: Epic 4 - Timeline handoff and validated presentation bypass.
+FR12: Epic 4 - Production lesson startup and temporary installer retirement.
 
 ## Epic List
 
@@ -87,6 +91,14 @@ Therapist can deliver blocking scripted dialogue, voice quests, remote hints or 
 ### Epic 3: Author adaptive advanced lessons
 Lesson author can create Timeline, Parallel, Gate, condition, bounded-loop, checkpoint-resume, and graph-editor flows.
 **FRs covered:** FR10.
+
+### Epic 4: Prepare and launch production lessons safely
+Therapist can play or bypass presentations while reaching the declared teaching state, and launch lessons through the application without the temporary Unity test installer.
+**FRs covered:** FR11, FR12.
+
+**Scope amendment (2026-10-03):** Story 4.1 extends Story 3.2 without changing its acceptance criteria. Story 4.2 transfers startup responsibilities before removing `LessonGraphRunnerInstaller`; it does not replace Story 2.4's legacy Action/Quest cutover. The shared [proposed spec](../specs/spec-timeline-handoff-and-bypass/SPEC.md) and its companions define the boundaries; concrete production startup APIs still require a focused design and plan.
+
+**Scope amendment (2026-10-07):** Prioritize Story 2.4, then Story 4.2 for a stable trial build. Stories 3.4, 3.5 and 4.1 are deferred. Story 4.2 now has an independent [production startup spec](../specs/spec-production-lesson-startup/SPEC.md); the earlier shared-spec coupling is superseded. Its implementation uses the actual code, scenes and accepted launch contracts present at that time, with no Timeline handoff/bypass prerequisite.
 
 ## Epic 1: Run graph-based multimodal therapy tasks
 
@@ -390,6 +402,8 @@ So that the completed Lesson Graph system can fully replace the legacy lesson co
 
 **Scope and checkpoints:** Replace and retire `ActionManager` and the old Quest model/controller stack, including its obsolete action-specific UI, hint, and remote integrations. Quiz and Exploration retain their existing runtimes and continue using `TimeManager` and `FirebaseManager`; migrating or deleting those runtimes/managers is outside this story. First inventory the existing behavior and dependencies; then implement and verify required gaps; finally perform the validated Action/Quest cutover and removal. Record dependencies on unfinished Lesson Graph work, including Epic 3. Completing an audit or publishing a gap list alone does not satisfy the replacement gate. Keep the existing sprint tracking key `2-4-reconcile-legacy-and-lesson-graph-session-ownership`.
 
+**Dependency clarification (2026-10-07):** Story 2.4 may continue now. Only concrete dependencies actually required by the selected trial lessons must be delivered and verified; completing the whole of Epic 3 is not a prerequisite. Evaluate 3.1/3.2 for the advanced nodes/Timeline used and 3.3 only for required structured flow. Stories 3.4, 3.5 and 4.1 are deferred; existing asset validation remains required without editor expansion. Story 4.2 follows 2.4. All parity, reference migration, accepted cutover and post-removal regression gates remain; no controller may be deleted while any remaining consumer depends on it.
+
 **Minimum parity inventory:**
 
 | Area | Observable behavior to compare |
@@ -642,3 +656,79 @@ So that I can build safe advanced lesson flow without manually editing serialize
 **Given** automated tests run
 **When** graph editing, validation presentation, undo/redo, schema compatibility, and serialization paths are exercised
 **Then** focused editor coverage passes.
+
+## Epic 4: Prepare and launch production lessons safely
+
+Added on 2026-10-03. Both stories begin in backlog; this addition does not approve implementation or promote existing stories.
+
+### Story 4.1: Prepare Timeline handoff and support launch bypass
+
+As a therapist,
+I want a skipped presentation or a lesson launched without presentations to leave the scene ready for the next quest,
+So that the learner can begin practice without watching every Timeline or pressing Skip repeatedly.
+
+**Documents:** [Research](../implementation-artifacts/research-timeline-handoff-and-bypass-2026-10-02.md), [Spec](../specs/spec-timeline-handoff-and-bypass/SPEC.md), [Runtime contract](../specs/spec-timeline-handoff-and-bypass/runtime-contract.md), [Verification](../specs/spec-timeline-handoff-and-bypass/verification.md).
+
+**Dependencies and limits:** Reuse Story 3.2 playback/signal semantics and existing remote/state contracts. Initial profiles apply only to standalone Timeline nodes; structured child handoff/bypass remains excluded. Confirm exact scene targets, neutral animation and prop logic in Unity. Development may use the current test scaffold; final production launch also requires Story 4.2.
+
+**Acceptance Criteria:**
+
+**Given** an eligible Timeline with a validated scene handoff profile and valid continuations
+**When** it completes from its configured signal or receives an accepted Skip
+**Then** playback/listeners are cleaned before runner-owned finalization applies the profile once
+**And** normal playback returns `Success`, Skip returns `Skipped`, and both reach the declared teaching state and intended successor.
+
+**Given** the teacher selects Bypass for a new session
+**When** launch preflight validates every configured Timeline profile and route
+**Then** each activated Timeline applies its profile without playback and returns `Skipped/timeline_bypass`
+**And** unrelated nodes execute normally and the immutable mode cannot leak to a later session.
+
+**Given** a Timeline has no authored profile
+**When** Play, Skip or Bypass is requested
+**Then** normal Play remains available, Skip is rejected before cancelling playback, and Bypass fails preflight before node execution.
+
+**Given** cancellation/pause is accepted before completion reservation, or timeout occurs
+**When** the outcome is settled
+**Then** no normal handoff is applied
+**And** post-reservation abort/unload or finalization failure prevents the intended next-node entry without promising rollback of partial writes.
+
+**Given** configured LearnToAsk-V2 and Bathroom-V2 boundaries
+**When** focused tests and manual normal/early-middle-late Skip/Bypass checks run
+**Then** the declared state persists across Animator/physics updates and the next quest's real interaction works
+**And** authoritative eligibility, routing, duplicate/stale commands and cross-stack startup/state contracts have evidence before completion.
+
+### Story 4.2: Replace the test installer with production lesson startup
+
+As a therapist,
+I want lessons to start through the application's accepted session launch path,
+So that production execution does not depend on a component created for quick Unity testing.
+
+**Documents:** [Production startup spec](../specs/spec-production-lesson-startup/SPEC.md), [Startup boundary and retirement](../specs/spec-production-lesson-startup/startup-boundary.md), [Verification](../specs/spec-production-lesson-startup/verification.md).
+
+**Dependencies and limits:** Schedule after required Story 2.4 parity/cutover work. At implementation time, inspect the actual code, scenes, session launch contracts and Story 2.4 outcomes before selecting concrete owner APIs and migration steps. Preserve existing session/phrase, LiveKit, telemetry, Timeline playback and readiness safeguards. Story 4.2 does not depend on Story 4.1; handoff profiles, Play/Bypass options, Demo scene routing, checkpoint recovery and editor expansion are excluded. Legacy controller cutover remains Story 2.4; preserve retained legacy persistence behavior. Reuse the current lesson selection/Start Lesson entry without a competing loader or changing pairing responsibilities.
+
+**Acceptance Criteria:**
+
+**Given** an accepted dashboard launch with session/lesson/launch identity
+**When** required metadata is ready and the scene definition is available
+**Then** one runtime owner composes the dependencies required by the inspected baseline, establishes persistence ownership and validates graph/bindings/readiness before authorizing exactly one runner activation.
+
+**Given** a stale/duplicate launch, missing required dependency or failed startup validation
+**When** startup handles it
+**Then** it cannot start an unauthorized or duplicate run/writer
+**And** partial composition is cleaned without silently relaxing readiness gates.
+
+**Given** a running lesson reconnects or its scene unloads
+**When** lifecycle handling runs
+**Then** reconnect reattaches transport without restarting the graph
+**And** unload cancels the run, releases scene references/listeners and preserves pending telemetry drain ownership.
+
+**Given** the replacement startup path is verified
+**When** the temporary installer is retired
+**Then** production scenes, runner authorization, TimeManager persistence exclusion and tests no longer depend on its concrete type
+**And** `LessonGraphRunnerInstaller` is removed without missing-script references or duplicate legacy/V2 persistence.
+
+**Given** a normal production lesson launch without the installer
+**When** focused startup tests and dashboard/manual lifecycle checks run
+**Then** normal launch, duplicate/stale launch, readiness failure, reconnect, unload and persistence preservation have evidence without requiring any Story 4.1 configuration or tests
+**And** any replacement quick-test entry uses the shared runtime composition rather than its own launch policy.

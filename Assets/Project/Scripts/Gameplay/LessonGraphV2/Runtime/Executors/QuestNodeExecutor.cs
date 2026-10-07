@@ -126,6 +126,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Executors
                 bool ownsActiveExecution;
                 lock (_hintGate)
                 {
+                    hintScope.IsSettling = true;
                     ownsActiveExecution = ReferenceEquals(_activeExecution, hintScope);
                     rearmAfterPause = string.Equals(_pauseRequestedActivationId, context.ActivationId, StringComparison.Ordinal);
                     if (rearmAfterPause) _pauseRequestedActivationId = null;
@@ -134,10 +135,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Executors
                 var rearmableSources = new List<QuestSourceV2>();
                 foreach (var source in active)
                 {
+                    if (source == null) continue;
                     UnityEngine.Debug.Log($"[LessonGraphV2] QuestExecutor: cancelling loser source='{source.BindingId}'");
                     var reason = rearmAfterPause ? QuestSourceV2.PauseCancellationReason : "first_win";
                     if (source.TryCancel(new QuestSourceCancellation(context.ActivationId, reason)) && rearmAfterPause)
                         rearmableSources.Add(source);
+                    if (!rearmAfterPause)
+                        source.TryRearmAfterExecution(context.ActivationId);
                 }
                 if (rearmableSources.Count > 0)
                 {
@@ -170,6 +174,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Executors
                 var scope = _activeExecution;
                 if (scope == null || !string.Equals(scope.Context.ActivationId, activationId, StringComparison.Ordinal))
                     return false;
+
+                if (scope.IsSettling) return true;
 
                 foreach (var source in scope.Sources)
                 {
@@ -329,6 +335,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Executors
         {
             public NodeExecutionContext Context { get; }
             public List<QuestSourceV2> Sources { get; }
+            public bool IsSettling { get; set; }
             public ActiveExecution(NodeExecutionContext context, List<QuestSourceV2> sources)
             {
                 Context = context;

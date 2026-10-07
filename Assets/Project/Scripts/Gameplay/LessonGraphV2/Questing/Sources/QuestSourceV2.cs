@@ -19,6 +19,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
         private int _mainThreadId;
         private QuestSourceActivation _activation;
         private bool _cleanupPerformed;
+        private bool _cleanupCompleted;
+        private bool _terminationInProgress;
         private string _lastCancellationReason = string.Empty;
         private bool _hintIndicatorStateCaptured;
         private bool _hintIndicatorWasActive;
@@ -120,9 +122,21 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
                 !string.Equals(_lastCancellationReason, PauseCancellationReason, StringComparison.Ordinal))
                 return false;
 
+            return TryRearmAfterExecution(activationId);
+        }
+
+        /// <summary>Releases a cleaned terminal activation after its executor has detached its listeners.</summary>
+        public bool TryRearmAfterExecution(string activationId)
+        {
+            if (!IsMainThread() || _activation == null || _terminationInProgress || !_cleanupCompleted ||
+                !string.Equals(_activation.ActivationId, activationId, StringComparison.Ordinal) ||
+                (State != QuestSourceState.Completed && State != QuestSourceState.Cancelled && State != QuestSourceState.Failed))
+                return false;
+
             _activation = null;
             _lastCancellationReason = string.Empty;
             _cleanupPerformed = false;
+            _cleanupCompleted = false;
             _hintIndicatorStateCaptured = false;
             _hintIndicatorWasActive = false;
             SetState(QuestSourceState.Inactive);
@@ -227,9 +241,16 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
             _lastCancellationReason = terminalStatus == QuestSourceTerminalStatus.Cancelled
                 ? cancellationReason ?? string.Empty
                 : string.Empty;
-            SetState(terminalState);
-            Emit(Terminated, result);
-            CleanupOnce();
+            // Terminal callbacks and cleanup belong to this activation. They must finish before
+            // a new owner can rearm it, including reentrant state/termination callbacks.
+            _terminationInProgress = true;
+            try
+            {
+                SetState(terminalState);
+                Emit(Terminated, result);
+                CleanupOnce();
+            }
+            finally { _terminationInProgress = false; }
             return true;
         }
 
@@ -258,8 +279,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
         {
             if (_cleanupPerformed) return;
             _cleanupPerformed = true;
-            RestoreHintIndicatorState();
-            try { OnSourceCleanup(); }
+            try
+            {
+                RestoreHintIndicatorState();
+                OnSourceCleanup();
+                _cleanupCompleted = true;
+            }
             catch (Exception exception) { Debug.LogException(exception, this); }
         }
 

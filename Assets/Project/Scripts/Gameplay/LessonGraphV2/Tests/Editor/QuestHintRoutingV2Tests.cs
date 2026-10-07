@@ -313,10 +313,39 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.That(pauseResult.reason, Is.EqualTo(LessonCommandReasonV2.InvalidState));
             Assert.That(pauseResult.state.status, Is.EqualTo("running"), "Rejected PAUSE must leave runner state unchanged.");
             Assert.That(lesson.GetAwaiter().GetResult().IsSuccess, Is.True);
-            Assert.That(source.State, Is.EqualTo(QuestSourceState.Completed));
+            Assert.That(source.State, Is.EqualTo(QuestSourceState.Inactive));
             Assert.That(terminalResults, Is.EqualTo(1), "Terminal completion emits only one result.");
-            Assert.That(source.TryActivate(new QuestSourceActivation("second-activation", DateTimeOffset.UtcNow, 0d)), Is.False,
-                "Completed source remains one-shot.");
+            Assert.That(source.IsAvailable, Is.True, "Executor release permits a fresh activation after terminal cleanup.");
+        }
+
+        [UnityTest]
+        public IEnumerator RunnerRejectsReentrantPauseWhileExecutorReleasesTerminalSource()
+        {
+            var source = Source("teacher", null);
+            var graph = Graph("teacher");
+            var runnerObject = new GameObject("source-release-pause-runner");
+            _objects.Add(runnerObject);
+            var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            runner.Configure(graph, new Registry(new QuestNodeExecutor(new Resolver(source), new NeverClock())), clock: new NeverClock());
+            runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
+            Task<LessonCommandResultV2> pause = null;
+            source.StateChanged += state =>
+            {
+                if (state == QuestSourceState.Inactive && runner.CurrentState?.status == "running")
+                    pause = runner.ApplyCommandAsync(RunnerCommand(runner.CurrentState, "pause-during-release", "PAUSE"));
+            };
+            var lesson = runner.StartLessonAsync();
+            yield return UntilFrames(() => source.State == QuestSourceState.Active);
+            source.CompleteCurrent();
+            yield return UntilFrames(() => pause != null);
+            yield return CompleteWithinFrames(pause);
+            var result = pause.GetAwaiter().GetResult();
+            if (result.accepted) runner.AbortLesson();
+            yield return CompleteWithinFrames(lesson);
+
+            Assert.That(result.accepted, Is.False);
+            Assert.That(result.reason, Is.EqualTo(LessonCommandReasonV2.InvalidState));
+            Assert.That(lesson.GetAwaiter().GetResult().IsSuccess, Is.True);
         }
 
         [UnityTest]

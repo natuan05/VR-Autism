@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using VRAutism.Gameplay.LessonGraphV2.Questing;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
@@ -164,6 +165,69 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
 
             Assert.IsFalse(source.TryActivate(Activation("second")));
             Assert.AreEqual("first", source.CurrentActivationId);
+        }
+
+        [TestCase(QuestSourceTerminalStatus.Completed)]
+        [TestCase(QuestSourceTerminalStatus.Cancelled)]
+        [TestCase(QuestSourceTerminalStatus.Failed)]
+        public void ExecutorRelease_RearmsCleanedTerminalSourceAndRejectsOldSignals(QuestSourceTerminalStatus terminal)
+        {
+            var source = Source("reusable");
+            Assert.IsTrue(source.TryActivate(Activation("first")));
+            Assert.IsFalse(source.TryRearmAfterExecution("first"), "Active execution cannot be released.");
+            if (terminal == QuestSourceTerminalStatus.Completed) source.Complete("first", "touch");
+            else if (terminal == QuestSourceTerminalStatus.Cancelled) source.TryCancel(new QuestSourceCancellation("first", "first_win"));
+            else source.Fail("first", "test_failure");
+
+            Assert.IsFalse(source.TryRearmAfterExecution("wrong-owner"));
+            Assert.IsTrue(source.TryRearmAfterExecution("first"));
+            Assert.IsFalse(source.TryRearmAfterExecution("first"), "Release is accepted only once.");
+            Assert.IsTrue(source.IsAvailable);
+            Assert.AreEqual(string.Empty, source.CurrentActivationId);
+            Assert.IsTrue(source.TryActivate(Activation("second")));
+            Assert.IsFalse(source.Complete("first", "touch"));
+            Assert.IsFalse(source.TryCancel(new QuestSourceCancellation("first", "late")));
+            Assert.AreEqual(QuestSourceState.Active, source.State);
+            Assert.IsTrue(source.Complete("second", "touch"));
+            Assert.AreEqual(2, source.TerminalEventsObserved);
+            Assert.AreEqual(2, source.CleanupCalls, "Each activation needs its own cleanup.");
+        }
+
+        [Test]
+        public void ExecutorRelease_IsRejectedDuringTerminalCallbacks()
+        {
+            var source = Source("terminal-callback");
+            var attempts = new List<bool>();
+            source.StateChanged += state =>
+            {
+                if (state == QuestSourceState.Completed) attempts.Add(source.TryRearmAfterExecution("first"));
+            };
+            source.Terminated += _ => attempts.Add(source.TryRearmAfterExecution("first"));
+            source.TryActivate(Activation("first"));
+            source.Complete("first", "touch");
+
+            CollectionAssert.AreEqual(new[] { false, false }, attempts);
+            Assert.AreEqual(1, source.CleanupCalls);
+            Assert.IsTrue(source.TryRearmAfterExecution("first"));
+        }
+
+        [Test]
+        public void CleanupFailure_DoesNotPermitExecutorRelease()
+        {
+            var go = new GameObject("cleanup-failure-source");
+            _objects.Add(go);
+            var source = go.AddComponent<CleanupFailureSource>();
+            InvokeLifecycle(source, "Awake");
+            Assert.IsTrue(source.TryActivate(Activation("first")));
+            LogAssert.Expect(LogType.Exception, new System.Text.RegularExpressions.Regex("InvalidOperationException: cleanup_failure"));
+            Assert.IsTrue(source.TryCancel(new QuestSourceCancellation("first", "test")));
+            Assert.IsFalse(source.TryRearmAfterExecution("first"));
+            Assert.IsFalse(source.IsAvailable);
+        }
+
+        private sealed class CleanupFailureSource : QuestSourceV2
+        {
+            protected override void OnSourceCleanup() => throw new InvalidOperationException("cleanup_failure");
         }
 
         [Test]
