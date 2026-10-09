@@ -14,6 +14,7 @@ using VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions;
 using VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs;
 using VRAutism.Gameplay.LessonGraphV2.Phrases;
 using VRAutism.Gameplay.LessonGraphV2.Questing;
+using VRAutism.Gameplay.LessonGraphV2.Questing.Voice;
 using VRAutism.Gameplay.LessonGraphV2.Remote;
 using VRAutism.Gameplay.LessonGraphV2.Runtime;
 using VRAutism.Gameplay.LessonGraphV2.Runtime.Executors;
@@ -45,6 +46,23 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 DataReceivedV2?.Invoke(Encoding.UTF8.GetBytes(json), topic);
 
             public void Reconnect() => ReconnectedV2?.Invoke();
+        }
+
+        private sealed class NpcAudioRouter : INpcAudioRouterV2
+        {
+            public string ActiveNpcBindingId { get; private set; } = string.Empty;
+            public void RegisterNpcAudioRoute(string npcBindingId, AudioSource source) { }
+            public void UnregisterNpcAudioRoute(string npcBindingId) { }
+            public bool TryGetNpcAudioRoute(string npcBindingId, out AudioSource source)
+            {
+                source = null;
+                return false;
+            }
+            public bool SetActiveNpcRoute(string npcBindingId)
+            {
+                ActiveNpcBindingId = npcBindingId;
+                return true;
+            }
         }
 
         private sealed class ControlledExecutor : INodeExecutor
@@ -101,6 +119,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         private GameObject _sessionObject;
         private GameObject _runnerObject;
         private GameObject _bridgeObject;
+        private GameObject _voiceTransportObject;
         private LessonGraphRunnerInstaller _installer;
         private LessonGraph _graph;
         private LessonGraphRunner _runner;
@@ -128,6 +147,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             _controlledExecutor?.CompleteAll(NodeStatus.Failed);
             _runner?.AbortLesson();
             if (_bridgeObject != null) UnityEngine.Object.DestroyImmediate(_bridgeObject);
+            if (_voiceTransportObject != null) UnityEngine.Object.DestroyImmediate(_voiceTransportObject);
             if (_runnerObject != null) UnityEngine.Object.DestroyImmediate(_runnerObject);
             if (_graph != null) UnityEngine.Object.DestroyImmediate(_graph);
             if (_sessionObject != null) UnityEngine.Object.DestroyImmediate(_sessionObject);
@@ -466,6 +486,96 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.That(wrongRunResult.state.run_id, Is.EqualTo(state.run_id));
             Assert.That(_runner.CurrentState.state_revision, Is.EqualTo(state.state_revision));
             AssertReliableRemotePackets(client);
+
+            _runner.AbortLesson();
+            yield return CompleteWithinFrames(lessonTask);
+        }
+
+        [UnityTest]
+        public IEnumerator SpeakScript_IsAuthorizedThenPublishedOnTheVoiceTopicWithCommandCorrelation()
+        {
+            _controlledExecutor = new ControlledExecutor();
+            CreateRunner(twoNodes: false, executor: _controlledExecutor);
+            var lessonTask = _runner.StartLessonAsync();
+            yield return UntilFrames(() => _controlledExecutor.Contexts.Count == 1);
+
+            var state = _runner.CurrentState;
+            state.bindings = new[]
+            {
+                new LessonBindingV2
+                {
+                    binding_id = "voice-binding",
+                    npc_binding_id = "teacher-npc",
+                    can_verbal_hint = true
+                }
+            };
+            state.node_type = "Touch";
+            typeof(LessonGraphRunner).GetField("_currentState", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(_runner, state);
+
+            var client = new Client();
+            _voiceTransportObject = new GameObject("RemoteBridgeVoiceTransport");
+            var voiceTransport = _voiceTransportObject.AddComponent<LiveKitVoiceQuestTransportV2>();
+            voiceTransport.Configure(client, new NpcAudioRouter());
+            voiceTransport.ActivateAsync(
+                new VoiceQuestActivation(state.activation_id, "Ask", new[] { "Please" }, "teacher-npc"),
+                System.Threading.CancellationToken.None).GetAwaiter().GetResult();
+            CreateBridge(client);
+
+            var commandJson = "{\"contract_version\":2,\"event\":\"LESSON_COMMAND\",\"command_id\":\"script-1\",\"session_id\":\"session-1\",\"run_id\":\"" +
+                state.run_id + "\",\"node_id\":\"first\",\"activation_id\":\"" + state.activation_id +
+                "\",\"command\":\"SPEAK_SCRIPT\",\"binding_id\":\"\",\"npc_binding_id\":\"teacher-npc\",\"text\":\"Ask for help.\"}";
+            client.Receive(commandJson);
+            Pump(_bridge);
+
+            var result = LastResult(client);
+            Assert.That(result.accepted, Is.True);
+            Assert.That(result.command, Is.EqualTo(LessonCommandKindV2.SpeakScript));
+            Assert.That(result.command_id, Is.EqualTo("script-1"));
+            Assert.That(result.state.node_id, Is.EqualTo("first"));
+            var voicePacket = client.Sent.Find(packet => packet.topic == VoiceQuestTransportV2Constants.Topic &&
+                packet.json.Contains("\"event\":\"SPEAK_SCRIPT\""));
+            Assert.That(voicePacket, Is.Not.Null);
+            StringAssert.Contains("\"sequence_id\":\"script-1\"", voicePacket.json);
+            StringAssert.Contains("\"activation_id\":\"" + state.activation_id + "\"", voicePacket.json);
+            StringAssert.Contains("\"npc_binding_id\":\"teacher-npc\"", voicePacket.json);
+            StringAssert.Contains("\"text\":\"Ask for help.\"", voicePacket.json);
+
+            var touchTransition = new LessonStateV2
+            {
+                contract_version = LessonRemoteContractV2.ContractVersion,
+                session_id = state.session_id,
+                run_id = state.run_id,
+                node_id = "next-touch",
+                node_type = "Touch",
+                activation_id = "next-touch-activation",
+                status = "running",
+                state_revision = state.state_revision + 1,
+                active_node_ids = new[] { "next-touch" },
+                bindings = Array.Empty<LessonBindingV2>()
+            };
+            var stateChanged = typeof(LiveKitLessonRemoteBridgeV2)
+                .GetMethod("OnStateChanged", BindingFlags.Instance | BindingFlags.NonPublic);
+            var generation = (int)typeof(LiveKitLessonRemoteBridgeV2)
+                .GetField("_configurationGeneration", BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetValue(_bridge);
+            stateChanged.Invoke(_bridge, new object[] { touchTransition, generation });
+            Pump(_bridge);
+
+            var cancelPacket = client.Sent.Find(packet =>
+                packet.topic == VoiceQuestTransportV2Constants.Topic &&
+                packet.json.Contains("\"event\":\"CANCEL_SPEAK_SCRIPT\""));
+            Assert.That(cancelPacket, Is.Not.Null,
+                "A touch-node transition has no VoiceQuestSource cancellation callback, so the bridge must stop its tracked script.");
+            var cancellation = JsonUtility.FromJson<VoiceQuestCancelSpeakScriptV2>(cancelPacket.json);
+            Assert.That(cancellation.activation_id, Is.EqualTo(state.activation_id));
+            Assert.That(cancellation.sequence_id, Is.EqualTo("script-1"));
+            Assert.That(cancellation.npc_binding_id, Is.EqualTo("teacher-npc"));
+            Assert.That(cancellation.reason, Is.EqualTo("lesson_scope_changed"));
+            Assert.That(client.Sent.Exists(packet =>
+                    packet.topic == VoiceQuestTransportV2Constants.Topic &&
+                    packet.json.Contains("\"event\":\"CANCEL_ACTIVE_QUEST\"")),
+                Is.False, "Changing touch-node scope cancels only therapist speech, never the voice quest.");
 
             _runner.AbortLesson();
             yield return CompleteWithinFrames(lessonTask);

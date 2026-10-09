@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Plugins.QuickOutline.Scripts;
 using VRAutism.Gameplay.LessonGraphV2.Questing;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
@@ -231,7 +232,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         }
 
         [Test]
-        public void VisualHintRestoresIndicatorStateCapturedAtActivation()
+        public void VisualHintWithoutOutlineIsUnsupportedAndNeverActivatesTheIndicatorObject()
         {
             var indicator = new GameObject("visual-hint-indicator");
             indicator.SetActive(false);
@@ -242,8 +243,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 .SetValue(source, indicator);
             source.TryActivate(Activation("visual-activation"));
 
-            Assert.IsTrue(source.TryShowVisualHint("visual-activation"));
-            Assert.IsTrue(indicator.activeSelf);
+            Assert.IsFalse(source.CanShowVisualHint);
+            Assert.IsFalse(source.TryShowVisualHint("visual-activation"));
+            Assert.IsFalse(indicator.activeSelf);
             Assert.IsFalse(source.TryShowVisualHint("old-activation"));
             source.TryCancel(new QuestSourceCancellation("visual-activation", "test"));
 
@@ -265,6 +267,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         public void VisualHintPreservesAnIndicatorThatWasAlreadyActive()
         {
             var indicator = new GameObject("already-active-indicator");
+            indicator.AddComponent<MeshFilter>();
+            indicator.AddComponent<MeshRenderer>();
+            var outline = indicator.AddComponent<Outline>();
+            outline.enabled = false;
             _objects.Add(indicator);
             var source = Source("active-visual-hint");
             typeof(QuestSourceV2)
@@ -273,9 +279,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             source.TryActivate(Activation("active-visual-activation"));
 
             Assert.IsTrue(source.TryShowVisualHint("active-visual-activation"));
+            Assert.IsTrue(indicator.activeSelf, "Hinting must preserve the interactable GameObject's active state.");
+            Assert.IsTrue(outline.enabled);
             source.TryCancel(new QuestSourceCancellation("active-visual-activation", "test"));
 
             Assert.IsTrue(indicator.activeSelf, "Cleanup must restore the indicator's previous active state.");
+            Assert.IsFalse(outline.enabled, "Cleanup restores the profile baseline captured for the activation.");
         }
 
         [Test]

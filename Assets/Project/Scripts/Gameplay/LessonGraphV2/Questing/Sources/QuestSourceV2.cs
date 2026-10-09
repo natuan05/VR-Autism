@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Events;
 using Plugins.QuickOutline.Scripts;
 using VRAutism.Core;
 
@@ -13,8 +15,15 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
 
         [Tooltip("Stable ID used by LessonGraph quest node completion bindings.")]
         [SerializeField] private string _bindingId = string.Empty;
-        [Tooltip("Optional visual hint target: a dedicated indicator GameObject is activated, or an object with Outline has only its Outline.enabled toggled. Outline targets use the visual guidance profile baseline.")]
+        [Tooltip("Hint feedback is supported only when this object has an Outline component. The interactable GameObject is never activated/deactivated by hinting.")]
         [SerializeField] private GameObject _visualHintIndicator;
+        [SerializeField] private Transform _hintBubbleAnchor;
+        [SerializeField] private Transform _hintProgressAnchor;
+        [SerializeField] private AudioClip _hintClip;
+        [SerializeField] private float _reminderCycleSeconds;
+        [Header("Legacy trial scene effects")]
+        [SerializeField] private UnityEvent _onLessonActivated = new UnityEvent();
+        [SerializeField] private UnityEvent _onLessonCompleted = new UnityEvent();
 
         private int _mainThreadId;
         private QuestSourceActivation _activation;
@@ -22,12 +31,17 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
         private bool _cleanupCompleted;
         private bool _terminationInProgress;
         private string _lastCancellationReason = string.Empty;
-        private bool _hintIndicatorStateCaptured;
-        private bool _hintIndicatorWasActive;
+        private bool _hintProfileBaseline;
         private Outline _visualHintOutline;
+        private Coroutine _hintBlinkRoutine;
+        private AudioSource _hintAudioSource;
 
         public string BindingId => _bindingId ?? string.Empty;
-        public bool CanShowVisualHint => _visualHintIndicator != null;
+        public bool CanShowVisualHint => ResolveVisualHintOutline() != null;
+        public Transform HintBubbleAnchor => _hintBubbleAnchor;
+        public Transform HintProgressAnchor => _hintProgressAnchor;
+        public AudioClip HintClip => _hintClip;
+        public float ReminderCycleSeconds => _reminderCycleSeconds;
         public QuestSourceState State { get; private set; } = QuestSourceState.Inactive;
         public string CurrentActivationId => _activation?.ActivationId ?? string.Empty;
         public bool IsAvailable => isActiveAndEnabled && State == QuestSourceState.Inactive;
@@ -53,13 +67,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
             _activation = activation;
             _lastCancellationReason = string.Empty;
             ResolveVisualHintOutline();
-            _hintIndicatorStateCaptured = _visualHintIndicator != null && _visualHintOutline == null;
-            _hintIndicatorWasActive = _hintIndicatorStateCaptured && _visualHintIndicator.activeSelf;
+            _hintProfileBaseline = SessionContext.Instance?.CurrentParams?.Actions?.EnableVisualGuidance ?? false;
             if (_visualHintOutline != null)
-                _visualHintOutline.enabled = SessionContext.Instance?.CurrentParams?.Actions?.EnableVisualGuidance ?? false;
+                _visualHintOutline.enabled = _hintProfileBaseline;
             SetState(QuestSourceState.Activating);
             try
             {
+                InvokeSceneEvent(_onLessonActivated);
                 OnSourceActivated(activation);
             }
             catch (Exception exception)
@@ -88,10 +102,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
                 return false;
 
             ResolveVisualHintOutline();
-            if (_visualHintOutline != null)
-                _visualHintOutline.enabled = true;
+            if (_visualHintOutline == null) return false;
+            StopHintFeedback(restoreBaseline: true);
+            if (Application.isPlaying)
+                _hintBlinkRoutine = StartCoroutine(BlinkHintRoutine());
             else
-                _visualHintIndicator.SetActive(true);
+                _visualHintOutline.enabled = true;
+            PlayHintClip();
             return true;
         }
 
@@ -137,8 +154,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
             _lastCancellationReason = string.Empty;
             _cleanupPerformed = false;
             _cleanupCompleted = false;
-            _hintIndicatorStateCaptured = false;
-            _hintIndicatorWasActive = false;
+            _hintProfileBaseline = false;
             SetState(QuestSourceState.Inactive);
             return true;
         }
@@ -247,6 +263,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
             try
             {
                 SetState(terminalState);
+                if (terminalStatus == QuestSourceTerminalStatus.Completed)
+                    InvokeSceneEvent(_onLessonCompleted);
                 Emit(Terminated, result);
                 CleanupOnce();
             }
@@ -290,24 +308,70 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
 
         private void RestoreHintIndicatorState()
         {
+            StopHintFeedback(restoreBaseline: false);
             ResolveVisualHintOutline();
             if (_visualHintOutline != null)
             {
-                _visualHintOutline.enabled = false;
-                _hintIndicatorStateCaptured = false;
+                _visualHintOutline.enabled = _hintProfileBaseline;
                 return;
             }
-
-            if (!_hintIndicatorStateCaptured) return;
-            _hintIndicatorStateCaptured = false;
-            if (_visualHintIndicator != null) _visualHintIndicator.SetActive(_hintIndicatorWasActive);
         }
 
-        private void ResolveVisualHintOutline()
+        private Outline ResolveVisualHintOutline()
         {
             _visualHintOutline = _visualHintIndicator != null
                 ? _visualHintIndicator.GetComponent<Outline>()
                 : null;
+            return _visualHintOutline;
+        }
+
+        private IEnumerator BlinkHintRoutine()
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (State != QuestSourceState.Active) break;
+                if (_visualHintOutline != null) _visualHintOutline.enabled = true;
+                yield return new WaitForSeconds(0.3f);
+                if (_visualHintOutline != null) _visualHintOutline.enabled = false;
+                yield return new WaitForSeconds(0.3f);
+            }
+
+            _hintBlinkRoutine = null;
+            RestoreHintProfileBaseline();
+        }
+
+        private void PlayHintClip()
+        {
+            if (_hintClip == null) return;
+            if (_hintAudioSource == null)
+            {
+                var audioObject = new GameObject("QuestVisualHintAudioV2");
+                audioObject.transform.SetParent(transform, false);
+                _hintAudioSource = audioObject.AddComponent<AudioSource>();
+                _hintAudioSource.playOnAwake = false;
+                _hintAudioSource.spatialBlend = 1f;
+            }
+
+            _hintAudioSource.Stop();
+            _hintAudioSource.clip = _hintClip;
+            _hintAudioSource.volume = 0.6f * (SessionContext.Instance != null ? SessionContext.Instance.MaxVolume : 1f);
+            _hintAudioSource.Play();
+        }
+
+        private void StopHintFeedback(bool restoreBaseline)
+        {
+            if (_hintBlinkRoutine != null)
+            {
+                StopCoroutine(_hintBlinkRoutine);
+                _hintBlinkRoutine = null;
+            }
+            if (_hintAudioSource != null) _hintAudioSource.Stop();
+            if (restoreBaseline) RestoreHintProfileBaseline();
+        }
+
+        private void RestoreHintProfileBaseline()
+        {
+            if (_visualHintOutline != null) _visualHintOutline.enabled = _hintProfileBaseline;
         }
 
         private void HandleUnavailable()
@@ -335,6 +399,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
                 try { callback(value); }
                 catch (Exception exception) { Debug.LogException(exception); }
             }
+        }
+
+        private void InvokeSceneEvent(UnityEvent sceneEvent)
+        {
+            try { sceneEvent?.Invoke(); }
+            catch (Exception exception) { Debug.LogException(exception, this); }
         }
 
         private void OnDisable() => HandleUnavailable();

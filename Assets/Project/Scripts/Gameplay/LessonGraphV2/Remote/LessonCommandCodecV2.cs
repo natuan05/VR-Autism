@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
+using VRAutism.Gameplay.LessonGraphV2.Questing.Voice;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Remote
 {
@@ -19,9 +21,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
             if (payload == null || payload.Length == 0) return false;
 
             Dictionary<string, string> fields;
-            if (!TryReadObject(payload, out fields) || fields.Count != RequiredFields.Length) return false;
+            HashSet<string> stringFields;
+            if (!TryReadObject(payload, out fields, out stringFields)) return false;
             for (var i = 0; i < RequiredFields.Length; i++)
-                if (!fields.ContainsKey(RequiredFields[i])) return false;
+                if (!fields.ContainsKey(RequiredFields[i]) ||
+                    (RequiredFields[i] != "contract_version" && !stringFields.Contains(RequiredFields[i]))) return false;
 
             int version;
             if (!int.TryParse(fields["contract_version"], out version) || version != LessonRemoteContractV2.ContractVersion) return false;
@@ -34,6 +38,34 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
             var hint = fields["command"] == LessonCommandKindV2.VerbalHint || fields["command"] == LessonCommandKindV2.VisualHint;
             if (hint ? !Nonblank(fields["binding_id"]) : fields["binding_id"].Length != 0) return false;
 
+            var volumeCommand = fields["command"] == LessonCommandKindV2.SetVolume;
+            var scriptCommand = fields["command"] == LessonCommandKindV2.SpeakScript;
+            var expectedFieldCount = RequiredFields.Length + (volumeCommand ? 1 : scriptCommand ? 2 : 0);
+            if (fields.Count != expectedFieldCount) return false;
+
+            var volume = 0f;
+            if (volumeCommand)
+            {
+                if (!fields.ContainsKey("volume") || stringFields.Contains("volume") ||
+                    !IsJsonNumber(fields["volume"]) ||
+                    !float.TryParse(fields["volume"], NumberStyles.Float, CultureInfo.InvariantCulture, out volume) ||
+                    float.IsNaN(volume) || float.IsInfinity(volume) || volume < 0f || volume > 1f)
+                    return false;
+            }
+
+            var npcBindingId = string.Empty;
+            var scriptText = string.Empty;
+            if (scriptCommand)
+            {
+                if (!fields.ContainsKey("npc_binding_id") || !stringFields.Contains("npc_binding_id") ||
+                    !fields.ContainsKey("text") || !stringFields.Contains("text") ||
+                    !Nonblank(fields["npc_binding_id"]) || !Nonblank(fields["text"]) ||
+                    fields["text"].Length > VoiceQuestTransportV2Constants.MaxScriptLength)
+                    return false;
+                npcBindingId = fields["npc_binding_id"];
+                scriptText = fields["text"];
+            }
+
             command = new LessonCommandV2
             {
                 contract_version = version,
@@ -44,15 +76,19 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
                 node_id = fields["node_id"],
                 activation_id = fields["activation_id"],
                 command = fields["command"],
-                binding_id = fields["binding_id"]
+                binding_id = fields["binding_id"],
+                volume = volume,
+                npc_binding_id = npcBindingId,
+                text = scriptText
             };
             reason = LessonCommandReasonV2.None;
             return true;
         }
 
-        private static bool TryReadObject(byte[] payload, out Dictionary<string, string> fields)
+        private static bool TryReadObject(byte[] payload, out Dictionary<string, string> fields, out HashSet<string> stringFields)
         {
             fields = null;
+            stringFields = null;
             string json;
             try { json = new UTF8Encoding(false, true).GetString(payload); }
             catch (DecoderFallbackException) { return false; }
@@ -61,6 +97,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
             SkipWhitespace(json, ref index);
             if (!Consume(json, ref index, '{')) return false;
             var parsed = new Dictionary<string, string>(StringComparer.Ordinal);
+            var parsedStringFields = new HashSet<string>(StringComparer.Ordinal);
             SkipWhitespace(json, ref index);
             if (Consume(json, ref index, '}'))
             {
@@ -83,6 +120,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
                 {
                     if (key == "contract_version") return false;
                     if (!ReadString(json, ref index, out value)) return false;
+                    parsedStringFields.Add(key);
                 }
                 else
                 {
@@ -90,7 +128,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
                     while (index < json.Length && json[index] != ',' && json[index] != '}' && !IsJsonWhitespace(json[index])) index++;
                     if (start == index) return false;
                     value = json.Substring(start, index - start);
-                    if (key != "contract_version" || value != "2") return false;
+                    if (key != "contract_version" && key != "volume") return false;
+                    if (key == "contract_version" && value != "2") return false;
                 }
 
                 if (parsed.ContainsKey(key)) return false;
@@ -104,6 +143,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
             SkipWhitespace(json, ref index);
             if (!closed || index != json.Length) return false;
             fields = parsed;
+            stringFields = parsedStringFields;
             return true;
         }
 
@@ -157,9 +197,48 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
         }
 
         private static bool IsKnownCommand(string value) => value == LessonCommandKindV2.Skip || value == LessonCommandKindV2.Pause ||
-            value == LessonCommandKindV2.Resume || value == LessonCommandKindV2.VerbalHint || value == LessonCommandKindV2.VisualHint;
+            value == LessonCommandKindV2.Resume || value == LessonCommandKindV2.VerbalHint || value == LessonCommandKindV2.VisualHint ||
+            value == LessonCommandKindV2.SetVolume || value == LessonCommandKindV2.SpeakScript;
 
         private static bool Nonblank(string value) => !string.IsNullOrWhiteSpace(value);
+
+        private static bool IsJsonNumber(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return false;
+            var index = value[0] == '-' ? 1 : 0;
+            if (index >= value.Length) return false;
+            if (value[index] == '0')
+            {
+                index++;
+                if (index < value.Length && IsAsciiDigit(value[index])) return false;
+            }
+            else
+            {
+                if (value[index] < '1' || value[index] > '9') return false;
+                while (index < value.Length && IsAsciiDigit(value[index])) index++;
+            }
+
+            if (index < value.Length && value[index] == '.')
+            {
+                index++;
+                var fractionStart = index;
+                while (index < value.Length && IsAsciiDigit(value[index])) index++;
+                if (index == fractionStart) return false;
+            }
+
+            if (index < value.Length && (value[index] == 'e' || value[index] == 'E'))
+            {
+                index++;
+                if (index < value.Length && (value[index] == '+' || value[index] == '-')) index++;
+                var exponentStart = index;
+                while (index < value.Length && IsAsciiDigit(value[index])) index++;
+                if (index == exponentStart) return false;
+            }
+
+            return index == value.Length;
+        }
+
+        private static bool IsAsciiDigit(char value) => value >= '0' && value <= '9';
 
         private static bool ContainsFirebasePathKeyCharacter(string value) => value.IndexOfAny(new[] { '/', '.', '#', '$', '[', ']' }) >= 0;
 

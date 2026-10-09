@@ -43,6 +43,48 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.AreEqual(fixture, JsonUtility.ToJson(command));
         }
 
+        [Test]
+        public void TryParse_AcceptsBoundedTherapistVolumeAndScriptPayloads()
+        {
+            const string volumeJson = "{\"contract_version\":2,\"event\":\"LESSON_COMMAND\",\"command_id\":\"volume-1\",\"session_id\":\"session-1\",\"run_id\":\"run-1\",\"node_id\":\"quest-1\",\"activation_id\":\"activation-1\",\"command\":\"SET_VOLUME\",\"binding_id\":\"\",\"volume\":0.65}";
+            const string scriptJson = "{\"contract_version\":2,\"event\":\"LESSON_COMMAND\",\"command_id\":\"script-1\",\"session_id\":\"session-1\",\"run_id\":\"run-1\",\"node_id\":\"quest-1\",\"activation_id\":\"activation-1\",\"command\":\"SPEAK_SCRIPT\",\"binding_id\":\"\",\"npc_binding_id\":\"teacher-npc\",\"text\":\"Ask for help.\"}";
+            LessonCommandV2 command;
+            string reason;
+
+            Assert.IsTrue(LessonCommandCodecV2.TryParse(Encoding.UTF8.GetBytes(volumeJson), out command, out reason));
+            Assert.AreEqual(LessonCommandKindV2.SetVolume, command.command);
+            Assert.AreEqual(0.65f, command.volume, 0.0001f);
+            Assert.IsTrue(LessonCommandCodecV2.TryParse(Encoding.UTF8.GetBytes(scriptJson), out command, out reason));
+            Assert.AreEqual(LessonCommandKindV2.SpeakScript, command.command);
+            Assert.AreEqual("teacher-npc", command.npc_binding_id);
+            Assert.AreEqual("Ask for help.", command.text);
+        }
+
+        [TestCase("volume", "-0.01")]
+        [TestCase("volume", "1.01")]
+        [TestCase("volume", "NaN")]
+        public void TryParse_RejectsInvalidVolumePayload(string field, string value)
+        {
+            var json = "{\"contract_version\":2,\"event\":\"LESSON_COMMAND\",\"command_id\":\"volume-1\",\"session_id\":\"session-1\",\"run_id\":\"run-1\",\"node_id\":\"quest-1\",\"activation_id\":\"activation-1\",\"command\":\"SET_VOLUME\",\"binding_id\":\"\",\"volume\":0.5}";
+            json = json.Replace("\"volume\":0.5", "\"" + field + "\":" + value);
+            LessonCommandV2 command;
+            string reason;
+            Assert.IsFalse(LessonCommandCodecV2.TryParse(Encoding.UTF8.GetBytes(json), out command, out reason));
+        }
+
+        [Test]
+        public void TryParse_RejectsBlankAndOversizedScriptPayload()
+        {
+            var prefix = "{\"contract_version\":2,\"event\":\"LESSON_COMMAND\",\"command_id\":\"script-1\",\"session_id\":\"session-1\",\"run_id\":\"run-1\",\"node_id\":\"quest-1\",\"activation_id\":\"activation-1\",\"command\":\"SPEAK_SCRIPT\",\"binding_id\":\"\",\"npc_binding_id\":\"teacher-npc\",\"text\":\"";
+            var suffix = "\"}";
+            var blank = prefix + " \"" + suffix;
+            var oversized = prefix + new string('x', 501) + suffix;
+            LessonCommandV2 command;
+            string reason;
+            Assert.IsFalse(LessonCommandCodecV2.TryParse(Encoding.UTF8.GetBytes(blank), out command, out reason));
+            Assert.IsFalse(LessonCommandCodecV2.TryParse(Encoding.UTF8.GetBytes(oversized), out command, out reason));
+        }
+
         [TestCase("{\"event\":\"LESSON_COMMAND\"}")]
         [TestCase("{\"contract_version\":\"2\"}")]
         [TestCase("{\"contract_version\":1}")]

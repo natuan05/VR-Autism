@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VRAutism.Core.Models;
@@ -35,6 +36,19 @@ namespace VRAutism.Core.Telemetry
         private Camera _mainCamera;
         private Transform _currentQuestTarget;
         private Vector3 _targetVisualCenter;
+        private bool _lessonGraphRuntimeEnabled;
+        private bool _lessonGraphSamplingEnabled;
+        private Transform[] _lessonGraphTargets = Array.Empty<Transform>();
+        private string[] _lessonGraphTargetNames = Array.Empty<string>();
+        private string _lessonGraphSessionId = string.Empty;
+        private string _lessonGraphRunId = string.Empty;
+        private string _lessonGraphNodeId = string.Empty;
+        private string _lessonGraphActivationId = string.Empty;
+        private string _lessonGraphBindingId = string.Empty;
+        private string[] _lessonGraphBindingIds = Array.Empty<string>();
+        private int _lessonGraphNodeIndex = -1;
+        private string _lessonGraphStatus = string.Empty;
+        private float _lessonGraphLastVisualHintTime = -1f;
 
         private Vector3 _lastHeadPos;
         private float _lastPitchX;
@@ -110,6 +124,7 @@ namespace VRAutism.Core.Telemetry
 
         private void FixedUpdate()
         {
+            if (_lessonGraphRuntimeEnabled && !_lessonGraphSamplingEnabled) return;
             SampleToBuffer();
         }
 
@@ -119,6 +134,10 @@ namespace VRAutism.Core.Telemetry
 
         public void SetCurrentTarget(Transform target)
         {
+            if (_lessonGraphRuntimeEnabled) return;
+            if (ReferenceEquals(_currentQuestTarget, target)) return;
+
+            ResetRawBuffer();
             _currentQuestTarget = target;
             if (target != null)
             {
@@ -136,6 +155,104 @@ namespace VRAutism.Core.Telemetry
             }
         }
 
+        /// <summary>Claims target ownership for a Lesson Graph V2 scene.</summary>
+        public void SetLessonGraphRuntimeEnabled(bool enabled)
+        {
+            if (_lessonGraphRuntimeEnabled == enabled) return;
+
+            _lessonGraphRuntimeEnabled = enabled;
+            _lessonGraphSamplingEnabled = false;
+            _currentQuestTarget = null;
+            _lessonGraphTargets = Array.Empty<Transform>();
+            _lessonGraphTargetNames = Array.Empty<string>();
+            _lessonGraphBindingIds = Array.Empty<string>();
+            _lessonGraphBindingId = string.Empty;
+            _lessonGraphStatus = enabled ? "cleared" : string.Empty;
+            _lessonGraphSessionId = string.Empty;
+            _lessonGraphRunId = string.Empty;
+            _lessonGraphNodeId = string.Empty;
+            _lessonGraphActivationId = string.Empty;
+            _lessonGraphNodeIndex = -1;
+            _lessonGraphLastVisualHintTime = -1f;
+            ResetRawBuffer();
+            ResetMovementBaselines();
+        }
+
+        /// <summary>
+        /// Installs the active V2 runner scope and resolved source transforms. Transitions
+        /// discard any partial sampling window so one snapshot can never mix activations.
+        /// </summary>
+        public void SetLessonGraphScope(
+            string sessionId,
+            string runId,
+            string nodeId,
+            string activationId,
+            int nodeIndex,
+            string status,
+            string[] bindingIds,
+            Transform[] targets)
+        {
+            SetLessonGraphRuntimeEnabled(true);
+
+            var normalizedStatus = status ?? string.Empty;
+            bool isRunning = string.Equals(normalizedStatus, "running", StringComparison.Ordinal);
+            var nextBindingIds = isRunning ? CopyNonEmpty(bindingIds) : Array.Empty<string>();
+            var nextTargets = isRunning ? CopyLiveTargets(targets) : Array.Empty<Transform>();
+            var nextTargetNames = GetTargetNames(nextTargets);
+
+            bool newRun = !string.Equals(_lessonGraphSessionId, sessionId, StringComparison.Ordinal) ||
+                          !string.Equals(_lessonGraphRunId, runId, StringComparison.Ordinal);
+            bool scopeChanged = newRun ||
+                !string.Equals(_lessonGraphNodeId, nodeId, StringComparison.Ordinal) ||
+                !string.Equals(_lessonGraphActivationId, activationId, StringComparison.Ordinal) ||
+                _lessonGraphNodeIndex != nodeIndex ||
+                !string.Equals(_lessonGraphStatus, normalizedStatus, StringComparison.Ordinal) ||
+                !SameStrings(_lessonGraphBindingIds, nextBindingIds) ||
+                !SameTransforms(_lessonGraphTargets, nextTargets);
+
+            if (scopeChanged)
+            {
+                ResetRawBuffer();
+                ResetMovementBaselines();
+            }
+            if (newRun) _lessonGraphLastVisualHintTime = -1f;
+
+            _lessonGraphSessionId = sessionId ?? string.Empty;
+            _lessonGraphRunId = runId ?? string.Empty;
+            _lessonGraphNodeId = nodeId ?? string.Empty;
+            _lessonGraphActivationId = activationId ?? string.Empty;
+            _lessonGraphNodeIndex = nodeIndex;
+            _lessonGraphStatus = normalizedStatus;
+            _lessonGraphSamplingEnabled = isRunning;
+            _lessonGraphBindingIds = nextBindingIds;
+            _lessonGraphBindingId = nextBindingIds.Length > 0 ? nextBindingIds[0] : string.Empty;
+            _lessonGraphTargets = nextTargets;
+            _lessonGraphTargetNames = nextTargetNames;
+        }
+
+        public void SetAcceptedVisualHintTime(float sessionElapsedSeconds)
+        {
+            if (_lessonGraphRuntimeEnabled && sessionElapsedSeconds >= 0f &&
+                !float.IsNaN(sessionElapsedSeconds) && !float.IsInfinity(sessionElapsedSeconds))
+            {
+                _lessonGraphLastVisualHintTime = sessionElapsedSeconds;
+            }
+        }
+
+        public void ClearLessonGraphScope()
+        {
+            if (!_lessonGraphRuntimeEnabled) return;
+            SetLessonGraphScope(
+                _lessonGraphSessionId,
+                _lessonGraphRunId,
+                _lessonGraphNodeId,
+                _lessonGraphActivationId,
+                _lessonGraphNodeIndex,
+                "cleared",
+                Array.Empty<string>(),
+                Array.Empty<Transform>());
+        }
+
         /// <summary>
         /// Được gọi mỗi 2 giây từ TelemetryStreamer.
         /// Tổng hợp toàn bộ mẫu trong bộ đệm thành 1 bản ghi duy nhất, reset bộ đệm.
@@ -145,23 +262,31 @@ namespace VRAutism.Core.Telemetry
             AggregatedSnapshot snapshot = new AggregatedSnapshot();
             snapshot.time_offset = sessionTimeOffset;
 
-            if (QuestController.Instance != null)
+            if (_lessonGraphRuntimeEnabled)
+            {
+                snapshot.runtime = "lesson_graph_v2";
+                snapshot.session_id = _lessonGraphSessionId;
+                snapshot.run_id = _lessonGraphRunId;
+                snapshot.node_id = _lessonGraphNodeId;
+                snapshot.activation_id = _lessonGraphActivationId;
+                snapshot.binding_id = _lessonGraphBindingId;
+                snapshot.active_binding_ids = CopyNonEmpty(_lessonGraphBindingIds);
+                snapshot.node_index = _lessonGraphNodeIndex;
+                snapshot.status = _lessonGraphStatus;
+                snapshot.last_visual_hint_time = _lessonGraphLastVisualHintTime;
+                snapshot.expected_target = _lessonGraphTargetNames.Length == 0
+                    ? "None"
+                    : string.Join(", ", _lessonGraphTargetNames);
+            }
+            else if (QuestController.Instance != null)
             {
                 snapshot.last_visual_hint_time = QuestController.Instance.GetLastVisualHintOrQuestStartTime();
+                snapshot.expected_target = GetLegacyTargetName();
             }
             else
             {
                 snapshot.last_visual_hint_time = -1f;
-            }
-            
-            if (_currentQuestTarget != null)
-            {
-                var currentQuest = _currentQuestTarget.GetComponent<Quest>();
-                snapshot.expected_target = currentQuest != null ? currentQuest.Name : _currentQuestTarget.name;
-            }
-            else
-            {
-                snapshot.expected_target = "None";
+                snapshot.expected_target = GetLegacyTargetName();
             }
 
             if (_bufferCount == 0)
@@ -236,7 +361,7 @@ namespace VRAutism.Core.Telemetry
             snapshot.focus_object = dominantObj;
 
             // Reset
-            _bufferCount = 0;
+            ResetRawBuffer();
             return snapshot;
         }
 
@@ -246,6 +371,7 @@ namespace VRAutism.Core.Telemetry
 
         private void SampleToBuffer()
         {
+            if (_lessonGraphRuntimeEnabled && !_lessonGraphSamplingEnabled) return;
             if (_bufferCount >= _buffer.Length) return; // Prevent out-of-bounds
 
             float dt = Time.fixedDeltaTime;
@@ -272,15 +398,46 @@ namespace VRAutism.Core.Telemetry
 
                 // ── Gaze Raycast ──
                 string raycastObjName = "None";
+                Transform raycastHitTransform = null;
                 Ray ray = new Ray(headPos, _mainCamera.transform.forward);
                 if (Physics.Raycast(ray, out RaycastHit hit, maxRaycastDistance, focusLayerMask))
                 {
-                    var questHit = hit.collider.GetComponentInParent<Quest>();
-                    raycastObjName = questHit != null ? questHit.Name : hit.collider.gameObject.name;
+                    raycastHitTransform = hit.collider.transform;
+                    if (_lessonGraphRuntimeEnabled)
+                    {
+                        raycastObjName = hit.collider.gameObject.name;
+                    }
+                    else
+                    {
+                        var questHit = hit.collider.GetComponentInParent<Quest>();
+                        raycastObjName = questHit != null ? questHit.Name : hit.collider.gameObject.name;
+                    }
                 }
 
                 // ── Gaze Cone ──
-                if (_currentQuestTarget != null)
+                if (_lessonGraphRuntimeEnabled)
+                {
+                    string focusedTargetName = FindLessonGraphTargetName(raycastHitTransform);
+                    if (focusedTargetName == null)
+                    {
+                        for (int i = 0; i < _lessonGraphTargets.Length; i++)
+                        {
+                            Transform target = _lessonGraphTargets[i];
+                            if (target == null) continue;
+                            Vector3 targetCenter = GetTargetCenter(target);
+                            float angleToTarget = Vector3.Angle(_mainCamera.transform.forward, targetCenter - headPos);
+                            if (angleToTarget <= gazeConeHalfAngle)
+                            {
+                                focusedTargetName = _lessonGraphTargetNames[i];
+                                break;
+                            }
+                        }
+                    }
+
+                    sample.isInGazeCone = focusedTargetName != null;
+                    sample.focusObjectName = focusedTargetName ?? raycastObjName;
+                }
+                else if (_currentQuestTarget != null)
                 {
                     var col = _currentQuestTarget.GetComponentInChildren<Collider>();
                     if (col != null) _targetVisualCenter = col.bounds.center;
@@ -324,7 +481,11 @@ namespace VRAutism.Core.Telemetry
                 _lastRightHandPos = rightHand.position;
             }
 
-            if (_currentQuestTarget != null)
+            if (_lessonGraphRuntimeEnabled)
+            {
+                sample.handDistance = GetHandDistanceToLessonGraphTargets();
+            }
+            else if (_currentQuestTarget != null)
             {
                 var col = _currentQuestTarget.GetComponentInChildren<Collider>();
 
@@ -348,6 +509,118 @@ namespace VRAutism.Core.Telemetry
             }
 
             _buffer[_bufferCount++] = sample;
+        }
+
+        private string GetLegacyTargetName()
+        {
+            if (_currentQuestTarget == null) return "None";
+            var currentQuest = _currentQuestTarget.GetComponent<Quest>();
+            return currentQuest != null ? currentQuest.Name : _currentQuestTarget.name;
+        }
+
+        private static string[] CopyNonEmpty(string[] values)
+        {
+            if (values == null || values.Length == 0) return Array.Empty<string>();
+            var copy = new List<string>(values.Length);
+            for (int i = 0; i < values.Length; i++)
+                if (!string.IsNullOrWhiteSpace(values[i])) copy.Add(values[i]);
+            return copy.ToArray();
+        }
+
+        private static Transform[] CopyLiveTargets(Transform[] targets)
+        {
+            if (targets == null || targets.Length == 0) return Array.Empty<Transform>();
+            var copy = new List<Transform>(targets.Length);
+            for (int i = 0; i < targets.Length; i++)
+                if (targets[i] != null) copy.Add(targets[i]);
+            return copy.ToArray();
+        }
+
+        private static string[] GetTargetNames(Transform[] targets)
+        {
+            if (targets == null || targets.Length == 0) return Array.Empty<string>();
+            var names = new string[targets.Length];
+            for (int i = 0; i < targets.Length; i++) names[i] = targets[i].name;
+            return names;
+        }
+
+        private static bool SameStrings(string[] left, string[] right)
+        {
+            if (ReferenceEquals(left, right)) return true;
+            if (left == null || right == null || left.Length != right.Length) return false;
+            for (int i = 0; i < left.Length; i++)
+                if (!string.Equals(left[i], right[i], StringComparison.Ordinal)) return false;
+            return true;
+        }
+
+        private static bool SameTransforms(Transform[] left, Transform[] right)
+        {
+            if (ReferenceEquals(left, right)) return true;
+            if (left == null || right == null || left.Length != right.Length) return false;
+            for (int i = 0; i < left.Length; i++)
+                if (!ReferenceEquals(left[i], right[i])) return false;
+            return true;
+        }
+
+        private string FindLessonGraphTargetName(Transform hitTransform)
+        {
+            if (hitTransform == null) return null;
+            for (int i = 0; i < _lessonGraphTargets.Length; i++)
+            {
+                Transform target = _lessonGraphTargets[i];
+                if (target != null && (hitTransform == target || hitTransform.IsChildOf(target)))
+                    return _lessonGraphTargetNames[i];
+            }
+            return null;
+        }
+
+        private float GetHandDistanceToLessonGraphTargets()
+        {
+            float minimumDistance = float.MaxValue;
+            for (int i = 0; i < _lessonGraphTargets.Length; i++)
+            {
+                Transform target = _lessonGraphTargets[i];
+                if (target == null) continue;
+                Collider targetCollider = target.GetComponentInChildren<Collider>();
+                Vector3 targetCenter = GetTargetCenter(target);
+
+                if (leftHand != null)
+                {
+                    Vector3 closest = targetCollider != null ? targetCollider.ClosestPoint(leftHand.position) : targetCenter;
+                    minimumDistance = Mathf.Min(minimumDistance, Vector3.Distance(leftHand.position, closest));
+                }
+                if (rightHand != null)
+                {
+                    Vector3 closest = targetCollider != null ? targetCollider.ClosestPoint(rightHand.position) : targetCenter;
+                    minimumDistance = Mathf.Min(minimumDistance, Vector3.Distance(rightHand.position, closest));
+                }
+            }
+            return minimumDistance == float.MaxValue ? -1f : minimumDistance;
+        }
+
+        private static Vector3 GetTargetCenter(Transform target)
+        {
+            var collider = target.GetComponentInChildren<Collider>();
+            if (collider != null) return collider.bounds.center;
+            var renderer = target.GetComponentInChildren<Renderer>();
+            return renderer != null ? renderer.bounds.center : target.position;
+        }
+
+        private void ResetRawBuffer()
+        {
+            _bufferCount = 0;
+        }
+
+        private void ResetMovementBaselines()
+        {
+            if (_mainCamera != null)
+            {
+                _lastHeadPos = _mainCamera.transform.position;
+                _lastPitchX = _mainCamera.transform.eulerAngles.x;
+                _lastYawY = _mainCamera.transform.eulerAngles.y;
+            }
+            if (leftHand != null) _lastLeftHandPos = leftHand.position;
+            if (rightHand != null) _lastRightHandPos = rightHand.position;
         }
 
 #if UNITY_EDITOR

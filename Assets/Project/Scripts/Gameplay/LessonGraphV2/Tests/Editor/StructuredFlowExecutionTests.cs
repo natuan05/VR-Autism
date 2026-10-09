@@ -227,12 +227,16 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 new LessonNodeData("exit", NodeType.Wait, new WaitNodeConfig(1)));
             var go = new GameObject("loop-quest-sources");
             go.SetActive(false);
+            var holdObject = new GameObject("loop-hold-source");
+            holdObject.transform.SetParent(go.transform, false);
+            var voiceObject = new GameObject("loop-voice-source");
+            voiceObject.transform.SetParent(go.transform, false);
             var previousSnapshot = (VoicePhraseSessionSnapshotV2)typeof(VoicePhraseSnapshotStoreV2)
                 .GetField("_session", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic).GetValue(null);
             try
             {
-                var hold = go.AddComponent<HoldTouchQuestSourceV2>();
-                var voice = go.AddComponent<VoiceQuestSourceV2>();
+                var hold = holdObject.AddComponent<HoldTouchQuestSourceV2>();
+                var voice = voiceObject.AddComponent<VoiceQuestSourceV2>();
                 var bindings = go.AddComponent<LessonGraphBindings>();
                 SetPrivate(typeof(QuestSourceV2), hold, "_bindingId", "hold");
                 SetPrivate(typeof(QuestSourceV2), voice, "_bindingId", "voice");

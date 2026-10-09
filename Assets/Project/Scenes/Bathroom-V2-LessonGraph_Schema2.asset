@@ -71,41 +71,121 @@ MonoBehaviour:
     _priority: 0
     _condition:
       rid: 2006
+  - _fromNodeId: wash-tutorial-timeline
+    _toNodeId: wash-turn-on-water
+    _priority: 0
+    _condition:
+      rid: 2007
+  - _fromNodeId: wash-tutorial-timeline
+    _toNodeId: wash-turn-on-water
+    _priority: 0
+    _condition:
+      rid: 2008
   - _fromNodeId: wash-turn-on-water
     _toNodeId: wash-wet-hands-loop
     _priority: 0
     _condition:
       rid: 2001
+  - _fromNodeId: wash-turn-on-water
+    _toNodeId: wash-wet-hands-loop
+    _priority: 0
+    _condition:
+      rid: 2007
+  - _fromNodeId: wash-turn-on-water
+    _toNodeId: wash-wet-hands-loop
+    _priority: 0
+    _condition:
+      rid: 2008
   - _fromNodeId: wash-prompt-dispense-soap
     _toNodeId: wash-dispense-soap
     _priority: 0
     _condition:
       rid: 2006
+  - _fromNodeId: wash-prompt-dispense-soap
+    _toNodeId: wash-dispense-soap
+    _priority: 0
+    _condition:
+      rid: 2007
+  - _fromNodeId: wash-prompt-dispense-soap
+    _toNodeId: wash-dispense-soap
+    _priority: 0
+    _condition:
+      rid: 2008
   - _fromNodeId: wash-dispense-soap
     _toNodeId: wash-rub-hands
     _priority: 0
     _condition:
       rid: 2003
+  - _fromNodeId: wash-dispense-soap
+    _toNodeId: wash-rub-hands
+    _priority: 0
+    _condition:
+      rid: 2007
+  - _fromNodeId: wash-dispense-soap
+    _toNodeId: wash-rub-hands
+    _priority: 0
+    _condition:
+      rid: 2008
   - _fromNodeId: wash-rub-hands
     _toNodeId: wash-turn-off-water
     _priority: 0
     _condition:
       rid: 2004
+  - _fromNodeId: wash-rub-hands
+    _toNodeId: wash-turn-off-water
+    _priority: 0
+    _condition:
+      rid: 2007
+  - _fromNodeId: wash-rub-hands
+    _toNodeId: wash-turn-off-water
+    _priority: 0
+    _condition:
+      rid: 2008
   - _fromNodeId: wash-turn-off-water
     _toNodeId: wash-dry-hands
     _priority: 0
     _condition:
       rid: 2005
+  - _fromNodeId: wash-turn-off-water
+    _toNodeId: wash-dry-hands
+    _priority: 0
+    _condition:
+      rid: 2007
+  - _fromNodeId: wash-turn-off-water
+    _toNodeId: wash-dry-hands
+    _priority: 0
+    _condition:
+      rid: 2008
   - _fromNodeId: wash-dry-hands
     _toNodeId: wash-complete
     _priority: 0
     _condition:
       rid: 2006
+  - _fromNodeId: wash-dry-hands
+    _toNodeId: wash-complete
+    _priority: 0
+    _condition:
+      rid: 2007
+  - _fromNodeId: wash-dry-hands
+    _toNodeId: wash-complete
+    _priority: 0
+    _condition:
+      rid: 2008
   - _fromNodeId: wash-wet-hands-loop
     _toNodeId: wash-prompt-dispense-soap
     _priority: 0
     _condition:
       rid: 5702467584149160034
+  - _fromNodeId: wash-wet-hands-loop
+    _toNodeId: wash-prompt-dispense-soap
+    _priority: 0
+    _condition:
+      rid: 2007
+  - _fromNodeId: wash-wet-hands-loop
+    _toNodeId: wash-prompt-dispense-soap
+    _priority: 0
+    _condition:
+      rid: 2008
   references:
     version: 2
     RefIds:
@@ -190,6 +270,16 @@ MonoBehaviour:
         asm: Assembly-CSharp}
       data:
         _requiredStatus: success
+    - rid: 2007
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: skipped
+    - rid: 2008
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: timeout
     - rid: 4156067637724184677
       type: {class: DialogueNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs,
         asm: Assembly-CSharp}

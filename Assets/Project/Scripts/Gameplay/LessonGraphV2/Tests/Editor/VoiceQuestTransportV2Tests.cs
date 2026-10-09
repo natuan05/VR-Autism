@@ -14,18 +14,27 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
     {
         private sealed class Client : ILiveKitDataPacketClientV2
         {
+            public sealed class SentPacket
+            {
+                public string Json;
+                public string Topic;
+                public bool Reliable;
+            }
+
             public bool IsConnectedV2 { get; set; } = true;
             public event Action<byte[], string> DataReceivedV2;
             public event Action ReconnectedV2;
             public readonly List<string> Sent = new List<string>();
+            public readonly List<SentPacket> SentPackets = new List<SentPacket>();
             public void PublishDataV2(byte[] data, string topic, bool reliable)
             {
-                Assert.AreEqual(VoiceQuestTransportV2Constants.Topic, topic);
-                Assert.IsTrue(reliable);
-                Sent.Add(Encoding.UTF8.GetString(data));
+                var json = Encoding.UTF8.GetString(data);
+                Sent.Add(json);
+                SentPackets.Add(new SentPacket { Json = json, Topic = topic, Reliable = reliable });
             }
             public void Reconnect() => ReconnectedV2?.Invoke();
             public void Receive(string packet) => DataReceivedV2?.Invoke(Encoding.UTF8.GetBytes(packet), VoiceQuestTransportV2Constants.Topic);
+            public void Receive(byte[] packet) => DataReceivedV2?.Invoke(packet, VoiceQuestTransportV2Constants.Topic);
         }
         private sealed class MicrophoneControl : ILiveKitMicrophoneControlV2
         {
@@ -34,6 +43,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         }
         private sealed class Router : INpcAudioRouterV2
         {
+            public bool CanSetActiveRoute { get; set; } = true;
             public string ActiveNpcBindingId { get; private set; }
             public void RegisterNpcAudioRoute(string npcBindingId, AudioSource source) { }
             public void UnregisterNpcAudioRoute(string npcBindingId) { }
@@ -44,6 +54,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             }
             public bool SetActiveNpcRoute(string npcBindingId)
             {
+                if (!CanSetActiveRoute) return false;
                 ActiveNpcBindingId = npcBindingId;
                 return true;
             }
@@ -120,6 +131,286 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 Assert.AreEqual("teacher-npc", router.ActiveNpcBindingId);
                 Assert.AreEqual(1, client.Sent.Count);
                 StringAssert.Contains("\"npc_binding_id\":\"teacher-npc\"", client.Sent[0]);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void ActivateAsync_SerializesEffectiveSilenceTimeout()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                transport.Configure(client);
+                transport.ActivateAsync(new VoiceQuestActivation(
+                    "activation-1", "goal", new[] { "phrase" }, "teacher-npc", 2.5f), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+
+                StringAssert.Contains("\"speech_silence_timeout_seconds\":2.5", client.Sent[0]);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void ActivateAsync_UsesFiveSecondSilenceTimeoutByDefault()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                transport.Configure(client);
+                transport.ActivateAsync(new VoiceQuestActivation("activation-1", "goal", new[] { "phrase" }), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+
+                StringAssert.Contains("\"speech_silence_timeout_seconds\":5", client.Sent[0]);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void PublishSpeakScriptUsesTypedCorrelatedPacketAndActiveNpcRoute()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                var router = new Router();
+                transport.Configure(client, router);
+                transport.ActivateAsync(new VoiceQuestActivation("activation-1", "goal", new[] { "phrase" }, "teacher-npc"), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+
+                Assert.That(transport.PublishSpeakScript("activation-1", "script-1", "teacher-npc", "Ask for help."), Is.True);
+                Assert.That(transport.PublishSpeakScript("stale", "script-2", "teacher-npc", "Ignored."), Is.False);
+                Assert.That(client.Sent, Has.Count.EqualTo(2));
+                StringAssert.Contains("\"event\":\"SPEAK_SCRIPT\"", client.Sent[1]);
+                StringAssert.Contains("\"sequence_id\":\"script-1\"", client.Sent[1]);
+                StringAssert.Contains("\"activation_id\":\"activation-1\"", client.Sent[1]);
+                StringAssert.Contains("\"npc_binding_id\":\"teacher-npc\"", client.Sent[1]);
+                StringAssert.Contains("\"text\":\"Ask for help.\"", client.Sent[1]);
+                Assert.That(router.ActiveNpcBindingId, Is.EqualTo("teacher-npc"));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void CancelSpeakScriptPublishesOnlyForTheExactTrackedScript()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                transport.Configure(client, new Router());
+                transport.ActivateAsync(new VoiceQuestActivation(
+                    "activation-1", "goal", new[] { "phrase" }, "teacher-npc"), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+                Assert.That(transport.PublishSpeakScript(
+                    "activation-1", "script-1", "teacher-npc", "Ask for help."), Is.True);
+
+                Assert.That(transport.CancelSpeakScript(
+                    "old-activation", "script-1", "teacher-npc", "lesson_scope_changed"), Is.False);
+                Assert.That(client.Sent, Has.Count.EqualTo(2));
+                Assert.That(transport.CancelSpeakScript(
+                    "activation-1", "script-1", "teacher-npc", "lesson_scope_changed"), Is.True);
+                Assert.That(client.Sent, Has.Count.EqualTo(3));
+
+                var sent = client.SentPackets[2];
+                var packet = JsonUtility.FromJson<VoiceQuestCancelSpeakScriptV2>(sent.Json);
+                Assert.That(sent.Topic, Is.EqualTo(VoiceQuestTransportV2Constants.Topic));
+                Assert.That(sent.Reliable, Is.True);
+                Assert.That(packet.contract_version, Is.EqualTo(2));
+                Assert.That(packet.@event, Is.EqualTo("CANCEL_SPEAK_SCRIPT"));
+                Assert.That(packet.activation_id, Is.EqualTo("activation-1"));
+                Assert.That(packet.sequence_id, Is.EqualTo("script-1"));
+                Assert.That(packet.npc_binding_id, Is.EqualTo("teacher-npc"));
+                Assert.That(packet.reason, Is.EqualTo("lesson_scope_changed"));
+                Assert.That(transport.CancelSpeakScript(
+                    "activation-1", "script-1", "teacher-npc", "lesson_scope_changed"), Is.False);
+                Assert.That(client.Sent, Has.Count.EqualTo(3));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void PublishSpeakScriptRejectsAnUnselectableNpcRouteBeforePublishing()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                var router = new Router();
+                transport.Configure(client, router);
+                transport.ActivateAsync(new VoiceQuestActivation(
+                    "activation-1", "goal", new[] { "phrase" }, "teacher-npc"), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+                router.CanSetActiveRoute = false;
+                var sentBefore = client.Sent.Count;
+
+                Assert.That(transport.PublishSpeakScript(
+                    "activation-1", "script-1", "teacher-npc", "Ask for help."), Is.False);
+                Assert.That(transport.CancelSpeakScript(
+                    "activation-1", "script-1", "teacher-npc", "lesson_scope_changed"), Is.False,
+                    "A rejected script must not become the active cancellation target.");
+                Assert.That(client.Sent, Has.Count.EqualTo(sentBefore));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void PublishSpeakScriptRejectsWhenNoNpcRouterIsConfigured()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                transport.Configure(client);
+                transport.ActivateAsync(new VoiceQuestActivation(
+                    "activation-1", "goal", new[] { "phrase" }, "teacher-npc"), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+                var sentBefore = client.Sent.Count;
+
+                Assert.That(transport.PublishSpeakScript(
+                    "activation-1", "script-1", "teacher-npc", "Ask for help."), Is.False);
+                Assert.That(client.Sent, Has.Count.EqualTo(sentBefore));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void ReminderEvidenceRequiresTheExactTypedContract()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                transport.Configure(client);
+                transport.ActivateAsync(new VoiceQuestActivation(
+                    "activation-1", "goal", new[] { "phrase" }, "teacher-npc"), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+                var signals = new List<VoiceQuestSignal>();
+                transport.SignalReceived += signals.Add;
+
+                client.Receive("{\"contract_version\":2,\"event\":\"ON_REMINDER\",\"direction\":\"agent_to_unity\",\"result\":\"accepted\",\"activation_id\":\"activation-1\",\"npc_binding_id\":\"teacher-npc\",\"command_id\":\"extra\",\"status\":\"FAILED\"}");
+                client.Receive("{\"contract_version\":2,\"event\":\"ON_REMINDER\",\"direction\":\"agent_to_unity\",\"result\":\"accepted\",\"activation_id\":\"activation-1\",\"npc_binding_id\":\"teacher-npc\",\"command_id\":\"first\",\"command\\u005fid\":\"second\"}");
+                client.Receive("{\"contract_version\":\"2\",\"event\":\"ON_REMINDER\",\"direction\":\"agent_to_unity\",\"result\":\"accepted\",\"activation_id\":\"activation-1\",\"npc_binding_id\":\"teacher-npc\",\"command_id\":\"wrong-type\"}");
+                client.Receive("{\"contract_version\":2,\"event\":\"ON_REMINDER\",\"direction\":\"agent_to_unity\",\"result\":\"accepted\",\"activation_id\":\"activation-1\",\"npc_binding_id\":\"teacher-npc\",\"command_id\":\"valid\"}");
+                Pump(transport);
+
+                Assert.That(signals, Has.Count.EqualTo(1));
+                Assert.That(signals[0].Type, Is.EqualTo(VoiceQuestSignalType.ReminderAccepted));
+                Assert.That(signals[0].CommandId, Is.EqualTo("valid"));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void EmptyInitialConfigureAndLifecycleReconfigurePreserveExactPendingCancellation()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                transport.Configure(client, new Router());
+                Assert.IsEmpty(client.Sent, "Configuring before any script must not publish an empty cancellation.");
+                transport.ActivateAsync(new VoiceQuestActivation(
+                    "activation-1", "goal", new[] { "phrase" }, "teacher-npc"), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+                Assert.That(transport.PublishSpeakScript(
+                    "activation-1", "script-1", "teacher-npc", "Ask for help."), Is.True);
+
+                client.IsConnectedV2 = false;
+                Assert.That(transport.CancelSpeakScript(
+                    "activation-1", "script-1", "teacher-npc", "lesson_scope_changed"), Is.True);
+                var lifecycleFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+                typeof(LiveKitVoiceQuestTransportV2).GetMethod("OnDisable", lifecycleFlags).Invoke(transport, null);
+                transport.Configure(client);
+
+                client.IsConnectedV2 = true;
+                typeof(LiveKitVoiceQuestTransportV2).GetMethod("OnEnable", lifecycleFlags).Invoke(transport, null);
+
+                Assert.That(client.SentPackets, Has.Count.EqualTo(4));
+                var cancellation = JsonUtility.FromJson<VoiceQuestCancelSpeakScriptV2>(client.SentPackets[2].Json);
+                Assert.That(cancellation.@event, Is.EqualTo("CANCEL_SPEAK_SCRIPT"));
+                Assert.That(cancellation.activation_id, Is.EqualTo("activation-1"));
+                Assert.That(cancellation.sequence_id, Is.EqualTo("script-1"));
+                Assert.That(cancellation.npc_binding_id, Is.EqualTo("teacher-npc"));
+                Assert.That(cancellation.reason, Is.EqualTo("lesson_scope_changed"));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void NullAndEmptyIncomingPacketsAreIgnoredWithoutSignalsOrPublications()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                transport.Configure(client);
+                transport.ActivateAsync(new VoiceQuestActivation(
+                    "activation-1", "goal", new[] { "phrase" }, "teacher-npc"), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+                var signals = new List<VoiceQuestSignal>();
+                transport.SignalReceived += signals.Add;
+                var sentBefore = client.Sent.Count;
+
+                Assert.DoesNotThrow(() => client.Receive((byte[])null));
+                Assert.DoesNotThrow(() => client.Receive(Array.Empty<byte>()));
+                Pump(transport);
+
+                Assert.IsEmpty(signals);
+                Assert.That(client.Sent, Has.Count.EqualTo(sentBefore));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void AcceptedSilenceReminderIsCorrelatedDeduplicatedAndNeverRepublished()
+        {
+            var go = new GameObject("voice-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                transport.Configure(client);
+                transport.ActivateAsync(new VoiceQuestActivation(
+                    "activation-1", "goal", new[] { "phrase" }, "teacher-npc"), CancellationToken.None)
+                    .GetAwaiter().GetResult();
+                var signals = new List<VoiceQuestSignal>();
+                transport.SignalReceived += signals.Add;
+                const string reminder = "{\"contract_version\":2,\"event\":\"ON_REMINDER\",\"direction\":\"agent_to_unity\",\"result\":\"accepted\",\"activation_id\":\"activation-1\",\"npc_binding_id\":\"teacher-npc\",\"command_id\":\"reminder-1\"}";
+
+                client.Receive(reminder);
+                client.Receive(reminder);
+                client.Receive("{\"contract_version\":2,\"event\":\"ON_REMINDER\",\"direction\":\"agent_to_unity\",\"result\":\"accepted\",\"activation_id\":\"activation-1\",\"npc_binding_id\":\"other-npc\",\"command_id\":\"reminder-2\"}");
+                client.Receive("{\"contract_version\":2,\"event\":\"ON_REMINDER\",\"direction\":\"unity_to_agent\",\"result\":\"accepted\",\"activation_id\":\"activation-1\",\"npc_binding_id\":\"teacher-npc\",\"command_id\":\"reminder-3\"}");
+                Pump(transport);
+
+                Assert.That(signals, Has.Count.EqualTo(1));
+                Assert.That(signals[0].Type, Is.EqualTo(VoiceQuestSignalType.ReminderAccepted));
+                Assert.That(signals[0].ActivationId, Is.EqualTo("activation-1"));
+                Assert.That(signals[0].NpcBindingId, Is.EqualTo("teacher-npc"));
+                Assert.That(signals[0].CommandId, Is.EqualTo("reminder-1"));
+                Assert.That(client.Sent, Has.Count.EqualTo(1), "Reminder evidence is incoming and must not produce another prompt packet.");
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }

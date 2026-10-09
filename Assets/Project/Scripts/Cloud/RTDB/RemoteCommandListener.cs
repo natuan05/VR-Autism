@@ -41,7 +41,9 @@ namespace VRAutism.Cloud.RTDB
 
         private string _sessionId;
         private DatabaseReference _commandsRef;
+        private EventHandler<ChildChangedEventArgs> _commandsChildAddedHandler;
         private bool _isListening = false;
+        private int _listenerGeneration;
 
         // ConcurrentQueue để truyền action từ background thread về main thread an toàn
         private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
@@ -81,10 +83,7 @@ namespace VRAutism.Cloud.RTDB
 
         public void StartListening(string sessionId)
         {
-            if (_isListening)
-            {
-                StopListening();
-            }
+            StopListening();
 
             if (string.IsNullOrEmpty(sessionId))
             {
@@ -101,28 +100,39 @@ namespace VRAutism.Cloud.RTDB
             }
 
             _commandsRef = root.Child("live_sessions").Child(_sessionId).Child("commands");
-            _commandsRef.ChildAdded += OnCommandChildAdded;
             _isListening = true;
+            int generation = ++_listenerGeneration;
+            string listeningSessionId = _sessionId;
+            _commandsChildAddedHandler = (sender, args) =>
+                OnCommandChildAdded(sender, args, listeningSessionId, generation);
+            _commandsRef.ChildAdded += _commandsChildAddedHandler;
             Debug.Log($"[RemoteCommandListener] 📡 Bắt đầu lắng nghe commands tại: live_sessions/{_sessionId}/commands");
         }
 
         public void StopListening()
         {
-            if (!_isListening) return;
-
-            if (_commandsRef != null)
-            {
-                _commandsRef.ChildAdded -= OnCommandChildAdded;
-                _commandsRef = null;
-            }
-
+            bool wasListening = _isListening;
             _isListening = false;
-            Debug.Log("[RemoteCommandListener] 📡 Đã dừng lắng nghe commands.");
+            _listenerGeneration++;
+
+            if (_commandsRef != null && _commandsChildAddedHandler != null)
+            {
+                _commandsRef.ChildAdded -= _commandsChildAddedHandler;
+            }
+            _commandsRef = null;
+            _commandsChildAddedHandler = null;
+
+            while (_mainThreadQueue.TryDequeue(out _)) { }
+
+            if (wasListening)
+                Debug.Log("[RemoteCommandListener] 📡 Đã dừng lắng nghe commands.");
         }
 
-        private void OnCommandChildAdded(object sender, ChildChangedEventArgs args)
+        private void OnCommandChildAdded(object sender, ChildChangedEventArgs args, string listeningSessionId, int generation)
         {
-            if (args == null || args.Snapshot == null || !args.Snapshot.Exists) return;
+            if (!_isListening || generation != _listenerGeneration ||
+                !string.Equals(listeningSessionId, _sessionId, StringComparison.Ordinal) ||
+                args == null || args.Snapshot == null || !args.Snapshot.Exists) return;
 
             var snapshot = args.Snapshot;
             string commandId = snapshot.Key;
@@ -146,7 +156,9 @@ namespace VRAutism.Cloud.RTDB
                 // Đưa lệnh vào queue để chạy trên Main Thread
                 _mainThreadQueue.Enqueue(() =>
                 {
-                    ProcessCommand(commandType, paramVal);
+                    if (_isListening && generation == _listenerGeneration &&
+                        string.Equals(listeningSessionId, _sessionId, StringComparison.Ordinal))
+                        ProcessCommand(commandType, paramVal);
                 });
             }
 

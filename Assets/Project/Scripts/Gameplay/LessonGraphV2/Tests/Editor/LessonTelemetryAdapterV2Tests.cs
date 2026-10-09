@@ -560,7 +560,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 SetPrivateField(installer, "_runner", replacementRunner);
                 Assert.Throws<InvalidOperationException>(() => installer.Configure());
 
-                Assert.That(GetPrivateField<LessonGraphRunner>(originalRunner, "_telemetryInstaller"), Is.SameAs(installer));
+                Assert.That(GetPrivateField<LessonGraphRunnerInstaller>(originalRunner, "_telemetryInstaller"), Is.SameAs(installer));
                 Assert.That(GetPrivateField<LessonGraphRunner>(replacementRunner, "_telemetryInstaller"), Is.Null);
             }
             finally

@@ -54,15 +54,30 @@ class VoiceCommandRuntime:
         key = (request.activation_id, request.sequence_id)
 
         # Check if identical to active command
-        if self._active and (self._active.activation_id, self._active.sequence_id) == key:
-            if (self._active.text, self._active.npc_binding_id) != (request.text, request.npc_binding_id):
+        if (
+            self._active
+            and (self._active.activation_id, self._active.sequence_id) == key
+        ):
+            if (self._active.text, self._active.npc_binding_id) != (
+                request.text,
+                request.npc_binding_id,
+            ):
                 return CommandDisposition.REJECTED
             return CommandDisposition.REPLAY
 
         # Check if already completed in cache
         if key in self._cache:
             cached = self._cache[key]
-            if (cached.text, cached.npc_binding_id) != (request.text, request.npc_binding_id):
+            if (
+                cached.status is CommandStatus.CANCELLED
+                and not cached.text
+                and cached.npc_binding_id == request.npc_binding_id
+            ):
+                return CommandDisposition.REPLAY
+            if (cached.text, cached.npc_binding_id) != (
+                request.text,
+                request.npc_binding_id,
+            ):
                 return CommandDisposition.REJECTED
             return CommandDisposition.REPLAY
 
@@ -114,8 +129,12 @@ class VoiceCommandRuntime:
         self._active = None
         return True
 
-    def mark_failed(self, activation_id: str, sequence_id: str, reason: str = "") -> bool:
-        return self.mark_completed(activation_id, sequence_id, status="FAILED", reason=reason)
+    def mark_failed(
+        self, activation_id: str, sequence_id: str, reason: str = ""
+    ) -> bool:
+        return self.mark_completed(
+            activation_id, sequence_id, status="FAILED", reason=reason
+        )
 
     def cancel_active(self, reason: str = "cancelled") -> bool:
         if not self._active:
@@ -123,6 +142,41 @@ class VoiceCommandRuntime:
         self._active.status = CommandStatus.CANCELLED
         self._active.reason = reason
         self._archive(self._active)
+        self._active = None
+        return True
+
+    def cancel(
+        self,
+        activation_id: str,
+        sequence_id: str,
+        npc_binding_id: str,
+        reason: str = "cancelled",
+    ) -> bool:
+        """Cancel only the active script identified by its complete routing scope."""
+        active = self._active
+        key = (activation_id, sequence_id)
+        if (
+            active is None
+            or active.activation_id != activation_id
+            or active.sequence_id != sequence_id
+            or active.npc_binding_id != npc_binding_id
+        ):
+            if key in self._cache:
+                return False
+            self._archive(
+                ActiveCommand(
+                    activation_id=activation_id,
+                    sequence_id=sequence_id,
+                    npc_binding_id=npc_binding_id,
+                    text="",
+                    status=CommandStatus.CANCELLED,
+                    reason=reason,
+                )
+            )
+            return False
+        active.status = CommandStatus.CANCELLED
+        active.reason = reason
+        self._archive(active)
         self._active = None
         return True
 
@@ -136,14 +190,20 @@ class VoiceCommandRuntime:
 
     def status(self, activation_id: str, sequence_id: str) -> CommandStatus | None:
         key = (activation_id, sequence_id)
-        if self._active and (self._active.activation_id, self._active.sequence_id) == key:
+        if (
+            self._active
+            and (self._active.activation_id, self._active.sequence_id) == key
+        ):
             return self._active.status
         cached = self._cache.get(key)
         return cached.status if cached else None
 
     def reason(self, activation_id: str, sequence_id: str) -> str:
         key = (activation_id, sequence_id)
-        if self._active and (self._active.activation_id, self._active.sequence_id) == key:
+        if (
+            self._active
+            and (self._active.activation_id, self._active.sequence_id) == key
+        ):
             return self._active.reason
         cached = self._cache.get(key)
         return cached.reason if cached else ""

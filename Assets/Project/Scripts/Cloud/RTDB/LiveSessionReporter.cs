@@ -18,6 +18,9 @@ namespace VRAutism.Cloud.RTDB
     {
         public static LiveSessionReporter Instance { get; private set; }
 
+        private int _sessionOperationGeneration;
+        private string _activeSessionId = string.Empty;
+
         private void Awake()
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -30,13 +33,25 @@ namespace VRAutism.Cloud.RTDB
         /// Gọi ngay sau khi Scene bài học load xong (từ TimeManager.Start).
         /// Ghi vr_state với status="ready" và khởi động LiveKit POV Video stream.
         /// </summary>
-        public async void SendLiveSessionHandshake(string sessionId, string sceneName)
+        public async void SendLiveSessionHandshake(
+            string sessionId,
+            string sceneName,
+            bool startLegacyRemoteCommandListener = true)
         {
             if (string.IsNullOrEmpty(sessionId))
             {
                 Debug.LogWarning("[LiveSessionReporter] SendLiveSessionHandshake: sessionId trống, bỏ qua.");
                 return;
             }
+
+            if (!IsCurrentSession(sessionId))
+            {
+                Debug.LogWarning($"[LiveSessionReporter] Ignoring stale handshake for session {sessionId}.");
+                return;
+            }
+
+            int generation = ++_sessionOperationGeneration;
+            _activeSessionId = sessionId;
 
             var root = GetRoot();
             if (root == null) return;
@@ -59,17 +74,25 @@ namespace VRAutism.Cloud.RTDB
                     { "ended_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }
                 });
 
+                if (!IsCurrentSessionOperation(sessionId, generation)) return;
                 await vrStateRef.UpdateChildrenAsync(vrStateData);
+
+                if (!IsCurrentSessionOperation(sessionId, generation))
+                {
+                    Debug.Log($"[LiveSessionReporter] Discarding stale post-await handshake effects for session {sessionId}.");
+                    return;
+                }
 
                 Debug.Log($"[LiveSessionReporter] ✅ Handshake gửi thành công → live_sessions/{sessionId}/vr_state (scene: {sceneName})");
 
                 // Đảm bảo RemoteCommandListener bắt đầu lắng nghe lệnh điều khiển RTDB
-                if (RemoteCommandListener.Instance != null)
+                if (startLegacyRemoteCommandListener && RemoteCommandListener.Instance != null)
                 {
                     RemoteCommandListener.Instance.StartListening(sessionId);
                 }
 
                 // Khởi động LiveKit POV Video Stream nếu camera chính có sẵn
+                if (!IsCurrentSessionOperation(sessionId, generation)) return;
                 if (LiveKitService.Instance != null)
                 {
                     var ctx = VRAutism.Core.SessionContext.Instance;
@@ -136,7 +159,17 @@ namespace VRAutism.Cloud.RTDB
                 return;
             }
 
+            if (!IsCurrentSession(sessionId))
+            {
+                Debug.LogWarning($"[LiveSessionReporter] Ignoring stale ended signal for session {sessionId}.");
+                return;
+            }
+
+            int generation = ++_sessionOperationGeneration;
+            _activeSessionId = sessionId;
+
             // Dọn dẹp POV Video Stream trong LiveKitService
+            if (!IsCurrentSessionOperation(sessionId, generation)) return;
             LiveKitService.Instance?.DisablePOVCamera();
 
             var root = GetRoot();
@@ -153,12 +186,38 @@ namespace VRAutism.Cloud.RTDB
                 await root.Child("live_sessions").Child(sessionId).Child("vr_state")
                           .UpdateChildrenAsync(endData);
 
+                if (!IsCurrentSessionOperation(sessionId, generation))
+                {
+                    Debug.Log($"[LiveSessionReporter] Discarding stale post-await ended effects for session {sessionId}.");
+                    return;
+                }
+
                 Debug.Log($"[LiveSessionReporter] ✅ Session ended signal gửi thành công → live_sessions/{sessionId}/vr_state");
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[LiveSessionReporter] SendLiveSessionEnded thất bại: {ex.Message}");
             }
+        }
+
+        private bool IsCurrentSessionOperation(string sessionId, int generation) =>
+            generation == _sessionOperationGeneration &&
+            string.Equals(_activeSessionId, sessionId, StringComparison.Ordinal) &&
+            IsCurrentSession(sessionId);
+
+        private bool IsCurrentSession(string sessionId)
+        {
+            if (string.IsNullOrWhiteSpace(sessionId)) return false;
+            VRAutism.Core.SessionContext context = VRAutism.Core.SessionContext.Instance;
+            if (context != null)
+            {
+                string contextSessionId = context.SessionId;
+                return !string.IsNullOrWhiteSpace(contextSessionId) &&
+                       string.Equals(contextSessionId, sessionId, StringComparison.Ordinal);
+            }
+
+            return string.IsNullOrEmpty(_activeSessionId) ||
+                   string.Equals(_activeSessionId, sessionId, StringComparison.Ordinal);
         }
 
         private Firebase.Database.DatabaseReference GetRoot() => RTDBConnection.Instance?.RootRef;

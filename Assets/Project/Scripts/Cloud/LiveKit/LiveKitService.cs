@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -8,8 +9,10 @@ using LiveKit.Proto;
 
 namespace VRAutism.Cloud.LiveKit
 {
-    public class LiveKitService : MonoBehaviour, ILiveKitRoomClient, ILiveKitDataPacketClientV2, INpcAudioRouterV2, ILiveKitCoroutineHost, ILiveKitMicrophoneControlV2
+    public class LiveKitService : MonoBehaviour, ILiveKitRoomClient, ILiveKitDataPacketClientV2, ILiveKitDeferredDataPacketClientV2, INpcAudioRouterV2, ILiveKitCoroutineHost, ILiveKitMicrophoneControlV2
     {
+        private const int MaxPendingSpeakScriptCancellations = 64;
+        private const string SpeakScriptCancellationTopic = "lesson-graph-v2.voice";
         private static LiveKitService _instance;
         private static int _unityMainThreadId = -1;
 
@@ -35,7 +38,8 @@ namespace VRAutism.Cloud.LiveKit
                     {
                         GameObject go = new GameObject("LiveKitService");
                         _instance = go.AddComponent<LiveKitService>();
-                        DontDestroyOnLoad(go);
+                        if (Application.isPlaying)
+                            DontDestroyOnLoad(go);
                     }
                 }
                 return _instance;
@@ -69,6 +73,7 @@ namespace VRAutism.Cloud.LiveKit
         private LiveKitDataPacketTransport _dataPacketTransport;
         private LegacyVoicePacketAdapter _legacyVoicePacketAdapter;
         private LiveKitPovVideoPublisher _povPublisher;
+        private readonly Queue<byte[]> _pendingSpeakScriptCancellations = new Queue<byte[]>();
 
         public Func<RemoteAudioTrack, AudioSource, IDisposable> StreamFactory
         {
@@ -101,6 +106,8 @@ namespace VRAutism.Cloud.LiveKit
             EnsureMainThread(nameof(GetActiveStreamRoute)) ? _audioRouter.GetActiveStreamRoute(trackSid) : null;
         private void Awake()
         {
+            if (!Application.isPlaying) return;
+
             _unityMainThreadId = Thread.CurrentThread.ManagedThreadId;
 
             if (_instance != null && _instance != this)
@@ -168,7 +175,10 @@ namespace VRAutism.Cloud.LiveKit
             _mainThreadExecutor.Post(handle.Generation, () =>
             {
                 if (IsCurrentHandle(handle))
+                {
+                    DrainPendingSpeakScriptCancellations();
                     ReconnectedV2?.Invoke();
+                }
             });
         }
 
@@ -179,7 +189,10 @@ namespace VRAutism.Cloud.LiveKit
             _mainThreadExecutor.Post(handle.Generation, () =>
             {
                 if (IsCurrentHandle(handle))
+                {
+                    DrainPendingSpeakScriptCancellations();
                     ReconnectedV2?.Invoke();
+                }
             });
         }
 
@@ -220,6 +233,52 @@ namespace VRAutism.Cloud.LiveKit
             var handle = _lifecycleCoordinator.CurrentHandle;
             if (handle == null || handle.SdkRoom == null || handle.SdkRoom.LocalParticipant == null) return;
             _dataPacketTransport.PublishDataV2(data, topic, reliable);
+        }
+
+        public bool PublishSpeakScriptCancellationV2(byte[] cancellationPacket)
+        {
+            if (!EnsureMainThread(nameof(PublishSpeakScriptCancellationV2)) || cancellationPacket == null)
+                return false;
+
+            if (CanPublishSpeakScriptCancellation())
+            {
+                _dataPacketTransport.PublishDataV2(
+                    cancellationPacket,
+                    SpeakScriptCancellationTopic,
+                    true);
+                return true;
+            }
+
+            if (_pendingSpeakScriptCancellations.Count >= MaxPendingSpeakScriptCancellations)
+            {
+                _pendingSpeakScriptCancellations.Dequeue();
+                Debug.LogWarning("[LiveKitService] Dropped oldest queued SPEAK_SCRIPT cancellation after reaching the bounded reconnect queue.");
+            }
+
+            _pendingSpeakScriptCancellations.Enqueue((byte[])cancellationPacket.Clone());
+            return true;
+        }
+
+        private void DrainPendingSpeakScriptCancellations()
+        {
+            while (_pendingSpeakScriptCancellations.Count > 0 && CanPublishSpeakScriptCancellation())
+            {
+                _dataPacketTransport.PublishDataV2(
+                    _pendingSpeakScriptCancellations.Peek(),
+                    SpeakScriptCancellationTopic,
+                    true);
+                _pendingSpeakScriptCancellations.Dequeue();
+            }
+        }
+
+        private bool CanPublishSpeakScriptCancellation()
+        {
+            if (_dataPacketTransport == null || !IsConnectedV2 || _lifecycleCoordinator == null)
+                return false;
+
+            var handle = _lifecycleCoordinator.CurrentHandle;
+            return handle != null && handle.IsConnected && handle.Adapter != null &&
+                   !string.IsNullOrEmpty(handle.Adapter.LocalParticipantSid);
         }
 
         public void SendActiveQuest(string questName, string[] defaultPhrases)

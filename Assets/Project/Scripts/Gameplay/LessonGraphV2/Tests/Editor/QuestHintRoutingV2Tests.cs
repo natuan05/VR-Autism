@@ -7,13 +7,16 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 using Plugins.QuickOutline.Scripts;
+using Outline = Plugins.QuickOutline.Scripts.Outline;
 using VRAutism.Core;
 using VRAutism.Core.Models;
 using VRAutism.Gameplay.LessonGraphV2.Data;
 using VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions;
 using VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs;
 using VRAutism.Gameplay.LessonGraphV2.Phrases;
+using VRAutism.Gameplay.LessonGraphV2.Presentation;
 using VRAutism.Gameplay.LessonGraphV2.Questing;
 using VRAutism.Gameplay.LessonGraphV2.Questing.Sources;
 using VRAutism.Gameplay.LessonGraphV2.Questing.Voice;
@@ -238,6 +241,186 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.That(indicator.activeSelf, Is.True);
             runner.AbortLesson();
             yield return CompleteWithinFrames(lesson);
+        }
+
+        [UnityTest]
+        public IEnumerator LoopQuestChildUsesExactActivationForHintAndHoldProgressPresentation()
+        {
+            SetVisualGuidance(false);
+            SessionContext.Instance.CurrentParams.Actions.EnableAutoHint = false;
+            VoicePhraseSnapshotStoreV2.Replace(new Dictionary<string, VoiceQuestPhraseSnapshotV2>
+            {
+                ["voice-binding"] = new VoiceQuestPhraseSnapshotV2("voice-binding", "Ask", new[] { "Please" })
+            });
+
+            var voiceObject = new GameObject("loop-voice-source");
+            _objects.Add(voiceObject);
+            var voice = voiceObject.AddComponent<VoiceQuestSourceV2>();
+            Set(typeof(QuestSourceV2), voice, "_bindingId", "voice-binding");
+            InitializeSource(voice);
+            var voiceTransport = new SignalTransport();
+            voice.ConfigureTransport(voiceTransport);
+
+            var outlineTarget = OutlineTarget("loop-hold-outline");
+            var holdObject = new GameObject("loop-hold-source");
+            _objects.Add(holdObject);
+            var hold = holdObject.AddComponent<HoldTouchQuestSourceV2>();
+            Set(typeof(QuestSourceV2), hold, "_bindingId", "hold-binding");
+            Set(typeof(QuestSourceV2), hold, "_visualHintIndicator", outlineTarget);
+            Set(typeof(QuestSourceV2), hold, "_hintProgressAnchor", holdObject.transform);
+            Set(typeof(HoldTouchQuestSourceV2), hold, "_holdDurationSeconds", 10f);
+            InitializeSource(hold);
+
+            var bindingsObject = new GameObject("loop-quest-bindings");
+            _objects.Add(bindingsObject);
+            var bindings = bindingsObject.AddComponent<LessonGraphBindings>();
+            Set(typeof(LessonGraphBindings), bindings, "_entries", new List<QuestBindingEntry>
+            {
+                new QuestBindingEntry("voice-binding", voice),
+                new QuestBindingEntry("hold-binding", hold)
+            });
+            typeof(LessonGraphBindings).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(bindings, null);
+
+            var graph = LoopGraph("voice-binding", "hold-binding");
+            var runnerObject = new GameObject("loop-hint-runner");
+            _objects.Add(runnerObject);
+            var clock = new MonotonicClock();
+            var questExecutor = new QuestNodeExecutor(bindings, clock);
+            var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            runner.Configure(graph, new LoopRegistry(questExecutor), clock: clock);
+            runner.ConfigureSession(new LessonSessionContextV2("session-loop", "lesson-loop", "launch-loop", 1, 1));
+
+            var presenterObject = new GameObject("loop-hint-presenter");
+            _objects.Add(presenterObject);
+            var presenter = presenterObject.AddComponent<LessonGraphHintPresenterV2>();
+            presenter.enabled = false;
+            Set(typeof(LessonGraphHintPresenterV2), presenter, "_runner", runner);
+            Set(typeof(LessonGraphHintPresenterV2), presenter, "_bindings", bindings);
+            Set(typeof(LessonGraphHintPresenterV2), presenter, "_progressPrefab", CreateRadialProgressPrefab());
+            presenter.enabled = true;
+
+            var lesson = runner.StartLessonAsync();
+            yield return UntilFrames(() => runner.ActiveQuestScope != null &&
+                voice.State == QuestSourceState.Active && hold.State == QuestSourceState.Active);
+
+            var parent = runner.CurrentState;
+            var child = runner.ActiveQuestScope;
+            Assert.That(parent.node_id, Is.EqualTo("loop"));
+            Assert.That(parent.bindings, Has.Length.EqualTo(2), "The existing state bindings expose the exact live child capabilities while retaining parent identity.");
+            Assert.That(parent.bindings[0].binding_id, Is.EqualTo("voice-binding"));
+            Assert.That(parent.bindings[1].binding_id, Is.EqualTo("hold-binding"));
+            Assert.That(child.ChildNodeId, Is.EqualTo("body"));
+            Assert.That(child.ChildActivationId, Is.EqualTo(voice.CurrentActivationId));
+            Assert.That(child.ChildActivationId, Is.EqualTo(hold.CurrentActivationId));
+            Assert.That(parent.activation_id, Is.Not.EqualTo(child.ChildActivationId),
+                "A Loop child keeps its own activation while the command envelope remains the parent Loop.");
+            Assert.That(outlineTarget.GetComponent<Outline>().enabled, Is.False,
+                "The Loop child inherits the profile baseline before any explicit reminder.");
+
+            var contacts = Get<HashSet<Collider>>(typeof(HoldTouchQuestSourceV2), hold, "_contacts");
+            var contactObject = new GameObject("loop-hold-contact");
+            _objects.Add(contactObject);
+            contacts.Add(contactObject.AddComponent<SphereCollider>());
+            Set(typeof(HoldTouchQuestSourceV2), hold, "_contactStartedAt", Time.realtimeSinceStartupAsDouble - 5d);
+            typeof(LessonGraphHintPresenterV2).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(presenter, null);
+
+            Assert.That(Get<QuestSourceV2>(typeof(LessonGraphHintPresenterV2), presenter, "_activeSource"), Is.SameAs(hold),
+                "The active hold contact must drive progress even when the voice source is first in binding order.");
+            var progressRoot = Get<GameObject>(typeof(LessonGraphHintPresenterV2), presenter, "_progressRoot");
+            var slider = Get<UnityEngine.UI.Slider>(typeof(LessonGraphHintPresenterV2), presenter, "_progressSlider");
+            Assert.That(progressRoot.activeSelf, Is.True);
+            Assert.That(Vector3.Distance(progressRoot.transform.position, hold.transform.position), Is.LessThan(0.001f));
+            Assert.That(slider.value, Is.InRange(0.45f, 0.55f));
+            var radialFill = slider.fillRect.GetComponent<Image>();
+            Assert.That(radialFill, Is.Not.Null);
+            Assert.That(radialFill.sprite, Is.Not.Null, "A filled uGUI Image needs a sprite to generate radial fill geometry.");
+            Assert.That(radialFill.type, Is.EqualTo(Image.Type.Filled));
+            Assert.That(radialFill.fillMethod, Is.EqualTo(Image.FillMethod.Radial360));
+            Assert.That(radialFill.fillAmount, Is.InRange(0.45f, 0.55f));
+            Assert.That(progressRoot.transform.localScale, Is.EqualTo(Vector3.one * 0.0002f));
+            Assert.That(((RectTransform)progressRoot.transform).sizeDelta, Is.EqualTo(new Vector2(540f, 540f)));
+
+            var command = RunnerCommand(parent, "loop-manual-hint", LessonCommandKindV2.VisualHint);
+            command.binding_id = "hold-binding";
+            var hint = runner.ApplyCommandAsync(command);
+            yield return CompleteWithinFrames(hint);
+            var decision = hint.GetAwaiter().GetResult();
+            Assert.That(decision.accepted, Is.True);
+            Assert.That(decision.node_id, Is.EqualTo("loop"));
+            Assert.That(decision.activation_id, Is.EqualTo(parent.activation_id));
+            Assert.That(outlineTarget.GetComponent<Outline>().enabled, Is.True,
+                "The child effect uses the real source while the externally visible decision keeps parent identity.");
+
+            contacts.Clear();
+            typeof(LessonGraphHintPresenterV2).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(presenter, null);
+            Assert.That(hold.NormalizedHoldProgress, Is.EqualTo(0f));
+            yield return null;
+            var hiddenProgressRoot = Get<GameObject>(typeof(LessonGraphHintPresenterV2), presenter, "_progressRoot");
+            Assert.That(hiddenProgressRoot, Is.Not.Null, "The progress instance is retained for reuse.");
+            Assert.That(hiddenProgressRoot.activeSelf, Is.False,
+                "Losing contact hides the hold progress UI.");
+            Assert.That(slider.value, Is.EqualTo(0f));
+            Assert.That(radialFill.fillAmount, Is.EqualTo(0f), "Losing contact resets the radial fill.");
+
+            LessonCommandResultV2 automaticHint = null;
+            runner.CommandEvaluated += result =>
+            {
+                if (result != null && result.command_id.StartsWith("auto-visual-", StringComparison.Ordinal))
+                    automaticHint = result;
+            };
+            SessionContext.Instance.CurrentParams.Actions.EnableAutoHint = true;
+            SessionContext.Instance.CurrentParams.Actions.ActionReminderCycle = 0.01f;
+            yield return UntilFrames(() => automaticHint != null, 60);
+            Assert.That(automaticHint.accepted, Is.True);
+            Assert.That(automaticHint.binding_id, Is.EqualTo("hold-binding"));
+            Assert.That(automaticHint.node_id, Is.EqualTo("loop"));
+            Assert.That(automaticHint.activation_id, Is.EqualTo(parent.activation_id));
+
+            var oldParentActivation = parent.activation_id;
+            var oldChildActivation = child.ChildActivationId;
+            var pause = runner.ApplyCommandAsync(RunnerCommand(parent, "loop-pause", LessonCommandKindV2.Pause));
+            yield return CompleteWithinFrames(pause);
+            Assert.That(pause.GetAwaiter().GetResult().accepted, Is.True);
+            Assert.That(runner.CurrentState.status, Is.EqualTo("paused"));
+            Assert.That(runner.CurrentState.bindings, Is.Empty, "Paused Loop state clears child-only bindings.");
+            Assert.That(runner.ActiveQuestScope, Is.Null);
+            Assert.That(voice.State, Is.Not.EqualTo(QuestSourceState.Active));
+            Assert.That(hold.State, Is.Not.EqualTo(QuestSourceState.Active));
+
+            var resume = runner.ApplyCommandAsync(RunnerCommand(runner.CurrentState, "loop-resume", LessonCommandKindV2.Resume));
+            yield return CompleteWithinFrames(resume);
+            Assert.That(resume.GetAwaiter().GetResult().accepted, Is.True);
+            yield return UntilFrames(() => runner.ActiveQuestScope != null &&
+                runner.ActiveQuestScope.ChildActivationId != oldChildActivation &&
+                voice.State == QuestSourceState.Active && hold.State == QuestSourceState.Active);
+            var resumedParent = runner.CurrentState;
+            var resumedChild = runner.ActiveQuestScope;
+            Assert.That(resumedParent.activation_id, Is.Not.EqualTo(oldParentActivation));
+            Assert.That(resumedParent.bindings, Has.Length.EqualTo(2));
+            Assert.That(hold.CurrentActivationId, Is.EqualTo(resumedChild.ChildActivationId));
+
+            var staleCommand = RunnerCommand(parent, "stale-loop-hint", LessonCommandKindV2.VisualHint);
+            staleCommand.binding_id = "hold-binding";
+            var staleHint = runner.ApplyCommandAsync(staleCommand);
+            yield return CompleteWithinFrames(staleHint);
+            Assert.That(staleHint.GetAwaiter().GetResult().accepted, Is.False);
+            Assert.That(staleHint.GetAwaiter().GetResult().reason, Is.EqualTo(LessonCommandReasonV2.StaleActivation));
+
+            voiceTransport.Emit(new VoiceQuestSignal(resumedChild.ChildActivationId, VoiceQuestSignalType.Matched));
+            yield return UntilFrames(() => runner.CurrentState.node_id == "exit");
+            Assert.That(runner.CurrentState.bindings, Is.Empty, "Loop exit clears child bindings before entering the next graph node.");
+            Assert.That(runner.ActiveQuestScope, Is.Null);
+            Assert.That(hold.State, Is.Not.EqualTo(QuestSourceState.Active));
+
+            runner.AbortLesson();
+            yield return CompleteWithinFrames(lesson);
+            Assert.That(runner.ActiveQuestScope, Is.Null);
+            Assert.That(voice.State, Is.Not.EqualTo(QuestSourceState.Active));
+            Assert.That(hold.State, Is.Not.EqualTo(QuestSourceState.Active));
+            Assert.That(outlineTarget.GetComponent<Outline>().enabled, Is.False,
+                "Loop teardown restores the source's profile baseline.");
         }
 
         [UnityTest]
@@ -590,6 +773,46 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             return target;
         }
 
+        private GameObject CreateRadialProgressPrefab()
+        {
+            var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            texture.SetPixels(new[] { Color.white, Color.white, Color.white, Color.white });
+            texture.Apply();
+            var sprite = Sprite.Create(texture, new Rect(0f, 0f, 2f, 2f), new Vector2(0.5f, 0.5f));
+
+            var root = new GameObject("radial-progress-template", typeof(RectTransform), typeof(Canvas));
+            root.SetActive(false);
+            _objects.Add(root);
+            _objects.Add(sprite);
+            _objects.Add(texture);
+            root.transform.localScale = Vector3.one * 0.0002f;
+            var rootRect = (RectTransform)root.transform;
+            rootRect.sizeDelta = new Vector2(540f, 540f);
+            root.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
+
+            var fillObject = new GameObject("RadialFill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Slider));
+            fillObject.transform.SetParent(root.transform, false);
+            var fillRect = (RectTransform)fillObject.transform;
+            fillRect.anchorMin = Vector2.zero;
+            fillRect.anchorMax = Vector2.one;
+            fillRect.offsetMin = Vector2.zero;
+            fillRect.offsetMax = Vector2.zero;
+
+            var fill = fillObject.GetComponent<Image>();
+            fill.sprite = sprite;
+            fill.type = Image.Type.Filled;
+            fill.fillMethod = Image.FillMethod.Radial360;
+            fill.fillAmount = 0f;
+
+            var slider = fillObject.GetComponent<Slider>();
+            slider.minValue = 0f;
+            slider.maxValue = 1f;
+            slider.direction = Slider.Direction.LeftToRight;
+            slider.targetGraphic = fill;
+            slider.fillRect = fillRect;
+            return root;
+        }
+
         private void SetVisualGuidance(bool enabled)
         {
             var contextObject = new GameObject("hint-routing-session-context");
@@ -617,6 +840,23 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             graph.Editor_SetNodes(new List<LessonNodeData>
             {
                 new LessonNodeData("quest-1", NodeType.Quest, new QuestNodeConfig(new List<string>(bindingIds), -1f))
+            });
+            graph.Editor_SetEdges(new List<LessonEdgeData>());
+            return graph;
+        }
+
+        private LessonGraph LoopGraph(params string[] bindingIds)
+        {
+            var graph = ScriptableObject.CreateInstance<LessonGraph>();
+            _objects.Add(graph);
+            graph.name = "loop-hint-routing-test-graph";
+            graph.Editor_SetSchemaVersion(2);
+            graph.Editor_SetEntryNodeId("loop");
+            graph.Editor_SetNodes(new List<LessonNodeData>
+            {
+                new LessonNodeData("loop", NodeType.Loop, new LoopNodeConfig("body", "exit", 3, new AlwaysCondition())),
+                new LessonNodeData("body", NodeType.Quest, new QuestNodeConfig(new List<string>(bindingIds), -1f)),
+                new LessonNodeData("exit", NodeType.Wait, new WaitNodeConfig(1f))
             });
             graph.Editor_SetEdges(new List<LessonEdgeData>());
             return graph;
@@ -740,6 +980,18 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             private readonly INodeExecutor _executor;
             public Registry(INodeExecutor executor) { _executor = executor; }
             public bool TryGet(NodeType type, out INodeExecutor executor) { executor = _executor; return type == NodeType.Quest; }
+        }
+
+        private sealed class LoopRegistry : INodeExecutorRegistry
+        {
+            private readonly INodeExecutor _questExecutor;
+            private readonly INodeExecutor _waitExecutor = new WaitNodeExecutor(new NeverClock());
+            public LoopRegistry(INodeExecutor questExecutor) { _questExecutor = questExecutor; }
+            public bool TryGet(NodeType type, out INodeExecutor executor)
+            {
+                executor = type == NodeType.Quest ? _questExecutor : type == NodeType.Wait ? _waitExecutor : null;
+                return executor != null;
+            }
         }
 
         private sealed class NeverClock : INodeClock

@@ -6,15 +6,44 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using VRAutism.Core;
 using VRAutism.Gameplay.LessonGraphV2.Data;
 using VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions;
 using VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs;
 using VRAutism.Gameplay.LessonGraphV2.Remote;
+using VRAutism.Gameplay.LessonGraphV2.Questing.Voice;
 using VRAutism.Gameplay.LessonGraphV2.Runtime.Executors;
 using VRAutism.Gameplay.LessonGraphV2.Validation;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Runtime
 {
+    /// <summary>Local observation of a live Quest child owned by a structured parent node.</summary>
+    public sealed class ActiveQuestScopeV2
+    {
+        private readonly string[] _bindingIds;
+        public string ParentSessionId { get; }
+        public string ParentRunId { get; }
+        public string ParentNodeId { get; }
+        public string ParentActivationId { get; }
+        public string ChildNodeId { get; }
+        public string ChildActivationId { get; }
+        public string[] BindingIds => (string[])_bindingIds.Clone();
+        internal long LeaseId { get; }
+
+        internal ActiveQuestScopeV2(string parentSessionId, string parentRunId, string parentNodeId,
+            string parentActivationId, string childNodeId, string childActivationId, string[] bindingIds, long leaseId)
+        {
+            ParentSessionId = parentSessionId ?? string.Empty;
+            ParentRunId = parentRunId ?? string.Empty;
+            ParentNodeId = parentNodeId ?? string.Empty;
+            ParentActivationId = parentActivationId ?? string.Empty;
+            ChildNodeId = childNodeId ?? string.Empty;
+            ChildActivationId = childActivationId ?? string.Empty;
+            _bindingIds = bindingIds == null ? Array.Empty<string>() : (string[])bindingIds.Clone();
+            LeaseId = leaseId;
+        }
+    }
+
     public sealed class LessonGraphRunner : MonoBehaviour
     {
         private readonly object _gate = new object();
@@ -54,6 +83,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         private bool _nodeCancellationEmitted;
         private bool _nodeResultCommitted;
         private bool _lessonCompletedEmitted;
+        private ActiveQuestScopeV2 _activeQuestScope;
+        private long _questScopeSequence;
+        private string _pauseQuestActivationId;
 
         public event Action<NodeEnteredEvent> NodeEntered;
         public event Action<NodeCompletedEvent> NodeCompleted;
@@ -65,6 +97,18 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         public LessonStateV2 CurrentState
         {
             get { lock (_gate) return CloneState(_currentState); }
+        }
+
+        /// <summary>Gets a live structured Quest child for local presentation and command routing.</summary>
+        public ActiveQuestScopeV2 ActiveQuestScope
+        {
+            get
+            {
+                lock (_gate)
+                {
+                    return IsActiveQuestScopeLocked(_activeQuestScope) ? CloneQuestScope(_activeQuestScope) : null;
+                }
+            }
         }
 
         public IReadOnlyDictionary<string, int> RunNodeVisitCounts
@@ -193,7 +237,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             CancelActive(lessonCancellation);
         }
 
-        public Task<LessonCommandResultV2> ApplyCommandAsync(LessonCommandV2 command)
+        public Task<LessonCommandResultV2> ApplyCommandAsync(LessonCommandV2 command) =>
+            ApplyCommandAsync(command, null);
+
+        public Task<LessonCommandResultV2> ApplyCommandAsync(
+            LessonCommandV2 command,
+            Func<LessonCommandV2, bool> publishScript)
         {
             var context = _unitySynchronizationContext;
             if (context != null && !ReferenceEquals(SynchronizationContext.Current, context))
@@ -201,24 +250,28 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 var completion = new TaskCompletionSource<LessonCommandResultV2>(TaskCreationOptions.RunContinuationsAsynchronously);
                 context.Post(async _ =>
                 {
-                    try { completion.TrySetResult(await ApplyCommandSerializedAsync(command)); }
+                    try { completion.TrySetResult(await ApplyCommandSerializedAsync(command, publishScript)); }
                     catch (Exception exception) { completion.TrySetException(exception); }
                 }, null);
                 return completion.Task;
             }
-            return ApplyCommandSerializedAsync(command);
+            return ApplyCommandSerializedAsync(command, publishScript);
         }
 
-        private async Task<LessonCommandResultV2> ApplyCommandSerializedAsync(LessonCommandV2 command)
+        private async Task<LessonCommandResultV2> ApplyCommandSerializedAsync(
+            LessonCommandV2 command,
+            Func<LessonCommandV2, bool> publishScript)
         {
             Task<LessonCommandResultV2> decisionTask;
             await _commandSerial.WaitAsync();
-            try { decisionTask = ApplyCommandOnRunnerAsync(command); }
+            try { decisionTask = ApplyCommandOnRunnerAsync(command, publishScript); }
             finally { _commandSerial.Release(); }
             return await decisionTask;
         }
 
-        private async Task<LessonCommandResultV2> ApplyCommandOnRunnerAsync(LessonCommandV2 command)
+        private async Task<LessonCommandResultV2> ApplyCommandOnRunnerAsync(
+            LessonCommandV2 command,
+            Func<LessonCommandV2, bool> publishScript)
         {
             var malformedReason = ValidateCommandEnvelope(command);
             if (malformedReason != null) return PublishDecision(CreateCommandResult(command, false, malformedReason, CurrentState));
@@ -228,11 +281,15 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             TaskCompletionSource<string> resumeSignal = null;
             TaskCompletionSource<LessonStateV2> resumeStarted = null;
             Task<LessonCommandResultV2> hintTask = null;
+            bool applyVolume = false;
+            bool acceptScript = false;
             QuestNodeExecutor hintExecutor = null;
             QuestNodeExecutor pauseExecutor = null;
             LessonStateV2 changedState = null;
             string rejection = null;
             string resumedActivationId = null;
+            string pauseTargetActivationId = null;
+            long hintScopeLease = 0L;
 
             lock (_gate)
             {
@@ -268,11 +325,27 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                         else if (_activeExecutor is QuestNodeExecutor questExecutor &&
                                  questExecutor.HasTerminalSourceDecision(command.activation_id))
                             rejection = LessonCommandReasonV2.InvalidState;
+                        else if (IsActiveQuestScopeLocked(_activeQuestScope) && _registry != null &&
+                            _registry.TryGet(NodeType.Quest, out var activeChildExecutor) &&
+                            activeChildExecutor is QuestNodeExecutor activeChildQuestExecutor &&
+                            activeChildQuestExecutor.HasTerminalSourceDecision(_activeQuestScope.ChildActivationId))
+                            rejection = LessonCommandReasonV2.InvalidState;
                         else
                         {
+                            var childScopeForPause = IsActiveQuestScopeLocked(_activeQuestScope)
+                                ? _activeQuestScope
+                                : null;
                             _pauseRequestedFlag = true;
                             pauseExecutor = _activeExecutor as QuestNodeExecutor;
+                            pauseTargetActivationId = command.activation_id;
+                            if (pauseExecutor == null && childScopeForPause != null &&
+                                _registry != null && _registry.TryGet(NodeType.Quest, out var childPauseExecutor))
+                            {
+                                pauseExecutor = childPauseExecutor as QuestNodeExecutor;
+                                pauseTargetActivationId = childScopeForPause.ChildActivationId;
+                            }
                             _pauseQuestExecutor = pauseExecutor;
+                            _pauseQuestActivationId = pauseTargetActivationId;
                             _pauseCompleted = new TaskCompletionSource<LessonStateV2>(TaskCreationOptions.RunContinuationsAsynchronously);
                             _resumeRequested = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
                             _resumeStarted = new TaskCompletionSource<LessonStateV2>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -298,15 +371,50 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     {
                         if (_currentState.status != "running" || _nodeResultCommitted)
                             rejection = LessonCommandReasonV2.InvalidState;
-                        else if (!_executorReady)
-                            rejection = LessonCommandReasonV2.NotActive;
-                        else if (!(_activeExecutor is QuestNodeExecutor questExecutor))
-                            rejection = LessonCommandReasonV2.UnsupportedCapability;
-                        else
+                        else if (_executorReady && _activeExecutor is QuestNodeExecutor questExecutor)
                         {
                             hintExecutor = questExecutor;
                             try { hintTask = questExecutor.TryApplyHintAsync(command); }
                             catch { rejection = LessonCommandReasonV2.TransportUnavailable; }
+                        }
+                        else if (IsActiveQuestScopeLocked(_activeQuestScope) &&
+                            _registry != null && _registry.TryGet(NodeType.Quest, out var childExecutor) &&
+                            childExecutor is QuestNodeExecutor childQuestExecutor)
+                        {
+                            hintExecutor = childQuestExecutor;
+                            hintScopeLease = _activeQuestScope.LeaseId;
+                            var childCommand = CloneCommand(command);
+                            childCommand.activation_id = _activeQuestScope.ChildActivationId;
+                            try { hintTask = childQuestExecutor.TryApplyHintAsync(childCommand); }
+                            catch { rejection = LessonCommandReasonV2.TransportUnavailable; }
+                        }
+                        else if (!_executorReady)
+                            rejection = LessonCommandReasonV2.NotActive;
+                        else
+                            rejection = LessonCommandReasonV2.UnsupportedCapability;
+                    }
+                    else if (command.command == LessonCommandKindV2.SetVolume || command.command == LessonCommandKindV2.SpeakScript)
+                    {
+                        if (_currentState.status != "running" || _nodeResultCommitted)
+                            rejection = LessonCommandReasonV2.InvalidState;
+                        else if (!_executorReady)
+                            rejection = LessonCommandReasonV2.NotActive;
+                        else if (command.command == LessonCommandKindV2.SetVolume)
+                        {
+                            if (SessionContext.Instance == null)
+                                rejection = LessonCommandReasonV2.NotActive;
+                            else
+                                applyVolume = true;
+                        }
+                        else if (!TryResolveVoiceBinding(_currentState, command.npc_binding_id, out _))
+                            rejection = LessonCommandReasonV2.WrongBinding;
+                        else if (publishScript == null)
+                            rejection = LessonCommandReasonV2.TransportUnavailable;
+                        else
+                        {
+                            try { acceptScript = publishScript(command); }
+                            catch { acceptScript = false; }
+                            if (!acceptScript) rejection = LessonCommandReasonV2.TransportUnavailable;
                         }
                     }
                     else if (_currentState.status != "running")
@@ -327,12 +435,21 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             if (rejection != null)
                 return PublishDecision(CreateCommandResult(command, false, rejection, CurrentState));
 
+            if (applyVolume)
+            {
+                SessionContext.Instance.MaxVolume = command.volume;
+                return PublishDecision(CreateCommandResult(command, true, LessonCommandReasonV2.None, CurrentState));
+            }
+
+            if (acceptScript)
+                return PublishDecision(CreateCommandResult(command, true, LessonCommandReasonV2.None, CurrentState));
+
             if (hintTask != null)
-                return await CompleteHintCommandAsync(command, hintExecutor, hintTask);
+                return await CompleteHintCommandAsync(command, hintExecutor, hintTask, hintScopeLease);
 
             if (changedState != null)
             {
-                pauseExecutor?.NotifyPauseRequested(command.activation_id);
+                pauseExecutor?.NotifyPauseRequested(pauseTargetActivationId ?? command.activation_id);
                 CancelActive(activationToCancel);
                 Emit(StateChanged, CloneState(changedState));
                 var pausedState = await pauseCompletion.Task;
@@ -360,12 +477,77 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 return LessonCommandReasonV2.Malformed;
 
             var isHint = command.command == LessonCommandKindV2.VerbalHint || command.command == LessonCommandKindV2.VisualHint;
+            var isVolume = command.command == LessonCommandKindV2.SetVolume;
+            var isScript = command.command == LessonCommandKindV2.SpeakScript;
             if (command.command != LessonCommandKindV2.Skip && command.command != LessonCommandKindV2.Pause &&
-                command.command != LessonCommandKindV2.Resume && !isHint)
+                command.command != LessonCommandKindV2.Resume && !isHint && !isVolume && !isScript)
                 return LessonCommandReasonV2.Malformed;
             if (isHint ? string.IsNullOrWhiteSpace(command.binding_id) : !string.IsNullOrWhiteSpace(command.binding_id))
                 return LessonCommandReasonV2.Malformed;
+            if (isVolume && (float.IsNaN(command.volume) || float.IsInfinity(command.volume) || command.volume < 0f || command.volume > 1f))
+                return LessonCommandReasonV2.Malformed;
+            if (isScript && (string.IsNullOrWhiteSpace(command.npc_binding_id) || string.IsNullOrWhiteSpace(command.text) ||
+                command.text.Length > VoiceQuestTransportV2Constants.MaxScriptLength))
+                return LessonCommandReasonV2.Malformed;
             return null;
+        }
+
+        public bool RecordAcceptedVoiceReminder(string activationId, string npcBindingId, string commandId)
+        {
+            LessonCommandResultV2 decision;
+            lock (_gate)
+            {
+                if (string.IsNullOrWhiteSpace(activationId) || string.IsNullOrWhiteSpace(npcBindingId) ||
+                    string.IsNullOrWhiteSpace(commandId) || _sessionContext == null || _currentState == null ||
+                    _currentState.status != "running" || !_executorReady || _nodeResultCommitted || _pauseRequestedFlag ||
+                    string.IsNullOrWhiteSpace(_activeRunId) ||
+                    !string.Equals(_currentState.session_id, _sessionContext.SessionId, StringComparison.Ordinal) ||
+                    !string.Equals(_currentState.run_id, _activeRunId, StringComparison.Ordinal) ||
+                    !string.Equals(_currentState.activation_id, activationId, StringComparison.Ordinal) ||
+                    !string.Equals(_activeActivationId, activationId, StringComparison.Ordinal) ||
+                    _commandIds.Contains(commandId) ||
+                    !TryResolveVoiceBinding(_currentState, npcBindingId, out var bindingId))
+                    return false;
+
+                _commandIds.Add(commandId);
+                decision = new LessonCommandResultV2
+                {
+                    contract_version = LessonRemoteContractV2.ContractVersion,
+                    @event = LessonRemoteContractV2.CommandResultEvent,
+                    command_id = commandId,
+                    session_id = _currentState.session_id,
+                    run_id = _currentState.run_id,
+                    node_id = _currentState.node_id,
+                    activation_id = _currentState.activation_id,
+                    command = LessonCommandKindV2.VerbalHint,
+                    binding_id = bindingId,
+                    accepted = true,
+                    reason = LessonCommandReasonV2.None,
+                    state = CloneState(_currentState)
+                };
+            }
+
+            PublishDecision(decision);
+            return true;
+        }
+
+        private static bool TryResolveVoiceBinding(LessonStateV2 state, string npcBindingId, out string bindingId)
+        {
+            bindingId = string.Empty;
+            if (state?.bindings == null || string.IsNullOrWhiteSpace(npcBindingId)) return false;
+            LessonBindingV2 matched = null;
+            for (var index = 0; index < state.bindings.Length; index++)
+            {
+                var candidate = state.bindings[index];
+                if (candidate == null || !candidate.can_verbal_hint ||
+                    !string.Equals(candidate.npc_binding_id, npcBindingId, StringComparison.Ordinal))
+                    continue;
+                if (matched != null) return false;
+                matched = candidate;
+            }
+            if (matched == null || string.IsNullOrWhiteSpace(matched.binding_id)) return false;
+            bindingId = matched.binding_id;
+            return true;
         }
 
         private LessonCommandResultV2 PublishDecision(LessonCommandResultV2 decision)
@@ -575,7 +757,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             Dictionary<string, StructuredBranchEvidence> branchEvidence)
         {
             var flow = new StructuredFlowExecution(_graph, _registry, _clock, _variableSource, _checkpointTelemetry,
-                RecordNodeVisit, RecordEdgeVisit);
+                RecordNodeVisit, RecordEdgeVisit,
+                (child, childActivationId) => BeginStructuredQuestScope(context, child, childActivationId),
+                MarkStructuredQuestScopeReady,
+                EndStructuredQuestScope);
             if (context.Node.Config is ParallelNodeConfig)
             {
                 var result = await flow.ExecuteParallelAsync(context);
@@ -603,6 +788,104 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 _runNodeVisitCounts[nodeId] = count + 1;
             }
         }
+
+        private long BeginStructuredQuestScope(NodeExecutionContext parent, LessonNodeData child, string childActivationId)
+        {
+            if (parent == null || !(child?.Config is QuestNodeConfig questConfig) || string.IsNullOrWhiteSpace(childActivationId))
+                return 0L;
+            lock (_gate)
+            {
+                if (_currentState == null || _currentState.status != "running" || _pauseRequestedFlag || _nodeResultCommitted ||
+                    _activeRunId != parent.RunId || _activeActivationId != parent.ActivationId ||
+                    _currentState.node_id != parent.Node.Id || _currentState.activation_id != parent.ActivationId ||
+                    parent.CancellationToken.IsCancellationRequested || parent.SkipToken.IsCancellationRequested ||
+                    parent.TimeoutToken.IsCancellationRequested)
+                    return 0L;
+
+                var leaseId = ++_questScopeSequence;
+                _activeQuestScope = new ActiveQuestScopeV2(_currentState.session_id, parent.RunId, parent.Node.Id,
+                    parent.ActivationId, child.Id, childActivationId,
+                    questConfig.CompletionBindingIds?.ToArray(), leaseId);
+                return leaseId;
+            }
+        }
+
+        private void EndStructuredQuestScope(long leaseId)
+        {
+            if (leaseId == 0L) return;
+            LessonStateV2 changedState = null;
+            lock (_gate)
+            {
+                if (_activeQuestScope?.LeaseId == leaseId)
+                {
+                    var scope = _activeQuestScope;
+                    _activeQuestScope = null;
+                    if (_currentState != null && _currentState.status == "running" &&
+                        _currentState.run_id == scope.ParentRunId && _currentState.node_id == scope.ParentNodeId &&
+                        _currentState.activation_id == scope.ParentActivationId)
+                    {
+                        _currentState.bindings = Array.Empty<LessonBindingV2>();
+                        _currentState.state_revision = ++_stateRevision;
+                        _currentState.updated_at_utc = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+                        changedState = CloneState(_currentState);
+                    }
+                }
+            }
+            if (changedState != null) Emit(StateChanged, changedState);
+        }
+
+        private void MarkStructuredQuestScopeReady(LessonNodeData child, string childActivationId, long leaseId)
+        {
+            if (leaseId == 0L || _registry == null || !_registry.TryGet(NodeType.Quest, out var executor) ||
+                !(executor is QuestNodeExecutor questExecutor))
+                return;
+
+            var bindings = questExecutor.GetActiveBindings(childActivationId);
+            if (bindings == null || bindings.Length == 0) return;
+            LessonStateV2 changedState = null;
+            lock (_gate)
+            {
+                var scope = _activeQuestScope;
+                if (scope == null || scope.LeaseId != leaseId || !IsActiveQuestScopeLocked(scope) ||
+                    scope.ChildNodeId != child?.Id || scope.ChildActivationId != childActivationId)
+                    return;
+                _currentState.bindings = bindings;
+                _currentState.state_revision = ++_stateRevision;
+                _currentState.updated_at_utc = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+                changedState = CloneState(_currentState);
+            }
+            Emit(StateChanged, changedState);
+        }
+
+        private bool IsActiveQuestScopeLocked(ActiveQuestScopeV2 scope) =>
+            scope != null && _currentState != null && _currentState.status == "running" &&
+            !_pauseRequestedFlag && !_nodeResultCommitted && _activationCancellation != null &&
+            !_activationCancellation.IsCancellationRequested && _activeRunId == scope.ParentRunId &&
+            _skipCancellation != null && !_skipCancellation.IsCancellationRequested &&
+            _timeoutCancellation != null && !_timeoutCancellation.IsCancellationRequested &&
+            _activeActivationId == scope.ParentActivationId && _currentState.run_id == scope.ParentRunId &&
+            _currentState.node_id == scope.ParentNodeId && _currentState.activation_id == scope.ParentActivationId &&
+            _currentState.session_id == scope.ParentSessionId;
+
+        private static ActiveQuestScopeV2 CloneQuestScope(ActiveQuestScopeV2 scope) => scope == null ? null :
+            new ActiveQuestScopeV2(scope.ParentSessionId, scope.ParentRunId, scope.ParentNodeId,
+                scope.ParentActivationId, scope.ChildNodeId, scope.ChildActivationId, scope.BindingIds, scope.LeaseId);
+
+        private static LessonCommandV2 CloneCommand(LessonCommandV2 command) => new LessonCommandV2
+        {
+            contract_version = command.contract_version,
+            @event = command.@event,
+            command_id = command.command_id,
+            session_id = command.session_id,
+            run_id = command.run_id,
+            node_id = command.node_id,
+            activation_id = command.activation_id,
+            command = command.command,
+            binding_id = command.binding_id,
+            volume = command.volume,
+            npc_binding_id = command.npc_binding_id,
+            text = command.text
+        };
 
         private void RecordEdgeVisit(string fromNodeId, string toNodeId)
         {
@@ -678,6 +961,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 _resumeStarted = null;
                 _activeRunId = null;
                 _activeActivationId = null;
+                _activeQuestScope = null;
+                _pauseQuestActivationId = null;
             }
         }
 
@@ -749,7 +1034,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         private async Task<LessonCommandResultV2> CompleteHintCommandAsync(
             LessonCommandV2 command,
             QuestNodeExecutor executor,
-            Task<LessonCommandResultV2> hintTask)
+            Task<LessonCommandResultV2> hintTask,
+            long childScopeLease)
         {
             LessonCommandResultV2 hintResult;
             try { hintResult = await hintTask; }
@@ -767,7 +1053,17 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             LessonStateV2 state;
             lock (_gate)
             {
-                if (!accepted && (_activeRunId != command.run_id || _activeActivationId != command.activation_id ||
+                if (childScopeLease != 0L)
+                {
+                    if (!IsActiveQuestScopeLocked(_activeQuestScope) || _activeQuestScope.LeaseId != childScopeLease ||
+                        _activeRunId != command.run_id || _activeActivationId != command.activation_id ||
+                        _currentState?.node_id != command.node_id)
+                    {
+                        accepted = false;
+                        reason = LessonCommandReasonV2.StaleActivation;
+                    }
+                }
+                else if (!accepted && (_activeRunId != command.run_id || _activeActivationId != command.activation_id ||
                     _currentState?.node_id != command.node_id || _currentState?.status != "running" ||
                     _nodeResultCommitted || !_executorReady || !ReferenceEquals(_activeExecutor, executor)))
                 {
@@ -790,6 +1086,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             NodeCancelledEventV2 cancelledEvent;
             TaskCompletionSource<LessonStateV2> pauseCompletion;
             QuestNodeExecutor pauseExecutor;
+            string pauseQuestActivationId;
             lock (_gate)
             {
                 if (_activeRunId != runId || _activeActivationId != activationId || !_pauseRequestedFlag) return;
@@ -805,10 +1102,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 pauseCompletion = _pauseCompleted;
                 pauseExecutor = _pauseQuestExecutor;
                 _pauseQuestExecutor = null;
+                pauseQuestActivationId = _pauseQuestActivationId ?? activationId;
+                _pauseQuestActivationId = null;
             }
             if (cancelledEvent != null) Emit(NodeCancelled, cancelledEvent);
             Emit(StateChanged, CloneState(state));
-            pauseExecutor?.RearmAfterPause(activationId);
+            pauseExecutor?.RearmAfterPause(pauseQuestActivationId);
             pauseCompletion?.TrySetResult(CloneState(state));
         }
 

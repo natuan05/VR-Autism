@@ -44,10 +44,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         private readonly ICheckpointTelemetry _telemetry;
         private readonly Action<string> _visitNode;
         private readonly Action<string, string> _visitEdge;
+        private readonly Func<LessonNodeData, string, long> _questChildStarted;
+        private readonly Action<LessonNodeData, string, long> _questChildReady;
+        private readonly Action<long> _questChildEnded;
 
         public StructuredFlowExecution(LessonGraph graph, INodeExecutorRegistry registry, INodeClock clock,
             ILessonVariableSource variables, ICheckpointTelemetry telemetry, Action<string> visitNode,
-            Action<string, string> visitEdge = null)
+            Action<string, string> visitEdge = null, Func<LessonNodeData, string, long> questChildStarted = null,
+            Action<LessonNodeData, string, long> questChildReady = null, Action<long> questChildEnded = null)
         {
             _graph = graph ?? throw new ArgumentNullException(nameof(graph));
             _registry = registry ?? throw new ArgumentNullException(nameof(registry));
@@ -56,6 +60,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             _telemetry = telemetry;
             _visitNode = visitNode;
             _visitEdge = visitEdge;
+            _questChildStarted = questChildStarted;
+            _questChildReady = questChildReady;
+            _questChildEnded = questChildEnded;
         }
 
         public async Task<StructuredFlowResult> ExecuteParallelAsync(NodeExecutionContext context)
@@ -218,7 +225,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 {
                     _visitEdge?.Invoke(context.Node.Id, body.Id);
                     var scope = CancellationTokenSource.CreateLinkedTokenSource(owner.Token);
-                    var childTask = ExecuteChildAsync(context, body, scope);
+                    var childTask = ExecuteChildAsync(context, body, scope, observeQuestScope: true);
                     using (var signals = new CancellationSignals(context.SkipToken, context.TimeoutToken, context.CancellationToken))
                     {
                         var completed = await Task.WhenAny(childTask, signals.Tasks[0], signals.Tasks[1], signals.Tasks[2]);
@@ -260,11 +267,18 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             return new StructuredFlowResult(ParentResult(context, NodeStatus.Failed, "loop_limit"), null);
         }
 
-        private async Task<ChildOutcome> ExecuteChildAsync(NodeExecutionContext parent, LessonNodeData child, CancellationTokenSource scope)
+        private async Task<ChildOutcome> ExecuteChildAsync(NodeExecutionContext parent, LessonNodeData child,
+            CancellationTokenSource scope, bool observeQuestScope = false)
         {
             var activationId = Guid.NewGuid().ToString("N");
+            var observationLease = 0L;
             try
             {
+                if (observeQuestScope && child.NodeType == NodeType.Quest && _questChildStarted != null)
+                {
+                    try { observationLease = _questChildStarted(child, activationId); }
+                    catch { observationLease = 0L; }
+                }
                 _visitNode?.Invoke(child.Id);
                 if (!_registry.TryGet(child.NodeType, out var executor) || executor == null)
                     return ChildOutcome.Invalid(activationId, "missing_executor");
@@ -272,6 +286,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     scope.Token, parent.SkipToken, parent.TimeoutToken, _telemetry ?? parent.CheckpointTelemetry, _clock ?? parent.Clock);
                 var task = executor.ExecuteAsync(context);
                 if (task == null) return ChildOutcome.Invalid(activationId, "null_task");
+                if (observationLease != 0L)
+                {
+                    try { _questChildReady?.Invoke(child, activationId, observationLease); }
+                    catch { }
+                }
                 var result = await task;
                 if (scope.IsCancellationRequested) return ChildOutcome.Invalid(activationId, "cancelled");
                 if (result == null || result.NodeId != child.Id || result.ActivationId != activationId)
@@ -285,6 +304,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             catch (Exception exception)
             {
                 return ChildOutcome.Invalid(activationId, "child_exception:" + exception.GetType().Name);
+            }
+            finally
+            {
+                if (observationLease != 0L)
+                {
+                    try { _questChildEnded?.Invoke(observationLease); }
+                    catch { }
+                }
             }
         }
 

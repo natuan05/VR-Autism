@@ -12,8 +12,11 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
 {
     public sealed class LiveKitDialogueTransportV2Tests
     {
-        private sealed class Client : ILiveKitDataPacketClientV2
+        private sealed class Client : ILiveKitDataPacketClientV2, ILiveKitDeferredDataPacketClientV2
         {
+            private const int MaxPendingCancellations = 64;
+            private readonly Queue<byte[]> _pendingCancellations = new Queue<byte[]>();
+
             public bool IsConnectedV2 { get; set; } = true;
             public event Action<byte[], string> DataReceivedV2;
             public event Action ReconnectedV2;
@@ -26,9 +29,28 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 Sent.Add(Encoding.UTF8.GetString(data));
             }
 
-            public void Reconnect() => ReconnectedV2?.Invoke();
+            public void Reconnect()
+            {
+                IsConnectedV2 = true;
+                while (_pendingCancellations.Count > 0)
+                    Sent.Add(Encoding.UTF8.GetString(_pendingCancellations.Dequeue()));
+                ReconnectedV2?.Invoke();
+            }
             public void Receive(string packet, string topic = DialogueTransportV2Constants.Topic) =>
                 DataReceivedV2?.Invoke(Encoding.UTF8.GetBytes(packet), topic);
+
+            public bool PublishSpeakScriptCancellationV2(byte[] packet)
+            {
+                if (IsConnectedV2)
+                    Sent.Add(Encoding.UTF8.GetString(packet));
+                else
+                {
+                    if (_pendingCancellations.Count >= MaxPendingCancellations)
+                        _pendingCancellations.Dequeue();
+                    _pendingCancellations.Enqueue((byte[])packet.Clone());
+                }
+                return true;
+            }
         }
 
         private static void Pump(LiveKitDialogueTransportV2 transport) =>
@@ -242,6 +264,169 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
 
                 Pump(transport);
                 Assert.IsEmpty(signals, "Late signal must be suppressed after CancelAsync");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(go);
+            }
+        }
+
+        [TestCase("timeout")]
+        [TestCase("skip")]
+        public void CancelAsync_PublishesExactCorrelatedCancelSpeakScript(string reason)
+        {
+            var go = new GameObject("dialogue-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitDialogueTransportV2>();
+                var client = new Client();
+                transport.Configure(client);
+                transport.SpeakAsync(
+                    new DialogueRequestV2("dialogue-act", "dialogue-seq", "Text", "npc-teacher"),
+                    CancellationToken.None).GetAwaiter().GetResult();
+
+                transport.CancelAsync(
+                    "dialogue-act", "dialogue-seq", reason, CancellationToken.None)
+                    .GetAwaiter().GetResult();
+
+                Assert.AreEqual(2, client.Sent.Count);
+                Assert.AreEqual(
+                    "{\"contract_version\":2,\"event\":\"CANCEL_SPEAK_SCRIPT\",\"activation_id\":\"dialogue-act\",\"sequence_id\":\"dialogue-seq\",\"npc_binding_id\":\"npc-teacher\",\"reason\":\"lesson_scope_changed\"}",
+                    client.Sent[1]);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void Destroy_ActiveDialogue_PublishesBridgeUnloadCancellation()
+        {
+            var go = new GameObject("dialogue-transport-test");
+            go.SetActive(false);
+            var transport = go.AddComponent<LiveKitDialogueTransportV2>();
+            var client = new Client();
+            transport.Configure(client);
+            transport.SpeakAsync(
+                new DialogueRequestV2("dialogue-act", "dialogue-seq", "Text", "npc-teacher"),
+                CancellationToken.None).GetAwaiter().GetResult();
+
+            typeof(LiveKitDialogueTransportV2)
+                .GetMethod("OnDestroy", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(transport, null);
+            UnityEngine.Object.DestroyImmediate(go);
+
+            Assert.AreEqual(2, client.Sent.Count);
+            Assert.AreEqual(
+                "{\"contract_version\":2,\"event\":\"CANCEL_SPEAK_SCRIPT\",\"activation_id\":\"dialogue-act\",\"sequence_id\":\"dialogue-seq\",\"npc_binding_id\":\"npc-teacher\",\"reason\":\"bridge_unload\"}",
+                client.Sent[1]);
+        }
+
+        [Test]
+        public void OfflineDestroy_ReconnectPublishesCancellationAfterTransportIsGone()
+        {
+            var go = new GameObject("dialogue-transport-test");
+            go.SetActive(false);
+            var transport = go.AddComponent<LiveKitDialogueTransportV2>();
+            var client = new Client();
+            transport.Configure(client);
+            transport.SpeakAsync(
+                new DialogueRequestV2("dialogue-act", "dialogue-seq", "Text", "npc-teacher"),
+                CancellationToken.None).GetAwaiter().GetResult();
+
+            client.IsConnectedV2 = false;
+            typeof(LiveKitDialogueTransportV2)
+                .GetMethod("OnDestroy", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(transport, null);
+            UnityEngine.Object.DestroyImmediate(go);
+            Assert.AreEqual(1, client.Sent.Count);
+
+            client.Reconnect();
+
+            Assert.AreEqual(2, client.Sent.Count);
+            Assert.AreEqual(
+                "{\"contract_version\":2,\"event\":\"CANCEL_SPEAK_SCRIPT\",\"activation_id\":\"dialogue-act\",\"sequence_id\":\"dialogue-seq\",\"npc_binding_id\":\"npc-teacher\",\"reason\":\"bridge_unload\"}",
+                client.Sent[1]);
+        }
+
+        [Test]
+        public void CancelAsync_ReplaysQueuedCancellationAfterReconnect()
+        {
+            var go = new GameObject("dialogue-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitDialogueTransportV2>();
+                var client = new Client();
+                transport.Configure(client);
+                transport.SpeakAsync(
+                    new DialogueRequestV2("dialogue-act", "dialogue-seq", "Text", "npc-teacher"),
+                    CancellationToken.None).GetAwaiter().GetResult();
+
+                client.IsConnectedV2 = false;
+                transport.CancelAsync(
+                    "dialogue-act", "dialogue-seq", "timeout", CancellationToken.None)
+                    .GetAwaiter().GetResult();
+                Assert.AreEqual(1, client.Sent.Count);
+
+                client.IsConnectedV2 = true;
+                client.Reconnect();
+                Pump(transport);
+
+                Assert.AreEqual(2, client.Sent.Count);
+                Assert.AreEqual(
+                    "{\"contract_version\":2,\"event\":\"CANCEL_SPEAK_SCRIPT\",\"activation_id\":\"dialogue-act\",\"sequence_id\":\"dialogue-seq\",\"npc_binding_id\":\"npc-teacher\",\"reason\":\"lesson_scope_changed\"}",
+                    client.Sent[1]);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(go);
+            }
+        }
+
+        [Test]
+        public void OfflineNeverPublishedDialogue_DoesNotEvictSentDialogueCancellation()
+        {
+            var go = new GameObject("dialogue-transport-test");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitDialogueTransportV2>();
+                var client = new Client();
+                transport.Configure(client);
+                transport.SpeakAsync(
+                    new DialogueRequestV2("sent-act", "sent-seq", "First", "npc-teacher"),
+                    CancellationToken.None).GetAwaiter().GetResult();
+
+                client.IsConnectedV2 = false;
+                transport.CancelAsync(
+                    "sent-act", "sent-seq", "timeout", CancellationToken.None)
+                    .GetAwaiter().GetResult();
+
+                for (var index = 0; index < 65; index++)
+                {
+                    var activationId = "offline-act-" + index;
+                    var sequenceId = "offline-seq-" + index;
+                    transport.SpeakAsync(
+                        new DialogueRequestV2(activationId, sequenceId, "Never sent", "npc-teacher"),
+                        CancellationToken.None).GetAwaiter().GetResult();
+                    transport.CancelAsync(
+                        activationId, sequenceId, "timeout", CancellationToken.None)
+                        .GetAwaiter().GetResult();
+                }
+
+                client.Reconnect();
+                Pump(transport);
+
+                Assert.AreEqual(2, client.Sent.Count);
+                Assert.AreEqual(
+                    "{\"contract_version\":2,\"event\":\"SPEAK_SCRIPT\",\"activation_id\":\"sent-act\",\"sequence_id\":\"sent-seq\",\"npc_binding_id\":\"npc-teacher\",\"text\":\"First\"}",
+                    client.Sent[0]);
+                Assert.AreEqual(
+                    "{\"contract_version\":2,\"event\":\"CANCEL_SPEAK_SCRIPT\",\"activation_id\":\"sent-act\",\"sequence_id\":\"sent-seq\",\"npc_binding_id\":\"npc-teacher\",\"reason\":\"lesson_scope_changed\"}",
+                    client.Sent[1]);
             }
             finally
             {

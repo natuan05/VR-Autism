@@ -6,7 +6,12 @@ from collections import OrderedDict
 from dataclasses import dataclass, field
 from enum import Enum
 
-from voice_contract_v2 import CancelActiveQuest, SetActiveQuest, VerbalHintV2
+from voice_contract_v2 import (
+    DEFAULT_SPEECH_SILENCE_TIMEOUT_SECONDS,
+    CancelActiveQuest,
+    SetActiveQuest,
+    VerbalHintV2,
+)
 
 
 class ActivationDisposition(Enum):
@@ -27,6 +32,7 @@ class ActiveActivation:
     goal: str
     phrases: tuple[str, ...]
     npc_binding_id: str = ""
+    speech_silence_timeout_seconds: float = DEFAULT_SPEECH_SILENCE_TIMEOUT_SECONDS
     status: ActivationStatus = ActivationStatus.ACTIVE
     opening_claimed: bool = False
     cancellation_reason: str = ""
@@ -57,6 +63,14 @@ class VoiceQuestRuntime:
     def active_npc_binding_id(self) -> str | None:
         return self._active.npc_binding_id if self._active else None
 
+    @property
+    def active_speech_silence_timeout_seconds(self) -> float:
+        return (
+            self._active.speech_silence_timeout_seconds
+            if self._active
+            else DEFAULT_SPEECH_SILENCE_TIMEOUT_SECONDS
+        )
+
     def activate(self, request: SetActiveQuest) -> ActivationDisposition:
         """Install a request atomically, or identify a reconnect replay."""
         if self._active and self._active.activation_id == request.activation_id:
@@ -64,10 +78,12 @@ class VoiceQuestRuntime:
                 self._active.goal,
                 self._active.phrases,
                 self._active.npc_binding_id,
+                self._active.speech_silence_timeout_seconds,
             ) != (
                 request.quest_goal,
                 request.phrases,
                 request.npc_binding_id,
+                request.speech_silence_timeout_seconds,
             ):
                 raise ValueError("activation payload changed")
             return ActivationDisposition.REPLAY
@@ -84,6 +100,7 @@ class VoiceQuestRuntime:
             goal=request.quest_goal,
             phrases=request.phrases,
             npc_binding_id=request.npc_binding_id,
+            speech_silence_timeout_seconds=request.speech_silence_timeout_seconds,
         )
         return ActivationDisposition.NEW
 

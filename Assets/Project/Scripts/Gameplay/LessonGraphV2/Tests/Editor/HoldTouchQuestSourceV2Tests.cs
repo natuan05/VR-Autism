@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using VRAutism.Gameplay.LessonGraphV2.Questing;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
@@ -24,6 +25,34 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         }
 
         [Test]
+        public void HoldProgressAndContactEligibility_AreNormalizedAndResetOnExit()
+        {
+            var source = Source(1 << 8, 2f);
+            var collider = ColliderOnLayer(8);
+            source.TryActivate(Activation("progress"));
+
+            Assert.IsFalse(source.HasActiveContact);
+            Assert.AreEqual(0f, source.NormalizedHoldProgress);
+            Invoke(source, "OnTriggerEnter", collider);
+            Assert.IsTrue(source.HasActiveContact);
+            source.Time = 1d;
+            Invoke(source, "Update");
+            Assert.AreEqual(0.5f, source.NormalizedHoldProgress, 0.001f);
+
+            Invoke(source, "OnTriggerExit", collider);
+            Assert.IsFalse(source.HasActiveContact);
+            Assert.AreEqual(0f, source.NormalizedHoldProgress);
+
+            Invoke(source, "OnTriggerEnter", collider);
+            source.Time = 1.5d;
+            Invoke(source, "Update");
+            Assert.Greater(source.NormalizedHoldProgress, 0f);
+            Assert.IsTrue(source.TryCancel(new QuestSourceCancellation("progress", "pause")));
+            Assert.IsFalse(source.HasActiveContact);
+            Assert.AreEqual(0f, source.NormalizedHoldProgress);
+        }
+
+        [Test]
         public void PartialExitRetainsDwellButEmptyContactSetResetsIt()
         {
             var source = Source(1 << 8, 2f); var first = ColliderOnLayer(8); var second = ColliderOnLayer(8);
@@ -39,7 +68,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Invoke(source, "OnTriggerEnter", collider); source.Time = 2.5d; Invoke(source, "Update"); Assert.AreEqual(QuestSourceState.Active, source.State);
             collider.enabled = false; Invoke(source, "Update"); collider.enabled = true; Invoke(source, "OnTriggerEnter", collider); source.Time = 4.5d; Invoke(source, "Update"); Assert.AreEqual(QuestSourceState.Completed, source.State);
 
-            var invalid = Source(1 << 8, 0f); invalid.TryActivate(Activation("invalid"));
+            var invalid = Source(1 << 8, 0f);
+            LogAssert.Expect(LogType.Error, "[LessonGraphV2] HoldTouch invalid duration=0 binding='hold'");
+            invalid.TryActivate(Activation("invalid"));
             Assert.AreEqual(QuestSourceState.Failed, invalid.State);
         }
 

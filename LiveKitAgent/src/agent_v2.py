@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import random
+import uuid
 from dataclasses import dataclass
 from typing import Any, Optional
 
@@ -31,6 +32,7 @@ from livekit.agents import tts as agents_tts
 from livekit.agents.voice import Agent, AgentSession
 from livekit.plugins import google, silero
 
+from silence_reminder_v2 import ActivationSilenceReminderV2
 from voice_command_runtime_v2 import (
     CommandDisposition,
     CommandStatus,
@@ -40,16 +42,22 @@ from voice_contract_v2 import (
     REMOTE_TOPIC,
     VOICE_TOPIC,
     CancelActiveQuest,
+    CancelSpeakScriptV2,
     PacketValidationError,
     SetActiveQuest,
     SpeakScriptV2,
     VerbalHintV2,
+    accepted_reminder_packet,
     parse_unity_packet,
     quest_matched_packet,
     quest_status_packet,
     speak_script_done_packet,
 )
-from voice_quest_runtime_v2 import ActivationDisposition, VoiceQuestRuntime
+from voice_quest_runtime_v2 import (
+    ActivationDisposition,
+    ActivationStatus,
+    VoiceQuestRuntime,
+)
 
 # ---------------------------------------------------------------------------
 # Setup & Logging Configuration
@@ -251,6 +259,8 @@ class JobRuntime:
         self.active_verbal_hint_task: asyncio.Task[Any] | None = None
         self.active_verbal_hint_activation_id: str | None = None
         self.active_verbal_hint_handle: Any = None
+        self.silence_reminder: ActivationSilenceReminderV2 | None = None
+        self.silence_reminder_interrupt: Any = None
         self.matched_sent: set[str] = set()
         self.background_tasks: set[asyncio.Task[Any]] = set()
         self.tts_cache: dict[tuple[str, str, float, str], list[rtc.AudioFrame]] = {}
@@ -260,6 +270,21 @@ class JobRuntime:
         task = asyncio.create_task(coro)
         self.background_tasks.add(task)
         task.add_done_callback(self.background_tasks.discard)
+
+    def interrupt_active_silence_reminder(self, *, reset_timer: bool = False) -> None:
+        if reset_timer and self.silence_reminder is not None:
+            self.silence_reminder.note_user_activity()
+        if self.silence_reminder and self.silence_reminder.is_reminder_playing:
+            interrupt = self.silence_reminder_interrupt
+            if callable(interrupt):
+                with contextlib.suppress(Exception):
+                    interrupt()
+
+    def cancel_silence_reminder(self, activation_id: str | None = None) -> None:
+        if self.silence_reminder is None:
+            return
+        self.interrupt_active_silence_reminder()
+        self.silence_reminder.cancel(activation_id)
 
 
 # ---------------------------------------------------------------------------
@@ -343,6 +368,7 @@ class TeacherAgent(Agent):
                 activation_id
             ):
                 return "No active quest"
+            runtime.cancel_silence_reminder(activation_id)
             runtime.quest_state.reset()
         await _publish_activation_status(runtime, activation_id)
         return "Quest marked completed"
@@ -448,6 +474,68 @@ async def entrypoint(ctx: JobContext) -> None:
     agent = TeacherAgent(runtime)
     agent_ready = asyncio.Event()
 
+    async def play_silence_reminder(activation_id: str) -> bool:
+        return await _play_silence_reminder(session, runtime, activation_id)
+
+    runtime.silence_reminder = ActivationSilenceReminderV2(play_silence_reminder)
+    runtime.silence_reminder_interrupt = session.interrupt
+
+    def on_user_input_transcribed(event: Any) -> None:
+        transcript = getattr(event, "transcript", "")
+        if not isinstance(transcript, str) or not transcript.strip():
+            return
+        runtime.interrupt_active_silence_reminder()
+        if runtime.silence_reminder is not None:
+            runtime.silence_reminder.note_user_activity()
+
+    def on_user_state_changed(event: Any) -> None:
+        state = getattr(event, "new_state", "")
+        state = getattr(state, "value", state)
+        speaking = state == "speaking"
+        if speaking:
+            runtime.interrupt_active_silence_reminder()
+        if runtime.silence_reminder is not None:
+            runtime.silence_reminder.set_user_speaking(speaking)
+
+    def on_agent_state_changed(event: Any) -> None:
+        state = getattr(event, "new_state", "idle")
+        state = getattr(state, "value", state)
+        if state in {"initializing", "thinking"}:
+            runtime.interrupt_active_silence_reminder()
+        if runtime.silence_reminder is not None:
+            runtime.silence_reminder.set_agent_state(state)
+
+    def on_room_reconnecting() -> None:
+        runtime.interrupt_active_silence_reminder()
+        if runtime.silence_reminder is not None:
+            runtime.silence_reminder.reconnecting()
+
+    def on_room_reconnected() -> None:
+        if runtime.silence_reminder is not None:
+            runtime.silence_reminder.reconnected()
+
+    session.on("user_input_transcribed", on_user_input_transcribed)
+    session.on("user_state_changed", on_user_state_changed)
+    session.on("agent_state_changed", on_agent_state_changed)
+    ctx.room.on("reconnecting", on_room_reconnecting)
+    ctx.room.on("reconnected", on_room_reconnected)
+
+    async def on_job_shutdown(_reason: str) -> None:
+        runtime.cancel_silence_reminder()
+        session.off("user_input_transcribed", on_user_input_transcribed)
+        session.off("user_state_changed", on_user_state_changed)
+        session.off("agent_state_changed", on_agent_state_changed)
+        ctx.room.off("reconnecting", on_room_reconnecting)
+        ctx.room.off("reconnected", on_room_reconnected)
+        pending = tuple(runtime.background_tasks)
+        for task in pending:
+            task.cancel()
+        await asyncio.gather(*pending, return_exceptions=True)
+
+    register_shutdown_callback = getattr(ctx, "add_shutdown_callback", None)
+    if callable(register_shutdown_callback):
+        register_shutdown_callback(on_job_shutdown)
+
     # 4. Register DataPacket handler BEFORE session.start to prevent packet loss race condition
     def on_data_received(data_packet: rtc.DataPacket) -> None:
         if not agent_ready.is_set():
@@ -492,6 +580,12 @@ async def entrypoint(ctx: JobContext) -> None:
             room_options=room_io.RoomOptions(participant_identity=participant.identity),
         )
     except (Exception, asyncio.CancelledError):
+        runtime.cancel_silence_reminder()
+        session.off("user_input_transcribed", on_user_input_transcribed)
+        session.off("user_state_changed", on_user_state_changed)
+        session.off("agent_state_changed", on_agent_state_changed)
+        ctx.room.off("reconnecting", on_room_reconnecting)
+        ctx.room.off("reconnected", on_room_reconnected)
         ctx.room.off("data_received", on_data_received)
         pending = tuple(runtime.background_tasks)
         for task in pending:
@@ -519,8 +613,11 @@ async def _process_data_packet(
 
     data = json.loads(raw_text)
     event_type = data.get("event")
-    if event_type in ("VERBAL_HINT", "ON_REMINDER"):
+    if event_type == "VERBAL_HINT":
         logger.info("[HINT] Received event: %s", event_type)
+        await _handle_hint_reminder(session, runtime, event_type)
+    elif event_type == "ON_REMINDER":
+        logger.info("[HINT] Received legacy event: %s", event_type)
         await _handle_hint_reminder(session, runtime, event_type)
 
 
@@ -540,6 +637,9 @@ async def _process_v2_packet(
     if isinstance(packet, SpeakScriptV2):
         await _handle_speak_script_v2(session, runtime, packet)
         return
+    if isinstance(packet, CancelSpeakScriptV2):
+        await _handle_cancel_speak_script_v2(runtime, packet)
+        return
     if isinstance(packet, VerbalHintV2):
         await _handle_verbal_hint_v2(session, runtime, packet)
         return
@@ -557,6 +657,11 @@ async def _process_v2_packet(
             if disposition is ActivationDisposition.NEW:
                 try:
                     await _reset_activation(agent, session, runtime)
+                    if runtime.silence_reminder is not None:
+                        runtime.silence_reminder.activate(
+                            packet.activation_id,
+                            packet.speech_silence_timeout_seconds,
+                        )
                 except Exception:
                     runtime.voice_runtime.mark_failed(packet.activation_id)
                     logger.exception(
@@ -594,9 +699,44 @@ async def _process_v2_packet(
     await asyncio.sleep(0)
 
 
+async def _handle_cancel_speak_script_v2(
+    runtime: JobRuntime, packet: CancelSpeakScriptV2
+) -> None:
+    """Interrupt one matching therapist script without cancelling its quest."""
+    async with runtime.command_lock:
+        if not runtime.command_runtime.cancel(
+            packet.activation_id,
+            packet.sequence_id,
+            packet.npc_binding_id,
+            packet.reason,
+        ):
+            return
+
+        handle = runtime.active_speech_handle
+        if handle is not None:
+            done = getattr(handle, "done", None)
+            if not callable(done) or not done():
+                with contextlib.suppress(Exception):
+                    handle.interrupt()
+            if runtime.active_speech_handle is handle:
+                runtime.active_speech_handle = None
+
+        await send_v2_packet(
+            runtime,
+            speak_script_done_packet(
+                packet.activation_id,
+                packet.sequence_id,
+                packet.npc_binding_id,
+                status="CANCELLED",
+                reason=packet.reason,
+            ),
+        )
+
+
 async def _reset_activation(
     agent: TeacherAgent, session: AgentSession, runtime: JobRuntime
 ) -> None:
+    runtime.cancel_silence_reminder()
     task = runtime.activation_task
     runtime.activation_task = None
     if task and not task.done():
@@ -727,10 +867,16 @@ async def _handle_quest_activation(
             audio=audio_arg,
             allow_interruptions=True,
         )
+        if (
+            runtime.voice_runtime.can_continue(activation_id)
+            and runtime.silence_reminder is not None
+        ):
+            runtime.silence_reminder.opening_finished(activation_id)
     except Exception as err:
         logger.error("[AGENT] Error activating quest context: %s", err)
         async with runtime.packet_lock:
             if runtime.voice_runtime.mark_failed(activation_id):
+                runtime.cancel_silence_reminder(activation_id)
                 runtime.quest_state.reset()
                 agent.bind_evaluation_activation(None)
                 session.interrupt()
@@ -742,12 +888,81 @@ async def _handle_quest_activation(
                 await _publish_activation_status(runtime, activation_id)
 
 
+async def _play_silence_reminder(
+    session: AgentSession,
+    runtime: JobRuntime,
+    activation_id: str,
+) -> bool:
+    """Play one cached activation phrase and publish accepted evidence after playout."""
+    if not runtime.voice_runtime.can_continue(activation_id):
+        return False
+
+    npc_binding_id = runtime.voice_runtime.active_npc_binding_id or ""
+    phrases = runtime.voice_runtime.active_phrases
+    if not npc_binding_id or not phrases:
+        return False
+
+    phrase = random.choice(phrases)
+    profile, is_fallback = runtime.voice_registry.get(npc_binding_id)
+    if is_fallback:
+        logger.warning(
+            "[V2] Unknown npc_binding_id %r for silence reminder %s. "
+            "Falling back to default voice %r.",
+            npc_binding_id,
+            activation_id,
+            profile.voice_name,
+        )
+    _apply_voice_profile(session, profile)
+    cache_key = (npc_binding_id, profile.voice_name, profile.speaking_rate, phrase)
+    cached_frames = runtime.tts_cache.get(cache_key)
+    audio_arg = _frames_to_async_gen(cached_frames) if cached_frames else None
+
+    try:
+        handle = await session.say(
+            phrase,
+            audio=audio_arg,
+            allow_interruptions=True,
+        )
+        if handle is None:
+            return False
+        wait_for_playout = getattr(handle, "wait_for_playout", None)
+        if callable(wait_for_playout):
+            await wait_for_playout()
+        elif asyncio.iscoroutine(handle):
+            await handle
+
+        if bool(getattr(handle, "interrupted", False)):
+            return False
+        if (
+            not runtime.voice_runtime.can_continue(activation_id)
+            or runtime.voice_runtime.active_npc_binding_id != npc_binding_id
+        ):
+            return False
+
+        return await send_v2_packet(
+            runtime,
+            accepted_reminder_packet(
+                activation_id,
+                npc_binding_id,
+                uuid.uuid4().hex,
+            ),
+        )
+    except asyncio.CancelledError:
+        raise
+    except Exception:
+        logger.exception(
+            "[V2] Silence reminder failed for activation %s", activation_id
+        )
+        return False
+
+
 async def _handle_hint_reminder(
     session: AgentSession,
     runtime: JobRuntime,
     event_name: str,
 ) -> None:
-    """Play cached phrase on VERBAL_HINT or ON_REMINDER."""
+    """Play cached phrase for the legacy unversioned VERBAL_HINT event."""
+    runtime.interrupt_active_silence_reminder(reset_timer=True)
     try:
         activation_id = runtime.voice_runtime.active_activation_id
         phrases = runtime.voice_runtime.active_phrases
@@ -788,6 +1003,12 @@ async def _handle_verbal_hint_v2(
     packet: VerbalHintV2,
 ) -> None:
     """Speak one deduplicated phrase for the active activation and NPC."""
+    if (
+        runtime.voice_runtime.active_activation_id == packet.activation_id
+        and runtime.voice_runtime.status(packet.activation_id)
+        is ActivationStatus.ACTIVE
+    ):
+        runtime.interrupt_active_silence_reminder(reset_timer=True)
     async with runtime.verbal_hint_lock:
         async with runtime.packet_lock:
             phrase = runtime.voice_runtime.claim_verbal_hint(packet)
@@ -829,15 +1050,12 @@ async def _handle_verbal_hint_v2(
 
             if (
                 not runtime.voice_runtime.can_continue(packet.activation_id)
-                or runtime.voice_runtime.active_npc_binding_id
-                != packet.npc_binding_id
+                or runtime.voice_runtime.active_npc_binding_id != packet.npc_binding_id
             ):
                 return
 
             cached_frames = runtime.tts_cache.get(cache_key)
-            audio_arg = (
-                _frames_to_async_gen(cached_frames) if cached_frames else None
-            )
+            audio_arg = _frames_to_async_gen(cached_frames) if cached_frames else None
             handle = await session.say(
                 phrase,
                 audio=audio_arg,
@@ -851,7 +1069,9 @@ async def _handle_verbal_hint_v2(
         except asyncio.CancelledError:
             raise
         except Exception as err:
-            logger.error("[V2] Error handling verbal hint %s: %s", packet.command_id, err)
+            logger.error(
+                "[V2] Error handling verbal hint %s: %s", packet.command_id, err
+            )
         finally:
             if runtime.active_verbal_hint_task is hint_task:
                 runtime.active_verbal_hint_task = None
@@ -866,6 +1086,15 @@ async def _handle_speak_script_v2(
     packet: SpeakScriptV2,
 ) -> None:
     """Execute a correlated V2 dialogue node through LiveKit, awaiting playout."""
+    if not _matches_active_speak_script_scope(runtime, packet):
+        logger.warning(
+            "[V2] Ignoring stale SPEAK_SCRIPT %s/%s",
+            packet.activation_id,
+            packet.sequence_id,
+        )
+        return
+
+    runtime.interrupt_active_silence_reminder(reset_timer=True)
     profile, is_fallback = runtime.voice_registry.get(packet.npc_binding_id)
     if is_fallback:
         logger.warning(
@@ -876,6 +1105,8 @@ async def _handle_speak_script_v2(
     _apply_voice_profile(session, profile)
 
     async with runtime.command_lock:
+        if not _matches_active_speak_script_scope(runtime, packet):
+            return
         disposition = runtime.command_runtime.submit(packet)
         if disposition is CommandDisposition.REPLAY:
             status = runtime.command_runtime.status(
@@ -930,8 +1161,14 @@ async def _handle_speak_script_v2(
             allow_interruptions=True,
         )
         if handle is None:
-            logger.warning("[V2] session.say returned None for %s/%s", packet.activation_id, packet.sequence_id)
-            if runtime.command_runtime.mark_failed(packet.activation_id, packet.sequence_id, reason="say_returned_none"):
+            logger.warning(
+                "[V2] session.say returned None for %s/%s",
+                packet.activation_id,
+                packet.sequence_id,
+            )
+            if runtime.command_runtime.mark_failed(
+                packet.activation_id, packet.sequence_id, reason="say_returned_none"
+            ):
                 await send_v2_packet(
                     runtime,
                     speak_script_done_packet(
@@ -944,6 +1181,12 @@ async def _handle_speak_script_v2(
                 )
             return
 
+        if not runtime.command_runtime.can_continue(
+            packet.activation_id, packet.sequence_id
+        ) or not _matches_active_speak_script_scope(runtime, packet):
+            with contextlib.suppress(Exception):
+                handle.interrupt()
+            return
         runtime.active_speech_handle = handle
 
         # Await playout completion
@@ -1026,6 +1269,19 @@ async def _handle_speak_script_v2(
     finally:
         if runtime.active_speech_handle is handle:
             runtime.active_speech_handle = None
+
+
+def _matches_active_speak_script_scope(
+    runtime: JobRuntime, packet: SpeakScriptV2
+) -> bool:
+    status = runtime.voice_runtime.status(packet.activation_id)
+    if status is None:
+        return True
+    return (
+        runtime.voice_runtime.active_activation_id == packet.activation_id
+        and runtime.voice_runtime.active_npc_binding_id == packet.npc_binding_id
+        and status is ActivationStatus.ACTIVE
+    )
 
 
 if __name__ == "__main__":

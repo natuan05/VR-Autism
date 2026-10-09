@@ -9,4 +9,13 @@ namespace VRAutism.Cloud.LiveKit
         event Action ReconnectedV2;
         void PublishDataV2(byte[] data, string topic, bool reliable);
     }
+
+    /// <summary>
+    /// Optional capability for cancellation packets that must survive their short-lived sender.
+    /// Implementations should retain only the exact cancellation payload and a bounded amount of data.
+    /// </summary>
+    public interface ILiveKitDeferredDataPacketClientV2
+    {
+        bool PublishSpeakScriptCancellationV2(byte[] cancellationPacket);
+    }
 }

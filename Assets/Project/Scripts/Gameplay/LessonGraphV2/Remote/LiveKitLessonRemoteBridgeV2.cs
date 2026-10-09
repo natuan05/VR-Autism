@@ -8,6 +8,7 @@ using UnityEngine;
 using VRAutism.Cloud.LiveKit;
 using VRAutism.Core;
 using VRAutism.Gameplay.LessonGraphV2.Phrases;
+using VRAutism.Gameplay.LessonGraphV2.Questing.Voice;
 using VRAutism.Gameplay.LessonGraphV2.Runtime;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Remote
@@ -38,6 +39,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
         private Action<byte[], string> _dataHandler;
         private Action _reconnectHandler;
         private Action<LessonStateV2> _stateHandler;
+        private LiveKitVoiceQuestTransportV2 _voiceTransport;
+        private Action<VoiceQuestSignal> _voiceSignalHandler;
+        private string _therapistScriptSessionId = string.Empty;
+        private string _therapistScriptRunId = string.Empty;
+        private string _therapistScriptNodeId = string.Empty;
+        private string _therapistScriptActivationId = string.Empty;
+        private string _therapistScriptSequenceId = string.Empty;
+        private string _therapistScriptNpcBindingId = string.Empty;
 
         internal bool IsConfigured => !_disposed && _client != null && _runner != null &&
             !string.IsNullOrWhiteSpace(_sessionId);
@@ -45,12 +54,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
         public void Configure(ILiveKitDataPacketClientV2 client, LessonGraphRunner runner)
         {
             var generation = Interlocked.Increment(ref _configurationGeneration);
-            Detach();
+            Detach("transport_reconfigured");
             DrainQueue();
 
             _disposed = false;
             _runner = runner;
             _client = client;
+            _voiceTransport = FindObjectOfType<LiveKitVoiceQuestTransportV2>();
             _sessionId = SessionContext.Instance?.SessionId ?? string.Empty;
 
             VoicePhraseSessionMetadataV2 phraseMetadata;
@@ -65,9 +75,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
             _dataHandler = (data, topic) => OnDataReceived(data, topic, generation);
             _reconnectHandler = () => OnReconnected(generation);
             _stateHandler = state => OnStateChanged(state, generation);
+            _voiceSignalHandler = signal => OnVoiceSignal(signal, generation);
             _client.DataReceivedV2 += _dataHandler;
             _client.ReconnectedV2 += _reconnectHandler;
             _runner.StateChanged += _stateHandler;
+            if (_voiceTransport != null)
+                _voiceTransport.SignalReceived += _voiceSignalHandler;
             PublishCurrentState();
         }
 
@@ -121,7 +134,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
         {
             if (!IsCurrent(generation) || state == null) return;
             var snapshot = CloneState(state);
-            _mainThreadQueue.Enqueue(() => { if (IsCurrent(generation)) PublishState(snapshot); });
+            _mainThreadQueue.Enqueue(() =>
+            {
+                if (!IsCurrent(generation)) return;
+                CancelScriptWhenScopeChanges(snapshot);
+                PublishState(snapshot);
+            });
         }
 
         private void HandleCommand(LessonCommandV2 command, int generation)
@@ -138,7 +156,13 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
             // Apply only on the Unity thread and let the runner compare run/node/activation
             // against its current snapshot. This catches packets that went stale while queued.
             Task<LessonCommandResultV2> task;
-            try { task = _runner.ApplyCommandAsync(command); }
+            try
+            {
+                Func<LessonCommandV2, bool> publishScript = command.command == LessonCommandKindV2.SpeakScript
+                    ? acceptedCommand => PublishSpeakScript(acceptedCommand, generation)
+                    : null;
+                task = _runner.ApplyCommandAsync(command, publishScript);
+            }
             catch (Exception exception)
             {
                 Debug.LogWarning($"[LessonGraphV2] Remote command could not be applied: {exception.Message}", this);
@@ -147,7 +171,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
 
             if (task.IsCompleted)
             {
-                PublishCompletedCommand(task);
+                PublishCompletedCommand(task, generation);
                 return;
             }
 
@@ -166,17 +190,34 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
                         return;
                     }
                     if (!IsCurrent(generation)) return;
-                    _mainThreadQueue.Enqueue(() => { if (IsCurrent(generation)) PublishResult(result); });
+                    _mainThreadQueue.Enqueue(() => { if (IsCurrent(generation)) PublishCommandResult(result, generation); });
                 },
                 CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously,
                 TaskScheduler.Default);
         }
 
-        private void PublishCompletedCommand(Task<LessonCommandResultV2> task)
+        private void PublishCompletedCommand(Task<LessonCommandResultV2> task, int generation)
         {
-            try { PublishResult(task.GetAwaiter().GetResult()); }
+            try { PublishCommandResult(task.GetAwaiter().GetResult(), generation); }
             catch (Exception exception) { Debug.LogWarning($"[LessonGraphV2] Remote command task failed: {exception.Message}", this); }
+        }
+
+        private void PublishCommandResult(LessonCommandResultV2 result, int generation)
+        {
+            if (!IsCurrent(generation) || result == null) return;
+            PublishResult(result);
+        }
+
+        private void OnVoiceSignal(VoiceQuestSignal signal, int generation)
+        {
+            if (!IsCurrent(generation) || signal == null || signal.Type != VoiceQuestSignalType.ReminderAccepted)
+                return;
+            _mainThreadQueue.Enqueue(() =>
+            {
+                if (!IsCurrent(generation) || _runner == null) return;
+                _runner.RecordAcceptedVoiceReminder(signal.ActivationId, signal.NpcBindingId, signal.CommandId);
+            });
         }
 
         private void HandleStateRequest(ParsedStateRequest request)
@@ -230,15 +271,16 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
             if (_disposed) return;
             Interlocked.Increment(ref _configurationGeneration);
             _disposed = true;
-            Detach();
+            Detach("bridge_unload");
             DrainQueue();
         }
 
         private void OnDisable() => Dispose();
         private void OnDestroy() => Dispose();
 
-        private void Detach()
+        private void Detach(string cancellationReason)
         {
+            CancelTrackedSpeakScript(cancellationReason);
             if (_client != null)
             {
                 if (_dataHandler != null) _client.DataReceivedV2 -= _dataHandler;
@@ -248,12 +290,64 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
             {
                 if (_stateHandler != null) _runner.StateChanged -= _stateHandler;
             }
+            if (_voiceTransport != null && _voiceSignalHandler != null)
+                _voiceTransport.SignalReceived -= _voiceSignalHandler;
             _client = null;
             _runner = null;
+            _voiceTransport = null;
             _sessionId = string.Empty;
             _dataHandler = null;
             _reconnectHandler = null;
             _stateHandler = null;
+            _voiceSignalHandler = null;
+        }
+
+        private bool PublishSpeakScript(LessonCommandV2 command, int generation)
+        {
+            if (!IsCurrent(generation) || _voiceTransport == null ||
+                !_voiceTransport.PublishSpeakScript(
+                    command.activation_id,
+                    command.command_id,
+                    command.npc_binding_id,
+                    command.text))
+                return false;
+
+            _therapistScriptSessionId = command.session_id;
+            _therapistScriptRunId = command.run_id;
+            _therapistScriptNodeId = command.node_id;
+            _therapistScriptActivationId = command.activation_id;
+            _therapistScriptSequenceId = command.command_id;
+            _therapistScriptNpcBindingId = command.npc_binding_id;
+            return true;
+        }
+
+        private void CancelScriptWhenScopeChanges(LessonStateV2 state)
+        {
+            if (string.IsNullOrWhiteSpace(_therapistScriptSequenceId)) return;
+            if (state != null && state.status == "running" &&
+                string.Equals(state.session_id, _therapistScriptSessionId, StringComparison.Ordinal) &&
+                string.Equals(state.run_id, _therapistScriptRunId, StringComparison.Ordinal) &&
+                string.Equals(state.node_id, _therapistScriptNodeId, StringComparison.Ordinal) &&
+                string.Equals(state.activation_id, _therapistScriptActivationId, StringComparison.Ordinal))
+                return;
+
+            CancelTrackedSpeakScript("lesson_scope_changed");
+        }
+
+        private void CancelTrackedSpeakScript(string reason)
+        {
+            if (!string.IsNullOrWhiteSpace(_therapistScriptSequenceId))
+                _voiceTransport?.CancelSpeakScript(
+                    _therapistScriptActivationId,
+                    _therapistScriptSequenceId,
+                    _therapistScriptNpcBindingId,
+                    reason);
+            _therapistScriptSessionId = string.Empty;
+            _therapistScriptRunId = string.Empty;
+            _therapistScriptNodeId = string.Empty;
+            _therapistScriptActivationId = string.Empty;
+            _therapistScriptSequenceId = string.Empty;
+            _therapistScriptNpcBindingId = string.Empty;
         }
 
         private bool IsCurrent(int generation) => !_disposed && generation == Volatile.Read(ref _configurationGeneration);

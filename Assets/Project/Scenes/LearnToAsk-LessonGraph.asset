@@ -56,6 +56,16 @@ MonoBehaviour:
     _priority: 0
     _condition:
       rid: 4156067777334739055
+  - _fromNodeId: nam_introduce_timeline
+    _toNodeId: move_to_position
+    _priority: 0
+    _condition:
+      rid: 4156067777334739057
+  - _fromNodeId: nam_introduce_timeline
+    _toNodeId: move_to_position
+    _priority: 0
+    _condition:
+      rid: 4156067777334739058
   - _fromNodeId: move_to_position
     _toNodeId: vq_hello
     _priority: 0
@@ -86,6 +96,51 @@ MonoBehaviour:
     _priority: 0
     _condition:
       rid: 4156067777334739057
+  - _fromNodeId: move_to_position
+    _toNodeId: vq_hello
+    _priority: 0
+    _condition:
+      rid: 4156067777334739058
+  - _fromNodeId: vq_hello
+    _toNodeId: vq_sayname
+    _priority: 0
+    _condition:
+      rid: 4156067777334739057
+  - _fromNodeId: vq_hello
+    _toNodeId: vq_sayname
+    _priority: 0
+    _condition:
+      rid: 4156067777334739058
+  - _fromNodeId: vq_sayname
+    _toNodeId: vq_sayage
+    _priority: 0
+    _condition:
+      rid: 4156067777334739057
+  - _fromNodeId: vq_sayname
+    _toNodeId: vq_sayage
+    _priority: 0
+    _condition:
+      rid: 4156067777334739058
+  - _fromNodeId: vq_sayage
+    _toNodeId: vq_sayinterest
+    _priority: 0
+    _condition:
+      rid: 4156067777334739057
+  - _fromNodeId: vq_sayage
+    _toNodeId: vq_sayinterest
+    _priority: 0
+    _condition:
+      rid: 4156067777334739058
+  - _fromNodeId: vq_sayinterest
+    _toNodeId: learntoask-complete
+    _priority: 0
+    _condition:
+      rid: 4156067777334739057
+  - _fromNodeId: vq_sayinterest
+    _toNodeId: learntoask-complete
+    _priority: 0
+    _condition:
+      rid: 4156067777334739058
   references:
     version: 2
     RefIds:
@@ -160,3 +215,8 @@ MonoBehaviour:
         asm: Assembly-CSharp}
       data:
         _requiredStatus: skipped
+    - rid: 4156067777334739058
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: timeout

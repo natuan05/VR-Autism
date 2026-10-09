@@ -69,6 +69,26 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
             return QuestBindingResolution.Success(source);
         }
 
+        /// <summary>
+        /// Returns the validated source registered for a binding without requiring it to be
+        /// currently available. Runtime observers use this to follow active sources after the
+        /// executor has activated them; Resolve remains availability-gated for activation.
+        /// </summary>
+        public bool TryGetBoundSource(string bindingId, out QuestSourceV2 source)
+        {
+            var normalizedId = bindingId ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(normalizedId) ||
+                !_sources.TryGetValue(normalizedId, out source) ||
+                source == null ||
+                !string.Equals(source.BindingId, normalizedId, StringComparison.Ordinal))
+            {
+                source = null;
+                return false;
+            }
+
+            return true;
+        }
+
         public bool IsReady(LessonGraph graph, out string reason)
         {
             var issues = new List<QuestBindingValidationIssue>(

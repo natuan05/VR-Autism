@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using VRAutism.Core;
 using VRAutism.Gameplay.LessonGraphV2.Phrases;
 using VRAutism.Gameplay.LessonGraphV2.Questing.Voice;
 
@@ -52,7 +53,17 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Sources
                 return;
             }
 
-            var request = new VoiceQuestActivation(activation.ActivationId, phrase.Goal, phrase.Phrases, _npcBindingId);
+            var configuredSilenceTimeout = SessionContext.Instance?.CurrentParams?.Actions?.SpeechSilenceTimeout ?? -1f;
+            var effectiveSilenceTimeout = !float.IsNaN(configuredSilenceTimeout) &&
+                !float.IsInfinity(configuredSilenceTimeout) && configuredSilenceTimeout >= 0f
+                ? configuredSilenceTimeout
+                : VoiceQuestTransportV2Constants.DefaultSpeechSilenceTimeoutSeconds;
+            var request = new VoiceQuestActivation(
+                activation.ActivationId,
+                phrase.Goal,
+                phrase.Phrases,
+                _npcBindingId,
+                effectiveSilenceTimeout);
             transport.ActivateAsync(request, CancellationToken.None).ContinueWith(task =>
             {
                 if (task.IsFaulted)

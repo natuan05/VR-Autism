@@ -1,3 +1,5 @@
+import pytest
+
 from voice_contract_v2 import CancelActiveQuest, SetActiveQuest
 from voice_quest_runtime_v2 import ActivationDisposition, VoiceQuestRuntime
 
@@ -12,6 +14,23 @@ def test_replay_acknowledges_without_reopening_the_active_quest() -> None:
     assert runtime.activate(request) is ActivationDisposition.REPLAY
     assert runtime.claim_opening("activation-1") is False
     assert runtime.active_activation_id == "activation-1"
+
+
+def test_same_activation_with_changed_silence_timeout_is_not_a_replay() -> None:
+    runtime = VoiceQuestRuntime()
+    request = SetActiveQuest(
+        "activation-1", "Ask for water", ("Water, please",),
+        speech_silence_timeout_seconds=3.0,
+    )
+    assert runtime.activate(request) is ActivationDisposition.NEW
+
+    with pytest.raises(ValueError, match="activation payload changed"):
+        runtime.activate(
+            SetActiveQuest(
+                "activation-1", "Ask for water", ("Water, please",),
+                speech_silence_timeout_seconds=7.0,
+            )
+        )
 
 
 def test_replacement_and_cancellation_make_late_success_impossible() -> None:

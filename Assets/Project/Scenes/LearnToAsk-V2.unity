@@ -35348,6 +35348,11 @@ GameObject:
   - component: {fileID: 1225870740}
   - component: {fileID: 1225870739}
   - component: {fileID: 1225870738}
+  - component: {fileID: 5900000000000002001}
+  - component: {fileID: 5900000000000002002}
+  - component: {fileID: 5900000000000002003}
+  - component: {fileID: 5900000000000002004}
+  - component: {fileID: 5900000000000002005}
   m_Layer: 0
   m_Name: LesssonGraphRuntime
   m_TagString: Untagged
@@ -107500,6 +107505,92 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &5900000000000002001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225870737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d45a7c0af1214d01a59e3d36e5f5c9ab, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Presentation.LessonGraphHintPresenterV2
+  _runner: {fileID: 1225870744}
+  _bindings: {fileID: 1225870743}
+  _bubblePrefab: {fileID: 4120424360935808415, guid: b39154abd1d4eb64d8c6d54a4bd32c48, type: 3}
+--- !u!114 &5900000000000002002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225870737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab9ec0227df04bf6bc6ad9ef6182e197, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Integration.LessonGraphLifecycleV2
+  _runner: {fileID: 1225870744}
+  _sensorHarvester: {fileID: 5900000000000002004}
+  _telemetryStreamer: {fileID: 5900000000000002005}
+  _congratulationsRoot: {fileID: 0}
+  _onSuccessfulCompletion:
+    m_PersistentCalls:
+      m_Calls: []
+  _returnSceneName: GameMenu
+  _returnDelaySeconds: 3
+--- !u!114 &5900000000000002003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225870737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 173431dc0f0446a18bdc9ae90659cfb7, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Integration.LessonGraphSensorBridgeV2
+  _runner: {fileID: 1225870744}
+  _bindings: {fileID: 1225870743}
+  _sensorHarvester: {fileID: 5900000000000002004}
+--- !u!114 &5900000000000002004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225870737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d77ce6423c2d476468837ce6fab97399, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Core.Telemetry.SensorHarvester
+  leftHand: {fileID: 1319711650811415210}
+  rightHand: {fileID: 5212974320661691890}
+  gazeConeHalfAngle: 5
+  maxRaycastDistance: 20
+  focusLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
+  handNearThreshold: 0.3
+--- !u!114 &5900000000000002005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225870737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1744920bc875894497d8b4cc2bb012c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Core.Telemetry.TelemetryStreamer
+  pushInterval: 2
+  _harvester: {fileID: 5900000000000002004}
+
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

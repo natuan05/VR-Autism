@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
+using VRAutism.Core;
+using VRAutism.Core.Models;
 using VRAutism.Gameplay.LessonGraphV2.Phrases;
 using VRAutism.Gameplay.LessonGraphV2.Questing;
 using VRAutism.Gameplay.LessonGraphV2.Questing.Sources;
@@ -15,6 +17,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
     public sealed class VoiceQuestSourceV2Tests
     {
         private readonly List<UnityEngine.Object> _objects = new List<UnityEngine.Object>();
+        private SessionContext _previousSession;
+
+        [SetUp]
+        public void SetUp() => _previousSession = SessionContext.Instance;
 
         [TearDown]
         public void TearDown()
@@ -22,6 +28,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             VoicePhraseSnapshotStoreV2.Clear();
             foreach (var item in _objects) if (item != null) UnityEngine.Object.DestroyImmediate(item);
             _objects.Clear();
+            SessionContext.Instance = _previousSession;
         }
 
         [Test]
@@ -91,6 +98,27 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             Assert.AreEqual("assistant-npc", transport.VerbalHints[0].npc_binding_id);
         }
 
+        [TestCase(-1f, 5f)]
+        [TestCase(3.25f, 3.25f)]
+        [TestCase(float.PositiveInfinity, 5f)]
+        public void ActivationUsesEffectiveConfiguredSilenceTimeout(float configured, float expected)
+        {
+            var contextObject = new GameObject("voice-source-session-context");
+            contextObject.SetActive(false);
+            _objects.Add(contextObject);
+            var context = contextObject.AddComponent<SessionContext>();
+            context.CurrentParams = LessonParameters.GetDefault();
+            context.CurrentParams.Actions.SpeechSilenceTimeout = configured;
+            SessionContext.Instance = context;
+
+            var source = SourceWithSnapshot();
+            var transport = new FakeTransport();
+            source.ConfigureTransport(transport);
+            Assert.IsTrue(source.TryActivate(Activation("voice-timeout")));
+
+            Assert.AreEqual(expected, transport.Activations[0].speech_silence_timeout_seconds);
+        }
+
         private VoiceQuestSourceV2 SourceWithSnapshot()
         {
             VoicePhraseSnapshotStoreV2.Replace(new Dictionary<string, VoiceQuestPhraseSnapshotV2>
@@ -126,9 +154,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         private sealed class FakeTransport : IVoiceQuestTransport
         {
             public event Action<VoiceQuestSignal> SignalReceived { add { } remove { } }
+            public readonly List<VoiceQuestActivation> Activations = new List<VoiceQuestActivation>();
             public readonly List<VoiceQuestVerbalHint> VerbalHints = new List<VoiceQuestVerbalHint>();
 
-            public Task ActivateAsync(VoiceQuestActivation request, CancellationToken cancellationToken) => Task.CompletedTask;
+            public Task ActivateAsync(VoiceQuestActivation request, CancellationToken cancellationToken)
+            {
+                Activations.Add(request);
+                return Task.CompletedTask;
+            }
             public Task CancelAsync(string activationId, string reason, CancellationToken cancellationToken) => Task.CompletedTask;
             public Task<bool> SendVerbalHintAsync(VoiceQuestVerbalHint request, CancellationToken cancellationToken)
             {

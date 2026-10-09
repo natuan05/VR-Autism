@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
     [DisallowMultipleComponent]
     public sealed class LiveKitDialogueTransportV2 : MonoBehaviour, IDialogueTransportV2
     {
+        private const int MaxPendingCancellationPackets = 64;
+
         [Serializable]
         private sealed class SpeakScriptPacket
         {
@@ -20,6 +23,17 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
             public string sequence_id;
             public string npc_binding_id;
             public string text;
+        }
+
+        [Serializable]
+        private sealed class CancelSpeakScriptPacket
+        {
+            public int contract_version = DialogueTransportV2Constants.ContractVersion;
+            public string @event = "CANCEL_SPEAK_SCRIPT";
+            public string activation_id;
+            public string sequence_id;
+            public string npc_binding_id;
+            public string reason;
         }
 
         [Serializable]
@@ -35,9 +49,12 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
         }
 
         private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
+        private readonly Queue<CancelSpeakScriptPacket> _pendingCancellationPackets =
+            new Queue<CancelSpeakScriptPacket>();
         private ILiveKitDataPacketClientV2 _client;
         private INpcAudioRouterV2 _router;
         private DialogueRequestV2 _currentRequest;
+        private bool _currentRequestPublished;
         private bool _terminal;
 
         public event Action<DialogueSignalV2> SignalReceived;
@@ -87,12 +104,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
                 throw new ArgumentException("Dialogue npc_binding_id must be non-empty.", nameof(request));
 
             cancellationToken.ThrowIfCancellationRequested();
+            PublishPendingCancellations();
 
             _currentRequest = new DialogueRequestV2(
                 request.activation_id,
                 request.sequence_id,
                 request.text,
                 request.npc_binding_id);
+            _currentRequestPublished = false;
             _terminal = false;
 
             _router?.SetActiveNpcRoute(request.npc_binding_id);
@@ -112,7 +131,29 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
                 return Task.CompletedTask;
             }
 
+            if (_terminal)
+                return Task.CompletedTask;
+
             _terminal = true;
+            if (!_currentRequestPublished)
+                return Task.CompletedTask;
+
+            if (_pendingCancellationPackets.Count >= MaxPendingCancellationPackets)
+            {
+                _pendingCancellationPackets.Dequeue();
+                Debug.LogWarning("[LessonGraphV2] DialogueTransport: Dropped oldest queued script cancellation after reaching the bounded reconnect queue.");
+            }
+
+            _pendingCancellationPackets.Enqueue(new CancelSpeakScriptPacket
+            {
+                activation_id = _currentRequest.activation_id,
+                sequence_id = _currentRequest.sequence_id,
+                npc_binding_id = _currentRequest.npc_binding_id,
+                reason = string.Equals(reason, "bridge_unload", StringComparison.Ordinal)
+                    ? "bridge_unload"
+                    : "lesson_scope_changed"
+            });
+            PublishPendingCancellations();
             return Task.CompletedTask;
         }
 
@@ -132,17 +173,46 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
             var json = JsonUtility.ToJson(packet);
             var bytes = Encoding.UTF8.GetBytes(json);
             _client.PublishDataV2(bytes, DialogueTransportV2Constants.Topic, true);
+            _currentRequestPublished = true;
         }
 
         private void OnReconnected()
         {
             _mainThreadQueue.Enqueue(() =>
             {
+                PublishPendingCancellations();
                 if (_currentRequest != null && !_terminal)
                 {
                     PublishCurrent();
                 }
             });
+        }
+
+        private void PublishPendingCancellations()
+        {
+            if (_client == null)
+                return;
+
+            while (_pendingCancellationPackets.Count > 0)
+            {
+                var packet = _pendingCancellationPackets.Peek();
+                var json = JsonUtility.ToJson(packet);
+                var bytes = Encoding.UTF8.GetBytes(json);
+
+                if (_client is ILiveKitDeferredDataPacketClientV2 deferredClient)
+                {
+                    if (!deferredClient.PublishSpeakScriptCancellationV2(bytes))
+                        return;
+                }
+                else
+                {
+                    if (!_client.IsConnectedV2)
+                        return;
+                    _client.PublishDataV2(bytes, DialogueTransportV2Constants.Topic, true);
+                }
+
+                _pendingCancellationPackets.Dequeue();
+            }
         }
 
         private void OnDataReceived(byte[] data, string topic)
@@ -216,6 +286,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
 
         private void OnDestroy()
         {
+            if (_currentRequest != null && !_terminal)
+            {
+                CancelAsync(
+                    _currentRequest.activation_id,
+                    _currentRequest.sequence_id,
+                    "bridge_unload",
+                    CancellationToken.None);
+            }
             Configure(null);
         }
     }

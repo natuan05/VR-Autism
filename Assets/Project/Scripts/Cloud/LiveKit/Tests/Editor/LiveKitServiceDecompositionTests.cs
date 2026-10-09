@@ -51,6 +51,35 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
         }
 
         [Test]
+        public void InstanceAndAwake_AreSafeInEditModeWithoutInitializingRuntimeServices()
+        {
+            Assert.IsFalse(Application.isPlaying);
+            var instanceField = typeof(LiveKitService).GetField("_instance", BindingFlags.Static | BindingFlags.NonPublic);
+            var previousInstance = instanceField.GetValue(null) as LiveKitService;
+            LiveKitService service = null;
+
+            try
+            {
+                Assert.DoesNotThrow(() => service = LiveKitService.Instance);
+                Assert.IsNotNull(service);
+                Assert.DoesNotThrow(() => typeof(LiveKitService)
+                    .GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(service, null));
+                Assert.IsNull(typeof(LiveKitService)
+                    .GetField("_mainThreadExecutor", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .GetValue(service));
+                Assert.IsNull(typeof(LiveKitService)
+                    .GetField("_lifecycleCoordinator", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .GetValue(service));
+            }
+            finally
+            {
+                if (previousInstance == null && service != null)
+                    UnityEngine.Object.DestroyImmediate(service.gameObject);
+            }
+        }
+
+        [Test]
         public void V2Packet_PreservesBytesTopicAndReliability()
         {
             var adapter = new FakeRoomAdapter { Connected = true };
@@ -289,6 +318,70 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             Assert.AreEqual(1, publicConnectedSignals);
             Assert.IsTrue(service.IsConnectedV2);
             Assert.AreEqual(LiveKitLifecycleState.Connected, coordinator.State);
+
+            UnityEngine.Object.DestroyImmediate(serviceObject);
+        }
+
+        [UnityTest]
+        public IEnumerator DeferredSpeakScriptCancellation_DrainsBeforeInitialAndReconnectCallbacks()
+        {
+            var adapterA = new FakeRoomAdapter();
+            var adapterB = new FakeRoomAdapter();
+            var executor = new LiveKitMainThreadExecutor();
+            var roomConnection = new LiveKitRoomConnection(new FakeRoomAdapterFactory(adapterA, adapterB));
+            var coordinator = new LiveKitLifecycleCoordinator(
+                roomConnection,
+                executor,
+                () => { },
+                () => { },
+                () => { });
+            var serviceObject = new GameObject("LiveKitService.DeferredCancellationTest");
+            var service = serviceObject.AddComponent<LiveKitService>();
+            var privateFields = BindingFlags.Instance | BindingFlags.NonPublic;
+            typeof(LiveKitService).GetField("_mainThreadExecutor", privateFields).SetValue(service, executor);
+            typeof(LiveKitService).GetField("_roomConnection", privateFields).SetValue(service, roomConnection);
+            typeof(LiveKitService).GetField("_lifecycleCoordinator", privateFields).SetValue(service, coordinator);
+            typeof(LiveKitService).GetField("_dataPacketTransport", privateFields).SetValue(
+                service,
+                new LiveKitDataPacketTransport(() => coordinator.CurrentHandle));
+            var lifecycleConnected = typeof(LiveKitService).GetMethod("OnLifecycleConnected", privateFields);
+            coordinator.ConnectedOrReconnected += () => lifecycleConnected.Invoke(service, null);
+
+            var deliveredBeforeCallbacks = new List<byte[]>();
+            service.ReconnectedV2 += () =>
+            {
+                var current = coordinator.CurrentHandle.Adapter as FakeRoomAdapter;
+                deliveredBeforeCallbacks.Add(current?.LastPublishedData);
+            };
+
+            var firstCancellation = Encoding.UTF8.GetBytes("cancel-initial-connection");
+            Assert.IsTrue(service.PublishSpeakScriptCancellationV2(firstCancellation));
+            var connectA = coordinator.ConnectAsync("room-a", "token-a");
+            yield return null;
+            adapterA.CompleteConnect();
+            yield return CompleteWithinFrames(connectA, 60, executor);
+
+            CollectionAssert.AreEqual(firstCancellation, adapterA.LastPublishedData);
+            Assert.AreEqual("lesson-graph-v2.voice", adapterA.LastPublishedTopic);
+            Assert.IsTrue(adapterA.LastPublishedReliable);
+            Assert.AreEqual(1, deliveredBeforeCallbacks.Count);
+            CollectionAssert.AreEqual(firstCancellation, deliveredBeforeCallbacks[0]);
+
+            var disconnect = coordinator.DisconnectAsync();
+            yield return CompleteWithinFrames(disconnect, 60, executor);
+            var secondCancellation = Encoding.UTF8.GetBytes("cancel-reconnect");
+            Assert.IsTrue(service.PublishSpeakScriptCancellationV2(secondCancellation));
+
+            var connectB = coordinator.ConnectAsync("room-b", "token-b");
+            yield return null;
+            adapterB.CompleteConnect();
+            yield return CompleteWithinFrames(connectB, 60, executor);
+
+            CollectionAssert.AreEqual(secondCancellation, adapterB.LastPublishedData);
+            Assert.AreEqual("lesson-graph-v2.voice", adapterB.LastPublishedTopic);
+            Assert.IsTrue(adapterB.LastPublishedReliable);
+            Assert.AreEqual(2, deliveredBeforeCallbacks.Count);
+            CollectionAssert.AreEqual(secondCancellation, deliveredBeforeCallbacks[1]);
 
             UnityEngine.Object.DestroyImmediate(serviceObject);
         }

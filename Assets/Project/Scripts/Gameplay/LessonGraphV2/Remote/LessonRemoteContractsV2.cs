@@ -18,6 +18,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
         public const string Resume = "RESUME";
         public const string VerbalHint = "VERBAL_HINT";
         public const string VisualHint = "VISUAL_HINT";
+        public const string SetVolume = "SET_VOLUME";
+        public const string SpeakScript = "SPEAK_SCRIPT";
     }
 
     public static class LessonCommandReasonV2
@@ -49,6 +51,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Remote
         public string activation_id;
         public string command;
         public string binding_id;
+        [NonSerialized] public float volume;
+        [NonSerialized] public string npc_binding_id;
+        [NonSerialized] public string text;
     }
 
     [Serializable]

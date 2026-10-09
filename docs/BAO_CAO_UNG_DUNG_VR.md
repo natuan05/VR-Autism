@@ -313,7 +313,79 @@ sequenceDiagram
 
 ---
 
-## 6. Đánh giá Tổng kết về Tính Khả thi và Trị liệu
+## 6. Kiến trúc điều phối bài học - Lesson Graph
+
+### 6.1. Mô hình tổ chức bài học
+
+Hệ thống tổ chức bài học dưới dạng **đồ thị hoạt động (Lesson Graph)**. Mỗi nút biểu diễn một bước học, như nghe hướng dẫn, quan sát hoạt cảnh, thao tác đồ vật hoặc trả lời bằng lời nói. Các liên kết giữa các nút xác định bước tiếp theo dựa trên kết quả thực hiện và điều kiện của bài học.
+
+Mô hình này hỗ trợ bài học tuần tự, rẽ nhánh, lặp lại có giới hạn và phối hợp nhiều hoạt động. Một bước học có thể cho phép trẻ hoàn thành bằng các hình thức tương tác khác nhau, chẳng hạn thao tác tay hoặc trả lời bằng giọng nói.
+
+### 6.2. Các thành phần kiến trúc
+
+```mermaid
+flowchart TB
+    subgraph Lesson["KỊCH BẢN BÀI HỌC — LESSON GRAPH"]
+        direction LR
+        A["Hoạt động học<br/>Quest · Dialogue · Timeline"]
+        B["Điều khiển hoạt động<br/>Wait · Parallel · Gate · Loop"]
+    end
+
+    Lesson --- D["Bộ điều phối bài học"]
+    D --- T["Tương tác"]
+    D --- H["Hướng dẫn và trình diễn"]
+    D --- G["Can thiệp từ xa"]
+    D --- L["Thu thập dữ liệu"]
+    D --- F["Lưu trữ phiên học"]
+
+    T --- T1["Chạm / Giữ"]
+    T --- T2["Giọng nói"]
+    H --- H1["Lời thoại NPC"]
+    H --- H2["Hoạt cảnh"]
+
+    classDef accent fill:#f9d3cf,stroke:#c86b63,color:#222;
+    classDef standard fill:#fff,stroke:#666,color:#222;
+    class A,C,D,L,F accent;
+    class B,T,H,G,T1,T2,H1,H2 standard;
+    style Lesson fill:#fff,stroke:#666,stroke-width:1.5px,stroke-dasharray:5 4
+```
+
+*Hình: Các thành phần của kiến trúc điều phối bài học Lesson Graph. Đường nối thể hiện quan hệ tổ chức và phối hợp giữa các thành phần.*
+
+**Kịch bản bài học** xác định các node và điều kiện chuyển tiếp. **Bộ điều phối** đọc kịch bản, kích hoạt hoạt động và quyết định bước tiếp theo dựa trên kết quả. Các thành phần tương tác tiếp nhận thao tác của trẻ; thành phần hướng dẫn tổ chức lời thoại và hoạt cảnh. Giáo viên hỗ trợ qua can thiệp từ xa, còn dữ liệu tiến trình và trợ giúp được thu thập, lưu vào hồ sơ phiên học.
+
+### 6.3. Các loại node trong bài học
+
+**Node (nút)** là đơn vị cấu thành của Lesson Graph. Mỗi node xác định một hoạt động cần thực hiện hoặc một quy tắc điều phối. **Edge (cạnh)** nối các node và mô tả điều kiện để chuyển bước, chẳng hạn khi trẻ hoàn thành nhiệm vụ, khi hết thời gian chờ hoặc khi cần chuyển sang nhánh hỗ trợ.
+
+Hệ thống có tám loại node, được nhóm theo vai trò trong sơ đồ kiến trúc. Mỗi bài học kết hợp các loại phù hợp với mục tiêu và nội dung thực hành.
+
+| Loại node | Chức năng trong bài học |
+| :--- | :--- |
+| **Quest — Nhiệm vụ** | Chờ trẻ thực hiện yêu cầu, như chạm vòi nước, giữ tay dưới vòi hoặc trả lời lời chào. Có thể cho phép nhiều hình thức hoàn thành trong cùng một bước. |
+| **Dialogue — Lời thoại** | Nhân vật ảo phát lời hướng dẫn hoặc câu thoại theo kịch bản, như nhắc trẻ lấy xà phòng. |
+| **Timeline — Hoạt cảnh** | Trình diễn chuỗi hoạt cảnh được biên soạn trước, như minh họa thao tác rửa tay. |
+| **Wait — Khoảng chờ** | Tạo khoảng nghỉ trước hoạt động tiếp theo, giúp trẻ có thời gian quan sát và tiếp nhận hướng dẫn. |
+| **Parallel — Hoạt động song song** | Tổ chức nhiều hoạt động con diễn ra đồng thời, như hướng dẫn kết hợp với chờ thao tác. |
+| **Gate — Cổng điều kiện** | Kiểm tra kết quả các nhánh song song để quyết định có thể đi tiếp hay chưa; có thể yêu cầu tất cả hoặc ít nhất một nhánh thành công. |
+| **Loop — Lặp có giới hạn** | Cho phép thực hiện lại một hoạt động theo điều kiện và số lượt quy định, như thử lại bước làm ướt tay. |
+| **Checkpoint — Mốc tiến trình** | Đánh dấu và ghi nhận một điểm trong bài học, như kết thúc phần thực hành. |
+
+Dialogue tổ chức lời nói của nhân vật, còn câu trả lời của trẻ được đánh giá trong Quest. Một Quest có nhiều hình thức tương tác được quyết định bởi nguồn báo kết quả đầu tiên; Gate kiểm tra kết quả của các hoạt động song song. Checkpoint phục vụ ghi nhận tiến trình.
+
+**Cách ghép node thành bài học:** Một hoạt động thực hành có thể bắt đầu bằng Timeline minh họa, tiếp theo là Dialogue hướng dẫn, rồi Quest chờ trẻ thực hiện. Loop cho phép thử lại; các cạnh quyết định chuyển tới bước tiếp theo hoặc nhánh hỗ trợ dựa trên kết quả. Parallel và Gate được dùng khi kịch bản cần phối hợp nhiều hoạt động cùng lúc.
+
+### 6.4. Nguyên lý vận hành
+
+Khi bắt đầu, hệ thống nạp kịch bản và cấu hình của phiên học. Bộ điều phối kích hoạt bước hiện tại, phối hợp hướng dẫn và chờ kết quả tương tác. Dựa trên kết quả, hệ thống chọn bước tiếp theo, yêu cầu thực hiện lại hoặc kết thúc bài theo kịch bản. Tiến trình và các lần can thiệp được ghi nhận trong suốt phiên.
+
+Ví dụ, bài rửa tay có thể gồm: **Xem hướng dẫn → Mở vòi nước → Làm ướt tay → Nghe hướng dẫn lấy xà phòng → Xoa tay → Đóng vòi → Lau khô → Kết thúc**. Bước làm ướt tay có thể cho phép hoàn thành bằng thao tác hoặc lời nói và được lặp lại theo điều kiện của bài.
+
+Việc tách kịch bản khỏi các thành phần thực hiện giúp hệ thống dễ tổ chức và mở rộng bài học, đồng thời phối hợp tương tác đa phương thức, hướng dẫn và can thiệp trong một luồng thống nhất.
+
+---
+
+## 7. Đánh giá Tổng kết về Tính Khả thi và Trị liệu
 
 Phân hệ **Ứng dụng Thực tế Ảo** trong Hệ thống VR-Autism đạt cân bằng công nghệ và can thiệp lâm sàng:
 

@@ -87,7 +87,10 @@ namespace VRAutism.Core
             if (!string.IsNullOrEmpty(sessionId) && Cloud.RTDB.LiveSessionReporter.Instance != null)
             {
                 string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-                Cloud.RTDB.LiveSessionReporter.Instance.SendLiveSessionHandshake(sessionId, currentScene);
+                Cloud.RTDB.LiveSessionReporter.Instance.SendLiveSessionHandshake(
+                    sessionId,
+                    currentScene,
+                    startLegacyRemoteCommandListener: !_v2InstallerOwnsSessionPersistence);
             }
 
             // [MỚI] Kích hoạt luồng Telemetry thu thập dữ liệu hành vi trẻ mỗi 2s
@@ -175,20 +178,22 @@ namespace VRAutism.Core
                 FirebaseManager.Instance.SaveSession(completionStatus, score, durationSeconds);
             Debug.Log($"[TimeManager] Lesson ended. Duration: {durationSeconds:F1}s, Status: {completionStatus}");
 
-            // Gửi tín hiệu "ended" lên RTDB để Web Dashboard tự động thoát trang Session.
-            // Gọi tập trung ở đây thay vì trong từng Manager (ActionManager, QuizController)
-            // để đảm bảo mọi loại bài học đều trigger signal này.
-            var ctx = SessionContext.Instance;
-            string sessionId = ctx != null ? ctx.SessionId : "";
-            if (!string.IsNullOrEmpty(sessionId) && Cloud.RTDB.LiveSessionReporter.Instance != null)
+            if (!_v2InstallerOwnsSessionPersistence)
             {
-                Cloud.RTDB.LiveSessionReporter.Instance.SendLiveSessionEnded(sessionId);
-            }
+                // Legacy lessons own their ended signal here. V2's lifecycle component is
+                // the sole owner of its terminal signal and stream teardown.
+                var ctx = SessionContext.Instance;
+                string sessionId = ctx != null ? ctx.SessionId : "";
+                if (!string.IsNullOrEmpty(sessionId) && Cloud.RTDB.LiveSessionReporter.Instance != null)
+                {
+                    Cloud.RTDB.LiveSessionReporter.Instance.SendLiveSessionEnded(sessionId);
+                }
 
-            // [MỚI] Tắt thu thập chuỗi Telemetry
-            if (TelemetryStreamer.Instance != null)
-            {
-                TelemetryStreamer.Instance.StopStreaming();
+                // [MỚI] Tắt thu thập chuỗi Telemetry
+                if (TelemetryStreamer.Instance != null)
+                {
+                    TelemetryStreamer.Instance.StopStreaming();
+                }
             }
         }
 

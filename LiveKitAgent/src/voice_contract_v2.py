@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from typing import TypeAlias
 
 CONTRACT_VERSION = 2
 MAX_PHRASES_PER_QUEST = 50
+MAX_SCRIPT_LENGTH = 500
+DEFAULT_SPEECH_SILENCE_TIMEOUT_SECONDS = 5.0
 VOICE_TOPIC = "lesson-graph-v2.voice"
 REMOTE_TOPIC = "lesson-graph-v2.remote"
 
@@ -22,11 +25,20 @@ class SetActiveQuest:
     quest_goal: str
     phrases: tuple[str, ...]
     npc_binding_id: str = ""
+    speech_silence_timeout_seconds: float = DEFAULT_SPEECH_SILENCE_TIMEOUT_SECONDS
 
 
 @dataclass(frozen=True)
 class CancelActiveQuest:
     activation_id: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class CancelSpeakScriptV2:
+    activation_id: str
+    sequence_id: str
+    npc_binding_id: str
     reason: str
 
 
@@ -55,7 +67,11 @@ class SpeakScriptDoneV2:
 
 
 UnityPacket: TypeAlias = (
-    SetActiveQuest | CancelActiveQuest | SpeakScriptV2 | VerbalHintV2
+    SetActiveQuest
+    | CancelActiveQuest
+    | CancelSpeakScriptV2
+    | SpeakScriptV2
+    | VerbalHintV2
 )
 
 
@@ -78,17 +94,44 @@ def parse_unity_packet(payload: bytes | str) -> UnityPacket:
     event = data.get("event")
     if event == "SET_ACTIVE_QUEST":
         keys = set(data)
-        base_keys = {"event", "contract_version", "activation_id", "quest_goal", "phrases"}
-        if keys not in (base_keys, base_keys | {"npc_binding_id"}):
+        base_keys = {
+            "event",
+            "contract_version",
+            "activation_id",
+            "quest_goal",
+            "phrases",
+        }
+        allowed_optional = {"npc_binding_id", "speech_silence_timeout_seconds"}
+        if not base_keys.issubset(keys) or not keys.issubset(
+            base_keys | allowed_optional
+        ):
             raise PacketValidationError("packet fields do not match its V2 event shape")
         npc_binding_id = data.get("npc_binding_id", "")
         if not isinstance(npc_binding_id, str):
             raise PacketValidationError("npc_binding_id must be text")
+        timeout = data.get(
+            "speech_silence_timeout_seconds", DEFAULT_SPEECH_SILENCE_TIMEOUT_SECONDS
+        )
+        if isinstance(timeout, bool) or not isinstance(timeout, (int, float)):
+            raise PacketValidationError(
+                "speech_silence_timeout_seconds must be a finite non-negative number"
+            )
+        try:
+            timeout = float(timeout)
+        except OverflowError as exc:
+            raise PacketValidationError(
+                "speech_silence_timeout_seconds must be a finite non-negative number"
+            ) from exc
+        if not math.isfinite(timeout) or timeout < 0:
+            raise PacketValidationError(
+                "speech_silence_timeout_seconds must be a finite non-negative number"
+            )
         return SetActiveQuest(
             activation_id=_required_text(data, "activation_id"),
             quest_goal=_required_text(data, "quest_goal"),
             phrases=_required_phrases(data),
             npc_binding_id=npc_binding_id.strip(),
+            speech_silence_timeout_seconds=float(timeout),
         )
     if event == "CANCEL_ACTIVE_QUEST":
         _require_exact_keys(
@@ -98,6 +141,31 @@ def parse_unity_packet(payload: bytes | str) -> UnityPacket:
         return CancelActiveQuest(
             activation_id=_required_text(data, "activation_id"),
             reason=_required_text(data, "reason"),
+        )
+    if event == "CANCEL_SPEAK_SCRIPT":
+        _require_exact_keys(
+            data,
+            {
+                "event",
+                "contract_version",
+                "activation_id",
+                "sequence_id",
+                "npc_binding_id",
+                "reason",
+            },
+        )
+        reason = _required_text(data, "reason")
+        if reason not in {
+            "lesson_scope_changed",
+            "bridge_unload",
+            "transport_reconfigured",
+        }:
+            raise PacketValidationError("unsupported script cancellation reason")
+        return CancelSpeakScriptV2(
+            activation_id=_required_text(data, "activation_id"),
+            sequence_id=_required_text(data, "sequence_id"),
+            npc_binding_id=_required_text(data, "npc_binding_id"),
+            reason=reason,
         )
     if event == "SPEAK_SCRIPT":
         _require_exact_keys(
@@ -111,11 +179,14 @@ def parse_unity_packet(payload: bytes | str) -> UnityPacket:
                 "text",
             },
         )
+        text = _required_text(data, "text")
+        if len(text.encode("utf-16-le")) // 2 > MAX_SCRIPT_LENGTH:
+            raise PacketValidationError(f"text exceeds {MAX_SCRIPT_LENGTH} characters")
         return SpeakScriptV2(
             activation_id=_required_text(data, "activation_id"),
             sequence_id=_required_text(data, "sequence_id"),
             npc_binding_id=_required_text(data, "npc_binding_id"),
-            text=_required_text(data, "text"),
+            text=text,
         )
     if event == "VERBAL_HINT":
         _require_exact_keys(
@@ -139,6 +210,21 @@ def parse_unity_packet(payload: bytes | str) -> UnityPacket:
 def quest_matched_packet(activation_id: str) -> dict[str, object]:
     """Build the single correlated success packet accepted by Unity V2."""
     return _outbound_packet("QUEST_MATCHED", activation_id)
+
+
+def accepted_reminder_packet(
+    activation_id: str, npc_binding_id: str, command_id: str
+) -> dict[str, object]:
+    """Build typed evidence after one activation-scoped reminder finished playing."""
+    return {
+        "contract_version": CONTRACT_VERSION,
+        "event": "ON_REMINDER",
+        "direction": "agent_to_unity",
+        "result": "accepted",
+        "activation_id": activation_id,
+        "npc_binding_id": npc_binding_id,
+        "command_id": command_id,
+    }
 
 
 def quest_status_packet(
@@ -202,9 +288,13 @@ def _required_text(data: dict[str, object], field: str) -> str:
 
 def _required_phrases(data: dict[str, object]) -> tuple[str, ...]:
     phrases = data.get("phrases")
-    if not isinstance(phrases, list) or len(phrases) > MAX_PHRASES_PER_QUEST or not all(
-        isinstance(phrase, str) and phrase.strip() and len(phrase) <= 240
-        for phrase in phrases
+    if (
+        not isinstance(phrases, list)
+        or len(phrases) > MAX_PHRASES_PER_QUEST
+        or not all(
+            isinstance(phrase, str) and phrase.strip() and len(phrase) <= 240
+            for phrase in phrases
+        )
     ):
         raise PacketValidationError("phrases must be an array of non-empty text")
     return tuple(phrases)

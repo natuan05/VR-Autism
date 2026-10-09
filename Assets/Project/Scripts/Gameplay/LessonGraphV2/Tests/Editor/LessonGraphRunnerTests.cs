@@ -432,6 +432,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var graph = Graph("source", new List<LessonNodeData> { new LessonNodeData("source", NodeType.Wait, new WaitNodeConfig(1)) });
             var runner = NewRunner(graph, new SingleRegistry(new ThrowingExecutor()));
 
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[LessonGraphV2\] Executor exception node=source: System\.InvalidOperationException: executor"));
             var result = await runner.StartLessonAsync();
 
             Assert.AreEqual(NodeStatus.Failed, result.FinalNodeResult.Status);

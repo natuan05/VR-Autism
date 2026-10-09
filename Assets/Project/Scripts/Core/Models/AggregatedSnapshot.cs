@@ -40,7 +40,18 @@ namespace VRAutism.Core.Models
         public float min_hand_dist;     // Khoảng cách gần nhất tay->target (m)
 
         [Header("Auto Hint Metadata")]
-        public float last_visual_hint_time; // Lesson-relative seconds of last visual hint or quest start
+        public float last_visual_hint_time; // Legacy lesson-relative; V2 uses the time_offset elapsed-seconds axis.
+
+        [Header("Lesson Graph V2 Scope (additive)")]
+        public string runtime = string.Empty;
+        public string session_id = string.Empty;
+        public string run_id = string.Empty;
+        public string node_id = string.Empty;
+        public string activation_id = string.Empty;
+        public string binding_id = string.Empty;
+        public string[] active_binding_ids = Array.Empty<string>();
+        public int node_index = -1;
+        public string status = string.Empty;
 
         public AggregatedSnapshot() { }
     }

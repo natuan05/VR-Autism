@@ -120,6 +120,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 _telemetryInitializationError = "V2 installer composition failed: " + exception.Message;
                 Debug.LogError("[LessonGraphV2] " + _telemetryInitializationError, this);
             }
+
+            DisableLegacyRemoteCommandListenersInScene();
         }
 
         private void OnEnable()
@@ -134,6 +136,20 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 _telemetryInitializationFailed = true;
                 _telemetryInitializationError = "V2 installer composition failed: " + exception.Message;
                 Debug.LogError("[LessonGraphV2] " + _telemetryInitializationError, this);
+            }
+        }
+
+        private void DisableLegacyRemoteCommandListenersInScene()
+        {
+            var listeners = FindObjectsOfType<VRAutism.Cloud.RTDB.RemoteCommandListener>();
+            for (int i = 0; i < listeners.Length; i++)
+            {
+                var listener = listeners[i];
+                if (listener == null || listener.gameObject.scene != gameObject.scene) continue;
+
+                listener.StopListening();
+                listener.enabled = false;
+                Debug.Log("[LessonGraphV2] Disabled legacy RTDB command listener in the V2 lesson scene.", listener);
             }
         }
 
