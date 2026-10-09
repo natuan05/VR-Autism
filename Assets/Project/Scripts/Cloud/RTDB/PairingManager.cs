@@ -185,7 +185,8 @@ namespace VRAutism.Cloud.RTDB
             else if (newStatus == "waiting" && _isPaired)
             {
                 _isPaired = false;
-                _lastProcessedSessionId = "";
+                // Bỏ dòng _lastProcessedSessionId = ""; ở đây để khối "Xử lý Session mới" phía dưới
+                // có thể nhận diện được sự thay đổi của sessionId (từ có thành không) và kích hoạt việc thoát scene.
                 Debug.Log("[PairingManager] ⚠️ Web đã ngắt kết nối! Reset về trạng thái chờ.");
                 OnDisconnectedByWeb?.Invoke();
             }
