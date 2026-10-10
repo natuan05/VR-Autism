@@ -26,10 +26,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project/Scenes/Farm-Quiz.unity
     guid: 6a646b9e21878a14ea4602041700d249
-  - enabled: 1
+  - enabled: 0
     path: Assets/Project/Scenes/Bathroom.unity
     guid: 2871630bb34253d40aa905b4478fcfc8
-  - enabled: 1
+  - enabled: 0
     path: Assets/Project/Scenes/LearnToAsk.unity
     guid: 859aa9885effd3b4787a7c85e2a3d832
   - enabled: 1

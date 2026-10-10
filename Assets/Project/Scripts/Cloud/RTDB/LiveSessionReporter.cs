@@ -71,7 +71,7 @@ namespace VRAutism.Cloud.RTDB
                 // Firebase Server sẽ TỰ ĐỘNG điền status="disconnected" giùm ta.
                 vrStateRef.OnDisconnect().UpdateChildren(new Dictionary<string, object> {
                     { "status", "disconnected" },
-                    { "ended_at", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }
+                    { "ended_at", Firebase.Database.ServerValue.Timestamp }
                 });
 
                 if (!IsCurrentSessionOperation(sessionId, generation)) return;

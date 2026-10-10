@@ -48,7 +48,7 @@ development_status:
   2-1-run-a-blocking-dialogue-node-through-livekit-v2: done
   2-2-apply-safe-remote-lesson-commands-through-the-v2-runner: done
   2-3-publish-isolated-idempotent-v2-lesson-flow-telemetry: done
-  2-4-reconcile-legacy-and-lesson-graph-session-ownership: in-progress
+  2-4-reconcile-legacy-and-lesson-graph-session-ownership: done
   epic-2-retrospective: optional
 
   epic-3: in-progress
