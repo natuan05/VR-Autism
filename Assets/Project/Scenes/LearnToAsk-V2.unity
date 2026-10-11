@@ -859,6 +859,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.Sources.VoiceQuestSourceV2
   _bindingId: learntoask.say-name
   _visualHintIndicator: {fileID: 0}
+  _hintBubbleAnchor: {fileID: 0}
+  _hintProgressAnchor: {fileID: 0}
+  _hintClip: {fileID: 0}
+  _reminderCycleSeconds: 0
+  _onLessonActivated:
+    m_PersistentCalls:
+      m_Calls: []
+  _onLessonCompleted:
+    m_PersistentCalls:
+      m_Calls: []
   _npcBindingId: teacher-npc
   _transport: {fileID: 1225870740}
 --- !u!1 &127749210
@@ -907,6 +917,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.Sources.VoiceQuestSourceV2
   _bindingId: learntoask.say-hello
   _visualHintIndicator: {fileID: 0}
+  _hintBubbleAnchor: {fileID: 0}
+  _hintProgressAnchor: {fileID: 0}
+  _hintClip: {fileID: 0}
+  _reminderCycleSeconds: 0
+  _onLessonActivated:
+    m_PersistentCalls:
+      m_Calls: []
+  _onLessonCompleted:
+    m_PersistentCalls:
+      m_Calls: []
   _npcBindingId: teacher-npc
   _transport: {fileID: 0}
 --- !u!1 &140292265
@@ -1804,6 +1824,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.HoldTouchQuestSourceV2
   _bindingId: learntoask.move-position.hold
   _visualHintIndicator: {fileID: 1710895748}
+  _hintBubbleAnchor: {fileID: 0}
+  _hintProgressAnchor: {fileID: 0}
+  _hintClip: {fileID: 0}
+  _reminderCycleSeconds: 0
+  _onLessonActivated:
+    m_PersistentCalls:
+      m_Calls: []
+  _onLessonCompleted:
+    m_PersistentCalls:
+      m_Calls: []
   _interactorLayers:
     serializedVersion: 2
     m_Bits: 512
@@ -1971,6 +2001,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.Sources.VoiceQuestSourceV2
   _bindingId: learntoask.say-interest
   _visualHintIndicator: {fileID: 0}
+  _hintBubbleAnchor: {fileID: 0}
+  _hintProgressAnchor: {fileID: 0}
+  _hintClip: {fileID: 0}
+  _reminderCycleSeconds: 0
+  _onLessonActivated:
+    m_PersistentCalls:
+      m_Calls: []
+  _onLessonCompleted:
+    m_PersistentCalls:
+      m_Calls: []
   _npcBindingId: teacher-npc
   _transport: {fileID: 0}
 --- !u!1 &388126156
@@ -34619,6 +34659,26 @@ PrefabInstance:
       propertyPath: m_TurnSpeed
       value: 25
       objectReference: {fileID: 0}
+    - target: {fileID: 2307336468662406603, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2496319256570770206, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2878095079941931456, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3187309919060079607, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 3290560462628128254, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_Name
@@ -34626,18 +34686,78 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3290560462628128254, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3290560462628128254, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3321617895203065581, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 4028822339186647823, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_Radius
       value: 0.1
       objectReference: {fileID: 0}
+    - target: {fileID: 5247244297188710506, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5739240775831857170, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 6066071021585426233, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 6066071021585426233, guid: b913f75e9028f6846bdc2b960b61a6b8,
         type: 3}
       propertyPath: m_TagString
       value: Character
+      objectReference: {fileID: 0}
+    - target: {fileID: 6659607131816848536, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7248497809474830252, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7837664316506843277, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7891509876662492395, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 8380263555359133776, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 8983876838593465678, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 9111189231301891053, guid: b913f75e9028f6846bdc2b960b61a6b8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -37738,6 +37858,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Questing.Sources.VoiceQuestSourceV2
   _bindingId: learntoask.say-age
   _visualHintIndicator: {fileID: 0}
+  _hintBubbleAnchor: {fileID: 0}
+  _hintProgressAnchor: {fileID: 0}
+  _hintClip: {fileID: 0}
+  _reminderCycleSeconds: 0
+  _onLessonActivated:
+    m_PersistentCalls:
+      m_Calls: []
+  _onLessonCompleted:
+    m_PersistentCalls:
+      m_Calls: []
   _npcBindingId: teacher-npc
   _transport: {fileID: 0}
 --- !u!4 &1505378112 stripped
@@ -82672,6 +82802,93 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &5900000000000002001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225870737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d45a7c0af1214d01a59e3d36e5f5c9ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Presentation.LessonGraphHintPresenterV2
+  _runner: {fileID: 1225870744}
+  _bindings: {fileID: 1225870743}
+  _bubblePrefab: {fileID: 4120424360935808415, guid: b39154abd1d4eb64d8c6d54a4bd32c48,
+    type: 3}
+  _progressPrefab: {fileID: 0}
+--- !u!114 &5900000000000002002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225870737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab9ec0227df04bf6bc6ad9ef6182e197, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Integration.LessonGraphLifecycleV2
+  _runner: {fileID: 1225870744}
+  _sensorHarvester: {fileID: 5900000000000002004}
+  _telemetryStreamer: {fileID: 5900000000000002005}
+  _congratulationsRoot: {fileID: 0}
+  _onSuccessfulCompletion:
+    m_PersistentCalls:
+      m_Calls: []
+  _returnSceneName: GameMenu
+  _returnDelaySeconds: 3
+--- !u!114 &5900000000000002003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225870737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 173431dc0f0446a18bdc9ae90659cfb7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Integration.LessonGraphSensorBridgeV2
+  _runner: {fileID: 1225870744}
+  _bindings: {fileID: 1225870743}
+  _sensorHarvester: {fileID: 5900000000000002004}
+--- !u!114 &5900000000000002004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225870737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d77ce6423c2d476468837ce6fab97399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Core.Telemetry.SensorHarvester
+  leftHand: {fileID: 1319711650811415210}
+  rightHand: {fileID: 5212974320661691890}
+  gazeConeHalfAngle: 5
+  maxRaycastDistance: 20
+  focusLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
+  handNearThreshold: 0.3
+--- !u!114 &5900000000000002005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1225870737}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1744920bc875894497d8b4cc2bb012c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Core.Telemetry.TelemetryStreamer
+  pushInterval: 2
+  _harvester: {fileID: 5900000000000002004}
 --- !u!1 &5905746799009703825
 GameObject:
   m_ObjectHideFlags: 0
@@ -107504,92 +107721,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &5900000000000002001
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1225870737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d45a7c0af1214d01a59e3d36e5f5c9ab, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Presentation.LessonGraphHintPresenterV2
-  _runner: {fileID: 1225870744}
-  _bindings: {fileID: 1225870743}
-  _bubblePrefab: {fileID: 4120424360935808415, guid: b39154abd1d4eb64d8c6d54a4bd32c48, type: 3}
---- !u!114 &5900000000000002002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1225870737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab9ec0227df04bf6bc6ad9ef6182e197, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Integration.LessonGraphLifecycleV2
-  _runner: {fileID: 1225870744}
-  _sensorHarvester: {fileID: 5900000000000002004}
-  _telemetryStreamer: {fileID: 5900000000000002005}
-  _congratulationsRoot: {fileID: 0}
-  _onSuccessfulCompletion:
-    m_PersistentCalls:
-      m_Calls: []
-  _returnSceneName: GameMenu
-  _returnDelaySeconds: 3
---- !u!114 &5900000000000002003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1225870737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 173431dc0f0446a18bdc9ae90659cfb7, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Integration.LessonGraphSensorBridgeV2
-  _runner: {fileID: 1225870744}
-  _bindings: {fileID: 1225870743}
-  _sensorHarvester: {fileID: 5900000000000002004}
---- !u!114 &5900000000000002004
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1225870737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d77ce6423c2d476468837ce6fab97399, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Core.Telemetry.SensorHarvester
-  leftHand: {fileID: 1319711650811415210}
-  rightHand: {fileID: 5212974320661691890}
-  gazeConeHalfAngle: 5
-  maxRaycastDistance: 20
-  focusLayerMask:
-    serializedVersion: 2
-    m_Bits: 256
-  handNearThreshold: 0.3
---- !u!114 &5900000000000002005
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1225870737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f1744920bc875894497d8b4cc2bb012c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Core.Telemetry.TelemetryStreamer
-  pushInterval: 2
-  _harvester: {fileID: 5900000000000002004}
-
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

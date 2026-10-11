@@ -1,0 +1,2610 @@
+15:51:11 [WARNING] livekit.agents: dev mode is deprecated and will be removed in a future release; use `lk agent dev` instead (https://docs.livekit.io/reference/developer-tools/livekit-cli/#setup)
+15:51:11 [WARNING] livekit.agents: in-process auto-reload has been removed from the Python CLI; use `lk agent dev` for hot-reload
+15:51:11 [DEBUG] asyncio: Using proactor: IocpProactor
+15:51:11 [DEBUG] livekit.agents: no system trust store found, setting SSL_CERT_FILE to the certifi bundle
+15:51:11 [INFO] livekit.agents: starting worker
+15:51:11 [INFO] livekit.agents: plugin registered
+15:51:11 [INFO] livekit.agents: plugin registered
+15:51:11 [INFO] livekit.agents: HTTP server listening on :54740
+15:51:12 [INFO] livekit.agents: registered worker
+15:52:04 [INFO] livekit.agents: received job request
+15:52:04 [DEBUG] livekit.agents: received assignment
+15:52:04 [WARNING] livekit.agents: no warmed process available for job, waiting for one to be created
+15:52:04 [INFO] livekit.agents: initializing job runner
+15:52:04 [DEBUG] asyncio: Using proactor: IocpProactor
+15:52:04 [INFO] livekit.agents: job runner initialized
+15:52:05 [INFO] vr-voice-agent: [LIVEKIT] Connected to room: 5a7a00e4-6d4e-4123-9298-7db1a45df860
+15:52:05 [DEBUG] google.auth._default: Checking 'D:\Lab\VR-Autism\LiveKitAgent\service-account.json' for explicit credentials as part of auth process...
+15:52:06 [DEBUG] livekit.plugins.google: using chirp_3 model for voice vi-VN-Chirp3-HD-Aoede
+15:52:06 [WARNING] livekit.agents: preemptive_generation is deprecated and will be removed in v2.0. Use turn_handling=TurnHandlingOptions(...) instead
+15:52:06 [INFO] vr-voice-agent: [AUDIO] Linking Unity microphone participant: vr_424185
+15:52:06 [INFO] vr-voice-agent: [SESSION] Starting AgentSession...
+15:52:06 [DEBUG] livekit.agents: input stream attached
+15:52:06 [INFO] livekit.agents: adaptive interruption detector initialized
+15:52:06 [DEBUG] livekit.agents: http_session(): creating a new httpclient ctx
+15:52:06 [INFO] vr-voice-agent: [AGENT] TeacherAgent ready in room (standby mode)
+15:52:06 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:06 [DEBUG] grpc._cython.cygrpc: Using AsyncIOEngine.POLLER as I/O engine
+15:52:06 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:06 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:06 [DEBUG] livekit.agents: using audio io: `RoomIO` -> `AgentSession` -> `TranscriptSynchronizer` -> `AudioSinkProxy` -> `RoomIO`
+15:52:06 [DEBUG] livekit.agents: using transcript io: `AgentSession` -> `TranscriptSynchronizer` -> `RoomIO`
+15:52:06 [INFO] vr-voice-agent: [AGENT] Agent pipeline active and ready for packets
+15:52:06 [DEBUG] livekit.agents: adaptive interruption session created
+15:52:06 [DEBUG] livekit.agents: audio turn detector initialized
+15:52:17 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:17 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:17 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:28 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:28 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:28 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:39 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:39 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:39 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:51 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:51 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:52:51 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:02 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:02 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:02 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:10 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+15:53:10 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+15:53:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:10 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+15:53:10 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '8411bac176ba4e4eaa81f16133c0d2bc', 'status': 'ACTIVE'}
+15:53:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:10 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:10 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+15:53:10 [DEBUG] grpc._cython.cygrpc: Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x0000017CB5D27030>,)
+15:53:10 [DEBUG] livekit.agents: start reading stream
+15:53:11 [DEBUG] vr-voice-agent: [TTS] Cached 11 frames for phrase: 'Chào c\u1ea3 l\u1edbp \u0111i con.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea3' in position 100: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (11, 'Chào c\u1ea3 l\u1edbp \u0111i con.')
+15:53:11 [DEBUG] vr-voice-agent: [TTS] Cached 15 frames for phrase: 'Con hãy chào th\u1ea7y cô và các b\u1ea1n \u0111i.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea7' in position 109: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (15, 'Con hãy chào th\u1ea7y cô và các b\u1ea1n \u0111i.')
+15:53:11 [DEBUG] vr-voice-agent: [TTS] Cached 18 frames for phrase: "Nói 'Chào các b\u1ea1n' \u0111i nào con."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea1' in position 109: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (18, "Nói 'Chào các b\u1ea1n' \u0111i nào con.")
+15:53:11 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=True): "Chào c\u1ea3 l\u1edbp \u0111i con."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea3' in position 102: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 860, in _handle_quest_activation
+    logger.info(
+Message: '[AGENT] Opening phrase (cached=%s): "%s"'
+Arguments: (True, 'Chào c\u1ea3 l\u1edbp \u0111i con.')
+15:53:11 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-101' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+15:53:11 [DEBUG] livekit.agents: aec warmup active, disabling interruptions for 3.00s
+15:53:13 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea3' in position 131: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 2881, in _tts_task
+    await self._tts_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3093, in _tts_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:53:14 [DEBUG] livekit.agents: aec warmup expired, re-enabling interruptions
+15:53:20 [DEBUG] livekit.agents: received user transcript
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea3' in position 126: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\audio_recognition.py", line 1809, in _stt_consumer
+    await self._on_stt_event(ev)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\audio_recognition.py", line 1160, in _on_stt_event
+    self._process_stt_event(ev)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\audio_recognition.py", line 1201, in _process_stt_event
+    logger.debug("received user transcript", extra=extra)
+Message: 'received user transcript'
+Arguments: ()
+15:53:20 [DEBUG] livekit.agents: eot prediction
+15:53:21 [DEBUG] livekit.agents: user turn committed
+15:53:21 [DEBUG] livekit.agents: using preemptive generation
+15:53:21 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea3' in position 130: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3142, in _pipeline_reply_task
+    await self._pipeline_reply_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3353, in _pipeline_reply_task_impl
+    self._session._conversation_item_added(new_message)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:53:21 [DEBUG] livekit.agents: executing tool
+15:53:21 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_MATCHED', 'contract_version': 2, 'activation_id': '8411bac176ba4e4eaa81f16133c0d2bc'}
+15:53:21 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '8411bac176ba4e4eaa81f16133c0d2bc', 'status': 'MATCHED'}
+15:53:21 [DEBUG] livekit.agents: tools execution completed
+15:53:22 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+15:53:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:22 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '8411bac176ba4e4eaa81f16133c0d2bc', 'status': 'MATCHED'}
+15:53:22 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+15:53:22 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+15:53:22 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '12c6cfae23a44824bcb38f191eff616d', 'status': 'ACTIVE'}
+15:53:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:22 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+15:53:22 [DEBUG] vr-voice-agent: [TTS] Cached 11 frames for phrase: 'Tên c\u1ee7a con là gì nào?'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ee7' in position 99: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (11, 'Tên c\u1ee7a con là gì nào?')
+15:53:22 [DEBUG] vr-voice-agent: [TTS] Cached 14 frames for phrase: 'Con hãy t\u1ef1 tin nói to tên mình nhé.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ef1' in position 103: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (14, 'Con hãy t\u1ef1 tin nói to tên mình nhé.')
+15:53:22 [DEBUG] vr-voice-agent: [TTS] Cached 17 frames for phrase: "Nói 'Mình tên là...' \u0111i con."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u0111' in position 115: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (17, "Nói 'Mình tên là...' \u0111i con.")
+15:53:22 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=True): "Con hãy t\u1ef1 tin nói to tên mình nhé."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ef1' in position 105: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 860, in _handle_quest_activation
+    logger.info(
+Message: '[AGENT] Opening phrase (cached=%s): "%s"'
+Arguments: (True, 'Con hãy t\u1ef1 tin nói to tên mình nhé.')
+15:53:25 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ef1' in position 134: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 2881, in _tts_task
+    await self._tts_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3093, in _tts_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:53:31 [DEBUG] livekit.agents: received user transcript
+15:53:31 [DEBUG] livekit.agents: eot prediction
+15:53:31 [DEBUG] livekit.agents: user turn committed
+15:53:31 [DEBUG] livekit.agents: using preemptive generation
+15:53:31 [DEBUG] livekit.agents: conversation_item_added
+15:53:32 [DEBUG] livekit.agents: executing tool
+15:53:32 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_MATCHED', 'contract_version': 2, 'activation_id': '12c6cfae23a44824bcb38f191eff616d'}
+15:53:32 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '12c6cfae23a44824bcb38f191eff616d', 'status': 'MATCHED'}
+15:53:32 [DEBUG] livekit.agents: tools execution completed
+15:53:32 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+15:53:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:32 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '12c6cfae23a44824bcb38f191eff616d', 'status': 'MATCHED'}
+15:53:32 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+15:53:32 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+15:53:32 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '0ebcad40a4e64c4db611748717942965', 'status': 'ACTIVE'}
+15:53:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:32 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+15:53:33 [DEBUG] vr-voice-agent: [TTS] Cached 15 frames for phrase: 'Gi\u1edbi thi\u1ec7u s\u1ed1 tu\u1ed5i c\u1ee7a con \u0111i nào.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1edb' in position 96: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (15, 'Gi\u1edbi thi\u1ec7u s\u1ed1 tu\u1ed5i c\u1ee7a con \u0111i nào.')
+15:53:33 [DEBUG] vr-voice-agent: [TTS] Cached 19 frames for phrase: "Nói 'Mình... tu\u1ed5i' \u0111i con."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ed5' in position 109: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (19, "Nói 'Mình... tu\u1ed5i' \u0111i con.")
+15:53:33 [DEBUG] vr-voice-agent: [TTS] Cached 18 frames for phrase: 'Con m\u1ea5y tu\u1ed5i r\u1ed3i, hãy nói cho các b\u1ea1n bi\u1ebft nhé.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea5' in position 99: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (18, 'Con m\u1ea5y tu\u1ed5i r\u1ed3i, hãy nói cho các b\u1ea1n bi\u1ebft nhé.')
+15:53:33 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=True): "Nói 'Mình... tu\u1ed5i' \u0111i con."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ed5' in position 111: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 860, in _handle_quest_activation
+    logger.info(
+Message: '[AGENT] Opening phrase (cached=%s): "%s"'
+Arguments: (True, "Nói 'Mình... tu\u1ed5i' \u0111i con.")
+15:53:36 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ed5' in position 140: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 2881, in _tts_task
+    await self._tts_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3093, in _tts_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:53:42 [DEBUG] livekit.agents: received user transcript
+15:53:42 [DEBUG] livekit.agents: eot prediction
+15:53:43 [DEBUG] livekit.agents: user turn committed
+15:53:43 [DEBUG] livekit.agents: using preemptive generation
+15:53:43 [DEBUG] livekit.agents: conversation_item_added
+15:53:43 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:44 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-441' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+15:53:46 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1eed' in position 131: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3142, in _pipeline_reply_task
+    await self._pipeline_reply_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3587, in _pipeline_reply_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:53:52 [DEBUG] livekit.agents: received user transcript
+15:53:52 [DEBUG] livekit.agents: eot prediction
+15:53:53 [DEBUG] livekit.agents: user turn committed
+15:53:53 [DEBUG] livekit.agents: using preemptive generation
+15:53:53 [DEBUG] livekit.agents: conversation_item_added
+15:53:53 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:53:57 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u0111' in position 135: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3142, in _pipeline_reply_task
+    await self._pipeline_reply_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3587, in _pipeline_reply_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:54:03 [DEBUG] livekit.agents: received user transcript
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea5' in position 119: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\audio_recognition.py", line 1809, in _stt_consumer
+    await self._on_stt_event(ev)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\audio_recognition.py", line 1160, in _on_stt_event
+    self._process_stt_event(ev)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\audio_recognition.py", line 1201, in _process_stt_event
+    logger.debug("received user transcript", extra=extra)
+Message: 'received user transcript'
+Arguments: ()
+15:54:03 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-129' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+15:54:03 [DEBUG] livekit.agents: eot prediction
+15:54:03 [DEBUG] livekit.agents: user turn committed
+15:54:03 [DEBUG] livekit.agents: using preemptive generation
+15:54:03 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea5' in position 122: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3142, in _pipeline_reply_task
+    await self._pipeline_reply_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3353, in _pipeline_reply_task_impl
+    self._session._conversation_item_added(new_message)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:54:04 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:54:06 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ecf' in position 131: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3142, in _pipeline_reply_task
+    await self._pipeline_reply_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3587, in _pipeline_reply_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:54:11 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+15:54:14 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea5' in position 130: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 2881, in _tts_task
+    await self._tts_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3093, in _tts_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:54:14 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'contract_version': 2, 'event': 'ON_REMINDER', 'direction': 'agent_to_unity', 'result': 'accepted', 'activation_id': '0ebcad40a4e64c4db611748717942965', 'npc_binding_id': 'teacher-npc', 'command_id': '9537969d253b4fae9267e45ad687d8cc'}
+15:54:22 [DEBUG] livekit.agents: received user transcript
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ed5' in position 121: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\audio_recognition.py", line 1809, in _stt_consumer
+    await self._on_stt_event(ev)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\audio_recognition.py", line 1160, in _on_stt_event
+    self._process_stt_event(ev)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\audio_recognition.py", line 1201, in _process_stt_event
+    logger.debug("received user transcript", extra=extra)
+Message: 'received user transcript'
+Arguments: ()
+15:54:22 [DEBUG] livekit.agents: eot prediction
+15:54:22 [DEBUG] livekit.agents: user turn committed
+15:54:22 [DEBUG] livekit.agents: using preemptive generation
+15:54:22 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ed5' in position 124: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3142, in _pipeline_reply_task
+    await self._pipeline_reply_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3353, in _pipeline_reply_task_impl
+    self._session._conversation_item_added(new_message)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:54:22 [DEBUG] livekit.agents: executing tool
+15:54:22 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_MATCHED', 'contract_version': 2, 'activation_id': '0ebcad40a4e64c4db611748717942965'}
+15:54:22 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '0ebcad40a4e64c4db611748717942965', 'status': 'MATCHED'}
+15:54:22 [DEBUG] livekit.agents: tools execution completed
+15:54:23 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+15:54:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:54:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:54:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:54:23 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '0ebcad40a4e64c4db611748717942965', 'status': 'MATCHED'}
+15:54:23 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+15:54:23 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+15:54:23 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '140f4274d3334923a7ec62bbf8efd5e4', 'status': 'ACTIVE'}
+15:54:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:54:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:54:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:54:23 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+15:54:23 [DEBUG] vr-voice-agent: [TTS] Cached 13 frames for phrase: 'S\u1edf thích c\u1ee7a con là gì nào?'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1edf' in position 95: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (13, 'S\u1edf thích c\u1ee7a con là gì nào?')
+15:54:24 [DEBUG] vr-voice-agent: [TTS] Cached 17 frames for phrase: 'Con thích làm gì nh\u1ea5t, k\u1ec3 cho các b\u1ea1n nghe nào.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea5' in position 113: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (17, 'Con thích làm gì nh\u1ea5t, k\u1ec3 cho các b\u1ea1n nghe nào.')
+15:54:24 [DEBUG] vr-voice-agent: [TTS] Cached 15 frames for phrase: 'Nói cho các b\u1ea1n bi\u1ebft con thích gì nhé.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea1' in position 107: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (15, 'Nói cho các b\u1ea1n bi\u1ebft con thích gì nhé.')
+15:54:24 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=True): "S\u1edf thích c\u1ee7a con là gì nào?"
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1edf' in position 97: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 860, in _handle_quest_activation
+    logger.info(
+Message: '[AGENT] Opening phrase (cached=%s): "%s"'
+Arguments: (True, 'S\u1edf thích c\u1ee7a con là gì nào?')
+15:54:25 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1edf' in position 126: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 2881, in _tts_task
+    await self._tts_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3093, in _tts_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:54:31 [DEBUG] livekit.agents: received user transcript
+15:54:31 [DEBUG] livekit.agents: eot prediction
+15:54:31 [DEBUG] livekit.agents: user turn committed
+15:54:31 [DEBUG] livekit.agents: using preemptive generation
+15:54:31 [DEBUG] livekit.agents: conversation_item_added
+15:54:32 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:54:37 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ebf' in position 136: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3142, in _pipeline_reply_task
+    await self._pipeline_reply_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3587, in _pipeline_reply_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:54:46 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+15:54:48 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea1' in position 138: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 2881, in _tts_task
+    await self._tts_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3093, in _tts_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:54:48 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'contract_version': 2, 'event': 'ON_REMINDER', 'direction': 'agent_to_unity', 'result': 'accepted', 'activation_id': '140f4274d3334923a7ec62bbf8efd5e4', 'npc_binding_id': 'teacher-npc', 'command_id': 'a7085fd9bf654134b5c71f3cdbfa2d0c'}
+15:54:53 [DEBUG] livekit.agents: received user transcript
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea3' in position 144: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\audio_recognition.py", line 1809, in _stt_consumer
+    await self._on_stt_event(ev)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\audio_recognition.py", line 1160, in _on_stt_event
+    self._process_stt_event(ev)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\audio_recognition.py", line 1201, in _process_stt_event
+    logger.debug("received user transcript", extra=extra)
+Message: 'received user transcript'
+Arguments: ()
+15:54:53 [DEBUG] livekit.agents: eot prediction
+15:54:54 [DEBUG] livekit.agents: user turn committed
+15:54:54 [DEBUG] livekit.agents: using preemptive generation
+15:54:54 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea3' in position 147: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3142, in _pipeline_reply_task
+    await self._pipeline_reply_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3353, in _pipeline_reply_task_impl
+    self._session._conversation_item_added(new_message)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:54:54 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:54:59 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ec3' in position 134: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3142, in _pipeline_reply_task
+    await self._pipeline_reply_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3587, in _pipeline_reply_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+15:55:01 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+15:55:01 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:55:01 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:55:01 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635100574096
+15:55:01 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '140f4274d3334923a7ec62bbf8efd5e4', 'status': 'CANCELLED', 'reason': 'first_win'}
+15:55:01 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+15:55:01 [INFO] livekit.agents: closing agent session due to participant disconnect (disable via `RoomInputOptions.close_on_disconnect=False`)
+15:55:01 [DEBUG] livekit.agents: stream closed
+15:55:01 [DEBUG] livekit.agents: input stream detached
+15:55:03 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+15:55:03 [DEBUG] grpc._cython.cygrpc: Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x0000017CB81734B0>,)
+15:55:03 [DEBUG] livekit.agents: session closed
+15:55:23 [DEBUG] livekit.agents: shutting down job task
+15:55:23 [DEBUG] livekit.agents: job exiting
+15:55:23 [WARNING] livekit: livekit_api::signal_client:652:livekit_api::signal_client - dropping pass-through signal — no stream available
+15:55:23 [DEBUG] livekit.agents: http_session(): closing the httpclient ctx
+15:55:23 [WARNING] livekit: livekit_ffi::server:266:livekit_ffi::server - Attempted to drop unknown FFI handle: 42
+15:55:23 [WARNING] livekit: livekit_ffi::server:266:livekit_ffi::server - Attempted to drop unknown FFI handle: 100
+16:00:31 [INFO] livekit.agents: received job request
+16:00:31 [DEBUG] livekit.agents: received assignment
+16:00:31 [WARNING] livekit.agents: no warmed process available for job, waiting for one to be created
+16:00:31 [INFO] livekit.agents: initializing job runner
+16:00:32 [DEBUG] asyncio: Using proactor: IocpProactor
+16:00:32 [INFO] livekit.agents: job runner initialized
+16:00:33 [INFO] vr-voice-agent: [LIVEKIT] Connected to room: d436ffe5-bb56-4c2d-86f2-73e32a857aaa
+16:00:33 [DEBUG] livekit.plugins.google: using chirp_3 model for voice vi-VN-Chirp3-HD-Aoede
+16:00:33 [WARNING] livekit.agents: preemptive_generation is deprecated and will be removed in v2.0. Use turn_handling=TurnHandlingOptions(...) instead
+16:00:33 [INFO] vr-voice-agent: [AUDIO] Linking Unity microphone participant: vr_600063
+16:00:33 [INFO] vr-voice-agent: [SESSION] Starting AgentSession...
+16:00:33 [DEBUG] livekit.agents: input stream attached
+16:00:33 [INFO] livekit.agents: adaptive interruption detector initialized
+16:00:33 [DEBUG] livekit.agents: http_session(): creating a new httpclient ctx
+16:00:33 [INFO] vr-voice-agent: [AGENT] TeacherAgent ready in room (standby mode)
+16:00:33 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:00:33 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:00:33 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:00:33 [DEBUG] livekit.agents: using audio io: `RoomIO` -> `AgentSession` -> `TranscriptSynchronizer` -> `AudioSinkProxy` -> `RoomIO`
+16:00:33 [DEBUG] livekit.agents: using transcript io: `AgentSession` -> `TranscriptSynchronizer` -> `RoomIO`
+16:00:33 [INFO] vr-voice-agent: [AGENT] Agent pipeline active and ready for packets
+16:00:34 [DEBUG] livekit.agents: audio turn detector initialized
+16:00:34 [DEBUG] livekit.agents: adaptive interruption session created
+16:00:45 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:00:45 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:00:45 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:00:55 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:00:55 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:00:55 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:07 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:07 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:07 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:11 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+16:01:11 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+16:01:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:11 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+16:01:11 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': 'bdebae3ca4534897be93d8f9c680a6e4', 'status': 'ACTIVE'}
+16:01:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:11 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:11 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+16:01:11 [DEBUG] grpc._cython.cygrpc: Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x0000017CB8228FB0>,)
+16:01:11 [DEBUG] livekit.agents: start reading stream
+16:01:12 [DEBUG] vr-voice-agent: [TTS] Cached 12 frames for phrase: 'Chào c\u1ea3 l\u1edbp \u0111i con.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea3' in position 100: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (12, 'Chào c\u1ea3 l\u1edbp \u0111i con.')
+16:01:12 [DEBUG] vr-voice-agent: [TTS] Cached 15 frames for phrase: 'Con hãy chào th\u1ea7y cô và các b\u1ea1n \u0111i.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea7' in position 109: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (15, 'Con hãy chào th\u1ea7y cô và các b\u1ea1n \u0111i.')
+16:01:12 [DEBUG] vr-voice-agent: [TTS] Cached 17 frames for phrase: "Nói 'Chào các b\u1ea1n' \u0111i nào con."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea1' in position 109: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (17, "Nói 'Chào các b\u1ea1n' \u0111i nào con.")
+16:01:12 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=True): "Chào c\u1ea3 l\u1edbp \u0111i con."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea3' in position 102: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 860, in _handle_quest_activation
+    logger.info(
+Message: '[AGENT] Opening phrase (cached=%s): "%s"'
+Arguments: (True, 'Chào c\u1ea3 l\u1edbp \u0111i con.')
+16:01:12 [DEBUG] livekit.agents: aec warmup active, disabling interruptions for 3.00s
+16:01:14 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea3' in position 131: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 2881, in _tts_task
+    await self._tts_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3093, in _tts_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+16:01:15 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+16:01:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:15 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': 'bdebae3ca4534897be93d8f9c680a6e4', 'status': 'CANCELLED', 'reason': 'first_win'}
+16:01:15 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+16:01:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:15 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': 'bdebae3ca4534897be93d8f9c680a6e4', 'status': 'CANCELLED', 'reason': 'first_win'}
+16:01:15 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+16:01:15 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+16:01:15 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+16:01:15 [DEBUG] grpc._cython.cygrpc: Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x0000017CB822B1B0>,)
+16:01:15 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '5e76ae00201745b9b33b3e1fd6ba7413', 'status': 'ACTIVE'}
+16:01:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:15 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:15 [DEBUG] livekit.agents: aec warmup expired, re-enabling interruptions
+16:01:15 [DEBUG] vr-voice-agent: [TTS] Cached 11 frames for phrase: 'Tên c\u1ee7a con là gì nào?'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ee7' in position 99: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (11, 'Tên c\u1ee7a con là gì nào?')
+16:01:16 [DEBUG] vr-voice-agent: [TTS] Cached 15 frames for phrase: 'Con hãy t\u1ef1 tin nói to tên mình nhé.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ef1' in position 103: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (15, 'Con hãy t\u1ef1 tin nói to tên mình nhé.')
+16:01:16 [DEBUG] vr-voice-agent: [TTS] Cached 17 frames for phrase: "Nói 'Mình tên là...' \u0111i con."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u0111' in position 115: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (17, "Nói 'Mình tên là...' \u0111i con.")
+16:01:16 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=True): "Con hãy t\u1ef1 tin nói to tên mình nhé."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ef1' in position 105: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 860, in _handle_quest_activation
+    logger.info(
+Message: '[AGENT] Opening phrase (cached=%s): "%s"'
+Arguments: (True, 'Con hãy t\u1ef1 tin nói to tên mình nhé.')
+16:01:18 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ef1' in position 134: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 2881, in _tts_task
+    await self._tts_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3093, in _tts_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+16:01:19 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+16:01:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:19 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '5e76ae00201745b9b33b3e1fd6ba7413', 'status': 'CANCELLED', 'reason': 'first_win'}
+16:01:19 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+16:01:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:19 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '5e76ae00201745b9b33b3e1fd6ba7413', 'status': 'CANCELLED', 'reason': 'first_win'}
+16:01:19 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+16:01:19 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+16:01:19 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+16:01:19 [DEBUG] grpc._cython.cygrpc: Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x0000017CB95543B0>,)
+16:01:19 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '638980dfde2b4a75b4167e54e314a9a6', 'status': 'ACTIVE'}
+16:01:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:20 [DEBUG] vr-voice-agent: [TTS] Cached 14 frames for phrase: 'Gi\u1edbi thi\u1ec7u s\u1ed1 tu\u1ed5i c\u1ee7a con \u0111i nào.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1edb' in position 96: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (14, 'Gi\u1edbi thi\u1ec7u s\u1ed1 tu\u1ed5i c\u1ee7a con \u0111i nào.')
+16:01:20 [DEBUG] vr-voice-agent: [TTS] Cached 17 frames for phrase: "Nói 'Mình... tu\u1ed5i' \u0111i con."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ed5' in position 109: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (17, "Nói 'Mình... tu\u1ed5i' \u0111i con.")
+16:01:20 [DEBUG] vr-voice-agent: [TTS] Cached 18 frames for phrase: 'Con m\u1ea5y tu\u1ed5i r\u1ed3i, hãy nói cho các b\u1ea1n bi\u1ebft nhé.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea5' in position 99: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (18, 'Con m\u1ea5y tu\u1ed5i r\u1ed3i, hãy nói cho các b\u1ea1n bi\u1ebft nhé.')
+16:01:20 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=True): "Gi\u1edbi thi\u1ec7u s\u1ed1 tu\u1ed5i c\u1ee7a con \u0111i nào."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1edb' in position 98: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 860, in _handle_quest_activation
+    logger.info(
+Message: '[AGENT] Opening phrase (cached=%s): "%s"'
+Arguments: (True, 'Gi\u1edbi thi\u1ec7u s\u1ed1 tu\u1ed5i c\u1ee7a con \u0111i nào.')
+16:01:22 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1edb' in position 127: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 2881, in _tts_task
+    await self._tts_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3093, in _tts_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+16:01:23 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+16:01:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:23 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '638980dfde2b4a75b4167e54e314a9a6', 'status': 'CANCELLED', 'reason': 'first_win'}
+16:01:23 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+16:01:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:23 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': '638980dfde2b4a75b4167e54e314a9a6', 'status': 'CANCELLED', 'reason': 'first_win'}
+16:01:23 [DEBUG] vr-voice-agent: [TTS] Updated TTS options for voice: vi-VN-Chirp3-HD-Aoede
+16:01:23 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+16:01:23 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+16:01:23 [DEBUG] grpc._cython.cygrpc: Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x0000017CB9554CB0>,)
+16:01:23 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': 'ebe353487b7d402fa5357ea2e0e8580d', 'status': 'ACTIVE'}
+16:01:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:23 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:24 [DEBUG] vr-voice-agent: [TTS] Cached 13 frames for phrase: 'S\u1edf thích c\u1ee7a con là gì nào?'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1edf' in position 95: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (13, 'S\u1edf thích c\u1ee7a con là gì nào?')
+16:01:24 [DEBUG] vr-voice-agent: [TTS] Cached 17 frames for phrase: 'Con thích làm gì nh\u1ea5t, k\u1ec3 cho các b\u1ea1n nghe nào.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea5' in position 113: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (17, 'Con thích làm gì nh\u1ea5t, k\u1ec3 cho các b\u1ea1n nghe nào.')
+16:01:24 [DEBUG] vr-voice-agent: [TTS] Cached 14 frames for phrase: 'Nói cho các b\u1ea1n bi\u1ebft con thích gì nhé.'
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea1' in position 107: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 135, in _synth_one
+    logger.debug("[TTS] Cached %d frames for phrase: %r", len(frames), text)
+Message: '[TTS] Cached %d frames for phrase: %r'
+Arguments: (14, 'Nói cho các b\u1ea1n bi\u1ebft con thích gì nhé.')
+16:01:24 [INFO] vr-voice-agent: [AGENT] Opening phrase (cached=True): "Nói cho các b\u1ea1n bi\u1ebft con thích gì nhé."
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea1' in position 109: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\src\agent_v2.py", line 860, in _handle_quest_activation
+    logger.info(
+Message: '[AGENT] Opening phrase (cached=%s): "%s"'
+Arguments: (True, 'Nói cho các b\u1ea1n bi\u1ebft con thích gì nhé.')
+16:01:26 [DEBUG] livekit.agents: conversation_item_added
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u1ea1' in position 138: character maps to <undefined>
+Call stack:
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1044, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1082, in _bootstrap_inner
+    self._context.run(self.run)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\threading.py", line 1024, in run
+    self._target(*self._args, **self._kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 479, in thread_main
+    client.run()
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 707, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 678, in run_forever
+    self._run_once()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2057, in _run_once
+    handle._run()
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 826, in _context_aware_coro
+    return await coro
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 2881, in _tts_task
+    await self._tts_task_impl(
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 3093, in _tts_task_impl
+    self._session._conversation_item_added(msg)
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\agents\voice\agent_session.py", line 2065, in _conversation_item_added
+    logger.debug(
+Message: 'conversation_item_added'
+Arguments: ()
+16:01:28 [INFO] vr-voice-agent: [SESSION] Chat history cleared for new quest context
+16:01:28 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:28 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:28 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635137903568
+16:01:28 [INFO] vr-voice-agent: [RTC] Sent V2 packet: {'event': 'QUEST_STATUS', 'contract_version': 2, 'activation_id': 'ebe353487b7d402fa5357ea2e0e8580d', 'status': 'CANCELLED', 'reason': 'first_win'}
+16:01:28 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+16:01:28 [DEBUG] grpc._cython.cygrpc: Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x0000017CB9591DB0>,)
+16:01:28 [INFO] livekit.agents: closing agent session due to participant disconnect (disable via `RoomInputOptions.close_on_disconnect=False`)
+16:01:28 [DEBUG] livekit.agents: stream closed
+16:01:28 [DEBUG] livekit.agents: input stream detached
+16:01:30 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+16:01:30 [DEBUG] grpc._cython.cygrpc: Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x0000017CB9590530>,)
+16:01:30 [DEBUG] livekit.agents: session closed
+16:01:53 [DEBUG] livekit.agents: shutting down job task
+16:01:53 [DEBUG] livekit.agents: job exiting
+16:01:53 [WARNING] livekit: livekit_ffi::server:266:livekit_ffi::server - Attempted to drop unknown FFI handle: 15620
+16:01:53 [WARNING] livekit: livekit_ffi::server:266:livekit_ffi::server - Attempted to drop unknown FFI handle: 15574
+16:01:53 [DEBUG] livekit.agents: http_session(): closing the httpclient ctx
+16:02:10 [INFO] livekit.agents: received job request
+16:02:10 [DEBUG] livekit.agents: received assignment
+16:02:10 [WARNING] livekit.agents: no warmed process available for job, waiting for one to be created
+16:02:10 [INFO] livekit.agents: initializing job runner
+16:02:10 [DEBUG] asyncio: Using proactor: IocpProactor
+16:02:10 [INFO] livekit.agents: job runner initialized
+16:02:11 [INFO] vr-voice-agent: [LIVEKIT] Connected to room: 9078494b-2232-4842-b339-6a38501e04e7
+16:02:11 [DEBUG] livekit.plugins.google: using chirp_3 model for voice vi-VN-Chirp3-HD-Aoede
+16:02:11 [WARNING] livekit.agents: preemptive_generation is deprecated and will be removed in v2.0. Use turn_handling=TurnHandlingOptions(...) instead
+16:02:11 [INFO] vr-voice-agent: [AUDIO] Linking Unity microphone participant: vr_600063
+16:02:11 [INFO] vr-voice-agent: [SESSION] Starting AgentSession...
+16:02:11 [DEBUG] livekit.agents: input stream attached
+16:02:11 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2064' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+16:02:11 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-3069' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+16:02:11 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-3177' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+16:02:11 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-3207' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+16:02:11 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-3354' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+16:02:11 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-3515' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+16:02:11 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-3677' coro=<Event.wait() running at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:213> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+16:02:11 [ERROR] asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-3840' coro=<Event.wait() done, defined at C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\locks.py:200> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+16:02:11 [INFO] livekit.agents: adaptive interruption detector initialized
+16:02:11 [DEBUG] livekit.agents: http_session(): creating a new httpclient ctx
+16:02:11 [INFO] vr-voice-agent: [AGENT] TeacherAgent ready in room (standby mode)
+16:02:12 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:12 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:12 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:12 [DEBUG] livekit.agents: using audio io: `RoomIO` -> `AgentSession` -> `TranscriptSynchronizer` -> `AudioSinkProxy` -> `RoomIO`
+16:02:12 [DEBUG] livekit.agents: using transcript io: `AgentSession` -> `TranscriptSynchronizer` -> `RoomIO`
+16:02:12 [INFO] vr-voice-agent: [AGENT] Agent pipeline active and ready for packets
+16:02:12 [DEBUG] livekit.agents: adaptive interruption session created
+16:02:12 [DEBUG] livekit.agents: audio turn detector initialized
+16:02:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:22 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:33 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:33 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:33 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:44 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:44 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:44 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:55 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:55 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:02:55 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:07 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:07 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:07 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:19 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:30 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:30 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:30 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:40 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:40 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:40 [DEBUG] grpc._cython.cygrpc: [_cygrpc] Loaded running loop: id(loop)=1635176834640
+16:03:41 [INFO] livekit.agents: closing agent session due to participant disconnect (disable via `RoomInputOptions.close_on_disconnect=False`)
+16:03:41 [DEBUG] livekit.agents: input stream detached
+16:03:43 [DEBUG] grpc.aio._call: Client request_iterator raised exception:
+Traceback (most recent call last):
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\grpc\aio\_call.py", line 445, in _consume_request_iterator
+    async for request in request_iterator:
+    ...<10 lines>...
+            return
+  File "D:\Lab\VR-Autism\LiveKitAgent\.venv\Lib\site-packages\livekit\plugins\google\stt.py", line 819, in input_generator
+    done, _ = await asyncio.wait(
+              ^^^^^^^^^^^^^^^^^^^
+        [frame_task, stop_task], return_when=asyncio.FIRST_COMPLETED
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 432, in wait
+    return await _wait(fs, timeout, return_when, loop)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\tasks.py", line 521, in _wait
+    await waiter
+asyncio.exceptions.CancelledError
+
+16:03:43 [DEBUG] grpc._cython.cygrpc: Failed to receive any message from Core: Failed "execute_batch": (<grpc._cython.cygrpc.ReceiveMessageOperation object at 0x0000017CB9609730>,)
+16:03:43 [DEBUG] livekit.agents: session closed
+16:04:03 [DEBUG] livekit.agents: shutting down job task
+16:04:03 [DEBUG] livekit.agents: job exiting
+16:04:03 [WARNING] livekit: livekit_ffi::server:266:livekit_ffi::server - Attempted to drop unknown FFI handle: 18494
+16:04:03 [DEBUG] livekit.agents: http_session(): closing the httpclient ctx
