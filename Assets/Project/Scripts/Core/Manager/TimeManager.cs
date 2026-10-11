@@ -25,7 +25,7 @@ namespace VRAutism.Core
 
         // Tracks the current quest's start time to compute response_time
         private double _questStartSecond;
-        private bool _v2InstallerOwnsSessionPersistence;
+        private bool _v2SceneOwnsSessionPersistence;
 
         private void Awake()
         {
@@ -44,7 +44,7 @@ namespace VRAutism.Core
 
         private void Start()
         {
-            _v2InstallerOwnsSessionPersistence = LessonGraphRunnerInstaller.ShouldSkipLegacyFirebasePersistence();
+            _v2SceneOwnsSessionPersistence = LessonGraphSceneDefinitionV2.IsV2PersistenceOwned;
             QuestController.OnActiveQuestCompleted += LogQuestComplete;
 
             _startTime = DateTime.Now;
@@ -65,9 +65,9 @@ namespace VRAutism.Core
                 Debug.LogWarning("[TimeManager] SessionContext không có LessonId — có thể đang chạy trực tiếp Scene để test.");
             }
 
-            // V2's session-scoped telemetry writer owns Firestore persistence in its scenes.
-            // Keep the legacy accumulator for every scene without an active V2 installer.
-            if (!_v2InstallerOwnsSessionPersistence)
+            // The scene definition claims the V2 persistence boundary before Start can write,
+            // including runs that later fail their readiness checks.
+            if (!_v2SceneOwnsSessionPersistence)
             {
                 FirebaseManager.Instance.BeginSession(
                     lessonId:   lessonId,
@@ -90,7 +90,7 @@ namespace VRAutism.Core
                 Cloud.RTDB.LiveSessionReporter.Instance.SendLiveSessionHandshake(
                     sessionId,
                     currentScene,
-                    startLegacyRemoteCommandListener: !_v2InstallerOwnsSessionPersistence);
+                    startLegacyRemoteCommandListener: !_v2SceneOwnsSessionPersistence);
             }
 
             // [MỚI] Kích hoạt luồng Telemetry thu thập dữ liệu hành vi trẻ mỗi 2s
@@ -151,7 +151,7 @@ namespace VRAutism.Core
                 response_time_from_hint = responseTimeFromHint
             };
 
-            if (!_v2InstallerOwnsSessionPersistence)
+            if (!_v2SceneOwnsSessionPersistence)
                 FirebaseManager.Instance.AccumulateQuestLog(log);
         }
 
@@ -174,11 +174,11 @@ namespace VRAutism.Core
                 Debug.LogWarning("[TimeManager] SaveLessonTimeData: _timer was null, using _startTime fallback.");
             }
 
-            if (!_v2InstallerOwnsSessionPersistence)
+            if (!_v2SceneOwnsSessionPersistence)
                 FirebaseManager.Instance.SaveSession(completionStatus, score, durationSeconds);
             Debug.Log($"[TimeManager] Lesson ended. Duration: {durationSeconds:F1}s, Status: {completionStatus}");
 
-            if (!_v2InstallerOwnsSessionPersistence)
+            if (!_v2SceneOwnsSessionPersistence)
             {
                 // Legacy lessons own their ended signal here. V2's lifecycle component is
                 // the sole owner of its terminal signal and stream teardown.

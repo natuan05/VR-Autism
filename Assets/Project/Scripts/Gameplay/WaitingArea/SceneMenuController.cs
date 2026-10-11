@@ -4,6 +4,7 @@ using Firebase.Firestore;
 using Firebase.Extensions;
 using VRAutism.Core.Models;
 using VRAutism.Gameplay.LessonGraphV2.Phrases;
+using VRAutism.Gameplay.LessonGraphV2.Runtime;
 
 namespace VRAutism.Gameplay.WaitingArea{
     /// <summary>
@@ -20,6 +21,7 @@ namespace VRAutism.Gameplay.WaitingArea{
         private bool _ownsSingleton;
         private bool _hasStarted;
         private bool _launchInProgress;
+        private LessonLaunchAttemptV2 _activeLaunchAttempt;
         private Cloud.RTDB.PairingManager _subscribedPairingManager;
         
         private void Awake()
@@ -56,118 +58,113 @@ namespace VRAutism.Gameplay.WaitingArea{
         private async void LoadRemoteLesson(string childId, string sceneName, string lessonId, string sessionId, string hostId, string livekitToken)
         {
             if (!_ownsSingleton || Instance != this) return;
-
-            if (string.IsNullOrEmpty(lessonId) || string.IsNullOrEmpty(sceneName))
+            if (string.IsNullOrWhiteSpace(lessonId) || string.IsNullOrWhiteSpace(sceneName))
             {
-                Debug.LogWarning("[SceneMenuController] lessonId hoặc sceneName trống. Bỏ qua lệnh (có thể do sửa RTDB thủ công từng field).");
+                Debug.LogWarning("[SceneMenuController] lessonId hoặc sceneName trống. Bỏ qua lệnh không đầy đủ.");
                 return;
             }
-
             if (_launchInProgress)
             {
                 Debug.LogWarning("[SceneMenuController] Lesson launch already in progress. Ignoring duplicate session command.");
                 return;
             }
-            _launchInProgress = true;
 
-            Debug.Log($"[SceneMenuController] Nhận lệnh Session. Bé: {childId}, Bài: {lessonId}, Scene: {sceneName}, Buổi: {sessionId}");
-            VoicePhraseSnapshotStoreV2.Clear();
-
-            // Overlap scene asset loading with Firestore reads. Activation remains gated
-            // until the selected V2 lesson has an immutable phrase snapshot.
             var launchToken = System.Guid.NewGuid().ToString("N");
-            var pendingScene = SceneManager.LoadSceneAsync(sceneName);
-            if (pendingScene != null) pendingScene.allowSceneActivation = false;
-            
-            // Lưu context cơ bản trước
-            var ctx = VRAutism.Core.SessionContext.Instance;
-            if (ctx != null)
+            if (!LessonLaunchCoordinatorV2.TryBeginLaunch(sessionId, lessonId, sceneName, launchToken, out var attempt))
             {
-                ctx.SessionId = sessionId;
-                ctx.ChildId = childId;
-                ctx.LessonId = lessonId;
-                ctx.HostId = hostId ?? "";
-                ctx.LiveKitToken = livekitToken ?? "";
+                Debug.LogWarning("[SceneMenuController] Another accepted or pending lesson launch owns the scene transition.");
+                return;
             }
-
-            var db = FirebaseFirestore.DefaultInstance;
-
-            // Fetch lesson metadata và child profile song song
-            var lessonTask = db.Collection(Cloud.FirebasePaths.Lessons).Document(lessonId).GetSnapshotAsync();
-            var childTask  = string.IsNullOrEmpty(childId)
-                ? System.Threading.Tasks.Task.FromResult<DocumentSnapshot>(null)
-                : db.Collection("child_profiles").Document(childId).GetSnapshotAsync();
-            var childPhraseTask = string.IsNullOrEmpty(childId)
-                ? System.Threading.Tasks.Task.FromResult<DocumentSnapshot>(null)
-                : db.Collection(Cloud.FirebasePaths.ChildPhraseSets).Document($"{childId}__{lessonId}").GetSnapshotAsync();
-
-            // ── Fetch lesson metadata ──────────────────────────────────────
-            DocumentSnapshot doc = null;
-            try 
+            _launchInProgress = true;
+            _activeLaunchAttempt = attempt;
+            AcceptedLessonLaunchV2 acceptedLaunch = null;
+            try
             {
-                doc = await lessonTask;
-                
-                if (doc.Exists && ctx != null)
+                Debug.Log($"[SceneMenuController] Received lesson command. Child: {childId}, lesson: {lessonId}, scene: {sceneName}, session: {sessionId}");
+                VoicePhraseSnapshotStoreV2.Clear();
+
+                var db = FirebaseFirestore.DefaultInstance;
+                var lessonTask = db.Collection(Cloud.FirebasePaths.Lessons).Document(lessonId).GetSnapshotAsync();
+                var childTask = string.IsNullOrEmpty(childId)
+                    ? System.Threading.Tasks.Task.FromResult<DocumentSnapshot>(null)
+                    : db.Collection("child_profiles").Document(childId).GetSnapshotAsync();
+                var childPhraseTask = string.IsNullOrEmpty(childId)
+                    ? System.Threading.Tasks.Task.FromResult<DocumentSnapshot>(null)
+                    : db.Collection(Cloud.FirebasePaths.ChildPhraseSets).Document($"{childId}__{lessonId}").GetSnapshotAsync();
+
+                DocumentSnapshot doc = null;
+                try { doc = await lessonTask; }
+                catch (System.Exception exception)
                 {
-                    ctx.LessonName = doc.ContainsField("lesson_name") ? doc.GetValue<string>("lesson_name") : sceneName;
-                    ctx.LevelName = doc.ContainsField("level_name") ? doc.GetValue<string>("level_name") : "Vô danh";
-                    
-                    // Sử dụng Convert để xử lý an toàn mọi loại định dạng Int, Long, Float 
+                    Debug.LogError($"[SceneMenuController] Lesson metadata fetch failed: {exception.Message}");
+                }
+                if (!LessonLaunchCoordinatorV2.IsCurrentAttempt(attempt)) return;
+
+                var lessonName = sceneName;
+                var levelName = "Vô danh";
+                var levelIndex = 0;
+                var lessonType = string.Empty;
+                if (doc != null && doc.Exists)
+                {
+                    lessonName = doc.ContainsField("lesson_name") ? doc.GetValue<string>("lesson_name") : sceneName;
+                    levelName = doc.ContainsField("level_name") ? doc.GetValue<string>("level_name") : "Vô danh";
+                    lessonType = doc.ContainsField("type") ? doc.GetValue<string>("type") : string.Empty;
                     if (doc.ContainsField("level_index"))
                     {
-                        try {
-                            ctx.LevelIndex = System.Convert.ToInt32(doc.GetValue<object>("level_index"));
-                        } catch { ctx.LevelIndex = 0; }
+                        try { levelIndex = System.Convert.ToInt32(doc.GetValue<object>("level_index")); }
+                        catch { levelIndex = 0; }
                     }
-
-                    ctx.LessonType = doc.ContainsField("type") ? doc.GetValue<string>("type") : "";
-                    
-                    Debug.Log($"[SceneMenuController] Đã fetch Firestore thành công. Bài: {ctx.LessonName} ({ctx.LessonType}) - Mức: {ctx.LevelName}");
                 }
-                else
-                {
-                    // Fallback tên cơ bản nếu doc không tồn tại thay vì rỗng
-                    if (ctx != null) ctx.LessonName = sceneName;
-                    Debug.LogWarning($"[SceneMenuController] Cảnh báo: Không tìm thấy document bài học ID '{lessonId}' trong Firestore. Sẽ tiếp tục Load Scene.");
-                }
-            }
-            catch (System.Exception ex)
-            {
-                if (ctx != null) ctx.LessonName = sceneName; // Fallback
-                Debug.LogError($"[SceneMenuController] Lỗi fetch Firestore (có thể mất mạng/alt-tab): {ex.Message}. Vẫn sẽ tiếp tục chuyển Scene.");
-            }
+                else Debug.LogWarning($"[SceneMenuController] Lesson document '{lessonId}' is unavailable; using the provided scene metadata.");
 
-            bool isV2Lesson = doc != null && doc.Exists && doc.ContainsField("voice_schema_version") &&
-                              System.Convert.ToInt32(doc.GetValue<object>("voice_schema_version")) >= 2;
-            bool v2SnapshotReady = !isV2Lesson;
-            if (isV2Lesson)
-            {
+                bool isV2Lesson = false;
+                bool invalidVoiceSchema = false;
                 try
                 {
-                    var lessonQuests = new System.Collections.Generic.List<VoiceQuestPhraseV2>();
-                    var rawQuests = doc.GetValue<object>("quests") as System.Collections.IList;
-                    if (rawQuests == null) throw new System.Exception("V2 lesson quests missing");
-                    foreach (var rawQuest in rawQuests)
-                    {
-                        if (!(rawQuest is System.Collections.IDictionary map)) throw new System.Exception("V2 quest is not a map");
-                        lessonQuests.Add(new VoiceQuestPhraseV2
-                        {
-                            binding_id = map["binding_id"]?.ToString(),
-                            goal = map["goal"]?.ToString() ?? string.Empty,
-                            default_phrases = ToStringList(map["default_phrases"])
-                        });
-                    }
+                    isV2Lesson = doc != null && doc.Exists && doc.ContainsField("voice_schema_version") &&
+                        System.Convert.ToInt32(doc.GetValue<object>("voice_schema_version")) >= 2;
+                }
+                catch (System.Exception exception)
+                {
+                    invalidVoiceSchema = true;
+                    Debug.LogError($"[LessonGraphV2] Lesson voice schema metadata is invalid: {exception.Message}");
+                }
+                if (invalidVoiceSchema)
+                {
+                    VoicePhraseSnapshotStoreV2.Clear();
+                    return;
+                }
 
-                    var additions = new System.Collections.Generic.List<VoiceQuestPhraseAdditionV2>();
-                    DocumentSnapshot phraseDoc = null;
-                    try { phraseDoc = await childPhraseTask; }
-                    catch (System.Exception phraseError)
+                bool v2SnapshotReady = !isV2Lesson;
+                if (isV2Lesson)
+                {
+                    try
                     {
-                        Debug.LogWarning($"[LessonGraphV2] Child phrase additions unavailable; using defaults: {phraseError.Message}");
-                    }
-                    if (phraseDoc != null && phraseDoc.Exists && phraseDoc.ContainsField("quest_additions"))
-                    {
-                        if (phraseDoc.GetValue<object>("quest_additions") is System.Collections.IList rawAdditions)
+                        var lessonQuests = new System.Collections.Generic.List<VoiceQuestPhraseV2>();
+                        var rawQuests = doc.GetValue<object>("quests") as System.Collections.IList;
+                        if (rawQuests == null) throw new System.Exception("V2 lesson quests are missing.");
+                        foreach (var rawQuest in rawQuests)
+                        {
+                            if (!(rawQuest is System.Collections.IDictionary map))
+                                throw new System.Exception("V2 lesson quest is not a map.");
+                            lessonQuests.Add(new VoiceQuestPhraseV2
+                            {
+                                binding_id = map["binding_id"]?.ToString(),
+                                goal = map["goal"]?.ToString() ?? string.Empty,
+                                default_phrases = ToStringList(map["default_phrases"])
+                            });
+                        }
+
+                        var additions = new System.Collections.Generic.List<VoiceQuestPhraseAdditionV2>();
+                        DocumentSnapshot phraseDoc = null;
+                        try { phraseDoc = await childPhraseTask; }
+                        catch (System.Exception exception)
+                        {
+                            Debug.LogWarning($"[LessonGraphV2] Child phrase additions unavailable; using defaults: {exception.Message}");
+                        }
+                        if (!LessonLaunchCoordinatorV2.IsCurrentAttempt(attempt)) return;
+                        if (phraseDoc != null && phraseDoc.Exists && phraseDoc.ContainsField("quest_additions") &&
+                            phraseDoc.GetValue<object>("quest_additions") is System.Collections.IList rawAdditions)
                         {
                             foreach (var rawAddition in rawAdditions)
                             {
@@ -179,193 +176,171 @@ namespace VRAutism.Gameplay.WaitingArea{
                                 });
                             }
                         }
-                    }
 
-                    var lessonRevision = doc.ContainsField("voice_revision") ? System.Convert.ToInt32(doc.GetValue<object>("voice_revision")) : 0;
-                    var childRevision = (phraseDoc != null && phraseDoc.Exists && phraseDoc.ContainsField("revision")) ? System.Convert.ToInt32(phraseDoc.GetValue<object>("revision")) : 0;
-                    new FirestoreVoicePhraseLoaderV2().ResolveSessionSnapshot(launchToken, lessonId, lessonRevision, childRevision, lessonQuests, additions);
-                    v2SnapshotReady = true;
-                    Debug.Log($"[LessonGraphV2] Phrase snapshot ready lesson='{lessonId}' child='{childId}' bindings={lessonQuests.Count}");
+                        int lessonRevision = doc.ContainsField("voice_revision")
+                            ? System.Convert.ToInt32(doc.GetValue<object>("voice_revision")) : 0;
+                        int childRevision = phraseDoc != null && phraseDoc.Exists && phraseDoc.ContainsField("revision")
+                            ? System.Convert.ToInt32(phraseDoc.GetValue<object>("revision")) : 0;
+                        new FirestoreVoicePhraseLoaderV2().ResolveSessionSnapshot(launchToken, lessonId,
+                            lessonRevision, childRevision, lessonQuests, additions);
+                        v2SnapshotReady = true;
+                        Debug.Log($"[LessonGraphV2] Matching phrase snapshot ready for lesson='{lessonId}' with {lessonQuests.Count} bindings.");
+                    }
+                    catch (System.Exception exception)
+                    {
+                        Debug.LogError($"[LessonGraphV2] Phrase snapshot failed; V2 scene activation is blocked: {exception.Message}");
+                    }
                 }
-                catch (System.Exception exV2)
+
+                float childMaxVolume = 0.5f;
+                var lessonParams = LessonParameters.Default;
+                var activePhrases = new System.Collections.Generic.List<string[]>();
+                try
                 {
-                    Debug.LogError($"[LessonGraphV2] Phrase snapshot failed; scene activation remains gated: {exV2.Message}");
-                    v2SnapshotReady = false;
-                }
-            }
-
-            // ── Fetch child profile → đồng bộ default_lesson_params ────────────
-            // Khối này độc lập hoàn toàn: lỗi không bao giờ block việc load Scene.
-            try
-            {
-                DocumentSnapshot childDoc = await childTask;
-
-                if (childDoc != null && childDoc.Exists && ctx != null)
-                {
-                    // ── Đọc giới hạn âm lượng max_volume hoặc map từ sound_sensitivity ──
-                    float parsedMaxVolume = 0.5f;
-                    bool hasMaxVolume = false;
-
-                    if (childDoc.ContainsField("max_volume"))
+                    DocumentSnapshot childDoc = await childTask;
+                    if (!LessonLaunchCoordinatorV2.IsCurrentAttempt(attempt)) return;
+                    if (childDoc != null && childDoc.Exists)
                     {
-                        try {
-                            parsedMaxVolume = System.Convert.ToSingle(childDoc.GetValue<object>("max_volume"));
-                            hasMaxVolume = true;
-                        } catch {}
-                    }
-                    else if (childDoc.ContainsField("maxVolume"))
-                    {
-                        try {
-                            parsedMaxVolume = System.Convert.ToSingle(childDoc.GetValue<object>("maxVolume"));
-                            hasMaxVolume = true;
-                        } catch {}
-                    }
-
-                    if (!hasMaxVolume && childDoc.ContainsField("sound_sensitivity"))
-                    {
-                        try
+                        bool hasMaxVolume = false;
+                        if (childDoc.ContainsField("max_volume"))
                         {
-                            int sensitivity = System.Convert.ToInt32(childDoc.GetValue<object>("sound_sensitivity"));
-                            // Nhạy cảm âm thanh càng cao (5) thì âm lượng tối đa càng nhỏ (0.2)
-                            // Nhạy cảm âm thanh càng thấp (1) thì âm lượng tối đa có thể lớn (0.8)
-                            parsedMaxVolume = Mathf.Clamp(1.0f - (sensitivity * 0.15f), 0.1f, 1.0f);
+                            try { childMaxVolume = System.Convert.ToSingle(childDoc.GetValue<object>("max_volume")); hasMaxVolume = true; }
+                            catch { }
                         }
-                        catch {}
-                    }
-
-                    ctx.MaxVolume = parsedMaxVolume;
-                    Debug.Log($"[SceneMenuController] Đã thiết lập MaxVolume = {ctx.MaxVolume} cho bé '{childId}'");
-
-                    System.Collections.Generic.Dictionary<string, object> lessonParamsMap = null;
-
-                    // Firestore SDK trả về IDictionary — giải mã an toàn qua GetValue hoặc fallback IDictionary
-                    if (childDoc.ContainsField("default_lesson_params"))
-                    {
-                        try
+                        else if (childDoc.ContainsField("maxVolume"))
                         {
-                            lessonParamsMap = childDoc.GetValue<System.Collections.Generic.Dictionary<string, object>>("default_lesson_params");
+                            try { childMaxVolume = System.Convert.ToSingle(childDoc.GetValue<object>("maxVolume")); hasMaxVolume = true; }
+                            catch { }
                         }
-                        catch
+                        if (!hasMaxVolume && childDoc.ContainsField("sound_sensitivity"))
                         {
-                            var rawMap = childDoc.GetValue<object>("default_lesson_params");
-                            if (rawMap is System.Collections.IDictionary idict)
+                            try
                             {
-                                lessonParamsMap = new System.Collections.Generic.Dictionary<string, object>();
-                                foreach (System.Collections.DictionaryEntry entry in idict)
+                                int sensitivity = System.Convert.ToInt32(childDoc.GetValue<object>("sound_sensitivity"));
+                                childMaxVolume = Mathf.Clamp(1.0f - sensitivity * 0.15f, 0.1f, 1.0f);
+                            }
+                            catch { }
+                        }
+
+                        System.Collections.Generic.Dictionary<string, object> lessonParamsMap = null;
+                        if (childDoc.ContainsField("default_lesson_params"))
+                        {
+                            try { lessonParamsMap = childDoc.GetValue<System.Collections.Generic.Dictionary<string, object>>("default_lesson_params"); }
+                            catch
+                            {
+                                var rawMap = childDoc.GetValue<object>("default_lesson_params");
+                                if (rawMap is System.Collections.IDictionary map)
                                 {
-                                    lessonParamsMap[entry.Key.ToString()] = entry.Value;
+                                    lessonParamsMap = new System.Collections.Generic.Dictionary<string, object>();
+                                    foreach (System.Collections.DictionaryEntry entry in map)
+                                        lessonParamsMap[entry.Key.ToString()] = entry.Value;
+                                }
+                            }
+                        }
+                        if (lessonParamsMap != null && lessonParamsMap.Count > 0)
+                            lessonParams = LessonParameters.FromDictionary(lessonParamsMap);
+
+                        if (childDoc.ContainsField("quick_phrases") &&
+                            childDoc.GetValue<object>("quick_phrases") is System.Collections.IDictionary quickPhraseMap &&
+                            quickPhraseMap.Contains(lessonId) && quickPhraseMap[lessonId] is System.Collections.IList quickPhraseQuests)
+                        {
+                            foreach (var quest in quickPhraseQuests)
+                            {
+                                if (quest is System.Collections.IDictionary questMap && questMap.Contains("phrases") &&
+                                    questMap["phrases"] is System.Collections.IList phrases)
+                                {
+                                    var phraseList = new System.Collections.Generic.List<string>();
+                                    foreach (var phrase in phrases) if (phrase != null) phraseList.Add(phrase.ToString());
+                                    activePhrases.Add(phraseList.ToArray());
                                 }
                             }
                         }
                     }
-
-                    if (lessonParamsMap != null && lessonParamsMap.Count > 0)
-                    {
-                        ctx.CurrentParams = LessonParameters.FromDictionary(lessonParamsMap);
-                        Debug.Log($"[SceneMenuController] Đã sync default_lesson_params cho bé '{childId}'. " +
-                                  $"VisualGuidance={ctx.CurrentParams.Actions.EnableVisualGuidance}, " +
-                                  $"BubbleHints={ctx.CurrentParams.Actions.EnableBubbleHints}, " +
-                                  $"SpeechTimeout={ctx.CurrentParams.Actions.SpeechSilenceTimeout}");
-                    }
-                    else
-                    {
-                        ctx.CurrentParams = LessonParameters.Default;
-                        Debug.Log($"[SceneMenuController] default_lesson_params rỗng hoặc chưa có cho bé '{childId}'. Dùng Inspector defaults.");
-                    }
-
-                    // ── Đọc quick_phrases cho bài học hiện tại từ child profile hoặc lesson doc ──
-                    try
-                    {
-                        var activePhrasesList = new System.Collections.Generic.List<string[]>();
-                        bool foundPhrases = false;
-
-                        if (childDoc.ContainsField("quick_phrases"))
-                        {
-                            var quickPhrasesRaw = childDoc.GetValue<object>("quick_phrases");
-                            if (quickPhrasesRaw is System.Collections.IDictionary qMap && qMap.Contains(lessonId))
-                            {
-                                var lessonPhrasesRaw = qMap[lessonId];
-                                if (lessonPhrasesRaw is System.Collections.IList qList)
-                                {
-                                    foreach (var questItem in qList)
-                                    {
-                                        if (questItem is System.Collections.IDictionary questDict && questDict.Contains("phrases"))
-                                        {
-                                            var phrasesObj = questDict["phrases"];
-                                            if (phrasesObj is System.Collections.IList pList)
-                                            {
-                                                var phrasesStr = new System.Collections.Generic.List<string>();
-                                                foreach (var p in pList) if (p != null) phrasesStr.Add(p.ToString());
-                                                activePhrasesList.Add(phrasesStr.ToArray());
-                                            }
-                                        }
-                                    }
-                                    foundPhrases = activePhrasesList.Count > 0;
-                                }
-                            }
-                        }
-
-                        // Fallback: Đọc từ document bài học gốc nếu child profile chưa có
-                        if (!foundPhrases && doc != null && doc.Exists && doc.ContainsField("quests"))
-                        {
-                            var questsRaw = doc.GetValue<object>("quests");
-                            if (questsRaw is System.Collections.IList qList)
-                            {
-                                foreach (var questItem in qList)
-                                {
-                                    if (questItem is System.Collections.IDictionary questDict && questDict.Contains("default_phrases"))
-                                    {
-                                        var phrasesObj = questDict["default_phrases"];
-                                        if (phrasesObj is System.Collections.IList pList)
-                                        {
-                                            var phrasesStr = new System.Collections.Generic.List<string>();
-                                            foreach (var p in pList) if (p != null) phrasesStr.Add(p.ToString());
-                                            activePhrasesList.Add(phrasesStr.ToArray());
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (ctx != null)
-                        {
-                            ctx.SetActivePhrases(activePhrasesList);
-                        }
-                    }
-                    catch (System.Exception exPhrases)
-                    {
-                        Debug.LogWarning($"[SceneMenuController] Lỗi parse quick_phrases từ Firestore: {exPhrases.Message}");
-                    }
                 }
-                else
+                catch (System.Exception exception)
                 {
-                    if (ctx != null) ctx.CurrentParams = LessonParameters.Default;
-                    Debug.LogWarning($"[SceneMenuController] Không tìm thấy hồ sơ child_profiles/{childId}. Fallback về Inspector defaults.");
+                    Debug.LogWarning($"[SceneMenuController] Child profile unavailable; using lesson defaults: {exception.Message}");
                 }
+                if (!LessonLaunchCoordinatorV2.IsCurrentAttempt(attempt)) return;
+
+                if (activePhrases.Count == 0 && doc != null && doc.Exists && doc.ContainsField("quests") &&
+                    doc.GetValue<object>("quests") is System.Collections.IList lessonPhraseQuests)
+                {
+                    foreach (var quest in lessonPhraseQuests)
+                    {
+                        if (quest is System.Collections.IDictionary questMap && questMap.Contains("default_phrases") &&
+                            questMap["default_phrases"] is System.Collections.IList phrases)
+                        {
+                            var phraseList = new System.Collections.Generic.List<string>();
+                            foreach (var phrase in phrases) if (phrase != null) phraseList.Add(phrase.ToString());
+                            activePhrases.Add(phraseList.ToArray());
+                        }
+                    }
+                }
+
+                if (isV2Lesson && !v2SnapshotReady)
+                {
+                    Debug.LogError("[LessonGraphV2] Scene activation blocked because required phrase metadata is unavailable.");
+                    VoicePhraseSnapshotStoreV2.Clear();
+                    return;
+                }
+                var sessionContext = VRAutism.Core.SessionContext.Instance;
+                if (isV2Lesson && sessionContext == null)
+                {
+                    Debug.LogError("[LessonGraphV2] Scene activation blocked because SessionContext is unavailable.");
+                    VoicePhraseSnapshotStoreV2.Clear();
+                    return;
+                }
+                if (isV2Lesson && !LessonLaunchCoordinatorV2.TryAcceptLaunch(attempt, childId, hostId,
+                    out acceptedLaunch, out var acceptReason))
+                {
+                    Debug.LogError("[LessonGraphV2] Scene activation blocked: " + acceptReason);
+                    VoicePhraseSnapshotStoreV2.Clear();
+                    return;
+                }
+
+                if (sessionContext != null)
+                {
+                    sessionContext.SessionId = sessionId;
+                    sessionContext.ChildId = childId;
+                    sessionContext.LessonId = lessonId;
+                    sessionContext.HostId = hostId ?? string.Empty;
+                    sessionContext.LiveKitToken = livekitToken ?? string.Empty;
+                    sessionContext.LessonName = lessonName;
+                    sessionContext.LevelName = levelName;
+                    sessionContext.LevelIndex = levelIndex;
+                    sessionContext.LessonType = lessonType;
+                    sessionContext.MaxVolume = childMaxVolume;
+                    sessionContext.CurrentParams = lessonParams;
+                    sessionContext.SetActivePhrases(activePhrases);
+                }
+
+                var load = SceneManager.LoadSceneAsync(sceneName);
+                if (load == null)
+                {
+                    LessonLaunchCoordinatorV2.CancelAcceptedLaunch(acceptedLaunch);
+                    if (VoicePhraseSnapshotStoreV2.LaunchToken == launchToken) VoicePhraseSnapshotStoreV2.Clear();
+                    Debug.LogError($"[SceneMenuController] Scene load could not be queued: {sceneName}");
+                    return;
+                }
+                Debug.Log($"[SceneMenuController] Loading lesson scene: {sceneName}");
             }
-            catch (System.Exception ex)
+            catch (System.Exception exception)
             {
-                if (ctx != null) ctx.CurrentParams = LessonParameters.Default;
-                Debug.LogWarning($"[SceneMenuController] Lỗi fetch child profile: {ex.Message}. Fallback về Inspector defaults.");
+                LessonLaunchCoordinatorV2.CancelAcceptedLaunch(acceptedLaunch);
+                LessonLaunchCoordinatorV2.CancelAttempt(attempt);
+                if (VoicePhraseSnapshotStoreV2.LaunchToken == launchToken) VoicePhraseSnapshotStoreV2.Clear();
+                Debug.LogError($"[SceneMenuController] Lesson launch failed before scene activation: {exception}");
             }
-            
-            // ⚠️ Luôn chuyển Scene khi đã nhận lệnh của Web để đồng bộ trạng thái,
-            // kể cả khi rớt mạng không lấy được thông tin metadata bài học từ Firestore.
-            if (pendingScene == null)
+            finally
             {
-                if (v2SnapshotReady) SceneManager.LoadScene(sceneName);
-                else _launchInProgress = false;
-                return;
+                LessonLaunchCoordinatorV2.CancelAttempt(attempt);
+                if (acceptedLaunch == null && VoicePhraseSnapshotStoreV2.LaunchToken == launchToken)
+                    VoicePhraseSnapshotStoreV2.Clear();
+                if (ReferenceEquals(_activeLaunchAttempt, attempt)) _activeLaunchAttempt = null;
+                _launchInProgress = false;
             }
-            if (!v2SnapshotReady)
-            {
-                Debug.LogError($"[LessonGraphV2] Scene activation blocked for lesson='{lessonId}'. Restart Play before sending another session command.");
-                return;
-            }
-            Debug.Log($"[SceneMenuController] Chuyển tới Scene: {sceneName}");
-            pendingScene.allowSceneActivation = true;
         }
-
         private static System.Collections.Generic.List<string> ToStringList(object raw)
         {
             var values = new System.Collections.Generic.List<string>();
@@ -376,6 +351,11 @@ namespace VRAutism.Gameplay.WaitingArea{
 
         private void OnDestroy()
         {
+            if (_activeLaunchAttempt != null)
+            {
+                LessonLaunchCoordinatorV2.CancelAttempt(_activeLaunchAttempt);
+                _activeLaunchAttempt = null;
+            }
             if (_subscribedPairingManager != null)
             {
                 _subscribedPairingManager.OnNewSessionCommand -= LoadRemoteLesson;

@@ -1,5 +1,5 @@
 # generated: 2026-08-28
-# last_updated: 2026-10-07
+# last_updated: 2026-10-11
 # project: VR-Autism
 # project_key: NOKEY
 # tracking_system: file-system
@@ -26,9 +26,16 @@
 # story-3-3: structured Parallel/Gate/Loop runtime implementation independently
 #   reviewed in this worktree. Unity compilation, focused EditMode tests, and
 #   manual branch cancellation, Gate, Loop, and variable-store checks remain.
+# story-4-2: User accepted delivery and authorized commit on 2026-10-11.
+#   Shared startup replaces the installer in Bathroom-V2 and LearnToAsk-V2;
+#   HelloFriend remains unmigrated and legacy controllers are retained.
+#   Independent reviews and source/scene checks completed. LearnToAsk-V2 logs
+#   confirm normal launch, final skip, completion and menu return. Focused Unity
+#   test results, headset acceptance for both scenes, reconnect, readiness-failure
+#   and persistence/drain readback have not all been reported; none are claimed.
 
 generated: 2026-08-28
-last_updated: 2026-10-07
+last_updated: 2026-10-11
 project: VR-Autism
 project_key: NOKEY
 tracking_system: file-system
@@ -59,9 +66,9 @@ development_status:
   3-5-author-and-validate-graph-flow-through-an-editor-surface: backlog
   epic-3-retrospective: optional
 
-  epic-4: backlog
+  epic-4: in-progress
   4-1-prepare-timeline-handoff-and-support-launch-bypass: backlog
-  4-2-replace-test-installer-with-production-lesson-startup: backlog
+  4-2-replace-test-installer-with-production-lesson-startup: done
   epic-4-retrospective: optional
 
 # Document paths are relative to the repository root.
@@ -69,7 +76,7 @@ epic_details:
   epic-4:
     title: "Prepare and launch production lessons safely"
     planning_source: _bmad-output/planning-artifacts/epics.md
-    note: "Scope added on 2026-10-03. Amendment 2026-10-07 prioritizes Story 2.4 then independent Story 4.2 for a trial build; Stories 3.4, 3.5 and 4.1 are deferred. Existing story IDs/statuses remain unchanged; concrete startup APIs remain proposed."
+    note: "Scope added on 2026-10-03. Amendment 2026-10-07 prioritizes Story 2.4 then independent Story 4.2 for a trial build; Stories 3.4, 3.5 and 4.1 are deferred. Story 4.2 delivery accepted by the user on 2026-10-11; Story 4.1 remains backlog."
 
 story_details:
   4-1-prepare-timeline-handoff-and-support-launch-bypass:
@@ -87,7 +94,7 @@ story_details:
 
   4-2-replace-test-installer-with-production-lesson-startup:
     title: "Replace the temporary LessonGraphRunnerInstaller with application-controlled lesson startup"
-    specification_status: proposed
+    specification_status: implemented
     scope: "Normal application Start Lesson flow, scene runtime composition, readiness/start ownership, telemetry/persistence safeguards and cleanup, based on the code/scenes/contracts present when implementation begins."
     dependencies: "Required Story 2.4 parity/cutover integration; no Story 4.1 prerequisite."
     excluded_scope: "Timeline handoff profiles, Play/Bypass options/capabilities, can_skip additions, Demo scene routing, checkpoint recovery and editor expansion."
@@ -95,6 +102,8 @@ story_details:
       specification: _bmad-output/specs/spec-production-lesson-startup/SPEC.md
       startup_boundary: _bmad-output/specs/spec-production-lesson-startup/startup-boundary.md
       verification: _bmad-output/specs/spec-production-lesson-startup/verification.md
-    remaining_design: "Re-inspect actual code, scenes, launch contracts and Story 2.4 outcomes when implementation begins; define concrete owner APIs and focused migration steps from that baseline."
-    migration: "Transfer installer responsibilities and remove concrete dependencies in Runner/TimeManager; preserve telemetry ownership, legacy persistence exclusion, reconnect, and unload behavior. Migrate scenes and tests before removing the script."
-    acceptance: "Normal dashboard Start Lesson without the installer; duplicate/stale launch, readiness failure, reconnect, unload and persistence evidence. No Story 4.1 configuration or tests required."
+    implementation: "LessonLaunchCoordinatorV2 accepts immutable launches; LessonGraphSceneDefinitionV2 declares references; LessonGraphRuntimeOwnerV2 composes dependencies and authorizes one run. Runner requires an explicit start owner; TimeManager recognizes V2 persistence ownership."
+    migration: "Bathroom-V2 and LearnToAsk-V2 use the shared startup contract. Installer and concrete references removed; tests use explicit owners. HelloFriend and future lessons may opt in through the contract. Legacy controllers remain pending Story 2.4 accepted cutover."
+    acceptance: "User accepted delivery and authorized commit on 2026-10-11. LearnToAsk-V2 Editor/agent logs confirm launch, final skip, completion and menu return. Independent reviews, scene migration audit and source checks completed; no Story 4.1 configuration or tests required."
+    focused_test_filters: "LessonLaunchCoordinatorV2Tests; LessonRunnerStartOwnershipV2Tests; LessonGraphRuntimeOwnerV2Tests; ProductionLessonSceneMigrationTests."
+    verification_limits: "Unity test results and complete headset coverage for both scenes, duplicate/stale requests, readiness failure, reconnect, unload/drain, V2 data readback and retained legacy persistence have not all been reported. User acceptance closes delivery without claiming those checks passed."

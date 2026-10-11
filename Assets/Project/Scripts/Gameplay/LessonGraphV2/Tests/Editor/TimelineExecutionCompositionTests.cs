@@ -137,6 +137,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             try
             {
                 var runner = runnerObject.AddComponent<LessonGraphRunner>();
+                LessonGraphRunnerTestOwnershipV2.Attach(runner);
                 runner.Configure(graph, new LessonGraphExecutorRegistry(new EmptyResolver(), new FixedClock()),
                     clock: new FixedClock());
                 var task = runner.StartLessonAsync();

@@ -16,6 +16,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             try
             {
                 var runner = gameObject.AddComponent<LessonGraphRunner>();
+                LessonGraphRunnerTestOwnershipV2.Attach(runner);
                 ConfigureActiveRunner(runner, "running", "activation-1");
                 LessonCommandResultV2 observed = null;
                 var emitted = 0;
@@ -44,6 +45,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             try
             {
                 var runner = gameObject.AddComponent<LessonGraphRunner>();
+                LessonGraphRunnerTestOwnershipV2.Attach(runner);
                 ConfigureActiveRunner(runner, status, "activation-1");
                 var emitted = 0;
                 runner.CommandEvaluated += _ => emitted++;

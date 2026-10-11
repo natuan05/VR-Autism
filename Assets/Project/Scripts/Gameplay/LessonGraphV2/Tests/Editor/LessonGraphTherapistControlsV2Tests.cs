@@ -25,6 +25,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             _runnerObject = new GameObject("therapist-control-runner");
             _runnerObject.SetActive(false);
             _runner = _runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(_runner);
             Set("_sessionContext", new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 0, 0));
             Set("_activeRunId", "run-1");
             Set("_activeActivationId", "activation-1");

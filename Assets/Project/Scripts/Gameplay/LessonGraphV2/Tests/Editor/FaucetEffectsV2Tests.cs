@@ -24,6 +24,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         {
             _runnerObject = new GameObject("faucet-test-runner");
             _runner = _runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(_runner);
             SetRunnerState(State("session-1", "run-1", "running", 1));
 
             _visualsObject = new GameObject("faucet-test-visuals");

@@ -194,6 +194,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var graph = Graph("source", new List<LessonNodeData> { new LessonNodeData("source", NodeType.Wait, new WaitNodeConfig(1)) });
             var clock = new TrackingClock(); var executor = new ImmediateExecutor(NodeStatus.Success);
             var go = new GameObject("preflight"); var runner = go.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(graph, new MapRegistry(executor), new FailingPreflight(), clock);
 
             var result = await runner.StartLessonAsync();
@@ -208,6 +209,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         {
             var graph = Graph("source", new List<LessonNodeData> { new LessonNodeData("source", NodeType.Wait, new WaitNodeConfig(1)) });
             var go = new GameObject("missing executor"); var runner = go.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(graph, new MissingRegistry(), new PassPreflight(), new ManualClock());
             var entered = 0; runner.NodeEntered += _ => entered++;
 
@@ -282,6 +284,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var clock = new TrackingClock { Elapsed = 10d };
             var runnerObject = new GameObject("absolute-node-cancellation-time");
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(graph, new SingleRegistry(executor), new PassPreflight(), clock);
             var cancelled = new List<NodeCancelledEventV2>();
             runner.NodeCancelled += cancelled.Add;
@@ -307,6 +310,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var clock = new TrackingClock { Elapsed = 15d };
             var runnerObject = new GameObject("abort-after-node-result");
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(graph, new SingleRegistry(new ImmediateExecutor(NodeStatus.Success)), new PassPreflight(), clock);
             var completed = 0;
             var cancelled = 0;
@@ -466,6 +470,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 new LessonNodeData("second", NodeType.Wait, new WaitNodeConfig(1)),
             }, new List<LessonEdgeData> { new LessonEdgeData("first", "second", new StatusCondition(StatusCondition.Skipped)) });
             var clock = new QueueClock(); var go = new GameObject("token isolation"); var runner = go.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(graph, new SingleRegistry(new WaitNodeExecutor(clock)), new PassPreflight(), clock);
             var statuses = new List<NodeStatus>(); runner.NodeCompleted += result => statuses.Add(result.Result.Status);
             var task = runner.StartLessonAsync();
@@ -499,6 +504,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         {
             var go = new GameObject("LessonGraphRunnerTests");
             var runner = go.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(graph, registry, new PassPreflight(), new ManualClock());
             return runner;
         }

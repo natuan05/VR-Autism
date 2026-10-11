@@ -39,6 +39,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             _executor = new ControlledExecutor();
             _runnerObject = new GameObject("LessonGraphRemoteCommandTests");
             _runner = _runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(_runner);
             _runner.Configure(_graph, new SingleRegistry(_executor));
             _runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
             var completedNodes = 0;
@@ -106,6 +107,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             _executor = new ControlledExecutor();
             _runnerObject = new GameObject("LessonGraphResumeTests");
             _runner = _runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(_runner);
             _runner.Configure(_graph, new SingleRegistry(_executor));
             _runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
             var completedActivations = new List<string>();
@@ -150,6 +152,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             _executor = new ControlledExecutor();
             _runnerObject = new GameObject("LessonGraphRejectionTests");
             _runner = _runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(_runner);
             _runner.Configure(_graph, new SingleRegistry(_executor));
             _runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
             Task<LessonCommandResultV2> earlyHintTask = null;
@@ -221,6 +224,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             };
             _runnerObject = new GameObject("LessonGraphDuplicateSkipTests");
             _runner = _runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(_runner);
             _runner.Configure(_graph, new SingleRegistry(_executor));
             _runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
             var entered = new List<string>();
@@ -262,6 +266,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             };
             _runnerObject = new GameObject("LessonGraphTerminalStateTests");
             _runner = _runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(_runner);
             _runner.Configure(_graph, new SingleRegistry(_executor));
             _runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
 

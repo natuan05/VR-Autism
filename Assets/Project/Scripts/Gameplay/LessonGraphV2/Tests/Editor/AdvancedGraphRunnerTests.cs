@@ -38,6 +38,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                     LessonGraphValidator.Validate(graph).ToString());
 
                 var runner = runnerObject.AddComponent<LessonGraphRunner>();
+                LessonGraphRunnerTestOwnershipV2.Attach(runner);
                 runner.Configure(graph, registry, clock: new TestClock());
                 var task = runner.StartLessonAsync();
                 yield return CompleteWithinFrames(task);
@@ -73,6 +74,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                 graph.Editor_SetEdges(new System.Collections.Generic.List<LessonEdgeData>());
 
                 var runner = runnerObject.AddComponent<LessonGraphRunner>();
+                LessonGraphRunnerTestOwnershipV2.Attach(runner);
                 runner.Configure(graph, registry, clock: new TestClock());
                 var task = runner.StartLessonAsync();
                 yield return CompleteWithinFrames(task);
@@ -117,6 +119,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                     new LessonEdgeData("gate", "done", new AlwaysCondition()),
                 });
                 var runner = runnerObject.AddComponent<LessonGraphRunner>();
+                LessonGraphRunnerTestOwnershipV2.Attach(runner);
                 runner.Configure(graph, registry, clock: new TestClock());
                 var publicCompletions = 0;
                 runner.NodeCompleted += _ => publicCompletions++;
@@ -165,6 +168,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                     new LessonEdgeData("start", "fallback", new AlwaysCondition(), 20),
                 });
                 var runner = runnerObject.AddComponent<LessonGraphRunner>();
+                LessonGraphRunnerTestOwnershipV2.Attach(runner);
                 runner.Configure(graph, registry, clock: new TestClock(), variableSource: new FixedVariableSource(true));
                 var task = runner.StartLessonAsync();
                 yield return CompleteWithinFrames(task);
@@ -207,6 +211,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                     new LessonEdgeData("loop", "exit", new AlwaysCondition()),
                 });
                 var runner = runnerObject.AddComponent<LessonGraphRunner>();
+                LessonGraphRunnerTestOwnershipV2.Attach(runner);
                 runner.Configure(graph, registry, clock: new TestClock(), variableSource: new FixedVariableSource(false));
                 var loopFailed = false;
                 runner.NodeCompleted += completed =>
@@ -255,6 +260,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                     new LessonEdgeData("parallel", "gate", new AlwaysCondition()),
                 });
                 var runner = runnerObject.AddComponent<LessonGraphRunner>();
+                LessonGraphRunnerTestOwnershipV2.Attach(runner);
                 runner.Configure(graph, registry, clock: new TestClock());
                 var task = runner.StartLessonAsync();
                 for (var frame = 0; frame < 30 && registry.StartedCount < 2; frame++) yield return null;
@@ -298,6 +304,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                     new LessonEdgeData("parallel", "gate", new AlwaysCondition()),
                 });
                 var runner = runnerObject.AddComponent<LessonGraphRunner>();
+                LessonGraphRunnerTestOwnershipV2.Attach(runner);
                 runner.Configure(graph, registry, clock: new TestClock());
                 var entered = new System.Collections.Generic.List<string>();
                 runner.NodeEntered += item => entered.Add(item.NodeId);
@@ -351,6 +358,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
                     new LessonEdgeData("parallel", "gate", new AlwaysCondition()),
                 });
                 var runner = runnerObject.AddComponent<LessonGraphRunner>();
+                LessonGraphRunnerTestOwnershipV2.Attach(runner);
                 runner.Configure(graph, registry, clock: new TestClock());
                 runner.ConfigureSession(new LessonSessionContextV2("session", "lesson", "launch", 0, 0));
                 var lessonTask = runner.StartLessonAsync();

@@ -35418,9 +35418,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1225870737}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56d5eea2f17f4f388d9b8b4b8ed4b93e, type: 3}
+  m_Script: {fileID: 11500000, guid: 0222d045d21b4349ba11d3b930df3151, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Runtime.LessonGraphRunnerInstaller
+  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Runtime.LessonGraphSceneDefinitionV2
   _lessonGraph: {fileID: 11400000, guid: c334214253427c841b9dabb45326276a, type: 2}
   _runner: {fileID: 1225870744}
   _bindings: {fileID: 1225870743}
@@ -35428,7 +35428,6 @@ MonoBehaviour:
   _remoteBridge: {fileID: 1225870738}
   _timelinePlaybackController: {fileID: 405125986}
   _variableStore: {fileID: 0}
-  _startOnStart: 1
 --- !u!114 &1225870743
 MonoBehaviour:
   m_ObjectHideFlags: 0

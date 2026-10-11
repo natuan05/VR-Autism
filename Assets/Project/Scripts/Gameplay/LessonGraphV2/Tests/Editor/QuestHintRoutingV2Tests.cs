@@ -219,6 +219,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var runnerObject = new GameObject("hint-runner");
             _objects.Add(runnerObject);
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(graph, new Registry(new QuestNodeExecutor(new Resolver(source), new NeverClock())), clock: new NeverClock());
             runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
 
@@ -287,6 +288,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var clock = new MonotonicClock();
             var questExecutor = new QuestNodeExecutor(bindings, clock);
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(graph, new LoopRegistry(questExecutor), clock: clock);
             runner.ConfigureSession(new LessonSessionContextV2("session-loop", "lesson-loop", "launch-loop", 1, 1));
 
@@ -432,6 +434,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var runnerObject = new GameObject("late-hint-runner");
             _objects.Add(runnerObject);
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(graph, new Registry(new QuestNodeExecutor(new Resolver(source), new NeverClock())), clock: new NeverClock());
             runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
 
@@ -465,6 +468,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var runnerObject = new GameObject("terminal-pause-race-runner");
             _objects.Add(runnerObject);
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(graph, new Registry(new QuestNodeExecutor(new Resolver(source), new NeverClock())), clock: new NeverClock());
             runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
 
@@ -509,6 +513,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var runnerObject = new GameObject("source-release-pause-runner");
             _objects.Add(runnerObject);
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(graph, new Registry(new QuestNodeExecutor(new Resolver(source), new NeverClock())), clock: new NeverClock());
             runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
             Task<LessonCommandResultV2> pause = null;
@@ -538,6 +543,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var runnerObject = new GameObject("post-executor-pause-race-runner");
             _objects.Add(runnerObject);
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(Graph("teacher"), new Registry(executor), clock: new NeverClock());
             runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
 
@@ -571,6 +577,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var runnerObject = new GameObject("failed-verbal-hint-runner");
             _objects.Add(runnerObject);
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(graph, new Registry(new QuestNodeExecutor(new Resolver(source), new NeverClock())), clock: new NeverClock());
             runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
 
@@ -611,6 +618,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var runnerObject = new GameObject("reentrant-pause-resume-runner");
             _objects.Add(runnerObject);
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             runner.Configure(Graph("voice-binding"), new Registry(new QuestNodeExecutor(new Resolver(voice), new NeverClock())), clock: new NeverClock());
             runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
 
@@ -675,6 +683,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var voiceRunnerObject = new GameObject("pause-resume-voice-runner");
             _objects.Add(voiceRunnerObject);
             var voiceRunner = voiceRunnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(voiceRunner);
             voiceRunner.Configure(voiceGraph, new Registry(new QuestNodeExecutor(new Resolver(voice), new NeverClock())), clock: new NeverClock());
             voiceRunner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 1, 1));
 
@@ -709,6 +718,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var touchRunnerObject = new GameObject("pause-resume-touch-runner");
             _objects.Add(touchRunnerObject);
             var touchRunner = touchRunnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(touchRunner);
             touchRunner.Configure(touchGraph, new Registry(new QuestNodeExecutor(new Resolver(touch), new NeverClock())), clock: new NeverClock());
             touchRunner.ConfigureSession(new LessonSessionContextV2("session-2", "lesson-2", "launch-2", 1, 1));
 

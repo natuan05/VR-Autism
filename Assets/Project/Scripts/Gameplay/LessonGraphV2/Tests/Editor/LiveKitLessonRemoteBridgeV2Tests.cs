@@ -109,10 +109,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
 
         private static readonly MethodInfo BridgeUpdate = typeof(LiveKitLessonRemoteBridgeV2)
             .GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic);
-        private static readonly MethodInfo InstallerUpdate = typeof(LessonGraphRunnerInstaller)
-            .GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic);
         private static readonly FieldInfo LiveKitServiceInstance = typeof(LiveKitService)
             .GetField("_instance", BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly FieldInfo BridgeClient = typeof(LiveKitLessonRemoteBridgeV2)
+            .GetField("_client", BindingFlags.Instance | BindingFlags.NonPublic);
 
         private SessionContext _previousSession;
         private LiveKitService _previousLiveKitService;
@@ -120,7 +120,6 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         private GameObject _runnerObject;
         private GameObject _bridgeObject;
         private GameObject _voiceTransportObject;
-        private LessonGraphRunnerInstaller _installer;
         private LessonGraph _graph;
         private LessonGraphRunner _runner;
         private LiveKitLessonRemoteBridgeV2 _bridge;
@@ -158,236 +157,23 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             SessionContext.Instance = _previousSession;
         }
 
-        [UnityTest]
-        public IEnumerator InstallerRetriesSessionAndBridgeConfigurationAfterMetadataArrives()
-        {
-            VoicePhraseSnapshotStoreV2.Clear();
-            SessionContext.Instance = null;
-            CreateInstaller(startOnStart: false);
-
-            Assert.That(_installer.GetComponent<LiveKitLessonRemoteBridgeV2>(), Is.Null,
-                "Remote bridge setup should wait until valid session and phrase metadata exist.");
-
-            SessionContext.Instance = _sessionObject.GetComponent<SessionContext>();
-            VoicePhraseSnapshotStoreV2.Replace(new VoicePhraseSessionSnapshotV2(
-                "late-launch", "lesson-1", 8, 9, new Dictionary<string, VoiceQuestPhraseSnapshotV2>()));
-            InstallerUpdate.Invoke(_installer, null);
-
-            var bridge = _installer.GetComponent<LiveKitLessonRemoteBridgeV2>();
-            Assert.That(bridge, Is.Not.Null);
-            var client = typeof(LiveKitLessonRemoteBridgeV2)
-                .GetField("_client", BindingFlags.Instance | BindingFlags.NonPublic)
-                .GetValue(bridge);
-            Assert.That(client, Is.SameAs(LiveKitService.Instance),
-                "The installer should bind the bridge when LiveKitService becomes available.");
-            var generationField = typeof(LiveKitLessonRemoteBridgeV2)
-                .GetField("_configurationGeneration", BindingFlags.Instance | BindingFlags.NonPublic);
-            var configuredGeneration = generationField.GetValue(bridge);
-            InstallerUpdate.Invoke(_installer, null);
-            Assert.That(generationField.GetValue(bridge), Is.EqualTo(configuredGeneration),
-                "Repeated installer updates must not detach and reconfigure an already bound bridge.");
-
-            var lessonTask = _runner.StartLessonAsync();
-            yield return UntilFrames(() => _runner.CurrentState?.status == "running");
-            Assert.That(_runner.CurrentState.session_id, Is.EqualTo("session-1"));
-            Assert.That(_runner.CurrentState.launch_token, Is.EqualTo("late-launch"));
-            Assert.That(_runner.CurrentState.lesson_voice_revision, Is.EqualTo(8));
-            Assert.That(_runner.CurrentState.child_phrase_revision, Is.EqualTo(9));
-
-            _runner.AbortLesson();
-            yield return CompleteWithinFrames(lessonTask);
-        }
-
-        [UnityTest]
-        public IEnumerator InstallerKeepsActiveLocalRunLocalWhenRemoteMetadataArrivesLate()
-        {
-            VoicePhraseSnapshotStoreV2.Clear();
-            SessionContext.Instance = null;
-            CreateInstaller(startOnStart: false);
-
-            var lessonTask = _runner.StartLessonAsync();
-            yield return UntilFrames(() => _runner.CurrentState?.status == "running");
-
-            SessionContext.Instance = _sessionObject.GetComponent<SessionContext>();
-            VoicePhraseSnapshotStoreV2.Replace(new VoicePhraseSessionSnapshotV2(
-                "late-launch", "lesson-1", 8, 9, new Dictionary<string, VoiceQuestPhraseSnapshotV2>()));
-            InstallerUpdate.Invoke(_installer, null);
-
-            Assert.That(_runner.CurrentState.session_id, Is.Empty);
-            Assert.That(_installer.GetComponent<LiveKitLessonRemoteBridgeV2>(), Is.Null);
-
-            _runner.AbortLesson();
-            yield return CompleteWithinFrames(lessonTask);
-        }
-
-        [UnityTest]
-        public IEnumerator InstallerRejectsPhraseSnapshotForDifferentSessionLesson()
-        {
-            VoicePhraseSnapshotStoreV2.Replace(new VoicePhraseSessionSnapshotV2(
-                "wrong-lesson-launch", "different-lesson", 8, 9,
-                new Dictionary<string, VoiceQuestPhraseSnapshotV2>()));
-            CreateInstaller(startOnStart: false);
-
-            var lessonTask = _runner.StartLessonAsync();
-            yield return UntilFrames(() => _runner.CurrentState?.status == "running");
-
-            Assert.That(_runner.CurrentState.session_id, Is.Empty,
-                "Phrase metadata for another lesson must not configure this runner's session identity.");
-            Assert.That(_runner.CurrentState.launch_token, Is.Empty);
-            Assert.That(_installer.GetComponent<LiveKitLessonRemoteBridgeV2>(), Is.Null,
-                "A mismatched phrase snapshot must not bind a remote bridge to this session.");
-
-            _runner.AbortLesson();
-            yield return CompleteWithinFrames(lessonTask);
-        }
-
         [Test]
-        public void InstallerDoesNotReconfigureBridgeEveryFrameWhenPhraseSnapshotIsMissing()
+        public void BridgeCanBeReconfiguredAfterDisableWithoutCreatingAnotherRunnerOwner()
         {
-            VoicePhraseSnapshotStoreV2.Clear();
-            CreateInstaller(startOnStart: false);
-            var bridge = AttachBridgeToInstaller();
+            CreateRunner(twoNodes: false);
+            var client = new Client();
+            CreateBridge(client);
+            Assert.That(BridgeClient.GetValue(_bridge), Is.SameAs(client));
 
-            AssertInstallerUpdateDoesNotAdvanceBridgeGeneration(bridge);
+            _bridge.enabled = false;
+            Assert.That(BridgeClient.GetValue(_bridge), Is.Null);
+            _bridge.enabled = true;
+            _bridge.Configure(client, _runner);
+
+            Assert.That(BridgeClient.GetValue(_bridge), Is.SameAs(client));
+            Assert.That(_runner.CurrentState, Is.Null,
+                "Reattaching a bridge must not authorize or start the graph.");
         }
-
-        [Test]
-        public void InstallerDoesNotReconfigureBridgeEveryFrameWhenPhraseLessonDoesNotMatchSession()
-        {
-            VoicePhraseSnapshotStoreV2.Replace(new VoicePhraseSessionSnapshotV2(
-                "wrong-lesson-launch", "different-lesson", 8, 9,
-                new Dictionary<string, VoiceQuestPhraseSnapshotV2>()));
-            CreateInstaller(startOnStart: false);
-            var bridge = AttachBridgeToInstaller();
-
-            AssertInstallerUpdateDoesNotAdvanceBridgeGeneration(bridge);
-        }
-
-        [Test]
-        public void InstallerDetachesBridgeOnceWhenCapturedPhraseSnapshotDisappears()
-        {
-            CreateInstaller(startOnStart: false);
-            var bridge = _installer.GetComponent<LiveKitLessonRemoteBridgeV2>();
-            Assert.That(bridge, Is.Not.Null);
-            var clientField = typeof(LiveKitLessonRemoteBridgeV2)
-                .GetField("_client", BindingFlags.Instance | BindingFlags.NonPublic);
-            var generationField = typeof(LiveKitLessonRemoteBridgeV2)
-                .GetField("_configurationGeneration", BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(clientField.GetValue(bridge), Is.Not.Null);
-            var configuredGeneration = generationField.GetValue(bridge);
-
-            VoicePhraseSnapshotStoreV2.Clear();
-            InstallerUpdate.Invoke(_installer, null);
-
-            Assert.That(clientField.GetValue(bridge), Is.Null,
-                "The bridge must detach when its captured immutable phrase snapshot is no longer available.");
-            Assert.That(generationField.GetValue(bridge), Is.Not.EqualTo(configuredGeneration),
-                "Invalidating an active snapshot must detach the existing bridge once.");
-            AssertInstallerUpdateDoesNotAdvanceBridgeGeneration(bridge);
-        }
-
-        [TestCase("different-lesson", "launch-1", 3, 4)]
-        [TestCase("lesson-1", "replacement-launch", 3, 4)]
-        [TestCase("lesson-1", "launch-1", 30, 4)]
-        [TestCase("lesson-1", "launch-1", 3, 40)]
-        public void InstallerDetachesWhenCapturedPhraseSnapshotIsReplacedWithDifferentIdentity(
-            string lessonId,
-            string launchToken,
-            int lessonVoiceRevision,
-            int childPhraseRevision)
-        {
-            CreateInstaller(startOnStart: false);
-            var bridge = _installer.GetComponent<LiveKitLessonRemoteBridgeV2>();
-            Assert.That(bridge, Is.Not.Null);
-            var clientField = typeof(LiveKitLessonRemoteBridgeV2)
-                .GetField("_client", BindingFlags.Instance | BindingFlags.NonPublic);
-            var generationField = typeof(LiveKitLessonRemoteBridgeV2)
-                .GetField("_configurationGeneration", BindingFlags.Instance | BindingFlags.NonPublic);
-            Assert.That(clientField.GetValue(bridge), Is.Not.Null);
-            var configuredGeneration = generationField.GetValue(bridge);
-
-            VoicePhraseSnapshotStoreV2.Replace(new VoicePhraseSessionSnapshotV2(
-                launchToken, lessonId, lessonVoiceRevision, childPhraseRevision,
-                new Dictionary<string, VoiceQuestPhraseSnapshotV2>()));
-            InstallerUpdate.Invoke(_installer, null);
-
-            Assert.That(clientField.GetValue(bridge), Is.Null,
-                "A replaced phrase snapshot must not stay attached to the captured runner session.");
-            Assert.That(generationField.GetValue(bridge), Is.Not.EqualTo(configuredGeneration),
-                "The bridge must detach when any captured phrase identity field changes.");
-            AssertInstallerUpdateDoesNotAdvanceBridgeGeneration(bridge);
-        }
-
-        [Test]
-        public void InstallerConfiguresReplacementBridgeInstanceForSameRunnerAndSession()
-        {
-            CreateInstaller(startOnStart: false);
-            var firstBridge = _installer.GetComponent<LiveKitLessonRemoteBridgeV2>();
-            Assert.That(firstBridge, Is.Not.Null);
-            var firstClient = typeof(LiveKitLessonRemoteBridgeV2)
-                .GetField("_client", BindingFlags.Instance | BindingFlags.NonPublic)
-                .GetValue(firstBridge);
-            Assert.That(firstClient, Is.Not.Null);
-
-            UnityEngine.Object.DestroyImmediate(firstBridge);
-            InstallerUpdate.Invoke(_installer, null);
-
-            var replacementBridge = _installer.GetComponent<LiveKitLessonRemoteBridgeV2>();
-            Assert.That(replacementBridge, Is.Not.Null);
-            Assert.That(replacementBridge, Is.Not.SameAs(firstBridge));
-            Assert.That(typeof(LiveKitLessonRemoteBridgeV2)
-                .GetField("_client", BindingFlags.Instance | BindingFlags.NonPublic)
-                .GetValue(replacementBridge), Is.SameAs(firstClient),
-                "A replacement bridge must bind to the current LiveKit client even when runner/session identities are unchanged.");
-        }
-
-        [Test]
-        public void InstallerReattachesBridgeAfterItIsReenabled()
-        {
-            CreateInstaller(startOnStart: false);
-            var bridge = _installer.GetComponent<LiveKitLessonRemoteBridgeV2>();
-            Assert.That(bridge, Is.Not.Null);
-            var generationField = typeof(LiveKitLessonRemoteBridgeV2)
-                .GetField("_configurationGeneration", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            bridge.enabled = false;
-            var disposedGeneration = generationField.GetValue(bridge);
-            InstallerUpdate.Invoke(_installer, null);
-            Assert.That(typeof(LiveKitLessonRemoteBridgeV2)
-                .GetField("_client", BindingFlags.Instance | BindingFlags.NonPublic)
-                .GetValue(bridge), Is.Null, "A disabled bridge must stay detached while it cannot pump callbacks.");
-            Assert.That(generationField.GetValue(bridge), Is.EqualTo(disposedGeneration));
-
-            bridge.enabled = true;
-            InstallerUpdate.Invoke(_installer, null);
-            Assert.That(typeof(LiveKitLessonRemoteBridgeV2)
-                .GetField("_client", BindingFlags.Instance | BindingFlags.NonPublic)
-                .GetValue(bridge), Is.SameAs(LiveKitService.Instance));
-            Assert.That(generationField.GetValue(bridge), Is.Not.EqualTo(disposedGeneration));
-        }
-
-        [UnityTest]
-        public IEnumerator InstallerRetriesMetadataImmediatelyBeforeAutomaticStart()
-        {
-            VoicePhraseSnapshotStoreV2.Clear();
-            SessionContext.Instance = null;
-            CreateInstaller(startOnStart: true);
-
-            SessionContext.Instance = _sessionObject.GetComponent<SessionContext>();
-            VoicePhraseSnapshotStoreV2.Replace(new VoicePhraseSessionSnapshotV2(
-                "start-launch", "lesson-1", 5, 6, new Dictionary<string, VoiceQuestPhraseSnapshotV2>()));
-
-            yield return UntilFrames(() => _runner.CurrentState?.status == "running");
-
-            Assert.That(_runner.CurrentState.session_id, Is.EqualTo("session-1"));
-            Assert.That(_runner.CurrentState.launch_token, Is.EqualTo("start-launch"));
-            Assert.That(_runner.CurrentState.lesson_voice_revision, Is.EqualTo(5));
-            Assert.That(_runner.CurrentState.child_phrase_revision, Is.EqualTo(6));
-
-            _runner.AbortLesson();
-            yield return UntilFrames(() => _runner.CurrentState?.status == "cancelled");
-        }
-
         [UnityTest]
         public IEnumerator WrongTopicAndVersionAreIgnored_ValidStateRequestPublishesReliableSnapshot()
         {
@@ -774,56 +560,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
 
             _runnerObject = new GameObject("RemoteBridgeRunner");
             _runner = _runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(_runner);
             _runner.Configure(_graph, new Registry(executor ?? new WaitNodeExecutor(new MonotonicClock())));
             _runner.ConfigureSession(new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 3, 4));
-        }
-
-        private void CreateInstaller(bool startOnStart)
-        {
-            _graph = ScriptableObject.CreateInstance<LessonGraph>();
-            _graph.name = "InstallerRetryGraph";
-            _graph.Editor_SetEntryNodeId("first");
-            _graph.Editor_SetNodes(new List<LessonNodeData>
-            {
-                new LessonNodeData("first", NodeType.Wait, new WaitNodeConfig(30f))
-            });
-            _graph.Editor_SetEdges(new List<LessonEdgeData>());
-
-            _runnerObject = new GameObject("RemoteBridgeInstaller");
-            _runnerObject.SetActive(false);
-            _runner = _runnerObject.AddComponent<LessonGraphRunner>();
-            var bindings = _runnerObject.AddComponent<LessonGraphBindings>();
-            _installer = _runnerObject.AddComponent<LessonGraphRunnerInstaller>();
-            SetInstallerField("_lessonGraph", _graph);
-            SetInstallerField("_runner", _runner);
-            SetInstallerField("_bindings", bindings);
-            SetInstallerField("_startOnStart", startOnStart);
-            _runnerObject.SetActive(true);
-        }
-
-        private void SetInstallerField(string fieldName, object value) =>
-            typeof(LessonGraphRunnerInstaller).GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic)
-                .SetValue(_installer, value);
-
-        private LiveKitLessonRemoteBridgeV2 AttachBridgeToInstaller()
-        {
-            var bridge = _runnerObject.AddComponent<LiveKitLessonRemoteBridgeV2>();
-            SetInstallerField("_remoteBridge", bridge);
-            return bridge;
-        }
-
-        private static void AssertInstallerUpdateDoesNotAdvanceBridgeGeneration(LiveKitLessonRemoteBridgeV2 bridge)
-        {
-            var generationField = typeof(LiveKitLessonRemoteBridgeV2)
-                .GetField("_configurationGeneration", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            InstallerUpdate.Invoke(bridge.GetComponent<LessonGraphRunnerInstaller>(), null);
-            var generation = generationField.GetValue(bridge);
-            for (var update = 0; update < 3; update++)
-                InstallerUpdate.Invoke(bridge.GetComponent<LessonGraphRunnerInstaller>(), null);
-
-            Assert.That(generationField.GetValue(bridge), Is.EqualTo(generation),
-                "Invalid phrase metadata must not reconfigure the bridge on every Update.");
         }
 
         private void CreateBridge(Client client, bool isActive = false)

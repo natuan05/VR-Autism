@@ -75,7 +75,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         private TaskCompletionSource<LessonStateV2> _resumeStarted;
         private string _activeRunId;
         private string _activeActivationId;
-        private LessonGraphRunnerInstaller _telemetryInstaller;
+        private ILessonRunnerStartOwnerV2 _startOwner;
         private int _stateRevision;
         private bool _executorReady;
         private bool _pauseRequestedFlag;
@@ -156,19 +156,17 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                     Debug.LogWarning($"[LessonGraphV2] StartLesson ignored — lesson already running", this);
                     return _activeTask;
                 }
-                LessonGraphRunnerInstaller installer = _telemetryInstaller != null
-                    ? _telemetryInstaller
-                    : GetComponent<LessonGraphRunnerInstaller>();
-                string authorizationError;
-                bool installerOwnsThisRun = installer != null;
-                if (installerOwnsThisRun && !installer.CanAuthorizeLessonStart(out authorizationError))
+                string authorizationError = null;
+                ILessonRunnerStartOwnerV2 owner = _startOwner;
+                if (owner == null || !owner.IsAvailable || !owner.CanAuthorizeLessonStart(out authorizationError))
                 {
-                    Debug.LogError("[LessonGraphV2] Refusing to start because the active installer could not authorize the lesson. " +
-                        authorizationError, this);
+                    if (string.IsNullOrWhiteSpace(authorizationError))
+                        authorizationError = "No active V2 runtime owner is registered.";
+                    Debug.LogError("[LessonGraphV2] Refusing to start because no active owner authorized the lesson. " + authorizationError, this);
                     return Task.FromResult(LessonResult.Failed(Guid.NewGuid().ToString("N"), LessonFailureReason.InvalidGraph));
                 }
                 if (!CanStart()) return Task.FromResult(LessonResult.Failed(Guid.NewGuid().ToString("N"), LessonFailureReason.InvalidGraph));
-                if (installerOwnsThisRun) installer.MarkLessonStartRequested();
+                owner.MarkLessonStartRequested();
 
                 if (_usesDefaultClock) _clock = new MonotonicClock();
                 _runNodeVisitCounts.Clear();
@@ -180,24 +178,24 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             }
         }
 
-        internal void RegisterTelemetryInstaller(LessonGraphRunnerInstaller installer)
+        public void RegisterStartOwner(ILessonRunnerStartOwnerV2 owner)
         {
-            if (installer == null) throw new ArgumentNullException(nameof(installer));
+            if (owner == null) throw new ArgumentNullException(nameof(owner));
             lock (_gate)
             {
-                if (_telemetryInstaller != null && !ReferenceEquals(_telemetryInstaller, installer))
-                    throw new InvalidOperationException("A lesson runner can have only one active V2 telemetry installer owner.");
-                _telemetryInstaller = installer;
+                if (_startOwner != null && !ReferenceEquals(_startOwner, owner))
+                    throw new InvalidOperationException("A lesson runner can have only one active V2 start owner.");
+                _startOwner = owner;
             }
         }
 
-        internal void UnregisterTelemetryInstaller(LessonGraphRunnerInstaller installer)
+        public void UnregisterStartOwner(ILessonRunnerStartOwnerV2 owner)
         {
-            if (installer == null) return;
+            if (owner == null) return;
             lock (_gate)
             {
-                if (ReferenceEquals(_telemetryInstaller, installer))
-                    _telemetryInstaller = null;
+                if (ReferenceEquals(_startOwner, owner))
+                    _startOwner = null;
             }
         }
 
@@ -562,7 +560,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             {
                 if (_graph == null)
                 {
-                    Debug.LogWarning($"[LessonGraphV2] CanStart failed: graph is null (did Installer configure runner?)", this);
+                    Debug.LogWarning("[LessonGraphV2] CanStart failed: graph is null (did the runtime owner configure the runner?)", this);
                     return false;
                 }
                 if (_registry == null)

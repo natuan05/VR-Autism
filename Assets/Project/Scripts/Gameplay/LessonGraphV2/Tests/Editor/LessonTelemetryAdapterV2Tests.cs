@@ -29,6 +29,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var graph = ScriptableObject.CreateInstance<LessonGraph>();
             var runnerObject = new GameObject("telemetry-runner-test");
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             SetPrivateField(runner, "_currentState", State("running", 1));
             var writer = new LessonTelemetryWriterV2(sink, (delay, token) => Task.CompletedTask);
             var adapter = new LessonTelemetryAdapterV2(writer, graph, new FixedUtcClock(), () => 1d);
@@ -69,6 +70,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var graph = ScriptableObject.CreateInstance<LessonGraph>();
             var runnerObject = new GameObject("telemetry-bindings-test");
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             var writer = new LessonTelemetryWriterV2(sink, (delay, token) => Task.CompletedTask);
             var adapter = new LessonTelemetryAdapterV2(writer, graph, new FixedUtcClock(), () => 1d);
 
@@ -125,6 +127,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             });
             var runnerObject = new GameObject("telemetry-wrong-run-command-test");
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             var writer = new LessonTelemetryWriterV2(sink, (delay, token) => Task.CompletedTask);
             var adapter = new LessonTelemetryAdapterV2(writer, graph, new FixedUtcClock());
             var context = new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 2, 3);
@@ -205,6 +208,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             graph.Editor_SetEdges(new List<LessonEdgeData>());
             var runnerObject = new GameObject("telemetry-prestart-wrong-run-test");
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             var writer = new LessonTelemetryWriterV2(sink, (delay, token) => Task.CompletedTask);
             var adapter = new LessonTelemetryAdapterV2(writer, graph, new FixedUtcClock());
             var context = new LessonSessionContextV2("session-1", "lesson-1", "launch-1", 2, 3);
@@ -275,6 +279,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var graph = ScriptableObject.CreateInstance<LessonGraph>();
             var runnerObject = new GameObject("telemetry-unload-test");
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             LessonStateV2 originalState = State("running", 1);
             SetPrivateField(runner, "_currentState", originalState);
             var writer = new LessonTelemetryWriterV2(sink, (delay, token) => Task.CompletedTask);
@@ -315,6 +320,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var graph = ScriptableObject.CreateInstance<LessonGraph>();
             var runnerObject = new GameObject("terminal-unload-test");
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             SetPrivateField(runner, "_currentState", State("completed", 3));
             var writer = new LessonTelemetryWriterV2(sink, (delay, token) => Task.CompletedTask);
             var adapter = new LessonTelemetryAdapterV2(writer, graph, new FixedUtcClock(), () => 3d);
@@ -349,6 +355,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var graph = ScriptableObject.CreateInstance<LessonGraph>();
             var runnerObject = new GameObject("telemetry-pausing-test");
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             SetPrivateField(runner, "_currentState", State("running", 1));
             var writer = new LessonTelemetryWriterV2(sink, (delay, token) => Task.CompletedTask);
             var adapter = new LessonTelemetryAdapterV2(writer, graph, new FixedUtcClock(), () => 1d);
@@ -382,6 +389,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var graph = ScriptableObject.CreateInstance<LessonGraph>();
             var runnerObject = new GameObject("telemetry-delayed-start-test");
             var runner = runnerObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             var writer = new LessonTelemetryWriterV2(sink, (delay, token) => Task.CompletedTask);
             var adapter = new LessonTelemetryAdapterV2(writer, graph, new FixedUtcClock());
 
@@ -417,180 +425,27 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             }
         }
 
-        [TestCase(false, false)]
-        [TestCase(true, true)]
-        public void LegacyFirebasePersistence_IsSkippedOnlyWhenAnActiveV2InstallerOwnsTheScene(bool hasActiveInstaller, bool expectedSkip)
-        {
-            Assert.That(LessonGraphRunnerInstaller.ShouldSkipLegacyFirebasePersistence(hasActiveInstaller), Is.EqualTo(expectedSkip));
-        }
-
         [Test]
-        public void ActiveInstaller_SuppressesLegacyPersistenceEvenWhenV2CompositionFails()
+        public void SceneDefinitionClaimsPersistenceBeforeReadinessAndKeepsItUntilUnload()
         {
-            var installerObject = new GameObject("invalid-v2-installer-test");
+            var definitionObject = new GameObject("Unready V2 scene definition");
             try
             {
-                LogAssert.Expect(LogType.Error,
-                    "[LessonGraphV2] V2 installer composition failed: LessonGraphRunnerInstaller needs a LessonGraph asset.");
-                LessonGraphRunnerInstaller installer = installerObject.AddComponent<LessonGraphRunnerInstaller>();
+                definitionObject.AddComponent<LessonGraphSceneDefinitionV2>();
+                Assert.That(LessonGraphSceneDefinitionV2.IsV2PersistenceOwned, Is.True,
+                    "Authored V2 scenes suppress legacy writes even when composition has not succeeded.");
 
-                Assert.That(installer.IsTelemetryPersistenceReady, Is.False);
-                Assert.That(installer.TelemetryPersistenceError, Is.Not.Null.And.Not.Empty);
-                Assert.That(LessonGraphRunnerInstaller.ShouldSkipLegacyFirebasePersistence(), Is.True,
-                    "An enabled V2 installer keeps TimeManager off the legacy Firestore writer even when setup fails closed.");
-
-                installer.enabled = false;
-                Assert.That(LessonGraphRunnerInstaller.ShouldSkipLegacyFirebasePersistence(), Is.False,
-                    "A disabled installer does not claim persistence ownership for a legacy scene.");
+                definitionObject.SetActive(false);
+                Assert.That(LessonGraphSceneDefinitionV2.IsV2PersistenceOwned, Is.True,
+                    "A failed or disabled startup retains the scene persistence boundary until unload.");
             }
             finally
             {
-                UnityEngine.Object.DestroyImmediate(installerObject);
+                UnityEngine.Object.DestroyImmediate(definitionObject);
             }
+            Assert.That(LessonGraphSceneDefinitionV2.IsV2PersistenceOwned, Is.False,
+                "Legacy scenes regain persistence ownership after the V2 scene unloads.");
         }
-
-        [Test]
-        public void ActiveUnreadyInstaller_BlocksManualRunnerStart()
-        {
-            var runnerObject = new GameObject("unready-v2-runner-test");
-            try
-            {
-                LessonGraphRunner runner = runnerObject.AddComponent<LessonGraphRunner>();
-                LogAssert.Expect(LogType.Error,
-                    "[LessonGraphV2] V2 installer composition failed: LessonGraphRunnerInstaller needs a LessonGraph asset.");
-                runnerObject.AddComponent<LessonGraphRunnerInstaller>();
-                LogAssert.Expect(LogType.Error,
-                    "[LessonGraphV2] Refusing to start because the active installer could not authorize the lesson. V2 installer composition failed: LessonGraphRunnerInstaller needs a LessonGraph asset.");
-
-                Task<LessonResult> start = runner.StartLessonAsync();
-
-                Assert.That(start.IsCompleted, Is.True);
-                Assert.That(start.GetAwaiter().GetResult().FailureReason, Is.EqualTo(LessonFailureReason.InvalidGraph));
-                Assert.That(runner.CurrentState, Is.Null);
-            }
-            finally
-            {
-                UnityEngine.Object.DestroyImmediate(runnerObject);
-            }
-        }
-
-        [Test]
-        public void InstallerOnDifferentGameObject_BlocksItsConfiguredRunnerWhenUnready()
-        {
-            var runnerObject = new GameObject("external-v2-runner-test");
-            var installerObject = new GameObject("external-v2-installer-test");
-            try
-            {
-                LessonGraphRunner runner = runnerObject.AddComponent<LessonGraphRunner>();
-                LogAssert.Expect(LogType.Error,
-                    "[LessonGraphV2] V2 installer composition failed: LessonGraphRunnerInstaller needs a LessonGraph asset.");
-                LessonGraphRunnerInstaller installer = installerObject.AddComponent<LessonGraphRunnerInstaller>();
-                SetPrivateField(installer, "_runner", runner);
-
-                Assert.Throws<InvalidOperationException>(() => installer.Configure());
-                LogAssert.Expect(LogType.Error,
-                    "[LessonGraphV2] Refusing to start because the active installer could not authorize the lesson. V2 installer composition failed: LessonGraphRunnerInstaller needs a LessonGraph asset.");
-
-                Task<LessonResult> start = runner.StartLessonAsync();
-
-                Assert.That(start.IsCompleted, Is.True);
-                Assert.That(start.GetAwaiter().GetResult().FailureReason, Is.EqualTo(LessonFailureReason.InvalidGraph));
-                Assert.That(runner.CurrentState, Is.Null);
-            }
-            finally
-            {
-                UnityEngine.Object.DestroyImmediate(installerObject);
-                UnityEngine.Object.DestroyImmediate(runnerObject);
-            }
-        }
-
-        [Test]
-        public void DisabledExternalUnreadyInstaller_BlocksManualRunnerStartUntilDestroy()
-        {
-            var runnerObject = new GameObject("disabled-external-v2-runner-test");
-            var installerObject = new GameObject("disabled-external-v2-installer-test");
-            try
-            {
-                LessonGraphRunner runner = runnerObject.AddComponent<LessonGraphRunner>();
-                LogAssert.Expect(LogType.Error,
-                    "[LessonGraphV2] V2 installer composition failed: LessonGraphRunnerInstaller needs a LessonGraph asset.");
-                LessonGraphRunnerInstaller installer = installerObject.AddComponent<LessonGraphRunnerInstaller>();
-                SetPrivateField(installer, "_runner", runner);
-                Assert.Throws<InvalidOperationException>(() => installer.Configure());
-
-                installer.enabled = false;
-                LogAssert.Expect(LogType.Error,
-                    "[LessonGraphV2] Refusing to start because the active installer could not authorize the lesson. " +
-                    "V2 telemetry installer is disabled while its runner is still attached.");
-
-                Task<LessonResult> start = runner.StartLessonAsync();
-
-                Assert.That(start.IsCompleted, Is.True);
-                Assert.That(start.GetAwaiter().GetResult().FailureReason, Is.EqualTo(LessonFailureReason.InvalidGraph));
-                Assert.That(runner.CurrentState, Is.Null);
-            }
-            finally
-            {
-                UnityEngine.Object.DestroyImmediate(installerObject);
-                UnityEngine.Object.DestroyImmediate(runnerObject);
-            }
-        }
-
-        [Test]
-        public void FailedReconfigure_DoesNotTransferOwnerFromPreviouslyConfiguredRunner()
-        {
-            var originalRunnerObject = new GameObject("original-v2-runner-test");
-            var replacementRunnerObject = new GameObject("replacement-v2-runner-test");
-            var installerObject = new GameObject("reconfigured-v2-installer-test");
-            var graph = ScriptableObject.CreateInstance<LessonGraph>();
-            try
-            {
-                LessonGraphRunner originalRunner = originalRunnerObject.AddComponent<LessonGraphRunner>();
-                LessonGraphRunner replacementRunner = replacementRunnerObject.AddComponent<LessonGraphRunner>();
-                LogAssert.Expect(LogType.Error,
-                    "[LessonGraphV2] V2 installer composition failed: LessonGraphRunnerInstaller needs a LessonGraph asset.");
-                LessonGraphRunnerInstaller installer = installerObject.AddComponent<LessonGraphRunnerInstaller>();
-                LessonGraphBindings bindings = installerObject.AddComponent<LessonGraphBindings>();
-                SetPrivateField(installer, "_runner", originalRunner);
-                SetPrivateField(installer, "_lessonGraph", graph);
-                SetPrivateField(installer, "_bindings", bindings);
-                installer.Configure();
-                SetPrivateField(installer, "_telemetryConfigured", true);
-
-                SetPrivateField(installer, "_runner", replacementRunner);
-                Assert.Throws<InvalidOperationException>(() => installer.Configure());
-
-                Assert.That(GetPrivateField<LessonGraphRunnerInstaller>(originalRunner, "_telemetryInstaller"), Is.SameAs(installer));
-                Assert.That(GetPrivateField<LessonGraphRunner>(replacementRunner, "_telemetryInstaller"), Is.Null);
-            }
-            finally
-            {
-                UnityEngine.Object.DestroyImmediate(installerObject);
-                UnityEngine.Object.DestroyImmediate(originalRunnerObject);
-                UnityEngine.Object.DestroyImmediate(replacementRunnerObject);
-                UnityEngine.Object.DestroyImmediate(graph);
-            }
-        }
-
-        [Test]
-        public void RunnerWithoutInstaller_ContinuesThroughNormalGraphValidation()
-        {
-            var runnerObject = new GameObject("standalone-runner-test");
-            try
-            {
-                LessonGraphRunner runner = runnerObject.AddComponent<LessonGraphRunner>();
-                Task<LessonResult> start = runner.StartLessonAsync();
-
-                Assert.That(start.IsCompleted, Is.True);
-                Assert.That(start.GetAwaiter().GetResult().FailureReason, Is.EqualTo(LessonFailureReason.InvalidGraph));
-                Assert.That(runner.CurrentState, Is.Null);
-            }
-            finally
-            {
-                UnityEngine.Object.DestroyImmediate(runnerObject);
-            }
-        }
-
         private static LessonStateV2 State(string status, int revision) => new LessonStateV2
         {
             contract_version = 2,

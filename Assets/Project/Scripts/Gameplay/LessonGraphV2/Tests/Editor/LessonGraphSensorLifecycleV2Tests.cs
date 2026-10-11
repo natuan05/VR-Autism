@@ -213,6 +213,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             var lifecycleObject = new GameObject("lesson-lifecycle-test");
             lifecycleObject.SetActive(false);
             var runner = lifecycleObject.AddComponent<LessonGraphRunner>();
+            LessonGraphRunnerTestOwnershipV2.Attach(runner);
             var streamer = lifecycleObject.AddComponent<TelemetryStreamer>();
             SetPrivateField(streamer, "_sessionId", "session-1");
             var lifecycle = lifecycleObject.AddComponent<VRAutism.Gameplay.LessonGraphV2.Integration.LessonGraphLifecycleV2>();

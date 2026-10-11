@@ -37,10 +37,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         }
 
         [Test]
-        public void InstallerSuppliesSceneVariableStoreToRunner()
+        public void ExplicitCompositionSuppliesSceneVariableStoreToRunner()
         {
             var graph = ScriptableObject.CreateInstance<LessonGraph>();
-            var gameObject = new GameObject("LessonGraphVariableInstallerTests");
+            var gameObject = new GameObject("LessonGraphVariableCompositionTests");
             gameObject.SetActive(false);
             graph.Editor_SetSchemaVersion(2);
             graph.Editor_SetEntryNodeId("start");
@@ -57,17 +57,16 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             try
             {
                 var runner = gameObject.AddComponent<LessonGraphRunner>();
-                gameObject.AddComponent<LessonGraphBindings>();
+                var bindings = gameObject.AddComponent<LessonGraphBindings>();
                 var store = gameObject.AddComponent<LessonGraphVariableStore>();
                 SetSerializedInitialBoolean(store, "ready", true);
-                var installer = gameObject.AddComponent<LessonGraphRunnerInstaller>();
-                typeof(LessonGraphRunnerInstaller).GetField("_lessonGraph", BindingFlags.Instance | BindingFlags.NonPublic)
-                    .SetValue(installer, graph);
-
-                installer.Configure();
+                var clock = new MonotonicClock();
+                runner.Configure(graph,
+                    new LessonGraphExecutorRegistry(bindings, clock),
+                    bindings, clock, variableSource: store);
                 var source = typeof(LessonGraphRunner).GetField("_variableSource", BindingFlags.Instance | BindingFlags.NonPublic)
                     .GetValue(runner) as ILessonVariableSource;
-                Assert.AreSame(store, source, "Installer must supply its scene store to the runner.");
+                Assert.AreSame(store, source, "The accepted scene composition must supply its variable store to the runner.");
                 Assert.IsTrue(source.TryGetValue("ready", out var ready));
                 Assert.IsTrue(ready.Boolean);
                 Assert.IsTrue(LessonConditionEvaluator.Evaluate(graph.Edges[0].Condition, NodeStatus.Success, source));
