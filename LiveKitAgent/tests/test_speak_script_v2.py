@@ -3,6 +3,7 @@ import json
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from livekit.agents.voice.speech_handle import SpeechHandle
 
 from agent_v2 import JobRuntime, VoiceProfile, VoiceProfileRegistry, _process_v2_packet
 from voice_command_runtime_v2 import (
@@ -160,7 +161,7 @@ async def test_cancel_speak_script_packet_interrupts_only_the_matching_active_pl
         await asyncio.wait_for(released.wait(), timeout=SYNC_TIMEOUT_SECONDS)
 
     handle.wait_for_playout = AsyncMock(side_effect=wait_for_playout)
-    session.say = AsyncMock(return_value=handle)
+    session.say = MagicMock(return_value=handle)
     script = json.dumps(
         {
             "event": "SPEAK_SCRIPT",
@@ -211,57 +212,90 @@ async def test_cancel_speak_script_packet_interrupts_only_the_matching_active_pl
 
 
 @pytest.mark.asyncio
-async def test_cancel_during_session_say_start_interrupts_the_late_handle() -> None:
-    runtime = _runtime_with_room(identity="teacher-npc")
+async def test_cancel_interrupts_sdk_handle_returned_synchronously_before_playout() -> (
+    None
+):
+    runtime = _runtime_with_room()
+    handle = SpeechHandle.create()
     session = MagicMock()
-    say_started = asyncio.Event()
-    finish_say = asyncio.Event()
-    handle = MagicMock()
-    handle.done.return_value = False
-    handle.wait_for_playout = AsyncMock()
-    handle.interrupted = True
-    handle.interrupt = MagicMock()
+    session.say = MagicMock(return_value=handle)
+    packet = SpeakScriptV2("act-1", "seq-owned", "teacher-npc", "Hello")
 
-    async def delayed_say(*_args, **_kwargs):
-        say_started.set()
-        await asyncio.wait_for(finish_say.wait(), timeout=SYNC_TIMEOUT_SECONDS)
-        return handle
+    play_task = asyncio.create_task(
+        _process_v2_packet(
+            MagicMock(),
+            session,
+            runtime,
+            json.dumps(
+                {
+                    "event": "SPEAK_SCRIPT",
+                    "contract_version": 2,
+                    "activation_id": packet.activation_id,
+                    "sequence_id": packet.sequence_id,
+                    "npc_binding_id": packet.npc_binding_id,
+                    "text": packet.text,
+                }
+            ),
+        )
+    )
+    await asyncio.sleep(0)
+    assert runtime.active_speech_handle is handle
 
-    session.say = AsyncMock(side_effect=delayed_say)
+    await _process_v2_packet(
+        MagicMock(),
+        session,
+        runtime,
+        json.dumps(
+            {
+                "event": "CANCEL_SPEAK_SCRIPT",
+                "contract_version": 2,
+                "activation_id": packet.activation_id,
+                "sequence_id": packet.sequence_id,
+                "npc_binding_id": packet.npc_binding_id,
+                "reason": "lesson_scope_changed",
+            }
+        ),
+    )
+    assert handle.interrupted
+    handle._mark_done()
+    await asyncio.wait_for(play_task, timeout=SYNC_TIMEOUT_SECONDS)
+    assert runtime.command_runtime.active_command is None
+    assert runtime.voice_runtime.status("act-1").name == "ACTIVE"
+    assert runtime.job_ctx.room.local_participant.publish_data.await_count == 1
+
+
+@pytest.mark.asyncio
+async def test_direct_task_cancellation_interrupts_owned_sdk_handle() -> None:
+    runtime = _runtime_with_room()
+    handle = SpeechHandle.create()
+    session = MagicMock()
+    session.say = MagicMock(return_value=handle)
     script = json.dumps(
         {
             "event": "SPEAK_SCRIPT",
             "contract_version": 2,
             "activation_id": "act-1",
-            "sequence_id": "seq-1",
+            "sequence_id": "seq-task-cancel",
             "npc_binding_id": "teacher-npc",
-            "text": "Cancel before the speech handle is ready.",
+            "text": "Cancel this owned speech task.",
         }
     )
-    script_task = asyncio.create_task(
+
+    task = asyncio.create_task(
         _process_v2_packet(MagicMock(), session, runtime, script)
     )
-    await asyncio.wait_for(say_started.wait(), timeout=SYNC_TIMEOUT_SECONDS)
+    await asyncio.sleep(0)
+    assert runtime.active_speech_handle is handle
+    task.cancel()
+    await asyncio.wait_for(task, timeout=SYNC_TIMEOUT_SECONDS)
 
-    cancel = json.dumps(
-        {
-            "event": "CANCEL_SPEAK_SCRIPT",
-            "contract_version": 2,
-            "activation_id": "act-1",
-            "sequence_id": "seq-1",
-            "npc_binding_id": "teacher-npc",
-            "reason": "lesson_scope_changed",
-        }
-    )
-    await _process_v2_packet(MagicMock(), session, runtime, cancel)
-    finish_say.set()
-    await asyncio.wait_for(script_task, timeout=SYNC_TIMEOUT_SECONDS)
-
-    handle.interrupt.assert_called_once_with()
-    handle.wait_for_playout.assert_not_awaited()
-    assert runtime.command_runtime.active_command is None
-    assert runtime.voice_runtime.status("act-1").name == "ACTIVE"
-    assert runtime.job_ctx.room.local_participant.publish_data.await_count == 1
+    assert handle.interrupted
+    messages = [
+        json.loads(call.args[0].decode("utf-8"))
+        for call in runtime.job_ctx.room.local_participant.publish_data.call_args_list
+    ]
+    assert [message["status"] for message in messages] == ["CANCELLED"]
+    assert runtime.active_speech_handle is None
 
 
 @pytest.mark.asyncio
@@ -308,7 +342,7 @@ async def test_handle_speak_script_v2_success() -> None:
     mock_speech_handle = MagicMock()
     mock_speech_handle.interrupted = False
     mock_speech_handle.wait_for_playout = AsyncMock()
-    session.say = AsyncMock(return_value=mock_speech_handle)
+    session.say = MagicMock(return_value=mock_speech_handle)
 
     payload = json.dumps(
         {
@@ -323,7 +357,7 @@ async def test_handle_speak_script_v2_success() -> None:
 
     await _process_v2_packet(agent, session, runtime, payload)
 
-    session.say.assert_awaited_once_with(
+    session.say.assert_called_once_with(
         "Hello, welcome to the lesson!",
         allow_interruptions=True,
     )
@@ -352,7 +386,7 @@ async def test_standalone_dialogue_script_speaks_without_a_voice_quest() -> None
     handle = MagicMock()
     handle.interrupted = False
     handle.wait_for_playout = AsyncMock()
-    session.say = AsyncMock(return_value=handle)
+    session.say = MagicMock(return_value=handle)
     payload = json.dumps(
         {
             "event": "SPEAK_SCRIPT",
@@ -366,7 +400,7 @@ async def test_standalone_dialogue_script_speaks_without_a_voice_quest() -> None
 
     await _process_v2_packet(MagicMock(), session, runtime, payload)
 
-    session.say.assert_awaited_once_with(
+    session.say.assert_called_once_with(
         "Wash your hands with soap.", allow_interruptions=True
     )
     handle.wait_for_playout.assert_awaited_once()
@@ -400,7 +434,7 @@ async def test_dialogue_script_is_independent_of_a_cancelled_voice_activation() 
     handle = MagicMock()
     handle.interrupted = False
     handle.wait_for_playout = AsyncMock()
-    session.say = AsyncMock(return_value=handle)
+    session.say = MagicMock(return_value=handle)
     payload = json.dumps(
         {
             "event": "SPEAK_SCRIPT",
@@ -414,7 +448,7 @@ async def test_dialogue_script_is_independent_of_a_cancelled_voice_activation() 
 
     await _process_v2_packet(MagicMock(), session, runtime, payload)
 
-    session.say.assert_awaited_once_with("Dispense soap.", allow_interruptions=True)
+    session.say.assert_called_once_with("Dispense soap.", allow_interruptions=True)
     handle.wait_for_playout.assert_awaited_once()
     assert runtime.voice_runtime.active_activation_id == "voice-first-win"
     assert runtime.voice_runtime.status("voice-first-win").name == "CANCELLED"
@@ -425,7 +459,7 @@ async def test_dialogue_script_is_independent_of_a_cancelled_voice_activation() 
 async def test_cancel_before_delayed_script_tombstones_exact_dialogue_scope() -> None:
     runtime = _runtime_with_room(identity="teacher-npc")
     session = MagicMock()
-    session.say = AsyncMock()
+    session.say = MagicMock()
     cancel = json.dumps(
         {
             "event": "CANCEL_SPEAK_SCRIPT",
@@ -450,7 +484,7 @@ async def test_cancel_before_delayed_script_tombstones_exact_dialogue_scope() ->
     await _process_v2_packet(MagicMock(), session, runtime, cancel)
     await _process_v2_packet(MagicMock(), session, runtime, delayed_script)
 
-    session.say.assert_not_awaited()
+    session.say.assert_not_called()
     assert runtime.command_runtime.active_command is None
     messages = [
         json.loads(call.args[0].decode("utf-8"))
@@ -473,7 +507,7 @@ async def test_cancel_before_delayed_script_tombstones_exact_dialogue_scope() ->
 async def test_cancel_tombstone_does_not_authorize_a_different_npc() -> None:
     runtime = _runtime_with_room(identity="teacher-npc")
     session = MagicMock()
-    session.say = AsyncMock()
+    session.say = MagicMock()
     cancel = json.dumps(
         {
             "event": "CANCEL_SPEAK_SCRIPT",
@@ -498,7 +532,7 @@ async def test_cancel_tombstone_does_not_authorize_a_different_npc() -> None:
     await _process_v2_packet(MagicMock(), session, runtime, cancel)
     await _process_v2_packet(MagicMock(), session, runtime, wrong_npc_script)
 
-    session.say.assert_not_awaited()
+    session.say.assert_not_called()
     runtime.job_ctx.room.local_participant.publish_data.assert_not_awaited()
     assert runtime.command_runtime.active_command is None
 
@@ -537,7 +571,7 @@ async def test_handle_speak_script_v2_selects_voice_profile() -> None:
     mock_speech_handle = MagicMock()
     mock_speech_handle.interrupted = False
     mock_speech_handle.wait_for_playout = AsyncMock()
-    session.say = AsyncMock(return_value=mock_speech_handle)
+    session.say = MagicMock(return_value=mock_speech_handle)
 
     payload = json.dumps(
         {
@@ -557,7 +591,7 @@ async def test_handle_speak_script_v2_selects_voice_profile() -> None:
         voice_name="vi-VN-Chirp3-HD-Puck",
         speaking_rate=1.0,
     )
-    session.say.assert_awaited_once_with(
+    session.say.assert_called_once_with(
         "Hello friend!",
         allow_interruptions=True,
     )
@@ -576,7 +610,7 @@ async def test_handle_speak_script_v2_unknown_npc_falls_back_to_default() -> Non
     mock_speech_handle = MagicMock()
     mock_speech_handle.interrupted = False
     mock_speech_handle.wait_for_playout = AsyncMock()
-    session.say = AsyncMock(return_value=mock_speech_handle)
+    session.say = MagicMock(return_value=mock_speech_handle)
 
     payload = json.dumps(
         {
@@ -596,7 +630,7 @@ async def test_handle_speak_script_v2_unknown_npc_falls_back_to_default() -> Non
         voice_name="vi-VN-Chirp3-HD-Aoede",
         speaking_rate=1.0,
     )
-    session.say.assert_awaited_once_with(
+    session.say.assert_called_once_with(
         "Fallback greeting!",
         allow_interruptions=True,
     )
@@ -615,7 +649,7 @@ async def test_handle_speak_script_v2_interrupted_emits_cancelled() -> None:
     mock_speech_handle = MagicMock()
     mock_speech_handle.interrupted = True
     mock_speech_handle.wait_for_playout = AsyncMock()
-    session.say = AsyncMock(return_value=mock_speech_handle)
+    session.say = MagicMock(return_value=mock_speech_handle)
 
     payload = json.dumps(
         {
@@ -645,7 +679,7 @@ async def test_handle_speak_script_v2_replay_uses_cached_result() -> None:
     mock_speech_handle = MagicMock()
     mock_speech_handle.interrupted = False
     mock_speech_handle.wait_for_playout = AsyncMock()
-    session.say = AsyncMock(return_value=mock_speech_handle)
+    session.say = MagicMock(return_value=mock_speech_handle)
 
     payload = json.dumps(
         {
@@ -661,8 +695,8 @@ async def test_handle_speak_script_v2_replay_uses_cached_result() -> None:
     await _process_v2_packet(agent, session, runtime, payload)
     await _process_v2_packet(agent, session, runtime, payload)
 
-    # session.say must be awaited only ONCE
-    session.say.assert_awaited_once_with(
+    # session.say must be called only ONCE
+    session.say.assert_called_once_with(
         "Hello once!",
         allow_interruptions=True,
     )
@@ -681,7 +715,9 @@ async def test_handle_speak_script_v2_exception_emits_failed() -> None:
     agent = MagicMock()
     session = MagicMock()
 
-    session.say = AsyncMock(side_effect=RuntimeError("TTS engine failure"))
+    speech_handle = SpeechHandle.create()
+    speech_handle._mark_done(RuntimeError("TTS engine failure"))
+    session.say = MagicMock(return_value=speech_handle)
 
     payload = json.dumps(
         {
@@ -712,7 +748,7 @@ async def test_delayed_script_from_previous_activation_is_rejected_without_playo
         SetActiveQuest("act-2", "Current quest", ("Please help.",), "teacher-npc")
     )
     session = MagicMock()
-    session.say = AsyncMock()
+    session.say = MagicMock()
     stale = json.dumps(
         {
             "event": "SPEAK_SCRIPT",
@@ -726,6 +762,6 @@ async def test_delayed_script_from_previous_activation_is_rejected_without_playo
 
     await _process_v2_packet(MagicMock(), session, runtime, stale)
 
-    session.say.assert_not_awaited()
+    session.say.assert_not_called()
     assert runtime.command_runtime.active_command is None
     runtime.job_ctx.room.local_participant.publish_data.assert_not_awaited()

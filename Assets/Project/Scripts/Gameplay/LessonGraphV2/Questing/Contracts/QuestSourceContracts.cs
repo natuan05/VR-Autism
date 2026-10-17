@@ -41,13 +41,15 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
     public sealed class QuestSourceActivation
     {
         public string ActivationId { get; }
+        public string RunId { get; }
         public DateTimeOffset ActivatedAtUtc { get; }
         public double ActivatedAtMonotonicSeconds { get; }
 
         public QuestSourceActivation(
             string activationId,
             DateTimeOffset activatedAtUtc,
-            double activatedAtMonotonicSeconds)
+            double activatedAtMonotonicSeconds,
+            string runId = null)
         {
             if (string.IsNullOrWhiteSpace(activationId))
                 throw new ArgumentException("Activation ID must not be blank.", nameof(activationId));
@@ -55,6 +57,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing
                 throw new ArgumentOutOfRangeException(nameof(activatedAtMonotonicSeconds));
 
             ActivationId = activationId;
+            RunId = runId ?? string.Empty;
             ActivatedAtUtc = activatedAtUtc;
             ActivatedAtMonotonicSeconds = activatedAtMonotonicSeconds;
         }

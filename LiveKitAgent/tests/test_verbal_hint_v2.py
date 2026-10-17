@@ -83,7 +83,7 @@ class _FakeTTS:
 def _session(*, handle: _SpeechHandle | None = None):
     session = MagicMock()
     session.tts = _FakeTTS()
-    session.say = AsyncMock(return_value=handle or _SpeechHandle())
+    session.say = MagicMock(return_value=handle or _SpeechHandle())
     return session
 
 
@@ -127,9 +127,9 @@ def test_parse_verbal_hint_v2_requires_its_exact_correlated_shape() -> None:
 async def test_verbal_hint_uses_assigned_npc_and_snapshot_phrase_order() -> None:
     runtime = _runtime_with_active_quest(npc_binding_id="peer-npc")
     session = _session()
-    runtime.tts_cache[
-        ("teacher-npc", "vi-VN-Chirp3-HD-Aoede", 1.0, "first phrase")
-    ] = [object()]
+    runtime.tts_cache[("teacher-npc", "vi-VN-Chirp3-HD-Aoede", 1.0, "first phrase")] = [
+        object()
+    ]
 
     await _process_v2_packet(
         MagicMock(), session, runtime, _verbal_hint_packet(npc_binding_id="peer-npc")
@@ -169,7 +169,7 @@ async def test_verbal_hint_rejects_wrong_activation_or_npc_without_speaking() ->
         _verbal_hint_packet(command_id="wrong-npc", npc_binding_id="peer-npc"),
     )
 
-    session.say.assert_not_awaited()
+    session.say.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -205,7 +205,7 @@ async def test_remote_topic_verbal_hint_is_ignored() -> None:
         _verbal_hint_packet(),
     )
 
-    session.say.assert_not_awaited()
+    session.say.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -216,9 +216,7 @@ async def test_activation_reset_cancels_hint_during_synthesis_before_speech() ->
     session.tts = _FakeTTS(synthesis_started=synthesis_started)
     session.tts.block_synthesis = True
     hint_task = asyncio.create_task(
-        _process_v2_packet(
-            MagicMock(), session, runtime, _verbal_hint_packet()
-        )
+        _process_v2_packet(MagicMock(), session, runtime, _verbal_hint_packet())
     )
     await asyncio.wait_for(synthesis_started.wait(), timeout=1)
 
@@ -227,11 +225,13 @@ async def test_activation_reset_cancels_hint_during_synthesis_before_speech() ->
     agent.update_chat_ctx = AsyncMock()
     agent.update_instructions = AsyncMock()
     with pytest.MonkeyPatch.context() as monkeypatch:
-        monkeypatch.setattr(agent_v2.llm.ChatContext, "empty", MagicMock(return_value=None))
+        monkeypatch.setattr(
+            agent_v2.llm.ChatContext, "empty", MagicMock(return_value=None)
+        )
         await _reset_activation(agent, session, runtime)
 
     await asyncio.gather(hint_task, return_exceptions=True)
-    session.say.assert_not_awaited()
+    session.say.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -250,7 +250,9 @@ async def test_activation_reset_interrupts_owned_hint_playback() -> None:
     agent.update_chat_ctx = AsyncMock()
     agent.update_instructions = AsyncMock()
     with pytest.MonkeyPatch.context() as monkeypatch:
-        monkeypatch.setattr(agent_v2.llm.ChatContext, "empty", MagicMock(return_value=None))
+        monkeypatch.setattr(
+            agent_v2.llm.ChatContext, "empty", MagicMock(return_value=None)
+        )
         await _reset_activation(agent, session, runtime)
 
     await asyncio.gather(hint_task, return_exceptions=True)

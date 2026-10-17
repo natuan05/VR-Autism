@@ -1,0 +1,2 @@
+# Keep the shared contract fixture visible despite the agent's JSON ignore rule.
+!tts-cache-v1.json

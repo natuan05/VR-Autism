@@ -1,0 +1,317 @@
+{
+  "schema_version": 1,
+  "keys": [
+    {
+      "text": "Xin chào.",
+      "profile": {
+        "profile_id": "teacher-npc",
+        "provider": "google-cloud-tts",
+        "model": "chirp_3",
+        "language": "vi-VN",
+        "voice_name": "vi-VN-Chirp3-HD-Aoede",
+        "speaking_rate": 1,
+        "provider_encoding": "OGG_OPUS",
+        "sample_rate": 24000,
+        "channels": 1,
+        "audio_format": "wav-pcm16-v1"
+      },
+      "key": "3e4c476e9b8e3939138a75614e2a65b9be72d508077284ecfeb7df248717bbe8"
+    },
+    {
+      "text": "Xin chào.",
+      "profile": {
+        "profile_id": "teacher-npc",
+        "provider": "google-cloud-tts",
+        "model": "chirp_3",
+        "language": "vi-VN",
+        "voice_name": "vi-VN-Chirp3-HD-Aoede",
+        "speaking_rate": 1.0,
+        "provider_encoding": "OGG_OPUS",
+        "sample_rate": 24000,
+        "channels": 1,
+        "audio_format": "wav-pcm16-v1"
+      },
+      "key": "3e4c476e9b8e3939138a75614e2a65b9be72d508077284ecfeb7df248717bbe8"
+    },
+    {
+      "text": "Xin chào.",
+      "profile": {
+        "profile_id": "teacher-npc",
+        "provider": "google-cloud-tts",
+        "model": "chirp_3",
+        "language": "vi-VN",
+        "voice_name": "vi-VN-Chirp3-HD-Aoede",
+        "speaking_rate": 0.9,
+        "provider_encoding": "OGG_OPUS",
+        "sample_rate": 24000,
+        "channels": 1,
+        "audio_format": "wav-pcm16-v1"
+      },
+      "key": "892436b94b4bfbc26c3d5209aa12c4ab622ed00ed0fe75cb6729e19dd4e958d8"
+    },
+    {
+      "text": "Hello  world!",
+      "profile": {
+        "profile_id": "teacher-npc",
+        "provider": "google-cloud-tts",
+        "model": "chirp_3",
+        "language": "vi-VN",
+        "voice_name": "vi-VN-Chirp3-HD-Aoede",
+        "speaking_rate": 1,
+        "provider_encoding": "OGG_OPUS",
+        "sample_rate": 24000,
+        "channels": 1,
+        "audio_format": "wav-pcm16-v1"
+      },
+      "key": "a1a4e88aadb9e73a952fe09393a8ea36f052c94f0504718027ae51a09e45f2fc"
+    },
+    {
+      "text": "Hello world!",
+      "profile": {
+        "profile_id": "teacher-npc",
+        "provider": "google-cloud-tts",
+        "model": "chirp_3",
+        "language": "vi-VN",
+        "voice_name": "vi-VN-Chirp3-HD-Aoede",
+        "speaking_rate": 1,
+        "provider_encoding": "OGG_OPUS",
+        "sample_rate": 24000,
+        "channels": 1,
+        "audio_format": "wav-pcm16-v1"
+      },
+      "key": "ecb94d7e29cf274dfc8e4b020c853a3c0ae1fad1557d01ad737bd66f073044b9"
+    },
+    {
+      "text": "é",
+      "profile": {
+        "profile_id": "teacher-npc",
+        "provider": "google-cloud-tts",
+        "model": "chirp_3",
+        "language": "vi-VN",
+        "voice_name": "vi-VN-Chirp3-HD-Aoede",
+        "speaking_rate": 1,
+        "provider_encoding": "OGG_OPUS",
+        "sample_rate": 24000,
+        "channels": 1,
+        "audio_format": "wav-pcm16-v1"
+      },
+      "key": "6991c4b7f47fac00b43453b1ce7636e475305b5ebac6ec978b6607356ce2d070"
+    },
+    {
+      "text": "é",
+      "profile": {
+        "profile_id": "teacher-npc",
+        "provider": "google-cloud-tts",
+        "model": "chirp_3",
+        "language": "vi-VN",
+        "voice_name": "vi-VN-Chirp3-HD-Aoede",
+        "speaking_rate": 1,
+        "provider_encoding": "OGG_OPUS",
+        "sample_rate": 24000,
+        "channels": 1,
+        "audio_format": "wav-pcm16-v1"
+      },
+      "key": "98b5a3e3aba87c138a6c07a05ee8391d295f8377cb48ccb999234829921dce9d"
+    },
+    {
+      "text": "Hi 👋 \"quoted\"\n",
+      "profile": {
+        "profile_id": "teacher-npc",
+        "provider": "google-cloud-tts",
+        "model": "chirp_3",
+        "language": "vi-VN",
+        "voice_name": "vi-VN-Chirp3-HD-Aoede",
+        "speaking_rate": 1,
+        "provider_encoding": "OGG_OPUS",
+        "sample_rate": 24000,
+        "channels": 1,
+        "audio_format": "wav-pcm16-v1"
+      },
+      "key": "7664082cd955cf518266a91b25516924c0df2bde90865fec6f493b3a13cd4c90"
+    },
+    {
+      "text": "Xin chào.",
+      "profile": {
+        "profile_id": "peer-npc",
+        "provider": "google-cloud-tts",
+        "model": "chirp_3",
+        "language": "vi-VN",
+        "voice_name": "vi-VN-Chirp3-HD-Aoede",
+        "speaking_rate": 1,
+        "provider_encoding": "OGG_OPUS",
+        "sample_rate": 24000,
+        "channels": 1,
+        "audio_format": "wav-pcm16-v1"
+      },
+      "key": "12fe3796896840e2c662285b25dd7e016e38d11dab41daf8b9a714789e088d46"
+    }
+  ],
+  "valid_packets": [
+    {
+      "contract_version": 1,
+      "event": "FIXED_AUDIO_STREAM_REQUEST",
+      "session_id": "session-1",
+      "run_id": "run-1",
+      "activation_id": "activation-1",
+      "invocation_id": "command-1",
+      "npc_binding_id": "teacher-npc",
+      "kind": "manual_hint",
+      "owner_revision": 1,
+      "text": "Xin chào.",
+      "profile_id": "teacher-npc",
+      "key": "3e4c476e9b8e3939138a75614e2a65b9be72d508077284ecfeb7df248717bbe8",
+      "rejection_epoch": 0
+    },
+    {
+      "contract_version": 1,
+      "event": "FIXED_AUDIO_RECONCILE",
+      "session_id": "session-1",
+      "run_id": "run-1",
+      "agent_instance_id": "boot-1",
+      "active_activation_ids": [
+        "activation-1"
+      ],
+      "current_activity": null,
+      "completed_opening_activation_ids": [
+        "activation-1"
+      ]
+    }
+  ],
+  "invalid_packets": [
+    {
+      "contract_version": 2,
+      "event": "FIXED_AUDIO_STREAM_REQUEST",
+      "session_id": "session-1",
+      "run_id": "run-1",
+      "activation_id": "activation-1",
+      "invocation_id": "command-1",
+      "npc_binding_id": "teacher-npc",
+      "kind": "manual_hint",
+      "owner_revision": 1,
+      "text": "Xin chào.",
+      "profile_id": "teacher-npc",
+      "key": "3e4c476e9b8e3939138a75614e2a65b9be72d508077284ecfeb7df248717bbe8",
+      "rejection_epoch": 0
+    },
+    {
+      "contract_version": 1,
+      "event": "FIXED_AUDIO_STREAM_REQUEST",
+      "session_id": "session-1",
+      "run_id": "run-1",
+      "activation_id": "activation-1",
+      "invocation_id": "command-1",
+      "npc_binding_id": "teacher-npc",
+      "kind": "manual_hint",
+      "owner_revision": true,
+      "text": "Xin chào.",
+      "profile_id": "teacher-npc",
+      "key": "3e4c476e9b8e3939138a75614e2a65b9be72d508077284ecfeb7df248717bbe8",
+      "rejection_epoch": 0
+    },
+    {
+      "contract_version": 1,
+      "event": "FIXED_AUDIO_STREAM_REQUEST",
+      "session_id": "session-1",
+      "run_id": "run-1",
+      "activation_id": "activation-1",
+      "invocation_id": "command-1",
+      "npc_binding_id": "teacher-npc",
+      "kind": "manual_hint",
+      "owner_revision": 1,
+      "text": "Xin chào.",
+      "profile_id": "teacher-npc",
+      "key": "3e4c476e9b8e3939138a75614e2a65b9be72d508077284ecfeb7df248717bbe8",
+      "rejection_epoch": 0,
+      "pitch": 0
+    },
+    {
+      "contract_version": 1,
+      "event": "FIXED_AUDIO_RECONCILE",
+      "session_id": "session-1",
+      "run_id": "run-1",
+      "agent_instance_id": "boot-1",
+      "active_activation_ids": [
+        "activation-1"
+      ],
+      "current_activity": null,
+      "completed_opening_activation_ids": [
+        "old-activation"
+      ]
+    },
+    {
+      "contract_version": 1,
+      "event": "FIXED_AUDIO_RECONCILE",
+      "session_id": "session-1",
+      "run_id": "run-1",
+      "agent_instance_id": "boot-1",
+      "active_activation_ids": [
+        "activation-1"
+      ],
+      "current_activity": null,
+      "completed_opening_activation_ids": [
+        "activation-1",
+        "activation-1"
+      ]
+    },
+    {
+      "contract_version": 1,
+      "event": "FIXED_AUDIO_RECONCILE",
+      "session_id": "session-1",
+      "run_id": "run-1",
+      "agent_instance_id": "boot-1",
+      "active_activation_ids": [
+        "activation-1"
+      ],
+      "current_activity": null,
+      "completed_opening_activation_ids": null
+    },
+    {
+      "contract_version": 1,
+      "event": "FIXED_AUDIO_RECONCILE",
+      "session_id": "session-1",
+      "run_id": "run-1",
+      "agent_instance_id": "boot-1",
+      "active_activation_ids": [
+        "activation-1"
+      ],
+      "current_activity": null,
+      "completed_opening_activation_ids": [
+        true
+      ]
+    }
+  ],
+  "http_responses": {
+    "lookup_hit": {
+      "artifact": {
+        "profile_id": "teacher-npc",
+        "key": "3e4c476e9b8e3939138a75614e2a65b9be72d508077284ecfeb7df248717bbe8",
+        "rejection_epoch": 1,
+        "object_path": "tts-cache/v1/teacher-npc/3e4c476e9b8e3939138a75614e2a65b9be72d508077284ecfeb7df248717bbe8/r1.wav",
+        "generation": "123",
+        "sha256": "70bc0542b955f0620b0b33bc7a57a48816eb02d4c752ce02689f2f69a2e78d25",
+        "byte_size": 48,
+        "sample_count": 2,
+        "duration_ms": 0,
+        "format": "wav-pcm16-v1"
+      },
+      "read_url": "https://storage.example.test/signed-artifact",
+      "expires_at": "2030-01-01T00:00:00.000Z"
+    },
+    "lookup_miss": {
+      "miss": true,
+      "rejection_epoch": 1
+    },
+    "reconcile": {
+      "results": [
+        {
+          "profile_id": "teacher-npc",
+          "key": "3e4c476e9b8e3939138a75614e2a65b9be72d508077284ecfeb7df248717bbe8",
+          "rejection_epoch": 1,
+          "valid": true,
+          "current_epoch": 1
+        }
+      ]
+    }
+  },
+  "canonical_wav_hex": "524946462800000057415645666d74201000000001000100c05d000080bb000002001000646174610400000000000000"
+}

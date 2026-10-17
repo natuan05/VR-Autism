@@ -231,8 +231,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             if (cancelledEvent != null) Emit(NodeCancelled, cancelledEvent);
             Emit(StateChanged, CloneState(changedState));
             pauseExecutor?.CancelPauseRequest(pauseActivationId);
-            CancelActive(activationCancellation);
+            // Cancellation callbacks may resume the executor synchronously. Mark the
+            // lesson cancelled first so its runner recognizes the expected abort.
             CancelActive(lessonCancellation);
+            CancelActive(activationCancellation);
         }
 
         public Task<LessonCommandResultV2> ApplyCommandAsync(LessonCommandV2 command) =>

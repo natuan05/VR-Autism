@@ -38,6 +38,11 @@ class ActivationSilenceReminderV2:
         self._generation = 0
         self._task: asyncio.Task[None] | None = None
         self._reminder_in_progress = False
+        self._external_audio_invocation: str | None = None
+        self._external_audio_sequence = -1
+        self._external_audio_terminal_invocation: str | None = None
+        self._owned_reminder_invocation: str | None = None
+        self._enabled = True
 
     @property
     def activation_id(self) -> str | None:
@@ -118,6 +123,66 @@ class ActivationSilenceReminderV2:
         self._reconnecting = False
         self._restart_window()
 
+    def set_enabled(self, enabled: bool) -> None:
+        self._enabled = bool(enabled)
+        self._restart_window(cancel_in_progress=not self._enabled)
+
+    def set_external_audio_activity(
+        self, invocation: str, phase: str, sequence: int
+    ) -> bool:
+        """Pause the silence clock while VR owns a fixed utterance."""
+        if (
+            not invocation
+            or isinstance(sequence, bool)
+            or not isinstance(sequence, int)
+            or sequence < 0
+        ):
+            return False
+        if self._external_audio_invocation not in (None, invocation):
+            return False
+        if (
+            self._external_audio_invocation is None
+            and self._external_audio_terminal_invocation == invocation
+        ):
+            return False
+        if sequence <= self._external_audio_sequence:
+            return False
+        if phase not in {
+            "terminal",
+            "preparing",
+            "local_selected",
+            "stream_selected",
+            "playing",
+        }:
+            return False
+        is_owned_reminder = invocation == self._owned_reminder_invocation
+        self._external_audio_sequence = sequence
+        if phase == "terminal":
+            self._external_audio_invocation = None
+            self._external_audio_sequence = -1
+            self._external_audio_terminal_invocation = invocation
+            if is_owned_reminder:
+                self._owned_reminder_invocation = None
+        elif phase in {"preparing", "local_selected", "stream_selected", "playing"}:
+            self._external_audio_invocation = invocation
+        if not is_owned_reminder:
+            self._restart_window(cancel_in_progress=True)
+        return True
+
+    def set_owned_reminder_invocation(self, invocation: str) -> None:
+        self._owned_reminder_invocation = invocation
+
+    def clear_owned_reminder_invocation(self, invocation: str) -> None:
+        if self._owned_reminder_invocation == invocation:
+            self._owned_reminder_invocation = None
+
+    def clear_external_audio_activity(self) -> None:
+        self._external_audio_invocation = None
+        self._external_audio_sequence = -1
+        self._external_audio_terminal_invocation = None
+        self._owned_reminder_invocation = None
+        self._restart_window(cancel_in_progress=True)
+
     def cancel(self, activation_id: str | None = None) -> None:
         if activation_id is not None and activation_id != self._activation_id:
             return
@@ -145,6 +210,8 @@ class ActivationSilenceReminderV2:
             self._user_speaking
             or self._agent_state in self._BUSY_AGENT_STATES
             or self._reconnecting
+            or self._external_audio_invocation is not None
+            or not self._enabled
         )
 
     def _restart_window(self, *, cancel_in_progress: bool = False) -> None:

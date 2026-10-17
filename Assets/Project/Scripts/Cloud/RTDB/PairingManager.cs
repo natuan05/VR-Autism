@@ -26,6 +26,7 @@ namespace VRAutism.Cloud.RTDB
         private string _currentPin;
         private bool _isPaired = false;
         private string _lastProcessedSessionId = "";
+        private int _ttsCacheSchemaVersion;
 
         // ─── Events cho UI đăng ký ───
         public event Action<string> OnPinGenerated;           // PIN đã tạo xong
@@ -36,6 +37,7 @@ namespace VRAutism.Cloud.RTDB
         // ─── Properties cho UI đọc trạng thái hiện tại ───
         public bool IsPaired => _isPaired;
         public string CurrentPin => _currentPin;
+        public int CurrentTtsCacheSchemaVersion => _ttsCacheSchemaVersion;
 
         private void Awake()
         {
@@ -174,6 +176,9 @@ namespace VRAutism.Cloud.RTDB
             string lessonId  = args.Snapshot.Child("current_lesson_id").Value?.ToString() ?? "";
             string hostId    = args.Snapshot.Child("host_id").Value?.ToString() ?? "";
             string livekitToken = args.Snapshot.Child("livekit_token").Value?.ToString() ?? "";
+            var cacheSchemaValue = args.Snapshot.Child("tts_cache_schema_version").Value?.ToString();
+            _ttsCacheSchemaVersion = string.IsNullOrWhiteSpace(cacheSchemaValue) ? 0 :
+                int.TryParse(cacheSchemaValue, out var parsedSchema) ? parsedSchema : -1;
 
             // ── Xử lý thay đổi Status ──
             if (newStatus == "paired" && !_isPaired)
@@ -185,6 +190,7 @@ namespace VRAutism.Cloud.RTDB
             else if (newStatus == "waiting" && _isPaired)
             {
                 _isPaired = false;
+                _ttsCacheSchemaVersion = 0;
                 // Bỏ dòng _lastProcessedSessionId = ""; ở đây để khối "Xử lý Session mới" phía dưới
                 // có thể nhận diện được sự thay đổi của sessionId (từ có thành không) và kích hoạt việc thoát scene.
                 Debug.Log("[PairingManager] ⚠️ Web đã ngắt kết nối! Reset về trạng thái chờ.");

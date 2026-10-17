@@ -17,13 +17,15 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
         public string sequence_id;
         public string text;
         public string npc_binding_id;
+        public string run_id;
 
-        public DialogueRequestV2(string activationId, string sequenceId, string text, string npcBindingId)
+        public DialogueRequestV2(string activationId, string sequenceId, string text, string npcBindingId, string runId = null)
         {
             activation_id = activationId ?? string.Empty;
             sequence_id = sequenceId ?? string.Empty;
             this.text = text ?? string.Empty;
             npc_binding_id = npcBindingId ?? string.Empty;
+            run_id = runId ?? string.Empty;
         }
     }
 

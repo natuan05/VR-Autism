@@ -1,5 +1,6 @@
 using UnityEngine;
 using VRAutism.Core.Models;
+using VRAutism.Gameplay.LessonGraphV2.AudioCache;
 
 namespace VRAutism.Core
 {
@@ -17,6 +18,15 @@ namespace VRAutism.Core
         public string ChildId { get; set; } = "";
         public string LiveKitToken { get; set; } = "";
         public string LiveKitUrl { get; set; } = "wss://vra-9jrt51dr.livekit.cloud";
+        public string TtsCacheBackendUrl { get; set; } = string.Empty;
+        public SessionTtsSnapshotV1 TtsCacheSnapshot { get; private set; }
+
+        public void SetTtsCacheSnapshot(SessionTtsSnapshotV1 snapshot)
+        {
+            if (snapshot != null && !string.Equals(snapshot.Scope.session_id, SessionId, System.StringComparison.Ordinal))
+                throw new System.ArgumentException("TTS snapshot belongs to another session.", nameof(snapshot));
+            TtsCacheSnapshot = snapshot;
+        }
         
         // --- Thông tin bài học (fetch từ Firestore theo lesson_id) ---
         public string LessonId { get; set; } = "";
@@ -91,6 +101,8 @@ namespace VRAutism.Core
             LevelIndex = 0;
             LessonType = "";
             HostId = "";
+            TtsCacheBackendUrl = string.Empty;
+            TtsCacheSnapshot = null;
             CurrentParams = LessonParameters.GetDefault();
             MaxVolume = 0.5f;
             ActivePhrasesByQuestIndex.Clear();

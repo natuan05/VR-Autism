@@ -47,7 +47,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Executors
                 try
                 {
                     await _transport.SpeakAsync(
-                        new DialogueRequestV2(context.ActivationId, config.SequenceId, config.Text, config.NpcBindingId),
+                        new DialogueRequestV2(context.ActivationId, config.SequenceId, config.Text, config.NpcBindingId, context.RunId),
                         context.CancellationToken);
                     return Result(context, NodeStatus.Success, "non_blocking");
                 }
@@ -89,7 +89,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Executors
             {
                 context.CancellationToken.ThrowIfCancellationRequested();
                 await _transport.SpeakAsync(
-                    new DialogueRequestV2(context.ActivationId, config.SequenceId, config.Text, config.NpcBindingId),
+                    new DialogueRequestV2(context.ActivationId, config.SequenceId, config.Text, config.NpcBindingId, context.RunId),
                     context.CancellationToken);
 
                 var clock = context.Clock ?? _clock;

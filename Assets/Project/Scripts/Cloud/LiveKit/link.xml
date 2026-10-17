@@ -1,0 +1,7 @@
+<linker>
+  <assembly fullname="LiveKit">
+    <type fullname="LiveKit.Participant" preserve="fields">
+      <field name="_info" />
+    </type>
+  </assembly>
+</linker>

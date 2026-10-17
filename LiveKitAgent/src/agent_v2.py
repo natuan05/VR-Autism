@@ -11,7 +11,9 @@ import logging
 import os
 import random
 import uuid
+from collections.abc import AsyncIterable, AsyncIterator
 from dataclasses import dataclass
+from enum import Enum, auto
 from typing import Any, Optional
 
 from dotenv import load_dotenv
@@ -30,9 +32,30 @@ from livekit.agents import (
 )
 from livekit.agents import tts as agents_tts
 from livekit.agents.voice import Agent, AgentSession
+from livekit.agents.voice.speech_handle import SpeechHandle
 from livekit.plugins import google, silero
 
+from fixed_audio_runtime_v1 import (
+    FixedAudioRuntimeV1,
+    activity_packet,
+    done_packet,
+    invocation_fields,
+)
 from silence_reminder_v2 import ActivationSilenceReminderV2
+from tts_cache_client_v1 import CacheServiceError, SessionScopeV1, TtsCacheClientV1
+from tts_cache_contract_v1 import (
+    CACHE_TOPIC,
+    CacheValidationError,
+    compute_key,
+    parse_cache_packet,
+)
+from tts_capture_v2 import (
+    CAPTURE_CONTEXT,
+    CaptureContext,
+    FixedCapture,
+    PublicationWorker,
+)
+from tts_generation_v2 import stream_fixed_tts
 from voice_command_runtime_v2 import (
     CommandDisposition,
     CommandStatus,
@@ -256,14 +279,17 @@ class JobRuntime:
         self.verbal_hint_lock = asyncio.Lock()
         self.activation_task: asyncio.Task[Any] | None = None
         self.active_speech_handle: Any = None
+        self.active_opening_handle: Any = None
         self.active_verbal_hint_task: asyncio.Task[Any] | None = None
         self.active_verbal_hint_activation_id: str | None = None
         self.active_verbal_hint_handle: Any = None
+        self.active_silence_reminder_handle: Any = None
         self.silence_reminder: ActivationSilenceReminderV2 | None = None
         self.silence_reminder_interrupt: Any = None
         self.matched_sent: set[str] = set()
         self.background_tasks: set[asyncio.Task[Any]] = set()
         self.tts_cache: dict[tuple[str, str, float, str], list[rtc.AudioFrame]] = {}
+        self.cache_activation_changed = asyncio.Event()
 
     def spawn(self, coro: Any) -> None:
         """Spawn background task with auto-cleanup on completion."""
@@ -290,6 +316,107 @@ class JobRuntime:
 # ---------------------------------------------------------------------------
 # Helper Utilities
 # ---------------------------------------------------------------------------
+class SpeechOutcome(Enum):
+    COMPLETED = auto()
+    FAILED = auto()
+    CANCELLED = auto()
+    STALE = auto()
+
+
+def start_owned_speech(
+    runtime: JobRuntime,
+    invocation: tuple[str, str],
+    text: str,
+    session: AgentSession,
+    *,
+    audio: Any = None,
+    allow_interruptions: bool = True,
+) -> SpeechHandle | None:
+    """Start speech and save its handle synchronously under its owner."""
+    kind, _invocation_id = invocation
+    say_options: dict[str, Any] = {"allow_interruptions": allow_interruptions}
+    if audio is not None:
+        say_options["audio"] = audio
+    handle = session.say(text, **say_options)
+    if kind == "script":
+        runtime.active_speech_handle = handle
+    elif kind == "hint":
+        runtime.active_verbal_hint_handle = handle
+    elif kind == "opening":
+        runtime.active_opening_handle = handle
+    elif kind == "reminder":
+        runtime.active_silence_reminder_handle = handle
+        interrupt = getattr(handle, "interrupt", None)
+        if callable(interrupt):
+            runtime.silence_reminder_interrupt = interrupt
+    return handle
+
+
+def start_captured_owned_speech(
+    runtime: JobRuntime,
+    invocation: tuple[str, str],
+    text: str,
+    session: AgentSession,
+    capture_context: CaptureContext,
+    *,
+    allow_interruptions: bool = True,
+) -> SpeechHandle | None:
+    """Copy cache ownership into SDK-created tasks, then reset the caller."""
+    token = CAPTURE_CONTEXT.set(capture_context)
+    try:
+        return start_owned_speech(
+            runtime,
+            invocation,
+            text,
+            session,
+            allow_interruptions=allow_interruptions,
+        )
+    finally:
+        CAPTURE_CONTEXT.reset(token)
+
+
+async def finish_owned_speech(
+    handle: SpeechHandle | None, is_current: Any
+) -> SpeechOutcome:
+    """Wait for an owned handle and classify its terminal SDK outcome."""
+    if handle is None:
+        return SpeechOutcome.FAILED
+    try:
+        wait_for_playout = getattr(handle, "wait_for_playout", None)
+        if callable(wait_for_playout):
+            await wait_for_playout()
+        elif hasattr(handle, "__await__"):
+            await handle
+    except asyncio.CancelledError:
+        interrupt = getattr(handle, "interrupt", None)
+        done = getattr(handle, "done", None)
+        if (
+            callable(interrupt)
+            and (not callable(done) or not done())
+            and not bool(getattr(handle, "interrupted", False))
+        ):
+            with contextlib.suppress(Exception):
+                interrupt()
+        return SpeechOutcome.CANCELLED
+    except Exception:
+        return SpeechOutcome.FAILED
+
+    if not is_current():
+        return SpeechOutcome.STALE
+    if bool(getattr(handle, "interrupted", False)):
+        return SpeechOutcome.CANCELLED
+
+    done = getattr(handle, "done", None)
+    exception = getattr(handle, "exception", None)
+    if callable(done) and done() is True and callable(exception):
+        try:
+            if exception() is not None:
+                return SpeechOutcome.FAILED
+        except asyncio.InvalidStateError:
+            return SpeechOutcome.FAILED
+    return SpeechOutcome.COMPLETED
+
+
 async def send_rtc_event(
     runtime: JobRuntime, event_name: str, extra_data: Optional[dict[str, Any]] = None
 ) -> bool:
@@ -353,6 +480,47 @@ class TeacherAgent(Agent):
         super().__init__(instructions=WAITING_INSTRUCTIONS)
         self._runtime = runtime
         self._evaluation_activation_id: str | None = None
+
+    async def tts_node(
+        self, text: AsyncIterable[str], model_settings: Any
+    ) -> AsyncIterator[rtc.AudioFrame]:
+        """Tee only an explicitly owned fixed utterance into bounded capture."""
+        capture_context = CAPTURE_CONTEXT.get()
+        if capture_context is None:
+            async for frame in Agent.default.tts_node(self, text, model_settings):
+                yield frame
+            return
+
+        activity = self._get_activity_or_raise()
+        conn_options = activity.session.conn_options.tts_conn_options
+        capture = FixedCapture(capture_context)
+        input_text: list[str] = []
+        stream_complete = False
+
+        async def tracked_text() -> AsyncIterator[str]:
+            async for chunk in text:
+                if chunk:
+                    input_text.append(chunk)
+                yield chunk
+
+        try:
+            async for event in stream_fixed_tts(
+                tracked_text(), capture_context.profile, conn_options=conn_options
+            ):
+                capture.append(event)
+                yield event.frame
+            stream_complete = True
+        finally:
+            submitted_text = "".join(input_text)
+            input_complete = submitted_text == capture_context.final_text
+            completed = capture.finish(
+                input_complete=input_complete,
+                stream_complete=stream_complete,
+                expected_segment_count=1 if input_complete else 0,
+            )
+            worker = getattr(self._runtime, "tts_publication_worker", None)
+            if completed is not None and worker is not None:
+                worker.try_enqueue(completed)
 
     async def on_enter(self) -> None:
         logger.info("[AGENT] TeacherAgent ready in room (standby mode)")
@@ -421,6 +589,46 @@ async def _wait_for_vr_participant(room: rtc.Room) -> rtc.RemoteParticipant:
         room.off("participant_connected", on_participant_connected)
 
 
+def _cache_schema_version(participant: rtc.RemoteParticipant) -> int | None:
+    """Read the cache capability carried in trusted VR participant metadata."""
+    metadata = getattr(participant, "metadata", "")
+    if metadata is None or metadata == "":
+        return None
+    try:
+        value = metadata if isinstance(metadata, dict) else json.loads(metadata)
+    except (TypeError, json.JSONDecodeError) as exc:
+        raise CacheServiceError("invalid VR participant metadata") from exc
+    if not isinstance(value, dict):
+        raise CacheServiceError("invalid VR participant metadata")
+    version = value.get("tts_cache_schema_version")
+    if version is None:
+        return None
+    if type(version) is not int or version != 1:
+        raise CacheServiceError("unsupported TTS cache schema version")
+    return version
+
+
+def _is_paired_vr_participant(runtime: JobRuntime, participant: Any) -> bool:
+    if not (
+        participant is not None
+        and participant.kind == rtc.ParticipantKind.PARTICIPANT_KIND_STANDARD
+        and participant.identity == getattr(runtime, "vr_participant_identity", None)
+    ):
+        return False
+    if getattr(runtime, "cache_scope", None) is None:
+        return True
+    try:
+        return _cache_schema_version(participant) == 1
+    except CacheServiceError:
+        return False
+
+
+def _paired_identity_matches_scope(
+    participant_identity: str, scope: SessionScopeV1
+) -> bool:
+    return participant_identity == f"vr_{scope.pin}"
+
+
 async def entrypoint(ctx: JobContext) -> None:
     runtime = JobRuntime(ctx)
 
@@ -447,6 +655,77 @@ async def entrypoint(ctx: JobContext) -> None:
         )
         await ctx.room.disconnect()
         return
+
+    try:
+        participant = await _wait_for_vr_participant(ctx.room)
+        cache_schema_version = _cache_schema_version(participant)
+    except CacheServiceError:
+        logger.error("[CACHE] VR cache capability metadata is invalid")
+        await send_rtc_event(
+            runtime, "AGENT_INIT_FAILED", {"reason": "invalid_vr_cache_metadata"}
+        )
+        await ctx.room.disconnect()
+        return
+    cache_client = None
+    cache_scope = None
+    if cache_schema_version == 1:
+        try:
+            cache_client = TtsCacheClientV1()
+            cache_scope = await asyncio.to_thread(
+                cache_client.get_session_scope, ctx.room.name, required=True
+            )
+            if cache_scope is None:
+                raise CacheServiceError("retained session snapshot is missing")
+        except CacheServiceError:
+            logger.error("[CACHE] Retained session settings are unavailable")
+            await send_rtc_event(
+                runtime,
+                "AGENT_INIT_FAILED",
+                {"reason": "tts_session_snapshot_unavailable"},
+            )
+            await ctx.room.disconnect()
+            return
+        if not _paired_identity_matches_scope(participant.identity, cache_scope):
+            logger.error("[CACHE] VR participant does not match retained session PIN")
+            await send_rtc_event(
+                runtime,
+                "AGENT_INIT_FAILED",
+                {"reason": "vr_session_pairing_mismatch"},
+            )
+            await ctx.room.disconnect()
+            return
+    runtime.vr_participant_identity = participant.identity
+    runtime.cache_scope = cache_scope
+    runtime.cache_client = cache_client
+    runtime.cache_fixed_audio = (
+        FixedAudioRuntimeV1.from_scope(cache_scope) if cache_scope else None
+    )
+    runtime.cache_ready = asyncio.Event()
+    if cache_scope:
+        runtime.cache_packet_lock = asyncio.Lock()
+
+        async def announce_cache_artifact(_capture: Any, artifact: dict[str, Any]):
+            fixed: FixedAudioRuntimeV1 | None = runtime.cache_fixed_audio
+            if fixed is None or runtime.cache_scope is None:
+                return
+            packet = {
+                "contract_version": 1,
+                "event": "AUDIO_CACHE_READY",
+                "session_id": fixed.session_id,
+                "agent_instance_id": fixed.agent_instance_id,
+                **artifact,
+            }
+            try:
+                validated_packet = parse_cache_packet(packet)
+            except CacheValidationError:
+                logger.warning("[CACHE] Ignoring invalid publication receipt")
+                return
+            await _send_cache_packet(runtime, validated_packet)
+
+        runtime.tts_publication_worker = PublicationWorker(
+            cache_client.publish, on_success=announce_cache_artifact
+        )
+        runtime.tts_publication_worker.start()
 
     # 3. Initialize Audio Pipeline & Agent
     vad = ctx.proc.userdata.get("vad") or silero.VAD.load(
@@ -479,12 +758,16 @@ async def entrypoint(ctx: JobContext) -> None:
 
     runtime.silence_reminder = ActivationSilenceReminderV2(play_silence_reminder)
     runtime.silence_reminder_interrupt = session.interrupt
+    if cache_scope is not None:
+        runtime.silence_reminder.set_enabled(False)
 
     def on_user_input_transcribed(event: Any) -> None:
         transcript = getattr(event, "transcript", "")
         if not isinstance(transcript, str) or not transcript.strip():
             return
         runtime.interrupt_active_silence_reminder()
+        if getattr(runtime, "cache_scope", None) is not None:
+            runtime.spawn(_cancel_cache_reminder(runtime, "user_speaking"))
         if runtime.silence_reminder is not None:
             runtime.silence_reminder.note_user_activity()
 
@@ -494,6 +777,8 @@ async def entrypoint(ctx: JobContext) -> None:
         speaking = state == "speaking"
         if speaking:
             runtime.interrupt_active_silence_reminder()
+            if getattr(runtime, "cache_scope", None) is not None:
+                runtime.spawn(_cancel_cache_reminder(runtime, "user_speaking"))
         if runtime.silence_reminder is not None:
             runtime.silence_reminder.set_user_speaking(speaking)
 
@@ -507,11 +792,18 @@ async def entrypoint(ctx: JobContext) -> None:
 
     def on_room_reconnecting() -> None:
         runtime.interrupt_active_silence_reminder()
+        if getattr(runtime, "cache_scope", None) is not None:
+            runtime.cache_ready.clear()
         if runtime.silence_reminder is not None:
             runtime.silence_reminder.reconnecting()
+            if getattr(runtime, "cache_scope", None) is not None:
+                runtime.silence_reminder.set_enabled(False)
 
     def on_room_reconnected() -> None:
-        if runtime.silence_reminder is not None:
+        if getattr(runtime, "cache_scope", None) is not None:
+            runtime.cache_ready.clear()
+            runtime.spawn(_announce_cache_agent(runtime))
+        elif runtime.silence_reminder is not None:
             runtime.silence_reminder.reconnected()
 
     session.on("user_input_transcribed", on_user_input_transcribed)
@@ -531,6 +823,9 @@ async def entrypoint(ctx: JobContext) -> None:
         for task in pending:
             task.cancel()
         await asyncio.gather(*pending, return_exceptions=True)
+        publication_worker = getattr(runtime, "tts_publication_worker", None)
+        if publication_worker is not None:
+            await publication_worker.drain(timeout_seconds=5)
 
     register_shutdown_callback = getattr(ctx, "add_shutdown_callback", None)
     if callable(register_shutdown_callback):
@@ -538,15 +833,9 @@ async def entrypoint(ctx: JobContext) -> None:
 
     # 4. Register DataPacket handler BEFORE session.start to prevent packet loss race condition
     def on_data_received(data_packet: rtc.DataPacket) -> None:
-        if not agent_ready.is_set():
-            sender = data_packet.participant
-            if (
-                sender is None
-                or sender.kind != rtc.ParticipantKind.PARTICIPANT_KIND_STANDARD
-                or not sender.identity.startswith("vr_")
-                or len(sender.identity) <= 3
-            ):
-                return
+        sender = data_packet.participant
+        if not _is_paired_vr_participant(runtime, sender):
+            return
 
         async def _process_packet():
             # Wait for session initialization if packet arrives during handshake
@@ -569,7 +858,6 @@ async def entrypoint(ctx: JobContext) -> None:
 
     # 5. Start AgentSession
     try:
-        participant = await _wait_for_vr_participant(ctx.room)
         logger.info(
             "[AUDIO] Linking Unity microphone participant: %s", participant.identity
         )
@@ -591,9 +879,588 @@ async def entrypoint(ctx: JobContext) -> None:
         for task in pending:
             task.cancel()
         await asyncio.gather(*pending, return_exceptions=True)
+        publication_worker = getattr(runtime, "tts_publication_worker", None)
+        if publication_worker is not None:
+            await publication_worker.drain(timeout_seconds=5)
         raise
     agent_ready.set()
     logger.info("[AGENT] Agent pipeline active and ready for packets")
+    if cache_scope is not None:
+        await _announce_cache_agent(runtime)
+
+
+async def _send_cache_packet(runtime: JobRuntime, packet: dict[str, Any]) -> bool:
+    room = getattr(runtime.job_ctx, "room", None)
+    if room is None:
+        return False
+    try:
+        await room.local_participant.publish_data(
+            json.dumps(packet, ensure_ascii=False).encode("utf-8"),
+            reliable=True,
+            topic=CACHE_TOPIC,
+        )
+        return True
+    except Exception:
+        logger.warning("[CACHE] Failed to publish cache lifecycle packet")
+        return False
+
+
+async def _announce_cache_agent(runtime: JobRuntime) -> bool:
+    fixed: FixedAudioRuntimeV1 | None = getattr(runtime, "cache_fixed_audio", None)
+    if fixed is None:
+        return False
+    return await _send_cache_packet(
+        runtime,
+        {
+            "contract_version": 1,
+            "event": "FIXED_AUDIO_HELLO",
+            "session_id": fixed.session_id,
+            "agent_instance_id": fixed.agent_instance_id,
+        },
+    )
+
+
+async def _send_fixed_activity(
+    runtime: JobRuntime,
+    invocation: dict[str, Any],
+    owner_revision: int,
+    phase: str,
+    source: str,
+    *,
+    status: str = "PENDING",
+    reason: str = "",
+) -> bool:
+    fixed: FixedAudioRuntimeV1 = runtime.cache_fixed_audio
+    fixed.activity_sequence += 1
+    packet = activity_packet(
+        invocation,
+        owner_revision=owner_revision,
+        activity_sequence=fixed.activity_sequence,
+        phase=phase,
+        source=source,
+        status=status,
+        reason=reason,
+    )
+    fixed.current_activity = packet
+    return await _send_cache_packet(runtime, packet)
+
+
+async def _cancel_cache_reminder(runtime: JobRuntime, reason: str) -> None:
+    fixed: FixedAudioRuntimeV1 | None = getattr(runtime, "cache_fixed_audio", None)
+    invocation = getattr(runtime, "cache_reminder_invocation", None)
+    if fixed is None or invocation is None:
+        return
+    await _send_cache_packet(
+        runtime,
+        {
+            "contract_version": 1,
+            "event": "FIXED_AUDIO_REMINDER_CANCEL",
+            **invocation_fields(invocation),
+            "agent_instance_id": fixed.agent_instance_id,
+            "reason": reason,
+        },
+    )
+    invocation_key = fixed.invocation_key(invocation)
+    waiter = fixed.reminder_waiters.pop(invocation_key, None)
+    fixed.reminder_owner_revisions.pop(invocation_key, None)
+    fixed.reminder_terminal_status.pop(invocation_key, None)
+    if waiter is not None and not waiter.done():
+        waiter.set_result(False)
+    runtime.cache_reminder_invocation = None
+
+
+async def _process_cache_packet(
+    session: AgentSession, runtime: JobRuntime, payload: bytes | str
+) -> None:
+    fixed: FixedAudioRuntimeV1 | None = getattr(runtime, "cache_fixed_audio", None)
+    scope: SessionScopeV1 | None = getattr(runtime, "cache_scope", None)
+    if fixed is None or scope is None:
+        return
+    try:
+        packet = parse_cache_packet(payload)
+    except CacheValidationError as exc:
+        logger.warning("[CACHE] Ignoring malformed cache packet: %s", exc)
+        return
+
+    if packet.get("session_id") != scope.session_id:
+        return
+    event = packet["event"]
+    if event == "FIXED_AUDIO_RECONCILE":
+        if packet["agent_instance_id"] != fixed.agent_instance_id:
+            return
+        previous_run_id = fixed.run_id
+        if not fixed.accept_run(packet["run_id"]):
+            return
+        if (
+            previous_run_id is not None
+            and previous_run_id != fixed.run_id
+            and runtime.silence_reminder is not None
+        ):
+            runtime.silence_reminder.clear_external_audio_activity()
+        if (
+            previous_run_id is not None
+            and previous_run_id != fixed.run_id
+            and fixed.current_task is not None
+            and not fixed.current_task.done()
+        ):
+            fixed.current_task.cancel()
+            await asyncio.gather(fixed.current_task, return_exceptions=True)
+        remote_active = set(packet["active_activation_ids"])
+        fixed.active_activation_ids = remote_active
+        fixed.completed_opening_activation_ids = (
+            set(packet.get("completed_opening_activation_ids", [])) & remote_active
+        )
+        runtime.cache_activation_changed.set()
+        if (
+            fixed.current_invocation is not None
+            and fixed.current_invocation["activation_id"] not in remote_active
+            and fixed.current_task is not None
+            and not fixed.current_task.done()
+        ):
+            fixed.current_task.cancel()
+        current_activation = runtime.voice_runtime.active_activation_id
+        if current_activation and current_activation not in remote_active:
+            runtime.cancel_silence_reminder(current_activation)
+        activity = packet["current_activity"]
+        if activity is not None and _accept_external_activity(
+            runtime, activity, authoritative=True
+        ):
+            fixed.current_activity = activity
+            _apply_external_activity(runtime, activity)
+        elif activity is None:
+            fixed.external_activity = None
+            fixed.current_activity = None
+            if runtime.silence_reminder is not None:
+                runtime.silence_reminder.clear_external_audio_activity()
+        if runtime.silence_reminder is not None:
+            runtime.silence_reminder.set_enabled(True)
+            runtime.silence_reminder.reconnected()
+            if (
+                activity is not None
+                and activity["event"] == "FIXED_AUDIO_ACTIVITY"
+                and activity["kind"] == "opening"
+                and activity["phase"] == "terminal"
+                and activity["status"] == "SUCCESS"
+                and activity["activation_id"] == current_activation
+            ):
+                runtime.silence_reminder.opening_finished(current_activation)
+            elif current_activation is not None:
+                _apply_reconciled_opening_proof(runtime, current_activation)
+        runtime.cache_ready.set()
+        return
+
+    if not runtime.cache_ready.is_set() or packet.get("run_id") != fixed.run_id:
+        return
+    invocation_key = fixed.invocation_key(packet)
+    if event == "FIXED_AUDIO_STREAM_REQUEST":
+        runtime.spawn(_handle_fixed_audio_stream_request(session, runtime, packet))
+    elif event == "FIXED_AUDIO_CANCEL":
+        fixed.cancelled_invocations[invocation_key] = packet["owner_revision"]
+        runtime.cache_activation_changed.set()
+        if len(fixed.cancelled_invocations) > 1024:
+            fixed.cancelled_invocations.pop(next(iter(fixed.cancelled_invocations)))
+        if (
+            fixed.is_current(packet)
+            and packet["owner_revision"] == fixed.owner_revision
+            and fixed.current_task is not None
+        ):
+            fixed.current_task.cancel()
+    elif event == "FIXED_AUDIO_REMINDER_CANCEL":
+        if packet["agent_instance_id"] != fixed.agent_instance_id:
+            return
+        waiter = fixed.reminder_waiters.pop(invocation_key, None)
+        fixed.reminder_owner_revisions.pop(invocation_key, None)
+        fixed.reminder_terminal_status.pop(invocation_key, None)
+        if (
+            runtime.cache_reminder_invocation is not None
+            and fixed.invocation_key(runtime.cache_reminder_invocation)
+            == invocation_key
+        ):
+            runtime.cache_reminder_invocation = None
+        if waiter is not None and not waiter.done():
+            waiter.set_result(False)
+    elif event == "FIXED_AUDIO_ACTIVITY":
+        if packet.get("agent_instance_id") is not None:
+            return
+        if not _accept_external_activity(runtime, packet):
+            return
+        _apply_external_activity(runtime, packet)
+        fixed.current_activity = packet
+        if (
+            packet["kind"] == "automatic_reminder"
+            and invocation_key in fixed.reminder_waiters
+        ):
+            fixed.reminder_owner_revisions[invocation_key] = packet["owner_revision"]
+            if packet["phase"] == "terminal":
+                fixed.reminder_terminal_status[invocation_key] = packet["status"]
+                await _finish_cache_reminder_from_activity(runtime, packet)
+        if (
+            packet["kind"] == "opening"
+            and packet["phase"] == "terminal"
+            and packet["status"] == "SUCCESS"
+            and runtime.silence_reminder is not None
+        ):
+            runtime.silence_reminder.opening_finished(packet["activation_id"])
+    elif event == "FIXED_AUDIO_DONE":
+        if packet["agent_instance_id"] != fixed.agent_instance_id:
+            return
+        if not fixed.is_current(packet):
+            # Reminder requests are separately owned and can complete without
+            # replacing the agent's stream owner.
+            waiter = fixed.reminder_waiters.get(invocation_key)
+            expected_revision = fixed.reminder_owner_revisions.get(invocation_key)
+            if (
+                waiter is None
+                or waiter.done()
+                or expected_revision != packet["owner_revision"]
+            ):
+                return
+            success = (
+                packet["status"] == "SUCCESS"
+                and fixed.reminder_terminal_status.get(invocation_key) == "SUCCESS"
+            )
+            waiter.set_result(success)
+            fixed.reminder_waiters.pop(invocation_key, None)
+            fixed.reminder_owner_revisions.pop(invocation_key, None)
+            fixed.reminder_terminal_status.pop(invocation_key, None)
+            if (
+                runtime.cache_reminder_invocation is not None
+                and fixed.invocation_key(runtime.cache_reminder_invocation)
+                == invocation_key
+            ):
+                runtime.cache_reminder_invocation = None
+                if success and runtime.voice_runtime.can_continue(
+                    packet["activation_id"]
+                ):
+                    await send_v2_packet(
+                        runtime,
+                        accepted_reminder_packet(
+                            packet["activation_id"],
+                            packet["npc_binding_id"],
+                            packet["invocation_id"],
+                        ),
+                    )
+
+
+def _apply_external_activity(runtime: JobRuntime, packet: dict[str, Any]) -> None:
+    if runtime.silence_reminder is not None:
+        runtime.silence_reminder.set_external_audio_activity(
+            packet["invocation_id"], packet["phase"], packet["activity_sequence"]
+        )
+
+
+def _accept_external_activity(
+    runtime: JobRuntime, packet: dict[str, Any], *, authoritative: bool = False
+) -> bool:
+    fixed: FixedAudioRuntimeV1 | None = getattr(runtime, "cache_fixed_audio", None)
+    scope: SessionScopeV1 | None = getattr(runtime, "cache_scope", None)
+    if fixed is None or scope is None:
+        return False
+    try:
+        scope.config.profile_for_npc(packet["npc_binding_id"])
+    except (CacheValidationError, KeyError, TypeError):
+        return False
+    return fixed.accept_external_activity(packet, authoritative=authoritative)
+
+
+def _apply_reconciled_opening_proof(runtime: JobRuntime, activation_id: str) -> bool:
+    """Apply authenticated VR evidence once its matching quest is installed."""
+    fixed: FixedAudioRuntimeV1 | None = getattr(runtime, "cache_fixed_audio", None)
+    scope: SessionScopeV1 | None = getattr(runtime, "cache_scope", None)
+    reminder: ActivationSilenceReminderV2 | None = getattr(
+        runtime, "silence_reminder", None
+    )
+    if (
+        fixed is None
+        or scope is None
+        or reminder is None
+        or activation_id not in fixed.active_activation_ids
+        or activation_id not in fixed.completed_opening_activation_ids
+        or not runtime.voice_runtime.can_continue(activation_id)
+    ):
+        return False
+    npc_binding_id = runtime.voice_runtime.active_npc_binding_id or ""
+    try:
+        scope.config.profile_for_npc(npc_binding_id)
+    except (CacheValidationError, KeyError, TypeError):
+        return False
+    reminder.opening_finished(activation_id)
+    return True
+
+
+async def _finish_cache_reminder_from_activity(
+    runtime: JobRuntime, packet: dict[str, Any]
+) -> None:
+    fixed: FixedAudioRuntimeV1 = runtime.cache_fixed_audio
+    invocation_key = fixed.invocation_key(packet)
+    waiter = fixed.reminder_waiters.pop(invocation_key, None)
+    fixed.reminder_owner_revisions.pop(invocation_key, None)
+    fixed.reminder_terminal_status.pop(invocation_key, None)
+    if waiter is None or waiter.done():
+        return
+    matches_current_request = bool(
+        runtime.cache_reminder_invocation is not None
+        and fixed.invocation_key(runtime.cache_reminder_invocation) == invocation_key
+    )
+    is_current = bool(
+        matches_current_request
+        and packet["activation_id"] in fixed.active_activation_ids
+        and runtime.voice_runtime.can_continue(packet["activation_id"])
+    )
+    success = (
+        packet["status"] == "SUCCESS"
+        and packet["source"] in {"local", "stream"}
+        and is_current
+    )
+    waiter.set_result(success)
+    if not matches_current_request:
+        return
+    runtime.cache_reminder_invocation = None
+    if success:
+        await send_v2_packet(
+            runtime,
+            accepted_reminder_packet(
+                packet["activation_id"],
+                packet["npc_binding_id"],
+                packet["invocation_id"],
+            ),
+        )
+
+
+async def _handle_fixed_audio_stream_request(
+    session: AgentSession, runtime: JobRuntime, packet: dict[str, Any]
+) -> None:
+    fixed: FixedAudioRuntimeV1 = runtime.cache_fixed_audio
+    activation_state = _fixed_stream_activation_state(runtime, packet)
+    if activation_state == "stale":
+        return
+
+    while activation_state == "pending":
+        runtime.cache_activation_changed.clear()
+        activation_state = _fixed_stream_activation_state(runtime, packet)
+        if activation_state == "pending":
+            await runtime.cache_activation_changed.wait()
+    if activation_state == "stale":
+        return
+
+    try:
+        profile = runtime.cache_scope.config.profile(packet["profile_id"])
+        if (
+            runtime.cache_scope.config.profile_for_npc(packet["npc_binding_id"])
+            != profile
+        ):
+            raise CacheValidationError("profile does not match NPC")
+        if compute_key(packet["text"], profile) != packet["key"]:
+            raise CacheValidationError("request cache key mismatch")
+    except CacheValidationError:
+        profile = None
+
+    owner_lock = getattr(runtime, "cache_owner_lock", None)
+    if owner_lock is None:
+        runtime.cache_owner_lock = asyncio.Lock()
+        owner_lock = runtime.cache_owner_lock
+    current_task = asyncio.current_task()
+    async with owner_lock:
+        terminal = fixed.terminal_for(packet)
+        if terminal is not None:
+            await _send_cache_packet(
+                runtime,
+                done_packet(
+                    packet,
+                    fixed.agent_instance_id,
+                    terminal["owner_revision"],
+                    terminal["status"],
+                    terminal["reason"],
+                ),
+            )
+            return
+        if fixed.current_invocation and fixed.invocation_key(
+            fixed.current_invocation
+        ) == fixed.invocation_key(packet):
+            return
+        if packet["owner_revision"] <= fixed.owner_revision:
+            return
+        previous_task = fixed.current_task
+        if (
+            previous_task is not None
+            and not previous_task.done()
+            and previous_task is not current_task
+        ):
+            previous_task.cancel()
+            await asyncio.gather(previous_task, return_exceptions=True)
+            if (
+                packet["session_id"] != fixed.session_id
+                or packet["run_id"] != fixed.run_id
+                or _fixed_stream_activation_state(runtime, packet) != "active"
+            ):
+                return
+        fixed.owner_revision = packet["owner_revision"]
+        invocation = {**packet}
+        fixed.current_invocation = invocation
+        fixed.current_task = current_task
+        runtime.active_speech_handle = None
+
+    if profile is None:
+        await _finish_fixed_audio_request(
+            runtime, invocation, packet["owner_revision"], "FAILED", "invalid_profile"
+        )
+        return
+
+    if (
+        fixed.cancelled_invocations.get(fixed.invocation_key(packet))
+        == packet["owner_revision"]
+    ):
+        await _finish_fixed_audio_request(
+            runtime, invocation, packet["owner_revision"], "CANCELLED", "skip"
+        )
+        return
+
+    capture_context = CaptureContext(
+        final_text=packet["text"],
+        config=runtime.cache_scope.config,
+        profile=profile,
+        key=packet["key"],
+        rejection_epoch=packet["rejection_epoch"],
+        invocation=invocation_fields(packet),
+    )
+    handle = None
+    status = "FAILED"
+    reason = "stream_failed"
+    try:
+        await _send_fixed_activity(
+            runtime, invocation, packet["owner_revision"], "preparing", "none"
+        )
+        handle = start_captured_owned_speech(
+            runtime,
+            ("script", packet["invocation_id"]),
+            packet["text"],
+            session,
+            capture_context,
+            allow_interruptions=True,
+        )
+        if handle is None:
+            raise RuntimeError("speech handle unavailable")
+        await _send_fixed_activity(
+            runtime, invocation, packet["owner_revision"], "stream_selected", "stream"
+        )
+        await _send_fixed_activity(
+            runtime, invocation, packet["owner_revision"], "playing", "stream"
+        )
+        outcome = await finish_owned_speech(
+            handle,
+            lambda: _fixed_stream_is_current(runtime, packet),
+        )
+        status = (
+            "SUCCESS"
+            if outcome is SpeechOutcome.COMPLETED
+            else (
+                "CANCELLED"
+                if outcome in {SpeechOutcome.CANCELLED, SpeechOutcome.STALE}
+                else "FAILED"
+            )
+        )
+        reason = "" if status == "SUCCESS" else outcome.name.lower()
+    except asyncio.CancelledError:
+        status, reason = "CANCELLED", "superseded"
+        raise
+    except Exception:
+        logger.warning("[CACHE] Fixed stream invocation failed")
+    finally:
+        if fixed.is_current(packet):
+            await _send_fixed_activity(
+                runtime,
+                invocation,
+                packet["owner_revision"],
+                "terminal",
+                "stream",
+                status=status,
+                reason=reason,
+            )
+            await _send_cache_packet(
+                runtime,
+                done_packet(
+                    invocation,
+                    fixed.agent_instance_id,
+                    packet["owner_revision"],
+                    status,
+                    reason,
+                ),
+            )
+            fixed.remember_terminal(
+                invocation, status, packet["owner_revision"], reason
+            )
+            fixed.current_invocation = None
+            fixed.current_task = None
+            if runtime.active_speech_handle is handle:
+                runtime.active_speech_handle = None
+
+
+def _fixed_stream_activation_state(runtime: JobRuntime, packet: dict[str, Any]) -> str:
+    """Return active, pending, or stale using VR activation ownership."""
+    fixed: FixedAudioRuntimeV1 = runtime.cache_fixed_audio
+    activation_id = packet["activation_id"]
+    if (
+        fixed.cancelled_invocations.get(fixed.invocation_key(packet))
+        == packet["owner_revision"]
+    ):
+        return "active"
+    if packet["kind"] == "dialogue":
+        return "active" if activation_id in fixed.active_activation_ids else "stale"
+    if (
+        runtime.voice_runtime.can_continue(activation_id)
+        and runtime.voice_runtime.active_npc_binding_id == packet["npc_binding_id"]
+    ):
+        return "active"
+    if activation_id not in fixed.active_activation_ids:
+        return "stale"
+    return "pending"
+
+
+def _fixed_stream_is_current(runtime: JobRuntime, packet: dict[str, Any]) -> bool:
+    fixed: FixedAudioRuntimeV1 = runtime.cache_fixed_audio
+    if not (
+        fixed.is_current(packet)
+        and fixed.owner_revision == packet["owner_revision"]
+        and packet["session_id"] == fixed.session_id
+        and packet["run_id"] == fixed.run_id
+        and packet["activation_id"] in fixed.active_activation_ids
+    ):
+        return False
+    if packet["kind"] == "dialogue":
+        return True
+    return bool(
+        runtime.voice_runtime.can_continue(packet["activation_id"])
+        and runtime.voice_runtime.active_npc_binding_id == packet["npc_binding_id"]
+    )
+
+
+async def _finish_fixed_audio_request(
+    runtime: JobRuntime,
+    invocation: dict[str, Any],
+    owner_revision: int,
+    status: str,
+    reason: str,
+) -> None:
+    fixed: FixedAudioRuntimeV1 = runtime.cache_fixed_audio
+    await _send_fixed_activity(runtime, invocation, owner_revision, "preparing", "none")
+    await _send_fixed_activity(
+        runtime,
+        invocation,
+        owner_revision,
+        "terminal",
+        "stream",
+        status=status,
+        reason=reason,
+    )
+    await _send_cache_packet(
+        runtime,
+        done_packet(
+            invocation, fixed.agent_instance_id, owner_revision, status, reason
+        ),
+    )
+    fixed.remember_terminal(invocation, status, owner_revision, reason)
+    fixed.current_invocation = None
+    fixed.current_task = None
 
 
 async def _process_data_packet(
@@ -605,6 +1472,14 @@ async def _process_data_packet(
 ) -> None:
     """Route V2 voice and legacy hint packets while ignoring remote commands."""
     raw_text = payload.decode("utf-8") if isinstance(payload, bytes) else payload
+    if topic == CACHE_TOPIC:
+        packet_lock = getattr(runtime, "cache_packet_lock", None)
+        if packet_lock is None:
+            await _process_cache_packet(session, runtime, raw_text)
+        else:
+            async with packet_lock:
+                await _process_cache_packet(session, runtime, raw_text)
+        return
     if topic == VOICE_TOPIC:
         await _process_v2_packet(agent, session, runtime, raw_text)
         return
@@ -654,6 +1529,9 @@ async def _process_v2_packet(
                     "[V2] Rejected activation %s: %s", packet.activation_id, exc
                 )
                 return
+            fixed_audio = getattr(runtime, "cache_fixed_audio", None)
+            if fixed_audio is not None:
+                runtime.cache_activation_changed.set()
             if disposition is ActivationDisposition.NEW:
                 try:
                     await _reset_activation(agent, session, runtime)
@@ -662,6 +1540,7 @@ async def _process_v2_packet(
                             packet.activation_id,
                             packet.speech_silence_timeout_seconds,
                         )
+                        _apply_reconciled_opening_proof(runtime, packet.activation_id)
                 except Exception:
                     runtime.voice_runtime.mark_failed(packet.activation_id)
                     logger.exception(
@@ -694,6 +1573,9 @@ async def _process_v2_packet(
             await _publish_activation_status(runtime, packet.activation_id)
         elif isinstance(packet, CancelActiveQuest):
             if runtime.voice_runtime.cancel(packet):
+                fixed_audio = getattr(runtime, "cache_fixed_audio", None)
+                if fixed_audio is not None:
+                    runtime.cache_activation_changed.set()
                 await _reset_activation(agent, session, runtime)
             await _publish_activation_status(runtime, packet.activation_id)
     await asyncio.sleep(0)
@@ -737,6 +1619,25 @@ async def _reset_activation(
     agent: TeacherAgent, session: AgentSession, runtime: JobRuntime
 ) -> None:
     runtime.cancel_silence_reminder()
+    reminder_handle = runtime.active_silence_reminder_handle
+    reminder_done = getattr(reminder_handle, "done", None) if reminder_handle else None
+    reminder_interrupt = getattr(reminder_handle, "interrupt", None)
+    if (
+        reminder_handle is not None
+        and callable(reminder_interrupt)
+        and (not callable(reminder_done) or not reminder_done())
+        and not bool(getattr(reminder_handle, "interrupted", False))
+    ):
+        with contextlib.suppress(Exception):
+            reminder_interrupt()
+    opening_handle = runtime.active_opening_handle
+    runtime.active_opening_handle = None
+    if opening_handle is not None:
+        interrupt = getattr(opening_handle, "interrupt", None)
+        done = getattr(opening_handle, "done", None)
+        if callable(interrupt) and (not callable(done) or not done()):
+            with contextlib.suppress(Exception):
+                interrupt()
     task = runtime.activation_task
     runtime.activation_task = None
     if task and not task.done():
@@ -820,6 +1721,20 @@ async def _handle_quest_activation(
         if not runtime.voice_runtime.can_continue(activation_id):
             return
 
+        cache_scope: SessionScopeV1 | None = getattr(runtime, "cache_scope", None)
+        if cache_scope is not None:
+            # The VR owns the opening utterance in cache-aware sessions. The
+            # agent configures evaluation only and starts silence timing after
+            # VR reports the opening's terminal lifecycle.
+            cache_scope.config.profile_for_npc(npc_binding_id)
+            await clear_agent_chat_history(agent)
+            agent.bind_evaluation_activation(activation_id)
+            await agent.install_evaluation_tool(activation_id)
+            await agent.update_instructions(
+                build_quest_instructions(quest_name, phrases)
+            )
+            return
+
         profile, is_fallback = runtime.voice_registry.get(npc_binding_id)
         if is_fallback and npc_binding_id:
             logger.warning(
@@ -862,15 +1777,28 @@ async def _handle_quest_activation(
             cached_frames is not None,
             opening,
         )
-        await session.say(
+        handle = start_owned_speech(
+            runtime,
+            ("opening", activation_id),
             opening,
+            session,
             audio=audio_arg,
             allow_interruptions=True,
         )
-        if (
-            runtime.voice_runtime.can_continue(activation_id)
-            and runtime.silence_reminder is not None
-        ):
+        outcome = await finish_owned_speech(
+            handle,
+            lambda: (
+                runtime.active_opening_handle is handle
+                and runtime.voice_runtime.can_continue(activation_id)
+            ),
+        )
+        if runtime.active_opening_handle is handle:
+            runtime.active_opening_handle = None
+        if outcome is SpeechOutcome.FAILED:
+            raise RuntimeError("opening speech generation failed")
+        if outcome is not SpeechOutcome.COMPLETED:
+            return
+        if runtime.silence_reminder is not None:
             runtime.silence_reminder.opening_finished(activation_id)
     except Exception as err:
         logger.error("[AGENT] Error activating quest context: %s", err)
@@ -902,6 +1830,57 @@ async def _play_silence_reminder(
     if not npc_binding_id or not phrases:
         return False
 
+    cache_scope: SessionScopeV1 | None = getattr(runtime, "cache_scope", None)
+    fixed: FixedAudioRuntimeV1 | None = getattr(runtime, "cache_fixed_audio", None)
+    if cache_scope is not None and fixed is not None:
+        if not runtime.cache_ready.is_set() or fixed.run_id is None:
+            return False
+        try:
+            profile = cache_scope.config.profile_for_npc(npc_binding_id)
+        except CacheValidationError:
+            return False
+        phrase = random.choice(phrases)
+        invocation = {
+            "contract_version": 1,
+            "event": "FIXED_AUDIO_REMINDER_REQUEST",
+            "session_id": fixed.session_id,
+            "run_id": fixed.run_id,
+            "activation_id": activation_id,
+            "invocation_id": uuid.uuid4().hex,
+            "npc_binding_id": npc_binding_id,
+            "kind": "automatic_reminder",
+            "agent_instance_id": fixed.agent_instance_id,
+            "text": phrase,
+            "profile_id": profile.profile_id,
+            "key": compute_key(phrase, profile),
+        }
+        waiter = asyncio.get_running_loop().create_future()
+        invocation_key = fixed.invocation_key(invocation)
+        fixed.reminder_waiters[invocation_key] = waiter
+        runtime.cache_reminder_invocation = invocation
+        if runtime.silence_reminder is not None:
+            runtime.silence_reminder.set_owned_reminder_invocation(
+                invocation["invocation_id"]
+            )
+        if not await _send_cache_packet(runtime, invocation):
+            fixed.reminder_waiters.pop(invocation_key, None)
+            runtime.cache_reminder_invocation = None
+            if runtime.silence_reminder is not None:
+                runtime.silence_reminder.clear_owned_reminder_invocation(
+                    invocation["invocation_id"]
+                )
+            return False
+        try:
+            return await waiter
+        except asyncio.CancelledError:
+            await _cancel_cache_reminder(runtime, "user_speaking")
+            raise
+        finally:
+            if runtime.silence_reminder is not None:
+                runtime.silence_reminder.clear_owned_reminder_invocation(
+                    invocation["invocation_id"]
+                )
+
     phrase = random.choice(phrases)
     profile, is_fallback = runtime.voice_registry.get(npc_binding_id)
     if is_fallback:
@@ -917,26 +1896,27 @@ async def _play_silence_reminder(
     cached_frames = runtime.tts_cache.get(cache_key)
     audio_arg = _frames_to_async_gen(cached_frames) if cached_frames else None
 
+    handle = None
     try:
-        handle = await session.say(
+        handle = start_owned_speech(
+            runtime,
+            ("reminder", activation_id),
             phrase,
+            session,
             audio=audio_arg,
             allow_interruptions=True,
         )
         if handle is None:
             return False
-        wait_for_playout = getattr(handle, "wait_for_playout", None)
-        if callable(wait_for_playout):
-            await wait_for_playout()
-        elif asyncio.iscoroutine(handle):
-            await handle
-
-        if bool(getattr(handle, "interrupted", False)):
-            return False
-        if (
-            not runtime.voice_runtime.can_continue(activation_id)
-            or runtime.voice_runtime.active_npc_binding_id != npc_binding_id
-        ):
+        outcome = await finish_owned_speech(
+            handle,
+            lambda: (
+                runtime.active_silence_reminder_handle is handle
+                and runtime.voice_runtime.can_continue(activation_id)
+                and runtime.voice_runtime.active_npc_binding_id == npc_binding_id
+            ),
+        )
+        if outcome is not SpeechOutcome.COMPLETED:
             return False
 
         return await send_v2_packet(
@@ -954,6 +1934,10 @@ async def _play_silence_reminder(
             "[V2] Silence reminder failed for activation %s", activation_id
         )
         return False
+    finally:
+        if runtime.active_silence_reminder_handle is handle:
+            runtime.active_silence_reminder_handle = None
+            runtime.silence_reminder_interrupt = None
 
 
 async def _handle_hint_reminder(
@@ -1003,6 +1987,10 @@ async def _handle_verbal_hint_v2(
     packet: VerbalHintV2,
 ) -> None:
     """Speak one deduplicated phrase for the active activation and NPC."""
+    if getattr(runtime, "cache_scope", None) is not None:
+        # Cache-aware VR owns hint selection and must send the selected exact
+        # phrase through FIXED_AUDIO_STREAM_REQUEST.
+        return
     if (
         runtime.voice_runtime.active_activation_id == packet.activation_id
         and runtime.voice_runtime.status(packet.activation_id)
@@ -1056,16 +2044,28 @@ async def _handle_verbal_hint_v2(
 
             cached_frames = runtime.tts_cache.get(cache_key)
             audio_arg = _frames_to_async_gen(cached_frames) if cached_frames else None
-            handle = await session.say(
+            handle = start_owned_speech(
+                runtime,
+                ("hint", packet.command_id),
                 phrase,
+                session,
                 audio=audio_arg,
                 allow_interruptions=True,
             )
-            runtime.active_verbal_hint_handle = handle
-            if handle is not None and hasattr(handle, "wait_for_playout"):
-                await handle.wait_for_playout()
-            elif asyncio.iscoroutine(handle):
-                await handle
+            outcome = await finish_owned_speech(
+                handle,
+                lambda: (
+                    runtime.active_verbal_hint_handle is handle
+                    and runtime.active_verbal_hint_task is hint_task
+                    and runtime.voice_runtime.can_continue(packet.activation_id)
+                    and runtime.voice_runtime.active_npc_binding_id
+                    == packet.npc_binding_id
+                ),
+            )
+            if outcome is SpeechOutcome.FAILED:
+                logger.error(
+                    "[V2] Verbal hint generation failed: %s", packet.command_id
+                )
         except asyncio.CancelledError:
             raise
         except Exception as err:
@@ -1156,8 +2156,11 @@ async def _handle_speak_script_v2(
             packet.npc_binding_id,
             packet.text,
         )
-        handle = await session.say(
+        handle = start_owned_speech(
+            runtime,
+            ("script", packet.sequence_id),
             packet.text,
+            session,
             allow_interruptions=True,
         )
         if handle is None:
@@ -1187,16 +2190,20 @@ async def _handle_speak_script_v2(
             with contextlib.suppress(Exception):
                 handle.interrupt()
             return
-        runtime.active_speech_handle = handle
+        outcome = await finish_owned_speech(
+            handle,
+            lambda: (
+                runtime.active_speech_handle is handle
+                and runtime.command_runtime.can_continue(
+                    packet.activation_id, packet.sequence_id
+                )
+                and _matches_active_speak_script_scope(runtime, packet)
+            ),
+        )
 
-        # Await playout completion
-        if hasattr(handle, "wait_for_playout"):
-            await handle.wait_for_playout()
-        elif asyncio.iscoroutine(handle):
-            await handle
-
-        is_interrupted = getattr(handle, "interrupted", False)
-        if is_interrupted:
+        if outcome is SpeechOutcome.STALE:
+            return
+        if outcome is SpeechOutcome.CANCELLED:
             logger.warning(
                 "[V2] Dialogue playback interrupted for %s/%s",
                 packet.activation_id,
@@ -1217,6 +2224,32 @@ async def _handle_speak_script_v2(
                         packet.npc_binding_id,
                         status="CANCELLED",
                         reason="interrupted",
+                    ),
+                )
+        elif outcome is SpeechOutcome.FAILED:
+            failure_reason = "speech_generation_failed"
+            get_exception = getattr(handle, "exception", None)
+            done = getattr(handle, "done", None)
+            if callable(get_exception) and callable(done) and done() is True:
+                with contextlib.suppress(Exception):
+                    failure = get_exception()
+                    if failure is not None:
+                        failure_reason = str(failure)
+            marked = runtime.command_runtime.mark_completed(
+                packet.activation_id,
+                packet.sequence_id,
+                status="FAILED",
+                reason=failure_reason,
+            )
+            if marked:
+                await send_v2_packet(
+                    runtime,
+                    speak_script_done_packet(
+                        packet.activation_id,
+                        packet.sequence_id,
+                        packet.npc_binding_id,
+                        status="FAILED",
+                        reason=failure_reason,
                     ),
                 )
         else:

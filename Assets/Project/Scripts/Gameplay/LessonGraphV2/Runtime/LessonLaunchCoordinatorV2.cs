@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using VRAutism.Core;
 using VRAutism.Gameplay.LessonGraphV2.Phrases;
+using VRAutism.Gameplay.LessonGraphV2.AudioCache;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Runtime
 {
@@ -41,7 +42,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             string.Equals(attempt.AttemptId, _pendingAttempt.AttemptId, StringComparison.Ordinal);
 
         public static bool TryAcceptLaunch(LessonLaunchAttemptV2 attempt, string childId, string hostId,
-            out AcceptedLessonLaunchV2 accepted, out string reason)
+            out AcceptedLessonLaunchV2 accepted, out string reason, SessionTtsSnapshotV1 ttsSnapshot = null)
         {
             accepted = null;
             reason = null;
@@ -58,6 +59,14 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
                 return false;
             }
 
+            if (ttsSnapshot != null &&
+                (!string.Equals(ttsSnapshot.Scope.session_id, attempt.SessionId, StringComparison.Ordinal) ||
+                 !string.Equals(ttsSnapshot.Scope.lesson_id, attempt.LessonId, StringComparison.Ordinal)))
+            {
+                reason = "The retained TTS snapshot does not match the launched session and lesson.";
+                return false;
+            }
+
             if (!VoicePhraseSnapshotStoreV2.TryGetSessionMetadata(out var phraseMetadata) ||
                 !string.Equals(phraseMetadata.LaunchToken, attempt.LaunchToken, StringComparison.Ordinal) ||
                 !string.Equals(phraseMetadata.LessonId, attempt.LessonId, StringComparison.Ordinal))
@@ -69,7 +78,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             try
             {
                 accepted = new AcceptedLessonLaunchV2(attempt, childId, hostId,
-                    phraseMetadata.LessonVoiceRevision, phraseMetadata.ChildPhraseRevision);
+                    phraseMetadata.LessonVoiceRevision, phraseMetadata.ChildPhraseRevision, ttsSnapshot);
             }
             catch (ArgumentException exception)
             {

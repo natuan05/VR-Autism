@@ -18,3 +18,38 @@ Khi trẻ tham gia bài học bằng kính thực tế ảo, giáo viên hoặc 
 
 ## Khả năng tương thích thiết bị
 Hệ thống hoạt động trên cả kính thực tế ảo không dây Meta Quest và kính cắm máy tính HTC Vive.
+
+## Chạy local TTS cache và nghe thử phrase
+
+Chạy mỗi lệnh trong terminal riêng trên cùng máy.
+
+### 1. Web backend
+
+```powershell
+Set-Location D:/Lab/VRA-web
+npm run dev
+```
+
+`VRA-web/.env.local`: đặt `TTS_PREVIEW_SERVICE_URL=http://127.0.0.1:8080` và `TTS_CACHE_SERVICE_SECRET`.
+
+### 2. LiveKit Agent V2
+
+```powershell
+Set-Location D:/Lab/VR-Autism/LiveKitAgent
+uv run src/agent_v2.py start
+```
+
+`LiveKitAgent/.env`: đặt `TTS_CACHE_BACKEND_URL=http://127.0.0.1:3000`, `TTS_CACHE_ALLOW_LOCAL_HTTP=true` và cùng `TTS_CACHE_SERVICE_SECRET` với web.
+
+### 3. TTS preview service
+
+```powershell
+Set-Location D:/Lab/VR-Autism/LiveKitAgent
+uv run python src/tts_preview_service_v2.py
+```
+
+`LiveKitAgent/.env.preview`: đặt `TTS_CACHE_SERVICE_SECRET` giống web và Google credentials. Service dùng `127.0.0.1:8080` mặc định.
+
+### 4. Unity Editor
+
+Trong Unity Editor, chọn **Tools > TTS Cache > Use Local Backend (127.0.0.1:3000)** rồi khởi chạy buổi học V2.

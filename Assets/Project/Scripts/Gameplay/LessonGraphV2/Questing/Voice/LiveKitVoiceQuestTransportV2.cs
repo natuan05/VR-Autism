@@ -9,6 +9,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using VRAutism.Cloud.LiveKit;
+using VRAutism.Gameplay.LessonGraphV2.AudioCache;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
 {
@@ -60,6 +61,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
 
         private readonly ConcurrentQueue<Action> _mainThreadQueue = new ConcurrentQueue<Action>();
         private readonly HashSet<string> _reminderCommandIds = new HashSet<string>(StringComparer.Ordinal);
+        private readonly HashSet<string> _hintCommandIds = new HashSet<string>(StringComparer.Ordinal);
+        private readonly Queue<string> _hintCommandOrder = new Queue<string>();
         private ILiveKitDataPacketClientV2 _client;
         private INpcAudioRouterV2 _router;
         private ILiveKitMicrophoneControlV2 _microphone;
@@ -78,6 +81,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
         private string _activeScriptSequenceId = string.Empty;
         private string _activeScriptNpcBindingId = string.Empty;
         private CancelSpeakScriptPacket _pendingScriptCancellation;
+        private FixedAudioPlaybackCoordinatorV1 _fixedAudioCoordinator;
+        private int _nextHintIndex;
+        private string _openingScheduledActivationId = string.Empty;
 
         public event Action<VoiceQuestSignal> SignalReceived;
         public string CurrentActivationId => _current?.activation_id ?? string.Empty;
@@ -125,6 +131,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
 
         private void Awake()
         {
+            BindFixedAudioOwnership();
             Configure(LiveKitService.Instance, LiveKitService.Instance);
         }
         private void Update()
@@ -140,10 +147,20 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             cancellationToken.ThrowIfCancellationRequested();
             var isNewActivation = _current == null || !string.Equals(_current.activation_id, request.activation_id, StringComparison.Ordinal);
             if (isNewActivation)
+            {
                 CancelActiveSpeakScript("lesson_scope_changed");
+                if (_current != null) FixedAudioPlaybackCoordinatorV1.Instance.UnregisterActivation(_current.activation_id);
+            }
             _current = new VoiceQuestActivation(request.activation_id, request.quest_goal, request.phrases,
-                request.npc_binding_id, request.speech_silence_timeout_seconds);
-            if (isNewActivation) _reminderCommandIds.Clear();
+                request.npc_binding_id, request.speech_silence_timeout_seconds, request.run_id);
+            if (isNewActivation)
+            {
+                _reminderCommandIds.Clear();
+                _hintCommandIds.Clear();
+                _hintCommandOrder.Clear();
+                _nextHintIndex = _current.phrases.Count > 1 ? 1 : 0;
+                _openingScheduledActivationId = string.Empty;
+            }
             _terminal = false;
             _terminalSignal = null;
             if (_client != null && _client.IsConnectedV2)
@@ -154,6 +171,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             }
             _desired = new Packet { @event = "SET_ACTIVE_QUEST", contract_version = 2, activation_id = _current.activation_id, quest_goal = _current.quest_goal, phrases = _current.phrases.ToArray(), npc_binding_id = _current.npc_binding_id };
             Publish(_desired);
+            ScheduleOpeningIfCacheAware();
             return Task.CompletedTask;
         }
 
@@ -164,6 +182,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             if (_current == null || !string.Equals(_current.activation_id, activationId, StringComparison.Ordinal)) return Task.CompletedTask;
             if (_terminal) return Task.CompletedTask;
             CancelActiveSpeakScript("lesson_scope_changed");
+            FixedAudioPlaybackCoordinatorV1.Instance.UnregisterActivation(activationId);
             _terminal = true;
             SetMicrophoneEnabled(false);
             _desired = new Packet { @event = "CANCEL_ACTIVE_QUEST", contract_version = 2, activation_id = activationId, reason = string.IsNullOrWhiteSpace(reason) ? "cancelled" : reason };
@@ -175,12 +194,29 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
         {
             if (_destroyed || _suspended) return Task.FromResult(false);
             cancellationToken.ThrowIfCancellationRequested();
+            var fixedAudio = FixedAudioPlaybackCoordinatorV1.Instance;
+            var cacheAware = fixedAudio.IsCacheAware;
             if (request == null || string.IsNullOrWhiteSpace(request.command_id) ||
                 string.IsNullOrWhiteSpace(request.activation_id) || string.IsNullOrWhiteSpace(request.npc_binding_id) ||
-                _client == null || !_client.IsConnectedV2 || _current == null || _terminal ||
+                _current == null || _terminal ||
                 !string.Equals(_current.activation_id, request.activation_id, StringComparison.Ordinal) ||
                 !string.Equals(_current.npc_binding_id, request.npc_binding_id, StringComparison.Ordinal))
                 return Task.FromResult(false);
+
+            if (cacheAware)
+            {
+                if (_hintCommandIds.Contains(request.command_id) || _current.phrases.Count == 0) return Task.FromResult(false);
+                var phraseIndex = _nextHintIndex % _current.phrases.Count;
+                var phrase = _current.phrases[phraseIndex];
+                var fixedRequest = fixedAudio.NewUtteranceForNpc(_current.run_id, _current.activation_id,
+                    request.command_id, _current.npc_binding_id, "manual_hint", phrase);
+                if (fixedRequest == null || fixedAudio.Schedule(fixedRequest) < 0) return Task.FromResult(false);
+                RememberHintCommand(request.command_id);
+                _nextHintIndex = (_nextHintIndex + 1) % _current.phrases.Count;
+                return Task.FromResult(true);
+            }
+
+            if (_client == null || !_client.IsConnectedV2) return Task.FromResult(false);
 
             _client.PublishDataV2(
                 Encoding.UTF8.GetBytes(JsonUtility.ToJson(request)),
@@ -188,6 +224,40 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
                 true);
             return Task.FromResult(true);
         }
+
+        private void ScheduleOpeningIfCacheAware()
+        {
+            var fixedAudio = FixedAudioPlaybackCoordinatorV1.Instance;
+            BindFixedAudioOwnership();
+            if (!fixedAudio.IsCacheAware || string.IsNullOrWhiteSpace(_current.run_id)) return;
+            fixedAudio.RegisterActivation(_current.run_id, _current.activation_id);
+            if (_current.phrases.Count == 0 || _openingScheduledActivationId == _current.activation_id) return;
+            var opening = fixedAudio.NewUtteranceForNpc(_current.run_id, _current.activation_id,
+                "opening-" + _current.activation_id, _current.npc_binding_id, "opening", _current.phrases[0]);
+            if (opening == null || fixedAudio.Schedule(opening) < 0) return;
+            _openingScheduledActivationId = _current.activation_id;
+        }
+
+        private void RememberHintCommand(string commandId)
+        {
+            const int maxRemembered = 1024;
+            if (!_hintCommandIds.Add(commandId)) return;
+            _hintCommandOrder.Enqueue(commandId);
+            while (_hintCommandOrder.Count > maxRemembered)
+                _hintCommandIds.Remove(_hintCommandOrder.Dequeue());
+        }
+
+        private void BindFixedAudioOwnership()
+        {
+            var coordinator = FixedAudioPlaybackCoordinatorV1.Instance;
+            if (ReferenceEquals(_fixedAudioCoordinator, coordinator)) return;
+            if (_fixedAudioCoordinator != null)
+                _fixedAudioCoordinator.FixedAudioOwnershipStarting -= OnFixedAudioOwnershipStarting;
+            _fixedAudioCoordinator = coordinator;
+            _fixedAudioCoordinator.FixedAudioOwnershipStarting += OnFixedAudioOwnershipStarting;
+        }
+
+        private void OnFixedAudioOwnershipStarting() => CancelActiveSpeakScript("lesson_scope_changed");
 
         public bool PublishSpeakScript(string activationId, string commandId, string npcBindingId, string text)
         {
@@ -403,6 +473,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             if (packet.@event == "QUEST_MATCHED")
             {
                 CancelActiveSpeakScript("lesson_scope_changed");
+                FixedAudioPlaybackCoordinatorV1.Instance.UnregisterActivation(_current.activation_id);
                 _terminal = true;
                 _terminalSignal = VoiceQuestSignalType.Matched;
                 _desired = null;
@@ -413,9 +484,15 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             if (packet.@event != "QUEST_STATUS") return;
             if (packet.status == "ACTIVE")
                 SignalReceived?.Invoke(new VoiceQuestSignal(packet.activation_id, VoiceQuestSignalType.Active));
+            else if (packet.status == "FAILED" && FixedAudioPlaybackCoordinatorV1.Instance.IsCacheAware)
+            {
+                // Evaluation failure stops microphone capture, but leaves the runner-owned activation available for cached manual hints.
+                SetMicrophoneEnabled(false);
+            }
             else if (packet.status == "CANCELLED" || packet.status == "FAILED")
             {
                 CancelActiveSpeakScript("lesson_scope_changed");
+                FixedAudioPlaybackCoordinatorV1.Instance.UnregisterActivation(_current.activation_id);
                 _terminal = true;
                 _terminalSignal = packet.status == "CANCELLED" ? VoiceQuestSignalType.Cancelled : VoiceQuestSignalType.Failed;
                 if (_terminalSignal != VoiceQuestSignalType.Cancelled || _desired?.@event != "CANCEL_ACTIVE_QUEST")
@@ -454,6 +531,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
         private void OnDestroy()
         {
             _lifecycleVersion++;
+            if (_fixedAudioCoordinator != null)
+                _fixedAudioCoordinator.FixedAudioOwnershipStarting -= OnFixedAudioOwnershipStarting;
             Configure(null);
             _destroyed = true;
         }

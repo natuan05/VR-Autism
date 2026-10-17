@@ -63,7 +63,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Sources
                 phrase.Goal,
                 phrase.Phrases,
                 _npcBindingId,
-                effectiveSilenceTimeout);
+                effectiveSilenceTimeout,
+                activation.RunId);
             transport.ActivateAsync(request, CancellationToken.None).ContinueWith(task =>
             {
                 if (task.IsFaulted)

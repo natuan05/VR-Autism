@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using VRAutism.Cloud.LiveKit;
+using VRAutism.Gameplay.LessonGraphV2.AudioCache;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
 {
@@ -54,6 +55,9 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
         private ILiveKitDataPacketClientV2 _client;
         private INpcAudioRouterV2 _router;
         private DialogueRequestV2 _currentRequest;
+        private FixedAudioPlaybackCoordinatorV1 _fixedAudio;
+        private Action<InvocationV1, string, string> _fixedAudioTerminalHandler;
+        private bool _currentRequestCacheAware;
         private bool _currentRequestPublished;
         private bool _terminal;
 
@@ -106,13 +110,39 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
             cancellationToken.ThrowIfCancellationRequested();
             PublishPendingCancellations();
 
+            EnsureFixedAudioCoordinator();
+            if (_fixedAudio != null && _fixedAudio.IsCacheAware)
+            {
+                _currentRequest = new DialogueRequestV2(request.activation_id, request.sequence_id,
+                    request.text, request.npc_binding_id, request.run_id);
+                _currentRequestPublished = true;
+                _terminal = false;
+                _currentRequestCacheAware = true;
+                _router?.SetActiveNpcRoute(request.npc_binding_id);
+                if (!string.IsNullOrWhiteSpace(request.run_id))
+                    _fixedAudio.RegisterActivation(request.run_id, request.activation_id);
+                var fixedUtterance = _fixedAudio.NewUtteranceForNpc(request.run_id, request.activation_id,
+                    request.sequence_id, request.npc_binding_id, "dialogue", request.text);
+                if (fixedUtterance == null || _fixedAudio.Schedule(fixedUtterance) < 0)
+                {
+                    if (_terminal) return Task.CompletedTask;
+                    _terminal = true;
+                    _fixedAudio.UnregisterActivation(request.activation_id);
+                    SignalReceived?.Invoke(new DialogueSignalV2(request.activation_id, request.sequence_id,
+                        request.npc_binding_id, DialogueSignalType.Failed, "AUDIO_UNAVAILABLE"));
+                }
+                return Task.CompletedTask;
+            }
+
             _currentRequest = new DialogueRequestV2(
                 request.activation_id,
                 request.sequence_id,
                 request.text,
-                request.npc_binding_id);
+                request.npc_binding_id,
+                request.run_id);
             _currentRequestPublished = false;
             _terminal = false;
+            _currentRequestCacheAware = false;
 
             _router?.SetActiveNpcRoute(request.npc_binding_id);
 
@@ -133,6 +163,21 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
 
             if (_terminal)
                 return Task.CompletedTask;
+
+            if (_currentRequestCacheAware && _fixedAudio != null)
+            {
+                _terminal = true;
+                _fixedAudio.Cancel(new InvocationV1
+                {
+                    session_id = _fixedAudio.SessionId,
+                    run_id = _currentRequest.run_id,
+                    activation_id = _currentRequest.activation_id,
+                    invocation_id = _currentRequest.sequence_id,
+                    npc_binding_id = _currentRequest.npc_binding_id,
+                    kind = "dialogue"
+                }, reason);
+                return Task.CompletedTask;
+            }
 
             _terminal = true;
             if (!_currentRequestPublished)
@@ -181,7 +226,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
             _mainThreadQueue.Enqueue(() =>
             {
                 PublishPendingCancellations();
-                if (_currentRequest != null && !_terminal)
+                if (!_currentRequestCacheAware && _currentRequest != null && !_terminal)
                 {
                     PublishCurrent();
                 }
@@ -284,6 +329,32 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
                 packet.reason));
         }
 
+        private void EnsureFixedAudioCoordinator()
+        {
+            var coordinator = FixedAudioPlaybackCoordinatorV1.Instance;
+            if (ReferenceEquals(_fixedAudio, coordinator)) return;
+            if (_fixedAudio != null && _fixedAudioTerminalHandler != null)
+                _fixedAudio.DialogueTerminal -= _fixedAudioTerminalHandler;
+            _fixedAudio = coordinator;
+            _fixedAudioTerminalHandler = OnFixedAudioTerminal;
+            _fixedAudio.DialogueTerminal += _fixedAudioTerminalHandler;
+        }
+
+        private void OnFixedAudioTerminal(InvocationV1 invocation, string status, string reason)
+        {
+            if (!_currentRequestCacheAware || _currentRequest == null || invocation == null || _terminal ||
+                invocation.activation_id != _currentRequest.activation_id ||
+                invocation.invocation_id != _currentRequest.sequence_id ||
+                invocation.run_id != _currentRequest.run_id || invocation.npc_binding_id != _currentRequest.npc_binding_id)
+                return;
+            _terminal = true;
+            var signal = status == "SUCCESS" ? DialogueSignalType.Done :
+                status == "CANCELLED" ? DialogueSignalType.Cancelled : DialogueSignalType.Failed;
+            _fixedAudio?.UnregisterActivation(invocation.activation_id);
+            SignalReceived?.Invoke(new DialogueSignalV2(invocation.activation_id, invocation.invocation_id,
+                invocation.npc_binding_id, signal, reason));
+        }
+
         private void OnDestroy()
         {
             if (_currentRequest != null && !_terminal)
@@ -294,6 +365,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Dialogue
                     "bridge_unload",
                     CancellationToken.None);
             }
+            if (_fixedAudio != null && _fixedAudioTerminalHandler != null)
+                _fixedAudio.DialogueTerminal -= _fixedAudioTerminalHandler;
             Configure(null);
         }
     }

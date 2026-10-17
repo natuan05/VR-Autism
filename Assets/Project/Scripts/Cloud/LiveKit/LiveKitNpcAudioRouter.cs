@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using LiveKit;
 using LiveKit.Proto;
+using VRAutism.Gameplay.LessonGraphV2.AudioCache;
 
 namespace VRAutism.Cloud.LiveKit
 {
-    internal sealed class LiveKitNpcAudioRouter
+    internal sealed class LiveKitNpcAudioRouter : IFixedAudioOwnershipRouterV1
     {
         private readonly Dictionary<string, (AudioStream stream, GameObject go)> _remoteAudioStreams = new();
         private AudioSource _npcAudioSource;
@@ -37,6 +39,9 @@ namespace VRAutism.Cloud.LiveKit
         private readonly Dictionary<string, ActiveTrackEntry> _activeAudioStreams = new Dictionary<string, ActiveTrackEntry>(StringComparer.Ordinal);
         private readonly object _audioRoutingLock = new object();
         private string _activeNpcBindingId = string.Empty;
+        private bool _fixedPlaybackSuspended;
+        private InvocationV1 _fixedOwner;
+        private long _fixedOwnerRevision = -1;
 
         internal Func<RemoteAudioTrack, AudioSource, IDisposable> StreamFactory { get; set; }
 
@@ -168,6 +173,7 @@ namespace VRAutism.Cloud.LiveKit
                 }
 
                 // Drain any pending tracks matching this route (handles both new routes and route swaps)
+                if (_fixedPlaybackSuspended) return;
                 var matchingPendingSids = new List<string>();
                 foreach (var kvp in _pendingAudioTracks)
                 {
@@ -238,6 +244,7 @@ namespace VRAutism.Cloud.LiveKit
             lock (_audioRoutingLock)
             {
                 _activeNpcBindingId = npcBindingId;
+                if (_fixedPlaybackSuspended) return _npcAudioRoutes.ContainsKey(npcBindingId);
 
                 if (_npcAudioRoutes.TryGetValue(npcBindingId, out var targetSource) && targetSource != null)
                 {
@@ -298,6 +305,117 @@ namespace VRAutism.Cloud.LiveKit
             }
         }
 
+        IDisposable IFixedAudioOwnershipRouterV1.AcquireLocalPlayback(InvocationV1 invocation, long ownerRevision, string npcBindingId)
+        {
+            if (invocation == null || string.IsNullOrWhiteSpace(npcBindingId)) return null;
+            lock (_audioRoutingLock)
+            {
+                if (ownerRevision < _fixedOwnerRevision) return null;
+                _fixedOwner = invocation;
+                _fixedOwnerRevision = ownerRevision;
+                _activeNpcBindingId = npcBindingId;
+                SuspendRemoteAudioForFixedOwner(npcBindingId);
+                return new FixedPlaybackLease(this, invocation, ownerRevision);
+            }
+        }
+
+        bool IFixedAudioOwnershipRouterV1.SelectStream(InvocationV1 invocation, long ownerRevision, string npcBindingId)
+        {
+            if (invocation == null || string.IsNullOrWhiteSpace(npcBindingId)) return false;
+            lock (_audioRoutingLock)
+            {
+                if (ownerRevision < _fixedOwnerRevision) return false;
+                if (!_npcAudioRoutes.TryGetValue(npcBindingId, out var source) || source == null) return false;
+                _fixedOwner = invocation;
+                _fixedOwnerRevision = ownerRevision;
+                _fixedPlaybackSuspended = false;
+                _activeNpcBindingId = npcBindingId;
+                foreach (var track in _activeAudioStreams.Values
+                             .Where(item => string.Equals(item.NpcBindingId, npcBindingId, StringComparison.Ordinal))
+                             .Select(item => item.Track).Where(item => item != null).Distinct().ToArray())
+                    BindV2AudioTrack(track, source, npcBindingId);
+                return true;
+            }
+        }
+
+        private static void StopAndClear(AudioSource source)
+        {
+            if (source == null) return;
+            source.Stop();
+            source.clip = null;
+        }
+
+        private void ReleaseLocalOwnership(InvocationV1 invocation, long ownerRevision)
+            => ReleaseLocalOwnership(invocation, ownerRevision, false);
+
+        void IFixedAudioOwnershipRouterV1.ReleaseLocalPlayback(InvocationV1 invocation, long ownerRevision, bool resumeOrdinaryAudio)
+            => ReleaseLocalOwnership(invocation, ownerRevision, resumeOrdinaryAudio);
+
+        private void ReleaseLocalOwnership(InvocationV1 invocation, long ownerRevision, bool resumeOrdinaryAudio)
+        {
+            lock (_audioRoutingLock)
+            {
+                if (ownerRevision != _fixedOwnerRevision || !SameInvocation(_fixedOwner, invocation)) return;
+                if (!resumeOrdinaryAudio)
+                {
+                    SuspendRemoteAudioForFixedOwner(invocation.npc_binding_id);
+                    return;
+                }
+                _fixedOwner = null;
+                _fixedPlaybackSuspended = false;
+                if (!_npcAudioRoutes.TryGetValue(_activeNpcBindingId, out var source) || source == null) return;
+
+                foreach (var entry in _activeAudioStreams.Values
+                             .Where(item => string.Equals(item.NpcBindingId, _activeNpcBindingId, StringComparison.Ordinal))
+                             .Select(item => item.Track).Where(item => item != null).Distinct().ToArray())
+                    BindV2AudioTrack(entry, source, _activeNpcBindingId);
+
+                foreach (var pending in _pendingAudioTracks.ToArray())
+                {
+                    _pendingAudioTracks.Remove(pending.Key);
+                    BindV2AudioTrack(pending.Value.Track, source, _activeNpcBindingId, pending.Key);
+                }
+            }
+        }
+
+        private void SuspendRemoteAudioForFixedOwner(string npcBindingId)
+        {
+            _fixedPlaybackSuspended = true;
+            _pendingAudioTracks.Clear();
+            _pendingAudioTrack = null;
+            foreach (var entry in _activeAudioStreams.Values)
+            {
+                try { entry.Stream?.Dispose(); } catch { }
+                entry.Stream = null;
+                StopAndClear(entry.Source);
+            }
+            foreach (var source in _npcAudioRoutes.Values.Distinct()) StopAndClear(source);
+            StopAndClear(_npcAudioSource);
+            if (_npcAudioRoutes.TryGetValue(npcBindingId, out var localSource)) StopAndClear(localSource);
+        }
+
+        private static bool SameInvocation(InvocationV1 left, InvocationV1 right) => left != null && right != null &&
+            string.Equals(left.session_id, right.session_id, StringComparison.Ordinal) &&
+            string.Equals(left.run_id, right.run_id, StringComparison.Ordinal) &&
+            string.Equals(left.activation_id, right.activation_id, StringComparison.Ordinal) &&
+            string.Equals(left.invocation_id, right.invocation_id, StringComparison.Ordinal) &&
+            string.Equals(left.npc_binding_id, right.npc_binding_id, StringComparison.Ordinal) &&
+            string.Equals(left.kind, right.kind, StringComparison.Ordinal);
+
+        private sealed class FixedPlaybackLease : IDisposable
+        {
+            private LiveKitNpcAudioRouter _owner;
+            private readonly InvocationV1 _invocation;
+            private readonly long _revision;
+            public FixedPlaybackLease(LiveKitNpcAudioRouter owner, InvocationV1 invocation, long revision)
+            { _owner = owner; _invocation = invocation; _revision = revision; }
+            public void Dispose()
+            {
+                var owner = System.Threading.Interlocked.Exchange(ref _owner, null);
+                owner?.ReleaseLocalOwnership(_invocation, _revision, false);
+            }
+        }
+
         internal void SetLegacyAudioSource(AudioSource source)
         {
             _npcAudioSource = source;
@@ -334,6 +452,11 @@ namespace VRAutism.Cloud.LiveKit
 
                 lock (_audioRoutingLock)
                 {
+                    if (_fixedPlaybackSuspended)
+                    {
+                        _pendingAudioTracks[audioTrack.Sid] = new PendingTrackEntry(audioTrack, identity);
+                        return;
+                    }
                     string targetRouteId = !string.IsNullOrEmpty(_activeNpcBindingId) && _npcAudioRoutes.ContainsKey(_activeNpcBindingId)
                         ? _activeNpcBindingId
                         : identity;
@@ -423,6 +546,9 @@ namespace VRAutism.Cloud.LiveKit
                 _activeAudioStreams.Clear();
                 _pendingAudioTracks.Clear();
                 _pendingAudioTrack = null;
+                _fixedPlaybackSuspended = false;
+                _fixedOwner = null;
+                _fixedOwnerRevision = -1;
             }
         }
 

@@ -5,6 +5,8 @@ using Firebase.Extensions;
 using VRAutism.Core.Models;
 using VRAutism.Gameplay.LessonGraphV2.Phrases;
 using VRAutism.Gameplay.LessonGraphV2.Runtime;
+using VRAutism.Gameplay.LessonGraphV2.AudioCache;
+using System.Threading;
 
 namespace VRAutism.Gameplay.WaitingArea{
     /// <summary>
@@ -17,6 +19,10 @@ namespace VRAutism.Gameplay.WaitingArea{
     public class SceneMenuController : MonoBehaviour
     {
         public static SceneMenuController Instance;
+
+        [Header("TTS Cache Backend")]
+        [Tooltip("HTTPS base URL supplied by the deployment. Do not use localhost on headset builds.")]
+        [SerializeField] private string _ttsCacheBackendUrl;
 
         private bool _ownsSingleton;
         private bool _hasStarted;
@@ -78,10 +84,34 @@ namespace VRAutism.Gameplay.WaitingArea{
             _launchInProgress = true;
             _activeLaunchAttempt = attempt;
             AcceptedLessonLaunchV2 acceptedLaunch = null;
+            SessionTtsSnapshotV1 ttsSnapshot = null;
             try
             {
                 Debug.Log($"[SceneMenuController] Received lesson command. Child: {childId}, lesson: {lessonId}, scene: {sceneName}, session: {sessionId}");
                 VoicePhraseSnapshotStoreV2.Clear();
+                var effectiveTtsCacheBackendUrl = TtsCacheBackendUrlPolicyV1.ResolveBackendUrl(_ttsCacheBackendUrl);
+
+                var cacheSchemaVersion = _subscribedPairingManager != null
+                    ? _subscribedPairingManager.CurrentTtsCacheSchemaVersion : 0;
+                if (cacheSchemaVersion < 0 || cacheSchemaVersion > 1)
+                {
+                    Debug.LogError("[TTS Cache] Unsupported RTDB tts_cache_schema_version; session launch is blocked.");
+                    return;
+                }
+                if (cacheSchemaVersion == 1)
+                {
+                    try
+                    {
+                        var cacheBackend = new TtsCacheBackendClientV1(effectiveTtsCacheBackendUrl, livekitToken);
+                        ttsSnapshot = await cacheBackend.GetRetainedSessionAsync(sessionId, CancellationToken.None);
+                    }
+                    catch (System.Exception exception)
+                    {
+                        Debug.LogError("[TTS Cache] Retained session configuration could not be loaded; launch is blocked: " + exception.Message);
+                        return;
+                    }
+                    if (!LessonLaunchCoordinatorV2.IsCurrentAttempt(attempt)) return;
+                }
 
                 var db = FirebaseFirestore.DefaultInstance;
                 var lessonTask = db.Collection(Cloud.FirebasePaths.Lessons).Document(lessonId).GetSnapshotAsync();
@@ -292,7 +322,7 @@ namespace VRAutism.Gameplay.WaitingArea{
                     return;
                 }
                 if (isV2Lesson && !LessonLaunchCoordinatorV2.TryAcceptLaunch(attempt, childId, hostId,
-                    out acceptedLaunch, out var acceptReason))
+                    out acceptedLaunch, out var acceptReason, ttsSnapshot))
                 {
                     Debug.LogError("[LessonGraphV2] Scene activation blocked: " + acceptReason);
                     VoicePhraseSnapshotStoreV2.Clear();
@@ -313,6 +343,18 @@ namespace VRAutism.Gameplay.WaitingArea{
                     sessionContext.MaxVolume = childMaxVolume;
                     sessionContext.CurrentParams = lessonParams;
                     sessionContext.SetActivePhrases(activePhrases);
+                    sessionContext.TtsCacheBackendUrl = effectiveTtsCacheBackendUrl ?? string.Empty;
+                    sessionContext.SetTtsCacheSnapshot(ttsSnapshot);
+
+                    // The audio coordinator survives scene changes; bind it before the next room's HELLO arrives.
+                    var fixedAudio = ttsSnapshot != null
+                        ? FixedAudioPlaybackCoordinatorV1.Instance
+                        : FindObjectOfType<FixedAudioPlaybackCoordinatorV1>();
+                    if (fixedAudio != null && (ttsSnapshot == null || fixedAudio.SessionId != sessionId))
+                        fixedAudio.Configure(ttsSnapshot, effectiveTtsCacheBackendUrl, livekitToken,
+                            Cloud.LiveKit.LiveKitService.Instance, Cloud.LiveKit.LiveKitService.Instance);
+                    if (ttsSnapshot != null)
+                        Debug.Log($"[TTS Audio] event=SESSION_BOUND session={sessionId}");
                 }
 
                 var load = SceneManager.LoadSceneAsync(sceneName);

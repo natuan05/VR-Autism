@@ -86,7 +86,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime.Executors
                 {
                     context.CancellationToken.ThrowIfCancellationRequested();
                     if (Volatile.Read(ref settled) != 0) break;
-                    if (!source.TryActivate(new QuestSourceActivation(context.ActivationId, DateTimeOffset.UtcNow, Elapsed(context))))
+                    if (!source.TryActivate(new QuestSourceActivation(context.ActivationId, DateTimeOffset.UtcNow, Elapsed(context), context.RunId)))
                     {
                         UnityEngine.Debug.LogWarning($"[LessonGraphV2] QuestExecutor: activation rejected source='{source.BindingId}'");
                         if (Interlocked.CompareExchange(ref settled, 1, 0) == 0)

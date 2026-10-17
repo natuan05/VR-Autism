@@ -1,4 +1,5 @@
 using System;
+using VRAutism.Gameplay.LessonGraphV2.AudioCache;
 
 namespace VRAutism.Gameplay.LessonGraphV2.Runtime
 {
@@ -33,9 +34,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
         public string HostId { get; }
         public int LessonVoiceRevision { get; }
         public int ChildPhraseRevision { get; }
+        public SessionTtsSnapshotV1 TtsSnapshot { get; }
 
         internal AcceptedLessonLaunchV2(LessonLaunchAttemptV2 attempt, string childId, string hostId,
-            int lessonVoiceRevision, int childPhraseRevision)
+            int lessonVoiceRevision, int childPhraseRevision, SessionTtsSnapshotV1 ttsSnapshot = null)
         {
             SessionId = attempt.SessionId;
             LessonId = attempt.LessonId;
@@ -45,6 +47,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Runtime
             HostId = hostId ?? string.Empty;
             LessonVoiceRevision = lessonVoiceRevision;
             ChildPhraseRevision = childPhraseRevision;
+            TtsSnapshot = ttsSnapshot;
         }
 
         public LessonSessionContextV2 CreateSessionContext() => new LessonSessionContextV2(

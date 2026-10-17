@@ -1,20 +1,33 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Reflection;
 using UnityEngine;
 using LiveKit;
 using LiveKit.Proto;
+using VRAutism.Gameplay.LessonGraphV2.AudioCache;
 
 namespace VRAutism.Cloud.LiveKit
 {
-    public class LiveKitService : MonoBehaviour, ILiveKitRoomClient, ILiveKitDataPacketClientV2, ILiveKitDeferredDataPacketClientV2, INpcAudioRouterV2, ILiveKitCoroutineHost, ILiveKitMicrophoneControlV2
+    public class LiveKitService : MonoBehaviour, ILiveKitRoomClient, ILiveKitDataPacketClientV2, ILiveKitDeferredDataPacketClientV2, INpcAudioRouterV2, ILiveKitCoroutineHost, ILiveKitMicrophoneControlV2, ILiveKitParticipantDataPacketClientV1, IFixedAudioOwnershipRouterV1
     {
         private const int MaxPendingSpeakScriptCancellations = 64;
         private const string SpeakScriptCancellationTopic = "lesson-graph-v2.voice";
         private static LiveKitService _instance;
         private static int _unityMainThreadId = -1;
+        private readonly object _agentPresenceGate = new object();
+        private readonly Queue<string> _retiredAgentInstanceOrder = new Queue<string>();
+        private readonly HashSet<string> _retiredAgentInstanceIds = new HashSet<string>(StringComparer.Ordinal);
+        private string _currentAgentParticipantIdentity;
+        private string _currentAgentParticipantSid;
+        private string _currentAgentInstanceId;
+        private string _currentAgentSessionId;
+        private bool _agentPresenceAmbiguous;
+        private Room _agentRosterRoom;
+        private static readonly FieldInfo ParticipantInfoField = typeof(Participant).GetField("_info", BindingFlags.Instance | BindingFlags.NonPublic);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void CaptureUnityMainThread()
@@ -51,8 +64,13 @@ namespace VRAutism.Cloud.LiveKit
         public event Action<string> OnAgentError;
         public event Action<string, string> OnQuestStatusUpdate;
         public event Action<byte[], string> DataReceivedV2;
+        public event Action<byte[], string, string, bool> DataReceivedByParticipantV1;
         public event Action ReconnectedV2;
         public bool IsConnectedV2 => _lifecycleCoordinator != null && _lifecycleCoordinator.IsConnected;
+        public string CurrentAgentInstanceIdV1
+        {
+            get { lock (_agentPresenceGate) return _agentPresenceAmbiguous ? string.Empty : _currentAgentInstanceId ?? string.Empty; }
+        }
 
         [Header("Test Mode (Auto Connect trong Unity Inspector)")]
         [SerializeField] private bool autoConnectOnStart = false;
@@ -176,6 +194,7 @@ namespace VRAutism.Cloud.LiveKit
             {
                 if (IsCurrentHandle(handle))
                 {
+                    ResetAgentPresence();
                     DrainPendingSpeakScriptCancellations();
                     ReconnectedV2?.Invoke();
                 }
@@ -190,6 +209,8 @@ namespace VRAutism.Cloud.LiveKit
             {
                 if (IsCurrentHandle(handle))
                 {
+                    ResetAgentPresence();
+                    ObserveAgentRoster(handle.SdkRoom);
                     DrainPendingSpeakScriptCancellations();
                     ReconnectedV2?.Invoke();
                 }
@@ -325,11 +346,191 @@ namespace VRAutism.Cloud.LiveKit
             string topic)
         {
             var copy = data == null ? null : (byte[])data.Clone();
+            var senderIdentity = participant?.Identity ?? string.Empty;
+            var senderSid = participant?.Sid ?? string.Empty;
+            var senderIsAgent = IsServerAgentParticipant(participant);
             _mainThreadExecutor.Post(handle.Generation, () =>
             {
                 if (IsCurrentHandle(handle))
+                {
+                    if (string.Equals(topic, TtsCacheContractsV1.Topic, StringComparison.Ordinal) && senderIsAgent)
+                        ObserveAgentHello(copy, senderIdentity, senderSid, handle);
                     _dataPacketTransport.HandleIncoming(copy, participant, topic);
+                    DataReceivedByParticipantV1?.Invoke(copy == null ? null : (byte[])copy.Clone(), topic, senderIdentity, senderIsAgent);
+                }
             });
+        }
+
+        internal static bool IsServerAgentInfo(object info)
+        {
+            try { return info is ParticipantInfo participantInfo && participantInfo.Kind == ParticipantKind.Agent; }
+            catch { return false; }
+        }
+
+        internal static bool IsServerAgentParticipant(Participant participant)
+        {
+            if (participant == null || ParticipantInfoField == null) return false;
+            try { return IsServerAgentInfo(ParticipantInfoField.GetValue(participant)); }
+            catch { return false; }
+        }
+
+        private void ObserveAgentHello(byte[] data, string participantIdentity, string participantSid, RoomConnectionHandle handle)
+        {
+            if (data == null || string.IsNullOrWhiteSpace(participantIdentity) || string.IsNullOrWhiteSpace(participantSid) || handle == null) return;
+            try
+            {
+                var packet = TtsCacheContractsV1.ParseCachePacket(System.Text.Encoding.UTF8.GetString(data));
+                if (packet.@event != "FIXED_AUDIO_HELLO") return;
+                var context = VRAutism.Core.SessionContext.Instance;
+                if (context?.TtsCacheSnapshot == null ||
+                    !string.Equals(packet.session_id, context.TtsCacheSnapshot.Scope.session_id, StringComparison.Ordinal)) return;
+                var room = handle.SdkRoom;
+                ObserveAgentRoster(room);
+                if (room == null || !room.RemoteParticipants.TryGetValue(participantIdentity, out var currentParticipant) ||
+                    !IsCurrentAgentIncarnation(participantSid, currentParticipant.Sid) ||
+                    !IsServerAgentParticipant(currentParticipant)) return;
+                lock (_agentPresenceGate)
+                {
+                    if (!string.Equals(_currentAgentSessionId, packet.session_id, StringComparison.Ordinal))
+                    {
+                        _currentAgentSessionId = packet.session_id;
+                        _currentAgentInstanceId = null;
+                        _agentPresenceAmbiguous = false;
+                        _retiredAgentInstanceIds.Clear();
+                        _retiredAgentInstanceOrder.Clear();
+                    }
+                    if (_agentPresenceAmbiguous || !string.Equals(_currentAgentParticipantIdentity, participantIdentity, StringComparison.Ordinal) ||
+                        !string.Equals(_currentAgentParticipantSid, participantSid, StringComparison.Ordinal)) return;
+                    if (_retiredAgentInstanceIds.Contains(packet.agent_instance_id)) return;
+                    if (string.Equals(_currentAgentInstanceId, packet.agent_instance_id, StringComparison.Ordinal)) return;
+                    if (!string.IsNullOrEmpty(_currentAgentInstanceId))
+                    {
+                        RetireAgentInstanceNoLock(_currentAgentInstanceId);
+                    }
+                    _currentAgentInstanceId = packet.agent_instance_id;
+                }
+            }
+            catch { }
+        }
+
+        private void ObserveAgentRoster(Room room)
+        {
+            if (_agentRosterRoom != room)
+            {
+                if (_agentRosterRoom != null)
+                {
+                    _agentRosterRoom.ParticipantConnected -= OnAgentParticipantChanged;
+                    _agentRosterRoom.ParticipantDisconnected -= OnAgentParticipantChanged;
+                }
+                _agentRosterRoom = room;
+                if (_agentRosterRoom != null)
+                {
+                    _agentRosterRoom.ParticipantConnected += OnAgentParticipantChanged;
+                    _agentRosterRoom.ParticipantDisconnected += OnAgentParticipantChanged;
+                }
+            }
+            ReconcileAgentRoster(room);
+        }
+
+        private void OnAgentParticipantChanged(Participant participant)
+        {
+            ReconcileAgentRoster(_agentRosterRoom);
+        }
+
+        private void ReconcileAgentRoster(Room room)
+        {
+            var candidates = new List<Tuple<string, string, long>>();
+            if (room != null)
+            {
+                foreach (var participant in room.RemoteParticipants.Values)
+                {
+                    if (!IsServerAgentParticipant(participant) || !TryGetJoinedAt(participant, out var joinedAt)) continue;
+                    candidates.Add(Tuple.Create(participant.Identity, participant.Sid, joinedAt));
+                }
+            }
+            var selectedSid = SelectCurrentAgentSid(candidates, out var tied);
+            var selected = string.IsNullOrEmpty(selectedSid) ? null : room.RemoteParticipants.Values.FirstOrDefault(item => item.Sid == selectedSid);
+            lock (_agentPresenceGate)
+            {
+                var ambiguous = tied;
+                var identity = ambiguous ? null : selected?.Identity;
+                var sid = ambiguous ? null : selected?.Sid;
+                if (!string.Equals(_currentAgentParticipantIdentity, identity, StringComparison.Ordinal) ||
+                    !string.Equals(_currentAgentParticipantSid, sid, StringComparison.Ordinal))
+                {
+                    if (!string.IsNullOrEmpty(_currentAgentInstanceId)) RetireAgentInstanceNoLock(_currentAgentInstanceId);
+                    _currentAgentParticipantIdentity = identity;
+                    _currentAgentParticipantSid = sid;
+                    _currentAgentInstanceId = null;
+                }
+                _agentPresenceAmbiguous = ambiguous;
+            }
+        }
+
+        private static bool TryGetJoinedAt(Participant participant, out long joinedAt)
+        {
+            joinedAt = 0;
+            try
+            {
+                var info = ParticipantInfoField?.GetValue(participant) as ParticipantInfo;
+                if (info == null) return false;
+                joinedAt = info.JoinedAt;
+                return true;
+            }
+            catch { return false; }
+        }
+
+        internal static string SelectCurrentAgentSid(IList<Tuple<string, string, long>> candidates, out bool ambiguous)
+        {
+            ambiguous = false;
+            if (candidates == null || candidates.Count == 0) return null;
+            var newest = long.MinValue;
+            string selectedSid = null;
+            foreach (var candidate in candidates)
+            {
+                if (candidate == null || string.IsNullOrWhiteSpace(candidate.Item1) || string.IsNullOrWhiteSpace(candidate.Item2)) continue;
+                if (candidate.Item3 > newest) { newest = candidate.Item3; selectedSid = candidate.Item2; ambiguous = false; }
+                else if (candidate.Item3 == newest && !string.Equals(selectedSid, candidate.Item2, StringComparison.Ordinal)) ambiguous = true;
+            }
+            return ambiguous ? null : selectedSid;
+        }
+
+        internal static bool IsCurrentAgentIncarnation(string senderSid, string currentSid) =>
+            !string.IsNullOrWhiteSpace(senderSid) && string.Equals(senderSid, currentSid, StringComparison.Ordinal);
+
+        private void RetireAgentInstanceNoLock(string instanceId)
+        {
+            if (string.IsNullOrWhiteSpace(instanceId) || !_retiredAgentInstanceIds.Add(instanceId)) return;
+            _retiredAgentInstanceOrder.Enqueue(instanceId);
+            while (_retiredAgentInstanceOrder.Count > 1024)
+                _retiredAgentInstanceIds.Remove(_retiredAgentInstanceOrder.Dequeue());
+        }
+
+        private void ResetAgentPresence()
+        {
+            lock (_agentPresenceGate)
+            {
+                _currentAgentParticipantIdentity = null;
+                _currentAgentParticipantSid = null;
+                _currentAgentInstanceId = null;
+                _agentPresenceAmbiguous = false;
+            }
+        }
+
+        bool ILiveKitParticipantDataPacketClientV1.IsCurrentAgentParticipantV1(string participantIdentity)
+        {
+            var handle = _lifecycleCoordinator?.CurrentHandle;
+            var room = handle?.SdkRoom;
+            if (handle == null || !handle.IsConnected || room == null) return false;
+            ReconcileAgentRoster(room);
+            lock (_agentPresenceGate)
+            {
+                if (_agentPresenceAmbiguous || string.IsNullOrEmpty(_currentAgentInstanceId) ||
+                    !string.Equals(_currentAgentParticipantIdentity, participantIdentity, StringComparison.Ordinal)) return false;
+            }
+            lock (_agentPresenceGate)
+                return room.RemoteParticipants.TryGetValue(participantIdentity, out var participant) &&
+                       IsCurrentAgentIncarnation(participant.Sid, _currentAgentParticipantSid) && IsServerAgentParticipant(participant);
         }
 
         private void RelayDataReceivedV2(byte[] data, string topic) => DataReceivedV2?.Invoke(data, topic);
@@ -339,6 +540,12 @@ namespace VRAutism.Cloud.LiveKit
 
         private void UnwireServices()
         {
+            if (_agentRosterRoom != null)
+            {
+                _agentRosterRoom.ParticipantConnected -= OnAgentParticipantChanged;
+                _agentRosterRoom.ParticipantDisconnected -= OnAgentParticipantChanged;
+                _agentRosterRoom = null;
+            }
             if (_dataPacketTransport != null && _legacyVoicePacketAdapter != null)
             {
                 _dataPacketTransport.DataReceivedV2 -= RelayDataReceivedV2;
@@ -419,6 +626,24 @@ namespace VRAutism.Cloud.LiveKit
                 return false;
             }
             return _audioRouter.TryGetNpcAudioRoute(npcBindingId, out source);
+        }
+
+        IDisposable IFixedAudioOwnershipRouterV1.AcquireLocalPlayback(InvocationV1 invocation, long ownerRevision, string npcBindingId)
+        {
+            if (!EnsureMainThread(nameof(IFixedAudioOwnershipRouterV1.AcquireLocalPlayback))) return null;
+            return ((IFixedAudioOwnershipRouterV1)_audioRouter).AcquireLocalPlayback(invocation, ownerRevision, npcBindingId);
+        }
+
+        bool IFixedAudioOwnershipRouterV1.SelectStream(InvocationV1 invocation, long ownerRevision, string npcBindingId)
+        {
+            if (!EnsureMainThread(nameof(IFixedAudioOwnershipRouterV1.SelectStream))) return false;
+            return ((IFixedAudioOwnershipRouterV1)_audioRouter).SelectStream(invocation, ownerRevision, npcBindingId);
+        }
+
+        void IFixedAudioOwnershipRouterV1.ReleaseLocalPlayback(InvocationV1 invocation, long ownerRevision, bool resumeOrdinaryAudio)
+        {
+            if (!EnsureMainThread(nameof(IFixedAudioOwnershipRouterV1.ReleaseLocalPlayback))) return;
+            ((IFixedAudioOwnershipRouterV1)_audioRouter).ReleaseLocalPlayback(invocation, ownerRevision, resumeOrdinaryAudio);
         }
 
         public void SetAudioSource(AudioSource source)
