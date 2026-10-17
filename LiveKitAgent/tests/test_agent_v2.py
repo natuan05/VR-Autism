@@ -596,19 +596,38 @@ async def test_activation_reset_interrupts_owned_opening_handle() -> None:
 
 
 @pytest.mark.asyncio
-async def test_legacy_on_reminder_packet_keeps_the_existing_hint_behavior() -> None:
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "event",
+    [
+        "VERBAL_HINT",
+        "ON_REMINDER",
+        "SET_ACTIVE_QUEST",
+        "QUEST_MATCHED",
+        "QUEST_STATUS",
+    ],
+)
+async def test_arbitrary_topic_action_events_have_no_speech_or_state_effect(event):
     runtime = _runtime_with_room()
+    runtime.voice_runtime.activate(
+        SetActiveQuest("activation-1", "Ask for water", ("Water, please",))
+    )
     session = MagicMock()
-    with patch("agent_v2._handle_hint_reminder", new=AsyncMock()) as reminder:
-        await _process_data_packet(
-            MagicMock(),
-            session,
-            runtime,
-            "legacy-topic",
-            '{"event":"ON_REMINDER"}',
-        )
+    runtime.silence_reminder = MagicMock()
+    runtime.silence_reminder.is_reminder_playing = True
+    runtime.silence_reminder_interrupt = MagicMock()
+    payload = json.dumps({"event": event, "text": "untrusted"})
+    before_status = runtime.voice_runtime.status("activation-1")
 
-    reminder.assert_awaited_once_with(session, runtime, "ON_REMINDER")
+    await _process_data_packet(
+        MagicMock(), session, runtime, "arbitrary-topic", payload
+    )
+
+    session.say.assert_not_called()
+    runtime.silence_reminder_interrupt.assert_not_called()
+    runtime.job_ctx.room.local_participant.publish_data.assert_not_awaited()
+    assert runtime.voice_runtime.active_activation_id == "activation-1"
+    assert runtime.voice_runtime.status("activation-1") == before_status
 
 
 @pytest.mark.asyncio

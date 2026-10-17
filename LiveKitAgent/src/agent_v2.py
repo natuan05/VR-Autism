@@ -41,6 +41,7 @@ from fixed_audio_runtime_v1 import (
     done_packet,
     invocation_fields,
 )
+from shared_teacher_speech import try_handle_teacher_script
 from silence_reminder_v2 import ActivationSilenceReminderV2
 from tts_cache_client_v1 import CacheServiceError, SessionScopeV1, TtsCacheClientV1
 from tts_cache_contract_v1 import (
@@ -608,6 +609,53 @@ def _cache_schema_version(participant: rtc.RemoteParticipant) -> int | None:
     return version
 
 
+def _trusted_teacher_scope(participant: Any, room: Any) -> dict[str, str] | None:
+    """Read the immutable lesson scope issued on the selected VR participant."""
+    if (
+        participant is None
+        or getattr(participant, "kind", None)
+        != rtc.ParticipantKind.PARTICIPANT_KIND_STANDARD
+    ):
+        return None
+    metadata = getattr(participant, "metadata", None)
+    try:
+        value = metadata if isinstance(metadata, dict) else json.loads(metadata or "")
+    except (TypeError, json.JSONDecodeError):
+        return None
+    if not isinstance(value, dict):
+        return None
+    session_id = value.get("session_id")
+    host_id = value.get("host_id")
+    lesson_runtime = value.get("lesson_runtime")
+    if (
+        value.get("participant_role") != "vr"
+        or not isinstance(session_id, str)
+        or not session_id
+        or session_id != getattr(room, "name", None)
+        or not isinstance(host_id, str)
+        or not host_id
+        or not isinstance(lesson_runtime, str)
+        or lesson_runtime
+        not in {"lesson_graph_v2", "quiz", "exploration", "legacy_hello_friend"}
+    ):
+        return None
+    return {
+        "session_id": session_id,
+        "host_id": host_id,
+        "lesson_runtime": lesson_runtime,
+    }
+
+
+def _is_current_room_participant(room: Any, participant: Any) -> bool:
+    """Reject queued packets from a departed/replaced participant SID."""
+    identity = getattr(participant, "identity", None)
+    current = getattr(room, "remote_participants", {}).get(identity)
+    if current is participant:
+        return True
+    participant_sid = getattr(participant, "sid", None)
+    return bool(participant_sid and getattr(current, "sid", None) == participant_sid)
+
+
 def _is_paired_vr_participant(runtime: JobRuntime, participant: Any) -> bool:
     if not (
         participant is not None
@@ -695,6 +743,8 @@ async def entrypoint(ctx: JobContext) -> None:
             await ctx.room.disconnect()
             return
     runtime.vr_participant_identity = participant.identity
+    runtime.vr_participant_sid = getattr(participant, "sid", None)
+    runtime.teacher_speech_scope = _trusted_teacher_scope(participant, ctx.room)
     runtime.cache_scope = cache_scope
     runtime.cache_client = cache_client
     runtime.cache_fixed_audio = (
@@ -834,12 +884,47 @@ async def entrypoint(ctx: JobContext) -> None:
     # 4. Register DataPacket handler BEFORE session.start to prevent packet loss race condition
     def on_data_received(data_packet: rtc.DataPacket) -> None:
         sender = data_packet.participant
-        if not _is_paired_vr_participant(runtime, sender):
+        is_paired_vr = _is_paired_vr_participant(runtime, sender)
+        is_standard_remote = (
+            sender is not None
+            and getattr(sender, "kind", None)
+            == rtc.ParticipantKind.PARTICIPANT_KIND_STANDARD
+        )
+        if not is_paired_vr and not is_standard_remote:
             return
 
         async def _process_packet():
             # Wait for session initialization if packet arrives during handshake
             await agent_ready.wait()
+            if not _is_current_room_participant(ctx.room, sender):
+                return
+            if not is_paired_vr:
+                scope = getattr(runtime, "teacher_speech_scope", None)
+                selected_vr = ctx.room.remote_participants.get(
+                    getattr(runtime, "vr_participant_identity", None)
+                )
+                selected_sid = getattr(runtime, "vr_participant_sid", None)
+                current_selected_sid = getattr(selected_vr, "sid", None)
+                if (
+                    scope is None
+                    or selected_vr is None
+                    or (
+                        selected_sid is not None
+                        and current_selected_sid != selected_sid
+                    )
+                    or _trusted_teacher_scope(selected_vr, ctx.room) != scope
+                ):
+                    return
+                await try_handle_teacher_script(
+                    session,
+                    data_packet,
+                    session_id=scope["session_id"],
+                    host_id=scope["host_id"],
+                    lesson_runtime=scope["lesson_runtime"],
+                )
+                return
+            if not _is_paired_vr_participant(runtime, sender):
+                return
             try:
                 await _process_data_packet(
                     agent,
@@ -1470,7 +1555,7 @@ async def _process_data_packet(
     topic: str,
     payload: bytes | str,
 ) -> None:
-    """Route V2 voice and legacy hint packets while ignoring remote commands."""
+    """Route V2 voice/cache packets while ignoring unrelated topics."""
     raw_text = payload.decode("utf-8") if isinstance(payload, bytes) else payload
     if topic == CACHE_TOPIC:
         packet_lock = getattr(runtime, "cache_packet_lock", None)
@@ -1485,15 +1570,7 @@ async def _process_data_packet(
         return
     if topic == REMOTE_TOPIC:
         return
-
-    data = json.loads(raw_text)
-    event_type = data.get("event")
-    if event_type == "VERBAL_HINT":
-        logger.info("[HINT] Received event: %s", event_type)
-        await _handle_hint_reminder(session, runtime, event_type)
-    elif event_type == "ON_REMINDER":
-        logger.info("[HINT] Received legacy event: %s", event_type)
-        await _handle_hint_reminder(session, runtime, event_type)
+    return
 
 
 async def _process_v2_packet(
@@ -1938,47 +2015,6 @@ async def _play_silence_reminder(
         if runtime.active_silence_reminder_handle is handle:
             runtime.active_silence_reminder_handle = None
             runtime.silence_reminder_interrupt = None
-
-
-async def _handle_hint_reminder(
-    session: AgentSession,
-    runtime: JobRuntime,
-    event_name: str,
-) -> None:
-    """Play cached phrase for the legacy unversioned VERBAL_HINT event."""
-    runtime.interrupt_active_silence_reminder(reset_timer=True)
-    try:
-        activation_id = runtime.voice_runtime.active_activation_id
-        phrases = runtime.voice_runtime.active_phrases
-        if not activation_id or not runtime.voice_runtime.can_continue(activation_id):
-            logger.warning("[HINT] %s received with no active activation", event_name)
-            return
-        if not phrases:
-            logger.warning(
-                "[HINT] %s received with no active quest or phrases", event_name
-            )
-            return
-
-        phrase = random.choice(phrases)
-        npc_binding_id = runtime.voice_runtime.active_npc_binding_id or ""
-        profile, _ = runtime.voice_registry.get(npc_binding_id)
-        cached_frames = runtime.tts_cache.get(
-            (npc_binding_id, profile.voice_name, profile.speaking_rate, phrase)
-        )
-        audio_arg = _frames_to_async_gen(cached_frames) if cached_frames else None
-        logger.info(
-            "[HINT] %s playing phrase (cached=%s): %r",
-            event_name,
-            cached_frames is not None,
-            phrase,
-        )
-        await session.say(
-            phrase,
-            audio=audio_arg,
-            allow_interruptions=True,
-        )
-    except Exception as err:
-        logger.error("[HINT] Error handling %s: %s", event_name, err)
 
 
 async def _handle_verbal_hint_v2(

@@ -97,6 +97,61 @@ namespace VRAutism.Gameplay.WaitingArea.Tests.Editor
             Assert.IsTrue(GetField<bool>(controller, "_launchInProgress"));
         }
 
+        [TestCase("WashingHand_2", "practical", 2, true, "Bathroom-V2", "Bathroom-V2", true, true, true)]
+        [TestCase("Greet_1", "practical", null, false, "HelloFriend", "HelloFriend", true, true, false)]
+        [TestCase("Greet_1", "practical", 2, true, "HelloFriend", "HelloFriend", true, true, true)]
+        [TestCase("Farm_Quiz_1", "quiz", null, false, "Farm-Quiz", "Farm-Quiz", true, true, false)]
+        [TestCase("Farm_1", "theoretical", null, false, "Farm", "Farm", true, true, false)]
+        public void TryValidateLessonRuntime_AcceptsSupportedRuntimeAndSceneMatches(
+            string documentId, string type, object schema, bool hasSchema, string storedScene, string requestedScene,
+            bool enabled, bool expected, bool expectedV2)
+        {
+            var accepted = SceneMenuController.TryValidateLessonRuntime(
+                documentId, type, schema, hasSchema, storedScene, requestedScene, enabled, out var isV2);
+
+            Assert.AreEqual(expected, accepted);
+            Assert.AreEqual(expectedV2, isV2);
+        }
+
+        [TestCase(false, null)]
+        [TestCase(true, null)]
+        [TestCase(true, "2")]
+        [TestCase(true, true)]
+        [TestCase(true, 1)]
+        [TestCase(true, 3)]
+        public void TryValidateLessonRuntime_RejectsUnsupportedPracticalSchema(bool hasSchema, object schema)
+        {
+            var accepted = SceneMenuController.TryValidateLessonRuntime(
+                "WashingHand_2", "practical", schema, hasSchema, "Bathroom", "Bathroom", true, out var isV2);
+
+            Assert.IsFalse(accepted);
+            Assert.IsFalse(isV2);
+        }
+
+        [TestCase("Bathroom-V2", "Bathroom", true)]
+        [TestCase("", "Bathroom", true)]
+        [TestCase("Bathroom", "", true)]
+        [TestCase("Bathroom", "Bathroom", false)]
+        [TestCase("", "", true)]
+        public void TryValidateLessonRuntime_RejectsMismatchedEmptyOrDisabledScene(string storedScene, string requestedScene, bool enabled)
+        {
+            var accepted = SceneMenuController.TryValidateLessonRuntime(
+                "WashingHand_2", "practical", 2, true, storedScene, requestedScene, enabled, out var isV2);
+
+            Assert.IsFalse(accepted);
+            Assert.IsFalse(isV2);
+        }
+
+        [Test]
+        public void TryValidateLessonRuntime_RejectsMissingDocumentIdInsteadOfFallingBackToRequestedScene()
+        {
+            var accepted = SceneMenuController.TryValidateLessonRuntime(
+                "", "practical", 2, true, "Bathroom-V2", "Bathroom-V2", true, out var isV2);
+
+            Assert.IsFalse(accepted);
+            Assert.IsFalse(isV2);
+        }
+
         private static GameObject NewInactiveObject(string name)
         {
             var value = new GameObject(name);

@@ -60,9 +60,7 @@ namespace VRAutism.Cloud.LiveKit
             private set => _instance = value;
         }
 
-        public event Action OnSpeechMatched;
         public event Action<string> OnAgentError;
-        public event Action<string, string> OnQuestStatusUpdate;
         public event Action<byte[], string> DataReceivedV2;
         public event Action<byte[], string, string, bool> DataReceivedByParticipantV1;
         public event Action ReconnectedV2;
@@ -89,7 +87,6 @@ namespace VRAutism.Cloud.LiveKit
         private LiveKitMicrophonePublisher _microphonePublisher;
         private readonly LiveKitNpcAudioRouter _audioRouter = new LiveKitNpcAudioRouter();
         private LiveKitDataPacketTransport _dataPacketTransport;
-        private LegacyVoicePacketAdapter _legacyVoicePacketAdapter;
         private LiveKitPovVideoPublisher _povPublisher;
         private readonly Queue<byte[]> _pendingSpeakScriptCancellations = new Queue<byte[]>();
 
@@ -154,12 +151,7 @@ namespace VRAutism.Cloud.LiveKit
                 () => _microphonePublisher?.Stop(),
                 () => _audioRouter.Reset());
             _dataPacketTransport = new LiveKitDataPacketTransport(() => _lifecycleCoordinator.CurrentHandle);
-            _legacyVoicePacketAdapter = new LegacyVoicePacketAdapter(_dataPacketTransport);
             _dataPacketTransport.DataReceivedV2 += RelayDataReceivedV2;
-            _dataPacketTransport.LegacyDataReceived += _legacyVoicePacketAdapter.HandleIncoming;
-            _legacyVoicePacketAdapter.SpeechMatched += RelaySpeechMatched;
-            _legacyVoicePacketAdapter.AgentError += RelayAgentError;
-            _legacyVoicePacketAdapter.QuestStatusUpdated += RelayQuestStatusUpdated;
             _roomConnection.DataReceived += OnDataReceived;
             _roomConnection.Reconnected += OnRoomReconnectedV2;
             _roomConnection.TrackSubscribed += OnTrackSubscribed;
@@ -302,42 +294,6 @@ namespace VRAutism.Cloud.LiveKit
                    !string.IsNullOrEmpty(handle.Adapter.LocalParticipantSid);
         }
 
-        public void SendActiveQuest(string questName, string[] defaultPhrases)
-        {
-            if (!EnsureMainThread(nameof(SendActiveQuest))) return;
-            if (!IsConnectedV2)
-            {
-                Debug.LogWarning("[LiveKitService] ⚠️ Không thể gửi Quest: Room chưa kết nối hoặc NULL!");
-                return;
-            }
-
-            _legacyVoicePacketAdapter.SendActiveQuest(questName, defaultPhrases);
-        }
-
-        public void SendVerbalHint()
-        {
-            if (!EnsureMainThread(nameof(SendVerbalHint))) return;
-            if (!IsConnectedV2)
-            {
-                Debug.LogWarning("[LiveKitService] ⚠️ Không thể gửi VerbalHint: Room chưa kết nối!");
-                return;
-            }
-
-            _legacyVoicePacketAdapter.SendVerbalHint();
-        }
-
-        public void SendOnReminder()
-        {
-            if (!EnsureMainThread(nameof(SendOnReminder))) return;
-            if (!IsConnectedV2)
-            {
-                Debug.LogWarning("[LiveKitService] ⚠️ Không thể gửi OnReminder: Room chưa kết nối!");
-                return;
-            }
-
-            _legacyVoicePacketAdapter.SendOnReminder();
-        }
-
         private void OnDataReceived(
             RoomConnectionHandle handle,
             byte[] data,
@@ -356,6 +312,7 @@ namespace VRAutism.Cloud.LiveKit
                     if (string.Equals(topic, TtsCacheContractsV1.Topic, StringComparison.Ordinal) && senderIsAgent)
                         ObserveAgentHello(copy, senderIdentity, senderSid, handle);
                     _dataPacketTransport.HandleIncoming(copy, participant, topic);
+                    TryHandleAgentInitializationFailure(copy, topic, senderIsAgent, handle, senderIdentity, senderSid);
                     DataReceivedByParticipantV1?.Invoke(copy == null ? null : (byte[])copy.Clone(), topic, senderIdentity, senderIsAgent);
                 }
             });
@@ -372,6 +329,81 @@ namespace VRAutism.Cloud.LiveKit
             if (participant == null || ParticipantInfoField == null) return false;
             try { return IsServerAgentInfo(ParticipantInfoField.GetValue(participant)); }
             catch { return false; }
+        }
+
+        private bool TryHandleAgentInitializationFailure(
+            byte[] data,
+            string topic,
+            bool senderIsAgent,
+            RoomConnectionHandle handle,
+            string senderIdentity,
+            string senderSid)
+        {
+            if (!senderIsAgent || !string.IsNullOrEmpty(topic) || handle == null ||
+                !IsCurrentHandle(handle) || string.IsNullOrWhiteSpace(senderIdentity) || string.IsNullOrWhiteSpace(senderSid))
+                return false;
+
+            var room = handle.SdkRoom;
+            if (room == null || !room.RemoteParticipants.TryGetValue(senderIdentity, out var currentParticipant) ||
+                !string.Equals(currentParticipant?.Sid, senderSid, StringComparison.Ordinal) ||
+                !IsServerAgentParticipant(currentParticipant))
+                return false;
+
+            if (!TryDispatchAgentInitializationFailure(data, topic, senderIsAgent, true, error => OnAgentError?.Invoke(error), out _)) return false;
+            return true;
+        }
+
+        internal static bool TryDispatchAgentInitializationFailure(
+            byte[] data,
+            string topic,
+            bool senderIsAgent,
+            bool participantIsCurrent,
+            Action<string> onAgentError,
+            out string reason)
+        {
+            if (!TryParseAgentInitializationFailure(data, topic, senderIsAgent, participantIsCurrent, out reason)) return false;
+            Debug.LogWarning($"[LiveKitService] Agent initialization failed: {reason}");
+            onAgentError?.Invoke(reason);
+            return true;
+        }
+
+        internal static bool TryParseAgentInitializationFailure(
+            byte[] data,
+            string topic,
+            bool senderIsAgent,
+            bool participantIsCurrent,
+            out string reason)
+        {
+            reason = null;
+            if (!senderIsAgent || !participantIsCurrent || !string.IsNullOrEmpty(topic) || data == null) return false;
+            try
+            {
+                var packet = JsonUtility.FromJson<AgentInitializationFailurePacket>(System.Text.Encoding.UTF8.GetString(data));
+                if (packet == null || !string.Equals(packet.@event, "AGENT_INIT_FAILED", StringComparison.Ordinal)) return false;
+                switch (packet.reason)
+                {
+                    case "missing_gemini_key":
+                    case "missing_gcloud_credentials":
+                    case "invalid_vr_cache_metadata":
+                    case "tts_session_snapshot_unavailable":
+                    case "vr_session_pairing_mismatch":
+                        reason = packet.reason;
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        [Serializable]
+        private sealed class AgentInitializationFailurePacket
+        {
+            public string @event;
+            public string reason;
         }
 
         private void ObserveAgentHello(byte[] data, string participantIdentity, string participantSid, RoomConnectionHandle handle)
@@ -534,9 +566,6 @@ namespace VRAutism.Cloud.LiveKit
         }
 
         private void RelayDataReceivedV2(byte[] data, string topic) => DataReceivedV2?.Invoke(data, topic);
-        private void RelaySpeechMatched() => OnSpeechMatched?.Invoke();
-        private void RelayAgentError(string reason) => OnAgentError?.Invoke(reason);
-        private void RelayQuestStatusUpdated(string questName, string status) => OnQuestStatusUpdate?.Invoke(questName, status);
 
         private void UnwireServices()
         {
@@ -546,14 +575,8 @@ namespace VRAutism.Cloud.LiveKit
                 _agentRosterRoom.ParticipantDisconnected -= OnAgentParticipantChanged;
                 _agentRosterRoom = null;
             }
-            if (_dataPacketTransport != null && _legacyVoicePacketAdapter != null)
-            {
+            if (_dataPacketTransport != null)
                 _dataPacketTransport.DataReceivedV2 -= RelayDataReceivedV2;
-                _dataPacketTransport.LegacyDataReceived -= _legacyVoicePacketAdapter.HandleIncoming;
-                _legacyVoicePacketAdapter.SpeechMatched -= RelaySpeechMatched;
-                _legacyVoicePacketAdapter.AgentError -= RelayAgentError;
-                _legacyVoicePacketAdapter.QuestStatusUpdated -= RelayQuestStatusUpdated;
-            }
 
             if (_roomConnection != null)
             {

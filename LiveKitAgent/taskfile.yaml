@@ -4,7 +4,7 @@ vars:
   INDENT: 4
   REL_PATH: "{{ relPath .USER_WORKING_DIR .ROOT_DIR }}"
   VENV_DIR: ".venv"
-  PYTHON_MAIN: '{{ joinPath "./src" "agent.py" }}'
+  PYTHON_MAIN: '{{ joinPath "./src" "agent_v2.py" }}'
 
 tasks:
   post_create:
@@ -90,4 +90,4 @@ tasks:
   dev:
     interactive: true
     cmds:
-      - "uv run src/agent.py dev"
+      - "uv run src/agent_v2.py dev"

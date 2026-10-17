@@ -10,7 +10,6 @@ namespace VRAutism.Cloud.LiveKit
         private readonly Func<RoomConnectionHandle> _currentHandle;
 
         internal event Action<byte[], string> DataReceivedV2;
-        internal event Action<byte[], string> LegacyDataReceived;
 
         internal LiveKitDataPacketTransport(Func<RoomConnectionHandle> currentHandle)
         {
@@ -22,22 +21,13 @@ namespace VRAutism.Cloud.LiveKit
             Publish(data, topic, reliable);
         }
 
-        internal void PublishLegacy(byte[] data, bool reliable)
-        {
-            Publish(data, null, reliable);
-        }
-
         internal void HandleIncoming(byte[] data, Participant participant, string topic)
         {
-            var copy = data == null ? null : (byte[])data.Clone();
-            if (string.Equals(topic, V2VoiceTopic, StringComparison.Ordinal) ||
-                string.Equals(topic, V2RemoteTopic, StringComparison.Ordinal))
-            {
-                DataReceivedV2?.Invoke(copy, topic);
-                return;
-            }
+            if (!string.Equals(topic, V2VoiceTopic, StringComparison.Ordinal) &&
+                !string.Equals(topic, V2RemoteTopic, StringComparison.Ordinal)) return;
 
-            LegacyDataReceived?.Invoke(copy, topic);
+            var copy = data == null ? null : (byte[])data.Clone();
+            DataReceivedV2?.Invoke(copy, topic);
         }
 
         private void Publish(byte[] data, string topic, bool reliable)

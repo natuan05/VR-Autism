@@ -1,7 +1,8 @@
 import asyncio
+import json
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import ANY, AsyncMock, MagicMock
 
 import pytest
 from livekit import rtc
@@ -18,8 +19,29 @@ class Room(rtc.EventEmitter):
         self.local_participant = SimpleNamespace(publish_data=AsyncMock())
 
 
-def participant(identity, kind=rtc.ParticipantKind.PARTICIPANT_KIND_STANDARD):
-    return SimpleNamespace(identity=identity, kind=kind, attributes={})
+def participant(
+    identity,
+    kind=rtc.ParticipantKind.PARTICIPANT_KIND_STANDARD,
+    *,
+    metadata=None,
+    sid=None,
+):
+    return SimpleNamespace(
+        identity=identity, kind=kind, attributes={}, metadata=metadata, sid=sid
+    )
+
+
+def scoped_metadata(
+    role, *, runtime="quiz", session_id="voice-test-room", host_id="host-1"
+):
+    return json.dumps(
+        {
+            "participant_role": role,
+            "lesson_runtime": runtime,
+            "session_id": session_id,
+            "host_id": host_id,
+        }
+    )
 
 
 @pytest.fixture
@@ -199,3 +221,146 @@ async def test_unity_quest_packet_received_during_start_is_processed_after_ready
 
     assert process_packet.await_count == 1
     assert process_packet.call_args.args[-2:] == (agent_v2.VOICE_TOPIC, payload)
+
+
+@pytest.mark.asyncio
+async def test_authorized_teacher_reaches_only_shared_speech_handler(
+    session, monkeypatch
+):
+    unity = participant("vr_509521", metadata=scoped_metadata("vr"), sid="vr-sid")
+    teacher = participant(
+        "teacher-1", metadata=scoped_metadata("teacher"), sid="teacher-sid"
+    )
+    room = Room(unity, teacher)
+    ctx = context(room)
+    runtime = agent_v2.JobRuntime(ctx)
+    monkeypatch.setattr(agent_v2, "JobRuntime", lambda _: runtime)
+    process_packet = AsyncMock()
+    monkeypatch.setattr(agent_v2, "_process_data_packet", process_packet)
+    session.say = AsyncMock()
+
+    await agent_v2.entrypoint(ctx)
+    room.emit(
+        "data_received",
+        SimpleNamespace(
+            participant=teacher,
+            topic="",
+            data=b'{"event":"SPEAK_SCRIPT","text":"  Hello child.  "}',
+        ),
+    )
+    await asyncio.gather(*tuple(runtime.background_tasks))
+
+    session.say.assert_awaited_once_with("Hello child.", allow_interruptions=True)
+    process_packet.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_teacher_quest_and_cache_packets_never_bypass_paired_vr_guard(
+    session, monkeypatch
+):
+    unity = participant("vr_509521", metadata=scoped_metadata("vr"))
+    teacher = participant("teacher-1", metadata=scoped_metadata("teacher"))
+    room = Room(unity, teacher)
+    ctx = context(room)
+    runtime = agent_v2.JobRuntime(ctx)
+    monkeypatch.setattr(agent_v2, "JobRuntime", lambda _: runtime)
+    process_packet = AsyncMock()
+    monkeypatch.setattr(agent_v2, "_process_data_packet", process_packet)
+    session.say = AsyncMock()
+
+    await agent_v2.entrypoint(ctx)
+    for topic, payload in (
+        (agent_v2.VOICE_TOPIC, b'{"event":"SET_ACTIVE_QUEST"}'),
+        (agent_v2.CACHE_TOPIC, b'{"event":"FIXED_AUDIO_RECONCILE"}'),
+    ):
+        room.emit(
+            "data_received",
+            SimpleNamespace(participant=teacher, topic=topic, data=payload),
+        )
+    await asyncio.gather(*tuple(runtime.background_tasks))
+
+    process_packet.assert_not_awaited()
+    session.say.assert_not_awaited()
+    assert runtime.voice_runtime.active_activation_id is None
+
+
+@pytest.mark.asyncio
+async def test_missing_vr_scope_disables_only_teacher_speech(session, monkeypatch):
+    unity = participant("vr_509521")
+    teacher = participant("teacher-1", metadata=scoped_metadata("teacher"))
+    room = Room(unity, teacher)
+    ctx = context(room)
+    runtime = agent_v2.JobRuntime(ctx)
+    monkeypatch.setattr(agent_v2, "JobRuntime", lambda _: runtime)
+    process_packet = AsyncMock()
+    monkeypatch.setattr(agent_v2, "_process_data_packet", process_packet)
+    session.say = AsyncMock()
+
+    await agent_v2.entrypoint(ctx)
+    for sender, topic, payload in (
+        (teacher, "", b'{"event":"SPEAK_SCRIPT","text":"Hello"}'),
+        (unity, agent_v2.VOICE_TOPIC, b'{"event":"SET_ACTIVE_QUEST"}'),
+    ):
+        room.emit(
+            "data_received",
+            SimpleNamespace(participant=sender, topic=topic, data=payload),
+        )
+    await asyncio.gather(*tuple(runtime.background_tasks))
+
+    session.say.assert_not_awaited()
+    process_packet.assert_awaited_once_with(
+        ANY,
+        session,
+        runtime,
+        agent_v2.VOICE_TOPIC,
+        b'{"event":"SET_ACTIVE_QUEST"}',
+    )
+
+
+@pytest.mark.asyncio
+async def test_replaced_teacher_sid_cannot_use_a_queued_speech_packet(
+    session, monkeypatch
+):
+    unity = participant("vr_509521", metadata=scoped_metadata("vr"), sid="vr-sid")
+    teacher = participant(
+        "teacher-1", metadata=scoped_metadata("teacher"), sid="teacher-old"
+    )
+    room = Room(unity, teacher)
+    ctx = context(room)
+    runtime = agent_v2.JobRuntime(ctx)
+    monkeypatch.setattr(agent_v2, "JobRuntime", lambda _: runtime)
+    session.say = AsyncMock()
+    start_gate = asyncio.Event()
+    startup_started = asyncio.Event()
+
+    async def delayed_start(**_kwargs):
+        startup_started.set()
+        await start_gate.wait()
+
+    session.start.side_effect = delayed_start
+    task = asyncio.create_task(agent_v2.entrypoint(ctx))
+    try:
+        await startup_started.wait()
+        room.emit(
+            "data_received",
+            SimpleNamespace(
+                participant=teacher,
+                topic="",
+                data=b'{"event":"SPEAK_SCRIPT","text":"Hello"}',
+            ),
+        )
+        room.remote_participants[teacher.identity] = participant(
+            teacher.identity,
+            metadata=scoped_metadata("teacher"),
+            sid="teacher-new",
+        )
+        start_gate.set()
+        await task
+        await asyncio.gather(*tuple(runtime.background_tasks))
+    finally:
+        start_gate.set()
+        if not task.done():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+
+    session.say.assert_not_awaited()

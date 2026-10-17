@@ -107,60 +107,81 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             Assert.DoesNotThrow(() => realAdapter.PublishData(new byte[] { 9 }, "lesson-graph-v2.voice", true));
         }
 
-        [TestCase("lesson-graph-v2.voice", true)]
-        [TestCase("lesson-graph-v2.remote", true)]
-        [TestCase("legacy-topic", false)]
-        [TestCase(null, false)]
-        public void IncomingPacket_RoutesKnownV2TopicsAndPreservesLegacyFallback(string topic, bool expectedV2)
+        [TestCase("lesson-graph-v2.voice")]
+        [TestCase("lesson-graph-v2.remote")]
+        public void IncomingPacket_KnownV2TopicsDispatchExactlyOnce(string topic)
         {
             var transport = new LiveKitDataPacketTransport(() => null);
             var payload = new byte[] { 4, 5, 6 };
             byte[] v2Data = null;
-            byte[] legacyData = null;
             string v2Topic = null;
-            string legacyTopic = null;
             var v2Calls = 0;
-            var legacyCalls = 0;
             transport.DataReceivedV2 += (data, receivedTopic) =>
             {
                 v2Calls++;
                 v2Data = data;
                 v2Topic = receivedTopic;
             };
-            transport.LegacyDataReceived += (data, receivedTopic) =>
-            {
-                legacyCalls++;
-                legacyData = data;
-                legacyTopic = receivedTopic;
-            };
 
             transport.HandleIncoming(payload, null, topic);
 
-            Assert.AreEqual(expectedV2 ? 1 : 0, v2Calls);
-            Assert.AreEqual(expectedV2 ? 0 : 1, legacyCalls);
-            Assert.AreNotSame(payload, expectedV2 ? v2Data : legacyData);
-            CollectionAssert.AreEqual(payload, expectedV2 ? v2Data : legacyData);
-            Assert.AreEqual(topic, expectedV2 ? v2Topic : legacyTopic);
+            Assert.AreEqual(1, v2Calls);
+            Assert.AreNotSame(payload, v2Data);
+            CollectionAssert.AreEqual(payload, v2Data);
+            Assert.AreEqual(topic, v2Topic);
+        }
+
+        [TestCase("lesson-graph-v2.audio-cache")]
+        [TestCase("unknown-topic")]
+        [TestCase("")]
+        [TestCase(null)]
+        public void IncomingPacket_UnknownEmptyAndCacheTopicsDoNotEnterGenericDispatcher(string topic)
+        {
+            var transport = new LiveKitDataPacketTransport(() => null);
+            var dispatches = 0;
+            transport.DataReceivedV2 += (_, __) => dispatches++;
+
+            transport.HandleIncoming(Encoding.UTF8.GetBytes("{\"event\":\"QUEST_MATCHED\"}"), null, topic);
+
+            Assert.AreEqual(0, dispatches);
         }
 
         [Test]
-        public void LegacyPacket_PreservesCurrentPayloadAndEventBehavior()
+        public void AgentInitializationFailure_ValidCurrentAgentPacketLogsAndRaisesOnceBeforeCacheHello()
         {
-            var adapter = new FakeRoomAdapter { Connected = true };
-            var transport = new LiveKitDataPacketTransport(() => new RoomConnectionHandle(4, adapter));
-            var legacy = new LegacyVoicePacketAdapter(transport);
-            var matched = 0;
-            legacy.SpeechMatched += () => matched++;
+            var packet = Encoding.UTF8.GetBytes("{\"event\":\"AGENT_INIT_FAILED\",\"reason\":\"missing_gemini_key\"}");
+            var calls = 0;
+            string receivedReason = null;
+            LogAssert.Expect(LogType.Warning, "[LiveKitService] Agent initialization failed: missing_gemini_key");
 
-            legacy.SendActiveQuest("Wash Hands", new[] { "soap", "rinse" });
-            Assert.AreEqual(
-                "{\"event\":\"SET_ACTIVE_QUEST\",\"quest_name\":\"Wash Hands\",\"default_phrases\":[\"soap\",\"rinse\"]}",
-                Encoding.UTF8.GetString(adapter.LastPublishedData));
-            Assert.IsNull(adapter.LastPublishedTopic);
-            Assert.IsTrue(adapter.LastPublishedReliable);
+            var accepted = LiveKitService.TryDispatchAgentInitializationFailure(
+                packet, "", true, true, reason => { calls++; receivedReason = reason; }, out var parsedReason);
 
-            legacy.HandleIncoming(Encoding.UTF8.GetBytes("{\"event\":\"QUEST_MATCHED\"}"), null);
-            Assert.AreEqual(1, matched);
+            Assert.IsTrue(accepted);
+            Assert.AreEqual(1, calls);
+            Assert.AreEqual("missing_gemini_key", parsedReason);
+            Assert.AreEqual(parsedReason, receivedReason);
+        }
+
+        [TestCase("teacher", false, true, "", "{\"event\":\"AGENT_INIT_FAILED\",\"reason\":\"missing_gemini_key\"}")]
+        [TestCase("standard", false, true, "", "{\"event\":\"AGENT_INIT_FAILED\",\"reason\":\"missing_gemini_key\"}")]
+        [TestCase("unknown", false, false, "", "{\"event\":\"AGENT_INIT_FAILED\",\"reason\":\"missing_gemini_key\"}")]
+        [TestCase("agent", false, true, "", "{\"event\":\"AGENT_INIT_FAILED\",\"reason\":\"missing_gemini_key\"}")]
+        [TestCase("stale-agent", true, false, "", "{\"event\":\"AGENT_INIT_FAILED\",\"reason\":\"missing_gemini_key\"}")]
+        [TestCase("agent", true, true, "lesson-graph-v2.audio-cache", "{\"event\":\"AGENT_INIT_FAILED\",\"reason\":\"missing_gemini_key\"}")]
+        [TestCase("agent", true, true, "", "{")]
+        [TestCase("agent", true, true, "", "{\"event\":\"AGENT_INIT_FAILED\",\"reason\":2}")]
+        [TestCase("agent", true, true, "", "{\"event\":\"AGENT_INIT_FAILED\",\"reason\":\"unknown\"}")]
+        [TestCase("agent", true, true, "", "{\"event\":\"QUEST_MATCHED\"}")]
+        [TestCase("agent", true, true, "", "{\"event\":\"QUEST_STATUS\"}")]
+        public void AgentInitializationFailure_InvalidSenderOrPayloadDoesNotRaise(string sender, bool isAgent, bool isCurrent, string topic, string json)
+        {
+            var calls = 0;
+            var accepted = LiveKitService.TryDispatchAgentInitializationFailure(
+                Encoding.UTF8.GetBytes(json), topic, isAgent, isCurrent, _ => calls++, out _);
+
+            Assert.IsFalse(accepted, sender);
+            Assert.AreEqual(0, calls);
         }
 
         [UnityTest]
@@ -435,7 +456,11 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             typeof(LiveKitService).GetField("_roomConnection", privateFields).SetValue(service, roomConnection);
             typeof(LiveKitService).GetField("_lifecycleCoordinator", privateFields).SetValue(service, coordinator);
             var callbackCount = 0;
+            var participantPacketCount = 0;
+            var agentErrorCount = 0;
             service.DataReceivedV2 += (_, __) => callbackCount++;
+            service.DataReceivedByParticipantV1 += (_, __, ___, ____) => participantPacketCount++;
+            service.OnAgentError += _ => agentErrorCount++;
             var transport = new LiveKitDataPacketTransport(() => coordinator.CurrentHandle);
             var relay = typeof(LiveKitService).GetMethod("RelayDataReceivedV2", privateFields);
             transport.DataReceivedV2 += (data, topic) => relay.Invoke(service, new object[] { data, topic });
@@ -452,10 +477,18 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             executor.Drain();
             Assert.AreEqual(1, callbackCount);
 
+            adapterA.RaiseData(Encoding.UTF8.GetBytes("{\"event\":\"AGENT_INIT_FAILED\",\"reason\":\"missing_gemini_key\"}"), "");
+            executor.Drain();
+            Assert.AreEqual(2, participantPacketCount, "A current-room packet still reaches only the participant-aware receive path.");
+            Assert.AreEqual(0, agentErrorCount, "The fake adapter's missing participant cannot authenticate an agent error.");
+
             var connectB = coordinator.ConnectAsync("room-b", "token-b");
             adapterA.RaiseData(new byte[] { 1 }, "lesson-graph-v2.voice");
+            adapterA.RaiseData(Encoding.UTF8.GetBytes("{\"event\":\"AGENT_INIT_FAILED\",\"reason\":\"missing_gemini_key\"}"), "");
             executor.Drain();
             Assert.AreEqual(1, callbackCount);
+            Assert.AreEqual(2, participantPacketCount, "Data from a retired room handle must not reach the participant-aware path.");
+            Assert.AreEqual(0, agentErrorCount);
 
             Assert.AreNotEqual(handleA.Generation, coordinator.CurrentGeneration);
 
@@ -464,6 +497,8 @@ namespace VRAutism.Cloud.LiveKit.Tests.Editor
             adapterB.RaiseData(new byte[] { 2 }, "lesson-graph-v2.voice");
             executor.Drain();
             Assert.AreEqual(2, callbackCount);
+            Assert.AreEqual(3, participantPacketCount);
+            Assert.AreEqual(0, agentErrorCount);
             Assert.IsTrue(service.IsConnectedV2);
             UnityEngine.Object.DestroyImmediate(serviceObject);
         }

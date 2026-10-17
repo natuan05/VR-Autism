@@ -130,6 +130,12 @@ namespace VRAutism.Gameplay.WaitingArea{
                 }
                 if (!LessonLaunchCoordinatorV2.IsCurrentAttempt(attempt)) return;
 
+                if (doc == null || !doc.Exists)
+                {
+                    Debug.LogError($"[SceneMenuController] Lesson document '{lessonId}' is unavailable; launch is blocked.");
+                    return;
+                }
+
                 var lessonName = sceneName;
                 var levelName = "Vô danh";
                 var levelIndex = 0;
@@ -145,22 +151,23 @@ namespace VRAutism.Gameplay.WaitingArea{
                         catch { levelIndex = 0; }
                     }
                 }
-                else Debug.LogWarning($"[SceneMenuController] Lesson document '{lessonId}' is unavailable; using the provided scene metadata.");
-
-                bool isV2Lesson = false;
-                bool invalidVoiceSchema = false;
+                var hasVoiceSchema = doc.ContainsField("voice_schema_version");
+                object rawVoiceSchema = null;
                 try
                 {
-                    isV2Lesson = doc != null && doc.Exists && doc.ContainsField("voice_schema_version") &&
-                        System.Convert.ToInt32(doc.GetValue<object>("voice_schema_version")) >= 2;
+                    if (hasVoiceSchema) rawVoiceSchema = doc.GetValue<object>("voice_schema_version");
                 }
                 catch (System.Exception exception)
                 {
-                    invalidVoiceSchema = true;
-                    Debug.LogError($"[LessonGraphV2] Lesson voice schema metadata is invalid: {exception.Message}");
+                    Debug.LogError($"[SceneMenuController] Lesson voice schema metadata could not be read: {exception.Message}");
+                    VoicePhraseSnapshotStoreV2.Clear();
+                    return;
                 }
-                if (invalidVoiceSchema)
+                var storedScene = doc.ContainsField("scene_name") ? doc.GetValue<string>("scene_name") : string.Empty;
+                if (!TryValidateLessonRuntime(lessonId, lessonType, rawVoiceSchema, hasVoiceSchema,
+                    storedScene, sceneName, Application.CanStreamedLevelBeLoaded(sceneName), out var isV2Lesson))
                 {
+                    Debug.LogError($"[SceneMenuController] Lesson metadata does not authorize scene '{sceneName}'. Launch is blocked.");
                     VoicePhraseSnapshotStoreV2.Clear();
                     return;
                 }
@@ -224,7 +231,6 @@ namespace VRAutism.Gameplay.WaitingArea{
 
                 float childMaxVolume = 0.5f;
                 var lessonParams = LessonParameters.Default;
-                var activePhrases = new System.Collections.Generic.List<string[]>();
                 try
                 {
                     DocumentSnapshot childDoc = await childTask;
@@ -270,21 +276,6 @@ namespace VRAutism.Gameplay.WaitingArea{
                         if (lessonParamsMap != null && lessonParamsMap.Count > 0)
                             lessonParams = LessonParameters.FromDictionary(lessonParamsMap);
 
-                        if (childDoc.ContainsField("quick_phrases") &&
-                            childDoc.GetValue<object>("quick_phrases") is System.Collections.IDictionary quickPhraseMap &&
-                            quickPhraseMap.Contains(lessonId) && quickPhraseMap[lessonId] is System.Collections.IList quickPhraseQuests)
-                        {
-                            foreach (var quest in quickPhraseQuests)
-                            {
-                                if (quest is System.Collections.IDictionary questMap && questMap.Contains("phrases") &&
-                                    questMap["phrases"] is System.Collections.IList phrases)
-                                {
-                                    var phraseList = new System.Collections.Generic.List<string>();
-                                    foreach (var phrase in phrases) if (phrase != null) phraseList.Add(phrase.ToString());
-                                    activePhrases.Add(phraseList.ToArray());
-                                }
-                            }
-                        }
                     }
                 }
                 catch (System.Exception exception)
@@ -292,21 +283,6 @@ namespace VRAutism.Gameplay.WaitingArea{
                     Debug.LogWarning($"[SceneMenuController] Child profile unavailable; using lesson defaults: {exception.Message}");
                 }
                 if (!LessonLaunchCoordinatorV2.IsCurrentAttempt(attempt)) return;
-
-                if (activePhrases.Count == 0 && doc != null && doc.Exists && doc.ContainsField("quests") &&
-                    doc.GetValue<object>("quests") is System.Collections.IList lessonPhraseQuests)
-                {
-                    foreach (var quest in lessonPhraseQuests)
-                    {
-                        if (quest is System.Collections.IDictionary questMap && questMap.Contains("default_phrases") &&
-                            questMap["default_phrases"] is System.Collections.IList phrases)
-                        {
-                            var phraseList = new System.Collections.Generic.List<string>();
-                            foreach (var phrase in phrases) if (phrase != null) phraseList.Add(phrase.ToString());
-                            activePhrases.Add(phraseList.ToArray());
-                        }
-                    }
-                }
 
                 if (isV2Lesson && !v2SnapshotReady)
                 {
@@ -342,7 +318,6 @@ namespace VRAutism.Gameplay.WaitingArea{
                     sessionContext.LessonType = lessonType;
                     sessionContext.MaxVolume = childMaxVolume;
                     sessionContext.CurrentParams = lessonParams;
-                    sessionContext.SetActivePhrases(activePhrases);
                     sessionContext.TtsCacheBackendUrl = effectiveTtsCacheBackendUrl ?? string.Empty;
                     sessionContext.SetTtsCacheSnapshot(ttsSnapshot);
 
@@ -382,6 +357,51 @@ namespace VRAutism.Gameplay.WaitingArea{
                 if (ReferenceEquals(_activeLaunchAttempt, attempt)) _activeLaunchAttempt = null;
                 _launchInProgress = false;
             }
+        }
+
+        public static bool TryValidateLessonRuntime(
+            string lessonDocumentId,
+            string lessonType,
+            object rawSchema,
+            bool hasSchema,
+            string storedScene,
+            string requestedScene,
+            bool isSceneEnabled,
+            out bool isV2Lesson)
+        {
+            isV2Lesson = false;
+            if (string.IsNullOrWhiteSpace(lessonDocumentId) || string.IsNullOrWhiteSpace(lessonType) ||
+                string.IsNullOrWhiteSpace(storedScene) || string.IsNullOrWhiteSpace(requestedScene) ||
+                !isSceneEnabled || !string.Equals(storedScene, requestedScene, System.StringComparison.Ordinal))
+                return false;
+
+            if (string.Equals(lessonType, "quiz", System.StringComparison.Ordinal)) return true;
+            if (string.Equals(lessonType, "theoretical", System.StringComparison.Ordinal)) return true;
+            if (!string.Equals(lessonType, "practical", System.StringComparison.Ordinal)) return false;
+
+            if (hasSchema && IsExactNumericSchemaTwo(rawSchema))
+            {
+                isV2Lesson = true;
+                return true;
+            }
+
+            return !hasSchema && string.Equals(lessonDocumentId, "Greet_1", System.StringComparison.Ordinal) &&
+                string.Equals(storedScene, "HelloFriend", System.StringComparison.Ordinal);
+        }
+
+        private static bool IsExactNumericSchemaTwo(object value)
+        {
+            return value is byte byteValue && byteValue == 2 ||
+                   value is sbyte sbyteValue && sbyteValue == 2 ||
+                   value is short shortValue && shortValue == 2 ||
+                   value is ushort ushortValue && ushortValue == 2 ||
+                   value is int intValue && intValue == 2 ||
+                   value is uint uintValue && uintValue == 2 ||
+                   value is long longValue && longValue == 2 ||
+                   value is ulong ulongValue && ulongValue == 2 ||
+                   value is float floatValue && floatValue == 2f ||
+                   value is double doubleValue && doubleValue == 2d ||
+                   value is decimal decimalValue && decimalValue == 2m;
         }
         private static System.Collections.Generic.List<string> ToStringList(object raw)
         {

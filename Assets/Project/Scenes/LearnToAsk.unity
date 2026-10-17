@@ -1062,7 +1062,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 180992145}
-  - component: {fileID: 180992146}
   m_Layer: 0
   m_Name: Quest_1
   m_TagString: Untagged
@@ -1085,27 +1084,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1883205729}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &180992146
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 180992144}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 794294772fb225f478dd77816bcd4d77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.VoiceQuest
-  id: 1
-  questName: "Ch\xE0o c\xE1c b\u1EA1n"
-  duration: 0
-  reminderCycle: 10
-  defaultPhrases: []
-  npcAudioSource: {fileID: 107818164}
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &196203172
 GameObject:
   m_ObjectHideFlags: 0
@@ -1707,7 +1685,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 354501294}
-  - component: {fileID: 354501295}
   m_Layer: 0
   m_Name: Quest_3
   m_TagString: Untagged
@@ -1730,27 +1707,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1883205729}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &354501295
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 354501293}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 794294772fb225f478dd77816bcd4d77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.VoiceQuest
-  id: 3
-  questName: "Gi\u1EDBi thi\u1EC7u tu\u1ED5i"
-  duration: 0
-  reminderCycle: 0
-  defaultPhrases: []
-  npcAudioSource: {fileID: 107818164}
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &356598639
 GameObject:
   m_ObjectHideFlags: 0
@@ -3694,7 +3650,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 760028425}
-  - component: {fileID: 760028426}
   m_Layer: 0
   m_Name: Quest_2
   m_TagString: Untagged
@@ -3717,27 +3672,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1883205729}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &760028426
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 760028424}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 794294772fb225f478dd77816bcd4d77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.VoiceQuest
-  id: 2
-  questName: "Gi\u1EDBi thi\u1EC7u t\xEAn c\u1EE7a m\xECnh"
-  duration: 0
-  reminderCycle: 0
-  defaultPhrases: []
-  npcAudioSource: {fileID: 107818164}
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &770908265
 GameObject:
   m_ObjectHideFlags: 0
@@ -38095,7 +38029,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1605182952}
   - component: {fileID: 1605182953}
-  - component: {fileID: 1605182954}
   m_Layer: 0
   m_Name: Quest_0
   m_TagString: Untagged
@@ -38140,41 +38073,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.45
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1605182954
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1605182951}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0848034b0740a1479b22a2e2aaffb83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.HoldTouchQuest
-  id: 0
-  questName: "Di chuy\u1EC3n l\xEAn b\u1EA3ng"
-  duration: 5
-  reminderCycle: 0
-  outline: {fileID: 0}
-  posBubbleQuestion: {fileID: 0}
-  posProgressBar: {fileID: 0}
-  hintSound: {fileID: 0}
-  onQuestStarted:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestFinished:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerEnter:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerExit:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &1622994242
 GameObject:
   m_ObjectHideFlags: 0
@@ -39321,7 +39219,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1846814343}
-  - component: {fileID: 1846814344}
   m_Layer: 0
   m_Name: QuestRemoteBridge
   m_TagString: Untagged
@@ -39344,19 +39241,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1883205729}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1846814344
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1846814342}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: efb3fc817af71f44c9d06ec3083c9e15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.QuestRemoteBridge
-  questController: {fileID: 1883205728}
 --- !u!1 &1848224359
 GameObject:
   m_ObjectHideFlags: 0
@@ -39633,10 +39517,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   quests:
-  - {fileID: 1605182954}
-  - {fileID: 180992146}
-  - {fileID: 760028426}
-  - {fileID: 354501295}
   isConditionMet: {fileID: 11400000, guid: 15707155b79bdaa4ebc209d7a4c849b9, type: 2}
   verbalHintCount: {fileID: 11400000, guid: 53dfd328cd0727b418ccd3842dc87dfa, type: 2}
 --- !u!4 &1883205729

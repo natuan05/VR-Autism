@@ -176,7 +176,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 12280569}
-  - component: {fileID: 12280573}
   - component: {fileID: 12280574}
   - component: {fileID: 12280575}
   m_Layer: 0
@@ -186,41 +185,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &12280573
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 12280572}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0848034b0740a1479b22a2e2aaffb83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.HoldTouchQuest
-  id: 5
-  questName: "Lau tay v\u1EDBi kh\u0103n"
-  duration: 3
-  reminderCycle: 0
-  outline: {fileID: 1647964552}
-  posBubbleQuestion: {fileID: 12280571}
-  posProgressBar: {fileID: 12280570}
-  hintSound: {fileID: 8300000, guid: 65c044d99f12afc4794b744c1be15dc8, type: 3}
-  onQuestStarted:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestFinished:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerEnter:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerExit:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!135 &12280574
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -278,7 +242,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 61527200}
-  - component: {fileID: 61527201}
   m_Layer: 0
   m_Name: QuestRemoteBridge
   m_TagString: Untagged
@@ -301,19 +264,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1336548302}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &61527201
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 61527199}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: efb3fc817af71f44c9d06ec3083c9e15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.QuestRemoteBridge
-  questController: {fileID: 1336548301}
 --- !u!1 &73881163
 GameObject:
   m_ObjectHideFlags: 0
@@ -2012,7 +1962,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 807225349}
-  - component: {fileID: 807225353}
   - component: {fileID: 807225354}
   - component: {fileID: 807225355}
   m_Layer: 0
@@ -2022,41 +1971,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &807225353
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 807225352}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0848034b0740a1479b22a2e2aaffb83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.HoldTouchQuest
-  id: 1
-  questName: "L\xE0m \u01B0\u1EDBt tay"
-  duration: 3
-  reminderCycle: 0
-  outline: {fileID: 548681584}
-  posBubbleQuestion: {fileID: 807225351}
-  posProgressBar: {fileID: 807225350}
-  hintSound: {fileID: 8300000, guid: 65c044d99f12afc4794b744c1be15dc8, type: 3}
-  onQuestStarted:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestFinished:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerEnter:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerExit:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!65 &807225354
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7535,7 +7449,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1148527852}
-  - component: {fileID: 1148527856}
   - component: {fileID: 1148527857}
   - component: {fileID: 1148527858}
   m_Layer: 0
@@ -7545,53 +7458,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1148527856
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1148527855}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0848034b0740a1479b22a2e2aaffb83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.HoldTouchQuest
-  id: 2
-  questName: "X\u1ECBt x\xE0 ph\xF2ng"
-  duration: 0.1
-  reminderCycle: 0
-  outline: {fileID: 6091149152165092283}
-  posBubbleQuestion: {fileID: 1148527854}
-  posProgressBar: {fileID: 1148527853}
-  hintSound: {fileID: 8300000, guid: 65c044d99f12afc4794b744c1be15dc8, type: 3}
-  onQuestStarted:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2053423259}
-        m_TargetAssemblyTypeName: VRAutism.Entities.DispenserController, Assembly-CSharp
-        m_MethodName: Push
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  onQuestFinished:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerEnter:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerExit:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!135 &1148527857
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -7819,7 +7685,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1261611783}
-  - component: {fileID: 1261611784}
   m_Layer: 0
   m_Name: QuestUIManager
   m_TagString: Untagged
@@ -7842,22 +7707,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 492935883}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1261611784
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1261611782}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ef572d7e3782fe4e9ce727891b9b81d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.QuestUIController
-  questController: {fileID: 1336548301}
-  questProgressUI: {fileID: 743512962}
-  bubbleQuestion: {fileID: 721296230}
-  congratulationUI: {fileID: 73881163}
 --- !u!1 &1261611801
 GameObject:
   m_ObjectHideFlags: 0
@@ -8061,12 +7910,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   quests:
-  - {fileID: 7252140110639882984}
-  - {fileID: 807225353}
-  - {fileID: 1148527856}
-  - {fileID: 1930545536}
-  - {fileID: 1620873896}
-  - {fileID: 12280573}
   isConditionMet: {fileID: 11400000, guid: a8e38e13912aab046bec3e66c434c42d, type: 2}
   verbalHintCount: {fileID: 11400000, guid: 53dfd328cd0727b418ccd3842dc87dfa, type: 2}
 --- !u!4 &1336548302
@@ -9428,7 +9271,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1620873892}
-  - component: {fileID: 1620873896}
   - component: {fileID: 1620873897}
   - component: {fileID: 1620873898}
   m_Layer: 0
@@ -9438,77 +9280,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1620873896
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1620873895}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e58823f5bb9939b4ba973bfc6e4c1204, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.TouchQuest
-  id: 4
-  questName: "T\u1EAFt v\xF2i n\u01B0\u1EDBc"
-  duration: 0.1
-  reminderCycle: 0
-  outline: {fileID: 1051749701}
-  posBubbleQuestion: {fileID: 1620873894}
-  posProgressBar: {fileID: 1620873893}
-  hintSound: {fileID: 8300000, guid: 65c044d99f12afc4794b744c1be15dc8, type: 3}
-  onQuestStarted:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1137181981}
-        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
-        m_MethodName: ReachSet
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 1137181981}
-        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
-        m_MethodName: Interact
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  onQuestFinished:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1137181981}
-        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
-        m_MethodName: ReachSet
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  onQuestTriggerEnter:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerExit:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!135 &1620873897
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -10226,7 +9997,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1930545532}
-  - component: {fileID: 1930545536}
   - component: {fileID: 1930545537}
   - component: {fileID: 1930545538}
   m_Layer: 0
@@ -10236,41 +10006,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1930545536
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1930545535}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0848034b0740a1479b22a2e2aaffb83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.HoldTouchQuest
-  id: 3
-  questName: "R\u1EEDa tay"
-  duration: 3
-  reminderCycle: 0
-  outline: {fileID: 548681584}
-  posBubbleQuestion: {fileID: 1930545534}
-  posProgressBar: {fileID: 1930545533}
-  hintSound: {fileID: 8300000, guid: 65c044d99f12afc4794b744c1be15dc8, type: 3}
-  onQuestStarted:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestFinished:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerEnter:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerExit:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!65 &1930545537
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -16554,7 +16289,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7252140110639882980}
-  - component: {fileID: 7252140110639882984}
   - component: {fileID: 7252140110639882985}
   - component: {fileID: 7252140110639882986}
   m_Layer: 0
@@ -16564,77 +16298,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &7252140110639882984
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7252140110639882983}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e58823f5bb9939b4ba973bfc6e4c1204, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.Actions.TouchQuest
-  id: 0
-  questName: "B\u1EADt v\xF2i n\u01B0\u1EDBc"
-  duration: 0.1
-  reminderCycle: 0
-  outline: {fileID: 1051749701}
-  posBubbleQuestion: {fileID: 7252140110639882982}
-  posProgressBar: {fileID: 7252140110639882981}
-  hintSound: {fileID: 8300000, guid: 65c044d99f12afc4794b744c1be15dc8, type: 3}
-  onQuestStarted:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1137181981}
-        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
-        m_MethodName: ReachSet
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-      - m_Target: {fileID: 1137181981}
-        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
-        m_MethodName: Interact
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  onQuestFinished:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1137181981}
-        m_TargetAssemblyTypeName: WaterTap, Assembly-CSharp
-        m_MethodName: ReachSet
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  onQuestTriggerEnter:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestTriggerExit:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestReminder:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!135 &7252140110639882985
 SphereCollider:
   m_ObjectHideFlags: 0
