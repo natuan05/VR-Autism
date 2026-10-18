@@ -30,6 +30,7 @@ public class AnimalLessonManager : MonoBehaviour
     public float cameraMoveSpeed = 2f;
     public float timeSoundToDescription = 4f;
     public float timeIntroSound;
+    [Min(0f)] public float endRestSeconds = 2f;
     
     [Header("Audio")]
     public TypeSound backgroundMusic;
@@ -50,6 +51,9 @@ public class AnimalLessonManager : MonoBehaviour
         SessionContext.Instance != null && SessionContext.Instance.CurrentParams.Exploration.SoundToDescriptionGap >= 0f
             ? SessionContext.Instance.CurrentParams.Exploration.SoundToDescriptionGap
             : timeSoundToDescription;
+
+    private string _lessonSessionId = string.Empty;
+    private bool _completionSaved;
     
     private void Start()
     {
@@ -73,6 +77,7 @@ public class AnimalLessonManager : MonoBehaviour
 
     private void StartLesson()
     {
+        _lessonSessionId = SessionContext.Instance != null ? SessionContext.Instance.SessionId : string.Empty;
         TimeManager.Instance.StartLessonTime();
         StartCoroutine(IELesson());
     }
@@ -104,15 +109,39 @@ public class AnimalLessonManager : MonoBehaviour
         }
         
         yield return new WaitForSeconds(1f);
+        if (!IsCurrentLesson()) yield break;
+
         this.SendEvent(EventID.PlaySound, endSound);
-        TimeManager.Instance.SaveLessonTimeData();
-        
-        yield return new WaitForSeconds(5f);
-        StartCoroutine(MoveCameraToAnimal(rootPosition, true));
+        SoundManager soundManager = SoundManager.Inst;
+        if (soundManager != null && soundManager.GetSoundDuration(endSound) > 0f)
+            yield return new WaitUntil(() => soundManager == null || !soundManager.IsPlaying());
+
+        if (!IsCurrentLesson()) yield break;
+        yield return new WaitForSeconds(Mathf.Max(0f, endRestSeconds));
+        if (!IsCurrentLesson()) yield break;
+
+        yield return MoveCameraToAnimal(rootPosition);
+        if (!IsCurrentLesson()) yield break;
+
+        if (!_completionSaved)
+        {
+            _completionSaved = true;
+            if (TimeManager.Instance != null)
+                TimeManager.Instance.SaveLessonTimeData();
+        }
+        SceneManager.LoadScene("GameMenu");
     }
 
-    private IEnumerator MoveCameraToAnimal(Transform animalModel, bool end = false)
+    private bool IsCurrentLesson()
     {
+        if (this == null) return false;
+        string activeSessionId = SessionContext.Instance != null ? SessionContext.Instance.SessionId : string.Empty;
+        return string.Equals(_lessonSessionId, activeSessionId, System.StringComparison.Ordinal);
+    }
+
+    private IEnumerator MoveCameraToAnimal(Transform animalModel)
+    {
+        if (animalModel == null || mainCamera == null) yield break;
         var targetPosition = animalModel.position + (isInVR ? offsetVR : Vector3.zero); 
         var targetRotation = animalModel.rotation;
 
@@ -126,11 +155,6 @@ public class AnimalLessonManager : MonoBehaviour
             mainCamera.transform.position = Vector3.Lerp(mainCamera.transform.position, targetPosition, Time.deltaTime * cachedSpeed);
             mainCamera.transform.rotation = Quaternion.Lerp(mainCamera.transform.rotation, targetRotation, Time.deltaTime * cachedSpeed);
             yield return null;
-        }
-        
-        if (end) 
-        {
-            SceneManager.LoadScene("GameMenu");
         }
     }
 }

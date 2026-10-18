@@ -106,22 +106,24 @@ namespace VRAutism.Cloud
                 return;
             }
 
-            _currentSession.finish_time       = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
-            _currentSession.duration          = durationSeconds;
-            _currentSession.completion_status = completionStatus;
-            _currentSession.score             = score;
+            SessionData session = _currentSession;
+            session.finish_time       = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+            session.duration          = durationSeconds;
+            session.completion_status = completionStatus;
+            session.score             = score;
 
-            // Convert to Dictionary for Firestore (Firestore SDK serialises Dictionary directly)
-            var docRef = _db
+            // Merge with existing teacher review fields while retaining Firestore's offline write queue.
+            DocumentReference docRef = _db
                 .Collection(FirebasePaths.Sessions)
-                .Document(_currentSession.session_id);
+                .Document(session.session_id);
 
-            docRef.SetAsync(_currentSession).ContinueWithOnMainThread(task =>
+            docRef.SetAsync(session, SetOptions.MergeAll).ContinueWithOnMainThread(task =>
             {
                 if (task.IsCompletedSuccessfully)
                 {
-                    Debug.Log($"[FirebaseManager] Session saved: {_currentSession.session_id}");
-                    _currentSession = null;
+                    Debug.Log($"[FirebaseManager] Session saved: {session.session_id}");
+                    if (ReferenceEquals(_currentSession, session))
+                        _currentSession = null;
                 }
                 else
                 {

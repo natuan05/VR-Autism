@@ -33,6 +33,9 @@ namespace VRAutism.Gameplay.Quizzes{
         private Coroutine _questionSoundCoroutine;
         private int _currentQuestHintsVerbal;
         private int _currentQuestHintsVisual;
+        private string _quizSessionId = string.Empty;
+        private bool _isEnding;
+        private bool _completionSaved;
 
         /// <summary>
         /// Tham số bài Quiz động: fallback về giá trị legacy nếu SessionContext chưa khởi tạo hoặc sentinel.
@@ -115,7 +118,7 @@ namespace VRAutism.Gameplay.Quizzes{
                 if (!_isQuestionAnswered)
                 {
                     Debug.Log("[QuizController] Nhận lệnh OnSkipQuest -> Bỏ qua câu hiện tại, tự động submit và chuyển câu");
-                    SubmitAnswer(_currentQuestion.correctAnswer);
+                    SubmitSkippedAnswer();
                     StartCoroutine(AutoNextQuestionRoutine());
                 }
                 else
@@ -141,6 +144,7 @@ namespace VRAutism.Gameplay.Quizzes{
 
         private void Start()
         {
+            _quizSessionId = SessionContext.Instance != null ? SessionContext.Instance.SessionId : string.Empty;
             quiz_score.Value    = 0;
             _currentQuestionIndex = 0;
 
@@ -211,10 +215,12 @@ namespace VRAutism.Gameplay.Quizzes{
 
         private void EndQuiz()
         {
+            if (_isEnding) return;
+            _isEnding = true;
+
             Debug.Log("[QuizController] Quiz ended.");
             DestroyCurrentObject();
             soundManager.StopLoopingSound();
-            TimeManager.Instance.SaveLessonTimeData("success", quiz_score.Value);
             uiController.ShowGameOver(TimeManager.Instance.GetTotalElapsedSeconds());
             StartCoroutine(ReturnToMenuAfterDelay(SafeQuizEndDelay));
         }
@@ -227,23 +233,50 @@ namespace VRAutism.Gameplay.Quizzes{
         {
             Debug.Log($"[QuizController] Chuyển về GameMenu sau {delaySeconds}s...");
             yield return new WaitForSeconds(delaySeconds);
+
+            if (!IsCurrentQuizSession()) yield break;
+            if (!_completionSaved)
+            {
+                _completionSaved = true;
+                if (TimeManager.Instance != null)
+                    TimeManager.Instance.SaveLessonTimeData("success", quiz_score.Value);
+            }
             SceneManager.LoadScene("GameMenu");
+        }
+
+        private bool IsCurrentQuizSession()
+        {
+            if (this == null) return false;
+            string activeSessionId = SessionContext.Instance != null ? SessionContext.Instance.SessionId : string.Empty;
+            return string.Equals(_quizSessionId, activeSessionId, StringComparison.Ordinal);
         }
 
         // ─── Event handlers (subscribed from Awake) ────────────────────────────
 
         private void SubmitAnswer(int answerIndex)
         {
+            SubmitAnswer(answerIndex, false);
+        }
+
+        private void SubmitSkippedAnswer()
+        {
+            if (_currentQuestion == null || _isQuestionAnswered) return;
+            SubmitAnswer(_currentQuestion.correctAnswer, true);
+        }
+
+        private void SubmitAnswer(int answerIndex, bool skipped)
+        {
+            if (_currentQuestion == null) return;
             if (_isQuestionAnswered) return;
             _isQuestionAnswered = true;
 
-            bool isCorrect = (answerIndex == _currentQuestion.correctAnswer);
+            bool isCorrect = !skipped && answerIndex == _currentQuestion.correctAnswer;
             if (isCorrect) quiz_score.Value++;
 
             TimeManager.Instance.LogQuestComplete(
                 _currentQuestionIndex,
                 _currentQuestion.question,
-                isCorrect ? "success" : "failed",
+                skipped ? "skipped" : isCorrect ? "success" : "failed",
                 hintsVerbal:      _currentQuestHintsVerbal,
                 hintsVisual:      _currentQuestHintsVisual
             );
@@ -252,11 +285,12 @@ namespace VRAutism.Gameplay.Quizzes{
             uiController.HandleSubmittedAnswer(
                 answerIndex,
                 _currentQuestion.correctAnswer,
-                isCorrect,
+                isCorrect || skipped,
                 quiz_score.Value
             );
 
-            soundManager.PlaySound(isCorrect ? TypeSound.Win : TypeSound.Lose);
+            if (!skipped)
+                soundManager.PlaySound(isCorrect ? TypeSound.Win : TypeSound.Lose);
             uiController.ShowNextButton();
         }
 

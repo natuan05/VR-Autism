@@ -318,7 +318,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 125198165}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Quest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -357,7 +357,7 @@ GameObject:
   m_Component:
   - component: {fileID: 192978528}
   - component: {fileID: 192978529}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Voice-WetHands
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1073,7 +1073,7 @@ GameObject:
   - component: {fileID: 522769746}
   - component: {fileID: 522769745}
   - component: {fileID: 522769747}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hand-washing area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1444,7 +1444,7 @@ GameObject:
   - component: {fileID: 652237927}
   - component: {fileID: 652237928}
   - component: {fileID: 652237929}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Faucet handle on
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7669,7 +7669,7 @@ GameObject:
   - component: {fileID: 1111842968}
   - component: {fileID: 1111842969}
   - component: {fileID: 1111842970}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Water area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9010,7 +9010,7 @@ GameObject:
   - component: {fileID: 1586549353}
   - component: {fileID: 1586549352}
   - component: {fileID: 1586549354}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Soap dispenser button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14094,7 +14094,7 @@ GameObject:
   - component: {fileID: 1654197284}
   - component: {fileID: 1654197283}
   - component: {fileID: 1654197285}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Faucet handle off
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14302,7 +14302,7 @@ GameObject:
   - component: {fileID: 1674571973}
   - component: {fileID: 1674571972}
   - component: {fileID: 1674571974}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Towel area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15497,7 +15497,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3000000000000001001}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hint Bubble TurnOnWater
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15513,7 +15513,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3000000000000001002}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hint Progress TurnOnWater
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15529,7 +15529,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3000000000000001003}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hint Bubble WetHands
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15545,7 +15545,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3000000000000001004}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hint Progress WetHands
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15561,7 +15561,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3000000000000001005}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hint Bubble DispenseSoap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15577,7 +15577,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3000000000000001006}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hint Progress DispenseSoap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15593,7 +15593,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3000000000000001007}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hint Bubble RubHands
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15609,7 +15609,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3000000000000001008}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hint Progress RubHands
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15625,7 +15625,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3000000000000001009}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hint Bubble TurnOffWater
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15641,7 +15641,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3000000000000001010}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hint Progress TurnOffWater
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15657,7 +15657,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3000000000000001011}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hint Bubble DryHands
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -15673,7 +15673,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3000000000000001012}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Hint Progress DryHands
   m_TagString: Untagged
   m_Icon: {fileID: 0}

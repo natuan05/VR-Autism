@@ -59,6 +59,7 @@ namespace VRAutism.Core
             string lessonType = ctx != null ? ctx.LessonType : "";
             string sessionId  = !string.IsNullOrEmpty(ctx?.SessionId) ? ctx.SessionId : Guid.NewGuid().ToString();
             string childId    = ctx != null ? ctx.ChildId : "";
+            string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
             if (string.IsNullOrEmpty(lessonId))
             {
@@ -81,16 +82,24 @@ namespace VRAutism.Core
                 );
             }
 
+            bool startLegacyRemoteCommandListener = !_v2SceneOwnsSessionPersistence;
+            bool needsLegacyCommands = string.Equals(lessonType, "quiz", StringComparison.OrdinalIgnoreCase) ||
+                                       string.Equals(lessonType, "theoretical", StringComparison.OrdinalIgnoreCase);
+            if (startLegacyRemoteCommandListener && needsLegacyCommands && Cloud.RTDB.RemoteCommandListener.Instance == null)
+            {
+                var listenerObject = new GameObject("RemoteCommandListener (legacy lesson)");
+                listenerObject.AddComponent<Cloud.RTDB.RemoteCommandListener>();
+            }
+
             // Handshake: Báo cho Web Dashboard biết trẻ đã vào scene thành công.
             // Dùng SceneManager.GetActiveScene().name để luôn lấy đúng tên bài đang chạy,
             // bất kể loại bài là ActionManager hay QuizController.
             if (!string.IsNullOrEmpty(sessionId) && Cloud.RTDB.LiveSessionReporter.Instance != null)
             {
-                string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
                 Cloud.RTDB.LiveSessionReporter.Instance.SendLiveSessionHandshake(
                     sessionId,
                     currentScene,
-                    startLegacyRemoteCommandListener: !_v2SceneOwnsSessionPersistence);
+                    startLegacyRemoteCommandListener: startLegacyRemoteCommandListener);
             }
 
             // [MỚI] Kích hoạt luồng Telemetry thu thập dữ liệu hành vi trẻ mỗi 2s
