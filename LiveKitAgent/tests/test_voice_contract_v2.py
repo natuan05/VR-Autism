@@ -12,6 +12,52 @@ from voice_contract_v2 import (
 )
 
 
+@pytest.mark.parametrize("enabled", [True, False])
+def test_parse_activation_silence_reminder_preference(enabled: bool) -> None:
+    packet = parse_unity_packet(
+        json.dumps(
+            {
+                "event": "SET_ACTIVE_QUEST",
+                "contract_version": 2,
+                "activation_id": "a",
+                "quest_goal": "Ask",
+                "phrases": ["Water"],
+                "enable_speech_silence_reminder": enabled,
+            }
+        )
+    )
+    assert packet.enable_speech_silence_reminder is enabled
+    legacy = parse_unity_packet(
+        json.dumps(
+            {
+                "event": "SET_ACTIVE_QUEST",
+                "contract_version": 2,
+                "activation_id": "b",
+                "quest_goal": "Ask",
+                "phrases": ["Water"],
+            }
+        )
+    )
+    assert legacy.enable_speech_silence_reminder is True
+
+
+@pytest.mark.parametrize("invalid", [None, 0, 1, "false", [], {}])
+def test_parse_activation_rejects_non_boolean_reminder_preference(invalid) -> None:
+    with pytest.raises(PacketValidationError, match="enable_speech_silence_reminder"):
+        parse_unity_packet(
+            json.dumps(
+                {
+                    "event": "SET_ACTIVE_QUEST",
+                    "contract_version": 2,
+                    "activation_id": "a",
+                    "quest_goal": "Ask",
+                    "phrases": ["Water"],
+                    "enable_speech_silence_reminder": invalid,
+                }
+            )
+        )
+
+
 def test_parse_set_active_quest_requires_the_versioned_v2_shape() -> None:
     """Rejecting missing or wrong V2 fields prevents a legacy packet becoming active."""
     packet = parse_unity_packet(

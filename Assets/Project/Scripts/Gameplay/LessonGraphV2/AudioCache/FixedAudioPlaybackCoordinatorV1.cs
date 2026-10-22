@@ -81,6 +81,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.AudioCache
         public event Action<InvocationV1, string, string> DialogueTerminal;
         public event Action<CachePacketV1> AgentReminderRequested;
         public event Action FixedAudioOwnershipStarting;
+        /// <summary>Current authenticated Agent is ready; voice transport can replay retained activation.</summary>
+        public event Action AgentReady;
 
         private void Awake()
         {
@@ -352,6 +354,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.AudioCache
                     ReleaseRetiringStreamsFrom(previousInstanceId);
                 }
                 PublishReconcileIfReady();
+                AgentReady?.Invoke();
                 return;
             }
             if (!IsCurrentAgentInstance(packet.agent_instance_id, currentInstance)) return;

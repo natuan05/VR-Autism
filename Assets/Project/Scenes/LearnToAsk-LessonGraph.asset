@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LearnToAsk-LessonGraph
   m_EditorClassIdentifier: Assembly-CSharp::VRAutism.Gameplay.LessonGraphV2.Data.LessonGraph
   _schemaVersion: 2
-  _entryNodeId: nam_introduce_timeline
+  _entryNodeId: teacher_introduces_lesson_1
   _nodes:
   - _id: nam_introduce_timeline
     _nodeType: 4
@@ -50,6 +50,21 @@ MonoBehaviour:
     _position: {x: 0, y: 0}
     _config:
       rid: 4156067777334739052
+  - _id: teacher_introduces_lesson_1
+    _nodeType: 1
+    _position: {x: 0, y: 0}
+    _config:
+      rid: 5702468026820722784
+  - _id: teacher_introduces_lesson_2
+    _nodeType: 1
+    _position: {x: 0, y: 0}
+    _config:
+      rid: 5702468026820722786
+  - _id: Wait_1
+    _nodeType: 2
+    _position: {x: 0, y: 0}
+    _config:
+      rid: 5702468026820722791
   _edges:
   - _fromNodeId: nam_introduce_timeline
     _toNodeId: move_to_position
@@ -141,6 +156,51 @@ MonoBehaviour:
     _priority: 0
     _condition:
       rid: 4156067777334739058
+  - _fromNodeId: teacher_introduces_lesson_1
+    _toNodeId: Wait_1
+    _priority: 0
+    _condition:
+      rid: 5702468026820722789
+  - _fromNodeId: teacher_introduces_lesson_1
+    _toNodeId: Wait_1
+    _priority: 0
+    _condition:
+      rid: 5702468026820722793
+  - _fromNodeId: teacher_introduces_lesson_1
+    _toNodeId: Wait_1
+    _priority: 0
+    _condition:
+      rid: 5702468026820722795
+  - _fromNodeId: Wait_1
+    _toNodeId: teacher_introduces_lesson_2
+    _priority: 0
+    _condition:
+      rid: 5702468026820722796
+  - _fromNodeId: Wait_1
+    _toNodeId: teacher_introduces_lesson_2
+    _priority: 0
+    _condition:
+      rid: 5702468026820722798
+  - _fromNodeId: Wait_1
+    _toNodeId: teacher_introduces_lesson_2
+    _priority: 0
+    _condition:
+      rid: 5702468026820722800
+  - _fromNodeId: teacher_introduces_lesson_2
+    _toNodeId: nam_introduce_timeline
+    _priority: 0
+    _condition:
+      rid: 5702468026820722801
+  - _fromNodeId: teacher_introduces_lesson_2
+    _toNodeId: nam_introduce_timeline
+    _priority: 0
+    _condition:
+      rid: 5702468026820722803
+  - _fromNodeId: teacher_introduces_lesson_2
+    _toNodeId: nam_introduce_timeline
+    _priority: 0
+    _condition:
+      rid: 5702468026820722805
   references:
     version: 2
     RefIds:
@@ -159,7 +219,7 @@ MonoBehaviour:
       data:
         _completionBindingIds:
         - learntoask.move-position.hold
-        _timeoutSeconds: -1
+        _timeoutSeconds: 300
         _voicePrompt: 
     - rid: 4156067777334739044
       type: {class: QuestNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs,
@@ -167,7 +227,7 @@ MonoBehaviour:
       data:
         _completionBindingIds:
         - learntoask.say-hello
-        _timeoutSeconds: -1
+        _timeoutSeconds: 300
         _voicePrompt: 
     - rid: 4156067777334739046
       type: {class: QuestNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs,
@@ -175,7 +235,7 @@ MonoBehaviour:
       data:
         _completionBindingIds:
         - learntoask.say-name
-        _timeoutSeconds: -1
+        _timeoutSeconds: 300
         _voicePrompt: 
     - rid: 4156067777334739048
       type: {class: QuestNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs,
@@ -183,7 +243,7 @@ MonoBehaviour:
       data:
         _completionBindingIds:
         - learntoask.say-age
-        _timeoutSeconds: -1
+        _timeoutSeconds: 300
         _voicePrompt: 
     - rid: 4156067777334739050
       type: {class: QuestNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs,
@@ -191,7 +251,7 @@ MonoBehaviour:
       data:
         _completionBindingIds:
         - learntoask.say-interest
-        _timeoutSeconds: -1
+        _timeoutSeconds: 300
         _voicePrompt: 
     - rid: 4156067777334739051
       type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
@@ -216,6 +276,77 @@ MonoBehaviour:
       data:
         _requiredStatus: skipped
     - rid: 4156067777334739058
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: timeout
+    - rid: 5702468026820722784
+      type: {class: DialogueNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs,
+        asm: Assembly-CSharp}
+      data:
+        _sequenceId: teacher_introduces_lesson_1
+        _text: "Ch\xE0o m\u1EEBng con \u0111\u1EBFn v\u1EDBi l\u1EDBp h\u1ECDc, bu\u1ED5i
+          h\u1ECDc ng\xE0y h\xF4m nay c\xF4 mu\u1ED1n nghe con gi\u1EDBi thi\u1EC7u
+          v\u1EC1 b\u1EA3n th\xE2n."
+        _npcBindingId: teacher-npc
+        _blocking: 1
+        _timeoutSeconds: 20
+    - rid: 5702468026820722786
+      type: {class: DialogueNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs,
+        asm: Assembly-CSharp}
+      data:
+        _sequenceId: teacher_introduces_lesson_2
+        _text: "Nh\u01B0ng tr\u01B0\u1EDBc ti\xEAn, c\xF4 xin m\u1EDDi b\u1EA1n Nam,
+          con l\xEAn l\xE0m m\u1EABu cho b\u1EA1n nh\xE9"
+        _npcBindingId: teacher-npc
+        _blocking: 1
+        _timeoutSeconds: 20
+    - rid: 5702468026820722789
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: success
+    - rid: 5702468026820722791
+      type: {class: WaitNodeConfig, ns: VRAutism.Gameplay.LessonGraphV2.Data.NodeConfigs,
+        asm: Assembly-CSharp}
+      data:
+        _duration: 1
+    - rid: 5702468026820722793
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: skipped
+    - rid: 5702468026820722795
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: timeout
+    - rid: 5702468026820722796
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: success
+    - rid: 5702468026820722798
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: skipped
+    - rid: 5702468026820722800
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: timeout
+    - rid: 5702468026820722801
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: success
+    - rid: 5702468026820722803
+      type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
+        asm: Assembly-CSharp}
+      data:
+        _requiredStatus: skipped
+    - rid: 5702468026820722805
       type: {class: StatusCondition, ns: VRAutism.Gameplay.LessonGraphV2.Data.EdgeConditions,
         asm: Assembly-CSharp}
       data:

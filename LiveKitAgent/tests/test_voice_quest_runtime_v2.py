@@ -4,6 +4,19 @@ from voice_contract_v2 import CancelActiveQuest, SetActiveQuest
 from voice_quest_runtime_v2 import ActivationDisposition, VoiceQuestRuntime
 
 
+def test_replay_cannot_change_silence_reminder_preference() -> None:
+    runtime = VoiceQuestRuntime()
+    disabled = SetActiveQuest(
+        "a", "Ask", ("Water",), enable_speech_silence_reminder=False
+    )
+    assert runtime.activate(disabled) is ActivationDisposition.NEW
+    assert runtime.activate(disabled) is ActivationDisposition.REPLAY
+    with pytest.raises(ValueError, match="activation payload changed"):
+        runtime.activate(
+            SetActiveQuest("a", "Ask", ("Water",), enable_speech_silence_reminder=True)
+        )
+
+
 def test_replay_acknowledges_without_reopening_the_active_quest() -> None:
     """A reconnect replay must not make the agent say the opening phrase twice."""
     runtime = VoiceQuestRuntime()
@@ -19,7 +32,9 @@ def test_replay_acknowledges_without_reopening_the_active_quest() -> None:
 def test_same_activation_with_changed_silence_timeout_is_not_a_replay() -> None:
     runtime = VoiceQuestRuntime()
     request = SetActiveQuest(
-        "activation-1", "Ask for water", ("Water, please",),
+        "activation-1",
+        "Ask for water",
+        ("Water, please",),
         speech_silence_timeout_seconds=3.0,
     )
     assert runtime.activate(request) is ActivationDisposition.NEW
@@ -27,7 +42,9 @@ def test_same_activation_with_changed_silence_timeout_is_not_a_replay() -> None:
     with pytest.raises(ValueError, match="activation payload changed"):
         runtime.activate(
             SetActiveQuest(
-                "activation-1", "Ask for water", ("Water, please",),
+                "activation-1",
+                "Ask for water",
+                ("Water, please",),
                 speech_silence_timeout_seconds=7.0,
             )
         )

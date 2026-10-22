@@ -64,6 +64,36 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
             .GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(transport, null);
 
         [Test]
+        public void ReconnectAndLateAgentReplayRetainDisabledReminderAndDelay()
+        {
+            var go = new GameObject("reminder-settings-replay");
+            go.SetActive(false);
+            try
+            {
+                var transport = go.AddComponent<LiveKitVoiceQuestTransportV2>();
+                var client = new Client();
+                transport.Configure(client);
+                transport.ActivateAsync(new VoiceQuestActivation("a", "Ask", new[] { "Water" },
+                    "teacher-npc", 15f, enableSpeechSilenceReminder: false), CancellationToken.None).GetAwaiter().GetResult();
+                var original = client.Sent[0];
+                StringAssert.Contains("\"enable_speech_silence_reminder\":false", original);
+                StringAssert.Contains("\"speech_silence_timeout_seconds\":15", original);
+                client.Reconnect();
+                Pump(transport);
+                Assert.AreEqual(original, client.Sent[1]);
+                typeof(LiveKitVoiceQuestTransportV2).GetMethod("OnAgentReady", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(transport, null);
+                Assert.AreEqual(original, client.Sent[2]);
+                transport.CancelAsync("a", "cancelled", CancellationToken.None).GetAwaiter().GetResult();
+                int afterCancel = client.Sent.Count;
+                typeof(LiveKitVoiceQuestTransportV2).GetMethod("OnAgentReady", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(transport, null);
+                Assert.AreEqual(afterCancel, client.Sent.Count);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
         public void OfflineCancellationResendsAndRejectsLateMatch()
         {
             var go = new GameObject("voice-transport-test");

@@ -26,6 +26,9 @@ namespace VRAutism.Core.Models
         [Serializable]
         public class ActionParams
         {
+            /// <summary>Spoken silence reminders; independent of visual auto hints and transport readiness.</summary>
+            public bool EnableSpeechSilenceReminder = true;
+
             /// <summary>
             /// Bật/tắt chế độ tự động nhắc nhở (Auto Hint) của bài học.
             /// </summary>
@@ -142,6 +145,7 @@ namespace VRAutism.Core.Models
             // --- Actions ---
             if (TryGetSubDict(dict, "actions", out var actionsDict))
             {
+                result.Actions.EnableSpeechSilenceReminder = GetBool(actionsDict, "enable_speech_silence_reminder", "enableSpeechSilenceReminder", result.Actions.EnableSpeechSilenceReminder);
                 result.Actions.EnableVisualGuidance = GetBool(actionsDict, "enable_visual_guidance", "enableVisualGuidance", result.Actions.EnableVisualGuidance);
                 result.Actions.EnableBubbleHints    = GetBool(actionsDict, "enable_bubble_hints",    "enableBubbleHints",    result.Actions.EnableBubbleHints);
                 result.Actions.SpeechSilenceTimeout = GetFloat(actionsDict, "speech_silence_timeout", "speechSilenceTimeout", result.Actions.SpeechSilenceTimeout);
@@ -152,6 +156,7 @@ namespace VRAutism.Core.Models
             else
             {
                 // Fallback: flat root-level keys
+                result.Actions.EnableSpeechSilenceReminder = GetBool(dict, "enable_speech_silence_reminder", "enableSpeechSilenceReminder", result.Actions.EnableSpeechSilenceReminder);
                 result.Actions.EnableVisualGuidance = GetBool(dict, "enable_visual_guidance", "enableVisualGuidance", result.Actions.EnableVisualGuidance);
                 result.Actions.EnableBubbleHints    = GetBool(dict, "enable_bubble_hints",    "enableBubbleHints",    result.Actions.EnableBubbleHints);
                 result.Actions.SpeechSilenceTimeout = GetFloat(dict, "speech_silence_timeout", "speechSilenceTimeout", result.Actions.SpeechSilenceTimeout);

@@ -26,6 +26,7 @@ class SetActiveQuest:
     phrases: tuple[str, ...]
     npc_binding_id: str = ""
     speech_silence_timeout_seconds: float = DEFAULT_SPEECH_SILENCE_TIMEOUT_SECONDS
+    enable_speech_silence_reminder: bool = True
 
 
 @dataclass(frozen=True)
@@ -101,7 +102,11 @@ def parse_unity_packet(payload: bytes | str) -> UnityPacket:
             "quest_goal",
             "phrases",
         }
-        allowed_optional = {"npc_binding_id", "speech_silence_timeout_seconds"}
+        allowed_optional = {
+            "npc_binding_id",
+            "speech_silence_timeout_seconds",
+            "enable_speech_silence_reminder",
+        }
         if not base_keys.issubset(keys) or not keys.issubset(
             base_keys | allowed_optional
         ):
@@ -109,6 +114,11 @@ def parse_unity_packet(payload: bytes | str) -> UnityPacket:
         npc_binding_id = data.get("npc_binding_id", "")
         if not isinstance(npc_binding_id, str):
             raise PacketValidationError("npc_binding_id must be text")
+        reminder_enabled = data.get("enable_speech_silence_reminder", True)
+        if not isinstance(reminder_enabled, bool):
+            raise PacketValidationError(
+                "enable_speech_silence_reminder must be boolean"
+            )
         timeout = data.get(
             "speech_silence_timeout_seconds", DEFAULT_SPEECH_SILENCE_TIMEOUT_SECONDS
         )
@@ -132,6 +142,7 @@ def parse_unity_packet(payload: bytes | str) -> UnityPacket:
             phrases=_required_phrases(data),
             npc_binding_id=npc_binding_id.strip(),
             speech_silence_timeout_seconds=float(timeout),
+            enable_speech_silence_reminder=reminder_enabled,
         )
     if event == "CANCEL_ACTIVE_QUEST":
         _require_exact_keys(

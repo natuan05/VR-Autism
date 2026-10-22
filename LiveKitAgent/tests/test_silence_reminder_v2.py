@@ -7,6 +7,37 @@ from silence_reminder_v2 import ActivationSilenceReminderV2
 SYNC_TIMEOUT_SECONDS = 1.0
 
 
+@pytest.mark.asyncio
+async def test_disabled_activation_stays_disabled_after_readiness_and_reconnect() -> (
+    None
+):
+    clock = ManualClock()
+    reminders: list[str] = []
+    timer = ActivationSilenceReminderV2(
+        lambda activation: _record(reminders, activation), sleep=clock.sleep
+    )
+    timer.activate("disabled", 15, enabled=False)
+    timer.opening_finished()
+    timer.set_enabled(False)
+    timer.set_enabled(True)
+    timer.reconnecting()
+    timer.reconnected()
+    timer.note_user_activity()
+    await asyncio.sleep(0)
+    assert clock.waiters == []
+    assert reminders == []
+    assert timer.activate("disabled", 15, enabled=False) is False
+    with pytest.raises(ValueError, match="changed"):
+        timer.activate("disabled", 15, enabled=True)
+    timer.activate("enabled", 15, enabled=True)
+    timer.opening_finished()
+    await asyncio.sleep(0)
+    assert [delay for delay, _ in clock.waiters] == [15]
+    await clock.tick()
+    assert reminders == ["enabled"]
+    timer.dispose()
+
+
 class ManualClock:
     def __init__(self) -> None:
         self.waiters: list[tuple[float, asyncio.Future[None]]] = []
@@ -56,7 +87,9 @@ async def test_timer_starts_only_after_opening_and_replay_does_not_reset_it() ->
 
 
 def test_scheduler_rejects_invalid_activation_timeout() -> None:
-    timer = ActivationSilenceReminderV2(lambda _activation_id: _record([], _activation_id))
+    timer = ActivationSilenceReminderV2(
+        lambda _activation_id: _record([], _activation_id)
+    )
     for timeout in (True, -1.0, float("inf"), 10**1000):
         with pytest.raises(ValueError):
             timer.activate("activation-1", timeout)

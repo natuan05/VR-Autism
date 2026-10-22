@@ -47,6 +47,45 @@ namespace VRAutism.Gameplay.LessonGraphV2.Tests.Editor
         }
 
         [Test]
+        public void SilenceReminderPreferenceDefaultsEnabledAndParsesFalse()
+        {
+            Assert.IsTrue(new LessonParameters().Actions.EnableSpeechSilenceReminder);
+            var parsed = LessonParameters.FromDictionary(new Dictionary<string, object>
+            {
+                ["actions"] = new Dictionary<string, object>
+                {
+                    ["enable_speech_silence_reminder"] = false,
+                    ["speech_silence_timeout"] = 15d,
+                    ["enable_auto_hint"] = true
+                }
+            });
+            Assert.IsFalse(parsed.Actions.EnableSpeechSilenceReminder);
+            Assert.AreEqual(15f, parsed.Actions.SpeechSilenceTimeout);
+            Assert.IsTrue(parsed.Actions.EnableAutoHint);
+            Assert.IsTrue(LessonParameters.FromDictionary(new Dictionary<string, object>
+            { ["actions"] = new Dictionary<string, object>() }).Actions.EnableSpeechSilenceReminder);
+        }
+
+        [Test]
+        public void DisabledSilenceReminderAndDelayTravelWithVoiceActivation()
+        {
+            var contextObject = new GameObject("disabled-voice-reminder-context");
+            contextObject.SetActive(false);
+            _objects.Add(contextObject);
+            var context = contextObject.AddComponent<SessionContext>();
+            context.CurrentParams = new LessonParameters();
+            context.CurrentParams.Actions.EnableSpeechSilenceReminder = false;
+            context.CurrentParams.Actions.SpeechSilenceTimeout = 15f;
+            SessionContext.Instance = context;
+            var source = SourceWithSnapshot();
+            var transport = new FakeTransport();
+            source.ConfigureTransport(transport);
+            Assert.IsTrue(source.TryActivate(Activation("disabled-voice")));
+            Assert.IsFalse(transport.Activations[0].enable_speech_silence_reminder);
+            Assert.AreEqual(15f, transport.Activations[0].speech_silence_timeout_seconds);
+        }
+
+        [Test]
         public void FailedSignal_EmitsFailedResultWithReason()
         {
             var source = SourceWithSnapshot();

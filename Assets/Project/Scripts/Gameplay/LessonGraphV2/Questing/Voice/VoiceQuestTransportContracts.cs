@@ -23,16 +23,18 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
         public List<string> phrases;
         public string npc_binding_id;
         public float speech_silence_timeout_seconds;
+        public bool enable_speech_silence_reminder;
 
         public VoiceQuestActivation(string activationId, string goal, IEnumerable<string> effectivePhrases, string npcBindingId = "",
             float speechSilenceTimeoutSeconds = VoiceQuestTransportV2Constants.DefaultSpeechSilenceTimeoutSeconds,
-            string runId = null)
+            string runId = null, bool enableSpeechSilenceReminder = true)
         {
             activation_id = activationId ?? string.Empty;
             run_id = runId ?? string.Empty;
             quest_goal = goal ?? string.Empty;
             phrases = new List<string>(effectivePhrases ?? Array.Empty<string>());
             npc_binding_id = npcBindingId ?? string.Empty;
+            enable_speech_silence_reminder = enableSpeechSilenceReminder;
             speech_silence_timeout_seconds = !float.IsNaN(speechSilenceTimeoutSeconds) && !float.IsInfinity(speechSilenceTimeoutSeconds) && speechSilenceTimeoutSeconds >= 0f
                 ? speechSilenceTimeoutSeconds
                 : VoiceQuestTransportV2Constants.DefaultSpeechSilenceTimeoutSeconds;

@@ -43,6 +43,7 @@ class ActivationSilenceReminderV2:
         self._external_audio_terminal_invocation: str | None = None
         self._owned_reminder_invocation: str | None = None
         self._enabled = True
+        self._activation_enabled = True
 
     @property
     def activation_id(self) -> str | None:
@@ -52,13 +53,16 @@ class ActivationSilenceReminderV2:
     def is_reminder_playing(self) -> bool:
         return self._reminder_in_progress
 
-    def activate(self, activation_id: str, timeout_seconds: float) -> bool:
+    def activate(
+        self, activation_id: str, timeout_seconds: float, *, enabled: bool = True
+    ) -> bool:
         """Install a timer once; an identical activation replay leaves it untouched."""
         if (
             not isinstance(activation_id, str)
             or not activation_id.strip()
             or isinstance(timeout_seconds, bool)
             or not isinstance(timeout_seconds, (int, float))
+            or not isinstance(enabled, bool)
         ):
             raise ValueError("activation and silence timeout must be valid")
         try:
@@ -68,13 +72,17 @@ class ActivationSilenceReminderV2:
         if not math.isfinite(timeout_seconds) or timeout_seconds < 0:
             raise ValueError("activation and silence timeout must be valid")
         if self._activation_id == activation_id:
-            if self._timeout_seconds != timeout_seconds:
+            if (
+                self._timeout_seconds != timeout_seconds
+                or self._activation_enabled != enabled
+            ):
                 raise ValueError("activation silence timeout changed")
             return False
 
         self.cancel()
         self._activation_id = activation_id
         self._timeout_seconds = timeout_seconds
+        self._activation_enabled = enabled
         self._opening_finished = False
         self._zero_window_fired = False
         return True
@@ -212,6 +220,7 @@ class ActivationSilenceReminderV2:
             or self._reconnecting
             or self._external_audio_invocation is not None
             or not self._enabled
+            or not self._activation_enabled
         )
 
     def _restart_window(self, *, cancel_in_progress: bool = False) -> None:

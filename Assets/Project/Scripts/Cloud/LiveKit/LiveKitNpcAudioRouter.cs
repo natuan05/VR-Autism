@@ -334,6 +334,14 @@ namespace VRAutism.Cloud.LiveKit
                              .Where(item => string.Equals(item.NpcBindingId, npcBindingId, StringComparison.Ordinal))
                              .Select(item => item.Track).Where(item => item != null).Distinct().ToArray())
                     BindV2AudioTrack(track, source, npcBindingId);
+
+                // The first agent track may arrive while cache preparation suspends RTC audio.
+                // Bind it before requesting speech, rather than waiting for playback to finish.
+                foreach (var pending in _pendingAudioTracks.ToArray())
+                {
+                    _pendingAudioTracks.Remove(pending.Key);
+                    BindV2AudioTrack(pending.Value.Track, source, npcBindingId, pending.Key);
+                }
                 return true;
             }
         }

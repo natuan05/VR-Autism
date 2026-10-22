@@ -791,7 +791,8 @@ async def entrypoint(ctx: JobContext) -> None:
         llm=google.LLM(model="gemini-3.5-flash-lite", api_key=gemini_key),
         tts=google.TTS(
             language="vi-VN",
-            voice_name="vi-VN-Chirp3-HD-Aoede",
+            voice_name=DEFAULT_VOICE_PROFILE.voice_name,
+            speaking_rate=DEFAULT_VOICE_PROFILE.speaking_rate,
             audio_encoding=gcp_tts.AudioEncoding.OGG_OPUS,
             sample_rate=24000,
             use_streaming=True,
@@ -1616,6 +1617,7 @@ async def _process_v2_packet(
                         runtime.silence_reminder.activate(
                             packet.activation_id,
                             packet.speech_silence_timeout_seconds,
+                            enabled=packet.enable_speech_silence_reminder,
                         )
                         _apply_reconciled_opening_proof(runtime, packet.activation_id)
                 except Exception:

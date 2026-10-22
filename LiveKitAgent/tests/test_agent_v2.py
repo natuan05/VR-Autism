@@ -24,6 +24,34 @@ from tts_cache_contract_v1 import compute_key, default_config
 from voice_contract_v2 import SetActiveQuest
 
 
+@pytest.mark.asyncio
+async def test_disabled_reminder_preference_reaches_timer_and_is_replay_stable() -> (
+    None
+):
+    runtime = _runtime_with_room()
+    runtime.silence_reminder = MagicMock()
+    agent = MagicMock(spec=TeacherAgent)
+    packet = {
+        "event": "SET_ACTIVE_QUEST",
+        "contract_version": 2,
+        "activation_id": "disabled",
+        "quest_goal": "Ask",
+        "phrases": ["Water"],
+        "speech_silence_timeout_seconds": 15,
+        "enable_speech_silence_reminder": False,
+    }
+    with patch("agent_v2._handle_quest_activation", new=AsyncMock()):
+        await _process_v2_packet(agent, MagicMock(), runtime, json.dumps(packet))
+        await _process_v2_packet(agent, MagicMock(), runtime, json.dumps(packet))
+    runtime.silence_reminder.activate.assert_called_once_with(
+        "disabled", 15, enabled=False
+    )
+    packet["enable_speech_silence_reminder"] = True
+    with patch("agent_v2._handle_quest_activation", new=AsyncMock()):
+        await _process_v2_packet(agent, MagicMock(), runtime, json.dumps(packet))
+    assert runtime.silence_reminder.activate.call_count == 1
+
+
 def _runtime_with_room() -> JobRuntime:
     job_ctx = MagicMock()
     room = MagicMock()
@@ -445,7 +473,9 @@ async def test_replayed_activation_does_not_reconfigure_reminder_timer() -> None
         await _process_v2_packet(agent, session, runtime, payload)
         await _process_v2_packet(agent, session, runtime, payload)
 
-    runtime.silence_reminder.activate.assert_called_once_with("activation-1", 3.25)
+    runtime.silence_reminder.activate.assert_called_once_with(
+        "activation-1", 3.25, enabled=True
+    )
 
 
 @pytest.mark.asyncio

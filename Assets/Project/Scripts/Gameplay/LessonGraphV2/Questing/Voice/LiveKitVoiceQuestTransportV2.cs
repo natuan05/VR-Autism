@@ -41,6 +41,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             public string[] phrases;
             public string npc_binding_id;
             public float speech_silence_timeout_seconds;
+            public bool enable_speech_silence_reminder;
         }
         [Serializable] private sealed class CancelPacket
         {
@@ -152,7 +153,7 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
                 if (_current != null) FixedAudioPlaybackCoordinatorV1.Instance.UnregisterActivation(_current.activation_id);
             }
             _current = new VoiceQuestActivation(request.activation_id, request.quest_goal, request.phrases,
-                request.npc_binding_id, request.speech_silence_timeout_seconds, request.run_id);
+                request.npc_binding_id, request.speech_silence_timeout_seconds, request.run_id, request.enable_speech_silence_reminder);
             if (isNewActivation)
             {
                 _reminderCommandIds.Clear();
@@ -252,9 +253,20 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             var coordinator = FixedAudioPlaybackCoordinatorV1.Instance;
             if (ReferenceEquals(_fixedAudioCoordinator, coordinator)) return;
             if (_fixedAudioCoordinator != null)
+            {
                 _fixedAudioCoordinator.FixedAudioOwnershipStarting -= OnFixedAudioOwnershipStarting;
+                _fixedAudioCoordinator.AgentReady -= OnAgentReady;
+            }
             _fixedAudioCoordinator = coordinator;
             _fixedAudioCoordinator.FixedAudioOwnershipStarting += OnFixedAudioOwnershipStarting;
+            _fixedAudioCoordinator.AgentReady += OnAgentReady;
+        }
+
+        private void OnAgentReady()
+        {
+            if (_destroyed || _suspended || _terminal || _current == null || _desired?.@event != "SET_ACTIVE_QUEST") return;
+            // HELLO is authenticated by the coordinator. Replays preserve the activation identity and settings.
+            Publish(_desired);
         }
 
         private void OnFixedAudioOwnershipStarting() => CancelActiveSpeakScript("lesson_scope_changed");
@@ -324,7 +336,8 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
             if (_destroyed || _suspended || _client == null || !_client.IsConnectedV2) return;
             object envelope = packet.@event == "SET_ACTIVE_QUEST"
                 ? (object)new ActivatePacket { activation_id = packet.activation_id, quest_goal = packet.quest_goal, phrases = packet.phrases,
-                    npc_binding_id = packet.npc_binding_id, speech_silence_timeout_seconds = _current?.speech_silence_timeout_seconds ?? VoiceQuestTransportV2Constants.DefaultSpeechSilenceTimeoutSeconds }
+                    npc_binding_id = packet.npc_binding_id, speech_silence_timeout_seconds = _current?.speech_silence_timeout_seconds ?? VoiceQuestTransportV2Constants.DefaultSpeechSilenceTimeoutSeconds,
+                    enable_speech_silence_reminder = _current?.enable_speech_silence_reminder ?? true }
                 : new CancelPacket { activation_id = packet.activation_id, reason = packet.reason };
             _client.PublishDataV2(Encoding.UTF8.GetBytes(JsonUtility.ToJson(envelope)), VoiceQuestTransportV2Constants.Topic, true);
         }
@@ -532,7 +545,10 @@ namespace VRAutism.Gameplay.LessonGraphV2.Questing.Voice
         {
             _lifecycleVersion++;
             if (_fixedAudioCoordinator != null)
+            {
                 _fixedAudioCoordinator.FixedAudioOwnershipStarting -= OnFixedAudioOwnershipStarting;
+                _fixedAudioCoordinator.AgentReady -= OnAgentReady;
+            }
             Configure(null);
             _destroyed = true;
         }

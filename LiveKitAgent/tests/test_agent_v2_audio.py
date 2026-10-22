@@ -65,6 +65,33 @@ def context(room):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "profile",
+    [
+        agent_v2.DEFAULT_VOICE_PROFILE,
+        agent_v2.VoiceProfile(voice_name="vi-VN-Chirp3-HD-Puck", speaking_rate=0.85),
+    ],
+    ids=["current-default", "changed-default"],
+)
+async def test_entrypoint_initializes_tts_from_default_voice_profile(
+    session, monkeypatch, profile
+):
+    monkeypatch.setattr(agent_v2, "DEFAULT_VOICE_PROFILE", profile)
+    room = Room(participant("vr_509521"))
+
+    await agent_v2.entrypoint(context(room))
+
+    agent_v2.google.TTS.assert_called_once_with(
+        language="vi-VN",
+        voice_name=profile.voice_name,
+        speaking_rate=profile.speaking_rate,
+        audio_encoding=agent_v2.gcp_tts.AudioEncoding.OGG_OPUS,
+        sample_rate=24000,
+        use_streaming=True,
+    )
+
+
+@pytest.mark.asyncio
 async def test_entrypoint_links_unity_when_dashboard_joined_first(session):
     room = Room(participant("expert_first"), participant("vr_509521"))
 

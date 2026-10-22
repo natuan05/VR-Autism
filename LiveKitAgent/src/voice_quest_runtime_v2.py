@@ -33,6 +33,7 @@ class ActiveActivation:
     phrases: tuple[str, ...]
     npc_binding_id: str = ""
     speech_silence_timeout_seconds: float = DEFAULT_SPEECH_SILENCE_TIMEOUT_SECONDS
+    enable_speech_silence_reminder: bool = True
     status: ActivationStatus = ActivationStatus.ACTIVE
     opening_claimed: bool = False
     cancellation_reason: str = ""
@@ -79,11 +80,13 @@ class VoiceQuestRuntime:
                 self._active.phrases,
                 self._active.npc_binding_id,
                 self._active.speech_silence_timeout_seconds,
+                self._active.enable_speech_silence_reminder,
             ) != (
                 request.quest_goal,
                 request.phrases,
                 request.npc_binding_id,
                 request.speech_silence_timeout_seconds,
+                request.enable_speech_silence_reminder,
             ):
                 raise ValueError("activation payload changed")
             return ActivationDisposition.REPLAY
@@ -101,6 +104,7 @@ class VoiceQuestRuntime:
             phrases=request.phrases,
             npc_binding_id=request.npc_binding_id,
             speech_silence_timeout_seconds=request.speech_silence_timeout_seconds,
+            enable_speech_silence_reminder=request.enable_speech_silence_reminder,
         )
         return ActivationDisposition.NEW
 

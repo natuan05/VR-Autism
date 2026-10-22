@@ -16,6 +16,36 @@ namespace VRAutism.Gameplay.LessonGraphV2.AudioCache.Tests
     public sealed class TtsUnityCacheIntegrationV1Tests
     {
         [Test]
+        public void OnlyCurrentAuthenticatedHelloSignalsVoiceReplayReadiness()
+        {
+            var go = new UnityEngine.GameObject("voice-replay-ready-test");
+            try
+            {
+                var coordinator = go.AddComponent<FixedAudioPlaybackCoordinatorV1>();
+                SetPrivate(coordinator, "_snapshot", SessionTtsSnapshotV1.Parse(SessionJson(), "session-1"));
+                SetPrivate(coordinator, "_participantClient", new FakeParticipantClient());
+                int readyCount = 0;
+                coordinator.AgentReady += () => readyCount++;
+                var receive = typeof(FixedAudioPlaybackCoordinatorV1).GetMethod("HandleAgentPacket", BindingFlags.Instance | BindingFlags.NonPublic);
+                Action<string, string, string> hello = (sender, session, instance) => receive.Invoke(coordinator, new object[]
+                {
+                    Encoding.UTF8.GetBytes(new JObject
+                    {
+                        ["contract_version"] = 1, ["event"] = "FIXED_AUDIO_HELLO",
+                        ["session_id"] = session, ["agent_instance_id"] = instance
+                    }.ToString()), sender
+                });
+                hello("foreign", "session-1", "boot-current");
+                hello("agent-id", "other-session", "boot-current");
+                hello("agent-id", "session-1", "boot-old");
+                Assert.AreEqual(0, readyCount);
+                hello("agent-id", "session-1", "boot-current");
+                Assert.AreEqual(1, readyCount);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        [Test]
         public void RebuildsValidatedSidecarsAfterIndexDamageAndHonorsActiveInvalidation()
         {
             var dataPath = TestRoot();
@@ -222,6 +252,46 @@ namespace VRAutism.Gameplay.LessonGraphV2.AudioCache.Tests
             };
             Assert.IsNull(select.Invoke(null, args), "ambiguous newest server-role roster fails closed");
             Assert.IsTrue((bool)args[1]);
+        }
+
+        [TestCase(1L, true)]
+        [TestCase(0L, false)]
+        public void StreamSelectionBindsPreparingTrackOnlyForCurrentOwner(long selectionRevision, bool expectedSelected)
+        {
+            var go = new UnityEngine.GameObject("pending-stream-selection-test");
+            try
+            {
+                var source = go.AddComponent<UnityEngine.AudioSource>();
+                var routerType = typeof(LiveKitService).Assembly.GetType("VRAutism.Cloud.LiveKit.LiveKitNpcAudioRouter");
+                var router = (IFixedAudioOwnershipRouterV1)Activator.CreateInstance(routerType, true);
+                routerType.GetMethod("RegisterNpcAudioRoute", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Invoke(router, new object[] { "npc", source });
+                var createdStreams = 0;
+                routerType.GetProperty("StreamFactory", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(router,
+                    new Func<RemoteAudioTrack, UnityEngine.AudioSource, IDisposable>((track, target) =>
+                    {
+                        Assert.AreSame(source, target);
+                        createdStreams++;
+                        return new MemoryStream();
+                    }));
+                var invocation = Invocation("first-dialogue", "dialogue");
+                using (router.AcquireLocalPlayback(invocation, 1, "npc"))
+                {
+                    // The first RTC track arrives while cache lookup owns and suspends audio.
+                    routerType.GetMethod("SimulatePendingAudioTrack", BindingFlags.Instance | BindingFlags.NonPublic)
+                        .Invoke(router, new object[] { "first-agent-track", "agent" });
+
+                    Assert.AreEqual(expectedSelected, router.SelectStream(invocation, selectionRevision, "npc"));
+                    Assert.AreEqual(expectedSelected ? 1 : 0, createdStreams,
+                        "A selected stream must bind the pending track before the agent can finish speaking.");
+                    Assert.AreEqual(!expectedSelected, routerType.GetMethod("IsV2TrackPending", BindingFlags.Instance | BindingFlags.NonPublic)
+                        .Invoke(router, new object[] { "first-agent-track" }));
+                    Assert.AreEqual(expectedSelected, routerType.GetMethod("IsV2TrackActive", BindingFlags.Instance | BindingFlags.NonPublic)
+                        .Invoke(router, new object[] { "first-agent-track" }));
+                }
+                routerType.GetMethod("Reset", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(router, null);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
         }
 
         [Test]
